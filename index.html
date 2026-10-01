@@ -74,11 +74,11 @@ body.is-home .top{ display:none; }
   .navpill,.top-right{ display:none; }
   .top .notif-btn{ margin-left:auto; }
   .top{ padding-bottom:6px; }
-  .tabbar{ display:grid; grid-template-columns:repeat(5,1fr); position:fixed; left:0; right:0; bottom:0; z-index:30;
+  .tabbar{ display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); position:fixed; left:0; right:0; bottom:0; z-index:30;
     background:var(--bg); border-top:1.5px solid var(--line); padding-bottom:env(safe-area-inset-bottom,0px); border-radius:22px 22px 0 0; }
-  .tabbar a{ display:flex; flex-direction:column; align-items:center; gap:2px; padding:8px 2px 9px; text-decoration:none; color:var(--mu); font-size:11px; font-weight:700; text-transform:var(--case); }
+  .tabbar a{ display:flex; flex-direction:column; align-items:center; gap:2px; padding:8px 0 9px; text-decoration:none; color:var(--mu); font-size:10px; font-weight:700; text-transform:var(--case); letter-spacing:-.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
   .tabbar a[aria-current="page"]{ color:var(--pk); }
-  .tabbar svg{ width:22px; height:22px; }
+  .tabbar svg{ width:21px; height:21px; flex:none; }
   .frame{ padding-bottom:86px; }
 }
 
@@ -992,7 +992,7 @@ function ageFrom(dob){
   return a;
 }
 const ageOf = p => p.dob ? ageFrom(p.dob) : p.age;
-const ageGroup = p => (ageOf(p) ?? 0) >= CONFIG.adultAge ? 'adult' : 'minor';
+const ageGroup = p => { const a=ageOf(p); if(a==null && p && p.ageGroup) return p.ageGroup; return (a ?? 0) >= CONFIG.adultAge ? 'adult' : 'minor'; };
 // Sans profil avec âge, on ne montre que des profils adultes.
 const sameGroup = p => !CONFIG.separateMinors || (S.me && S.me.dob ? ageGroup(p)===ageGroup(S.me) : ageGroup(p)==='adult');
 
@@ -1099,7 +1099,8 @@ function updateFavicon(){ const draw=()=>{ try{ const cs=getComputedStyle(docume
   let l=document.querySelector('link[rel="icon"]'); if(!l){ l=document.createElement('link'); l.rel='icon'; document.head.appendChild(l); } l.type='image/png'; l.href=c.toDataURL('image/png'); }catch(e){} };
   _favImg.complete ? draw() : _favImg.onload=draw; }
 const NAV=[['accueil','Accueil'],['matchs','Mes matchs'],['groupes','Groupes'],['messages','Messages'],['recherche','Recherche'],['profil','Mon profil'],['parametres','Paramètres']];
-const TAB=['accueil','matchs','groupes','messages','profil'];
+const TAB=['accueil','matchs','groupes','messages','recherche','profil','parametres'];
+const TAB_LBL={accueil:'Accueil',matchs:'Matchs',groupes:'Groupes',messages:'Messages',recherche:'Chercher',profil:'Profil',parametres:'Réglages'};
 function renderNav(active){
   const cur = r => r===active ? 'aria-current="page"' : '';
   const navItems = isAdmin() ? [...NAV,['moderation','Modération']] : NAV;
@@ -1108,8 +1109,9 @@ function renderNav(active){
   document.querySelectorAll('.skin-btn').forEach(b=>b.innerHTML=PALETTE_ICON);
   renderNotifBadge();
   const online=visible().filter(p=>p.online).length;
-  document.querySelectorAll('.top-right').forEach(t=>t.innerHTML=`<span class="live">${online} joueurs en ligne</span><small>${S.auth?'connecté : '+esc(S.me?.name||S.auth.name):S.me?'profil : '+esc(S.me.name):'<a href="#/connexion">se connecter</a>'}</small>`);
-  document.getElementById('tabbar').innerHTML = NAV.filter(([r])=>TAB.includes(r)).map(([r,l])=>`<a href="#/${r}" ${cur(r)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[r]}</svg>${(t=>t[0].toUpperCase()+t.slice(1))(l.replace('Mon ','').replace('Mes ',''))}</a>`).join('');
+  const liveTxt = online ? `${online} joueur${online>1?'s':''} en ligne` : (S.auth ? 'Bienvenue sur OverMate' : 'Nouveau : rejoins les premiers');
+  document.querySelectorAll('.top-right').forEach(t=>t.innerHTML=`<span class="live">${liveTxt}</span><small>${S.auth?'connecté : '+esc(S.me?.name||S.auth.name):S.me?'profil : '+esc(S.me.name):'<a href="#/connexion">se connecter</a>'}</small>`);
+  document.getElementById('tabbar').innerHTML = NAV.filter(([r])=>TAB.includes(r)).map(([r,l])=>`<a href="#/${r}" ${cur(r)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[r]}</svg>${TAB_LBL[r]||l}</a>`).join('');
 }
 const app=document.getElementById('app');
 function route(){
@@ -1183,8 +1185,8 @@ function viewHome(){
   <section class="hero2">
     <div class="art">${(SKINS[S.skin]||SKINS.defaut).art()}
       <div class="float-match" aria-label="Exemple : 83 % de compatibilité">
-        <div class="duo">${avatar({name:'Toi',avatar:{hue:330}},48)}${avatar(PLAYERS[0],48)}</div>
-        ${ring(83)}<span class="lbl">toi × KoffiNight</span></div>
+        <div class="duo">${avatar({name:'Toi',avatar:{hue:330}},48)}${avatar({name:'Ton mate',avatar:{hue:200}},48)}</div>
+        ${ring(83)}<span class="lbl">toi × ton futur mate</span></div>
       <div class="hero-title"><small>matchmaking entre joueurs</small><strong>${'OverMate'.split('').map((c,i)=>`<span class="w" style="--d:${i}">${c}</span>`).join('')}</strong></div>
     </div>
     <div class="tab tl"><a class="logo" href="#/accueil" aria-label="OverMate, accueil"></a><nav class="navpill" aria-label="Navigation principale"></nav><button class="notif-btn" type="button" aria-label="Notifications"></button>${skinBtn()}</div>
@@ -1208,7 +1210,8 @@ function viewHome(){
       </ol>
     </section>
     <section class="reveal" style="--d:1">
-      <h2>${S.me?'tes meilleurs matchs':'en ligne maintenant'}</h2>
+      <h2>${S.me?'tes meilleurs matchs':featured.length?'en ligne maintenant':'les premiers arrivent'}</h2>
+      ${featured.length?'':`<div class="empty"><p class="muted">${S.me?'Pas encore de joueur compatible inscrit : OverMate vient d\'ouvrir. Invite tes amis, chaque nouvel inscrit peut devenir ton mate.':'Les profils des joueurs sont visibles une fois connecté. Crée ton compte pour découvrir les joueurs qui te correspondent.'}</p>${S.me?'':'<a class="btn btn-ac" href="#/inscription">Créer mon compte</a>'}</div>`}
       <div class="rows">${featured.map(({p,c})=>`<a class="row" href="#/joueur/${p.id}">${avatar(p,64)}
         <div><b>${esc(p.name)}</b><p>${esc(p.games.slice(0,3).join(', '))}</p></div>
         ${c?ring(c.pct,'ring-sm'):'<span class="online">En ligne</span>'}</a>`).join('')}</div>
@@ -1404,14 +1407,17 @@ function viewMatches(){
   const vis=visible(), mates=matesList(), onlineNow=ranked().filter(({p})=>p.online);
   let r=ranked(); if(S.sort==='online') r=[...r].sort((a,b)=>(b.p.online-a.p.online)||(b.c.pct-a.c.pct));
   app.innerHTML=`<div class="wrap page">
-    <div class="page-head"><div><h2>Mes matchs</h2><p>${r.length} joueurs classés du plus compatible au moins compatible.</p></div>
+    <div class="page-head"><div><h2>Mes matchs</h2><p>${r.length?`${r.length} joueur${r.length>1?"s":""} classé${r.length>1?"s":""} du plus compatible au moins compatible.`:"Aucun joueur de ta tranche d'âge n'est encore inscrit."}</p></div>
       <div class="chips"><button type="button" class="chip" data-sort="compat" aria-pressed="${S.sort!=='online'}">Compatibilité</button><button type="button" class="chip" data-sort="online" aria-pressed="${S.sort==='online'}">En ligne d'abord</button><a class="btn btn-ghost btn-sm" href="#/recherche">Filtrer</a></div></div>
     ${onlineNow.length?`<h3 style="margin-bottom:10px"><span class="online"></span> En ligne maintenant</h3><div class="online-strip">${onlineNow.slice(0,10).map(({p,c})=>`<a class="online-card" href="#/joueur/${p.id}">${avatar(p,56)}<b>${esc(p.name)}</b><span style="color:${tier(c.pct)}">${c.pct} %</span></a>`).join('')}</div>`:''}
     ${mates.length?`<h3 style="margin-bottom:10px">Mes mates</h3><div class="mates-strip">${mates.map(p=>`<a class="mate-pill" href="#/joueur/${p.id}">${avatar(p,28)}${esc(p.name)}</a>`).join('')}</div>`:''}
+    ${r.length?'':`<div class="empty"><h3>OverMate vient d'ouvrir</h3><p class="muted">Les premiers joueurs arrivent. Partage le site à tes amis : dès qu'un joueur compatible s'inscrit, il apparaît ici.</p><button class="btn btn-ac" type="button" id="share-site">Partager OverMate</button></div>`}
     <div class="grid">${r.slice(0,shown).map((m,i)=>matchCard(m,i===0,i)).join('')}</div>
     ${r.length>shown?'<div style="text-align:center;margin-top:24px"><button class="btn" id="more">Voir plus de joueurs</button></div>':''}
   </div>`;
   document.getElementById('more')?.addEventListener('click',()=>{ shown+=9; viewMatches(); animateAfterRender(); });
+  document.getElementById('share-site')?.addEventListener('click',async()=>{ const url=location.origin+location.pathname, data={title:'OverMate',text:'Viens trouver ton mate de jeu sur OverMate',url};
+    try{ if(navigator.share) await navigator.share(data); else { await navigator.clipboard.writeText(url); toast('Lien copié'); } }catch(e){} });
   app.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{ S.sort=b.dataset.sort; save(); viewMatches(); animateAfterRender(); });
   onboarding();
 }
@@ -1823,7 +1829,7 @@ function showcaseHTML(){
       <div class="sc-stage"><div class="sc-obj in" id="sc-obj">${OBJ[s.id]()}</div><div class="sc-shadow"></div>
         <p class="sc-caption" id="sc-cap"><b>${s.name}</b><span>${s.caption}</span></p></div>
       <div class="sc-side">
-        <div class="sc-stat"><b>${online}</b><span>joueurs en ligne maintenant</span></div>
+        <div class="sc-stat">${online?`<b>${online}</b><span>joueur${online>1?"s":""} en ligne maintenant</span>`:`<b>Nouveau</b><span>Sois parmi les premiers inscrits</span>`}</div>
         <p class="sc-lbl">Choisis ta plateforme</p>
         <div class="sc-pills" id="sc-pills">${PLATFORMS.filter(([v])=>v!=='switch').map(([v,l])=>`<button type="button" data-plat="${v}" class="${v===s.platform?'on':''}">${l}</button>`).join('')}</div>
       </div>
@@ -2397,7 +2403,7 @@ function submitReport(id,reason,details){
 function onboarding(){
   if(!S.onboard||!S.me) return; S.onboard=false; save();
   const top=ranked().slice(0,3);
-  modal(`<h3>Bienvenue, ${esc(S.me.name)} 🎮</h3><p class="muted">Voici tes ${top.length} meilleurs matchs. Envoie-leur une demande de mate, ou rejoins un groupe.</p>
+  modal(`<h3>Bienvenue, ${esc(S.me.name)} 🎮</h3><p class="muted">${top.length?`Voici tes ${top.length} meilleurs matchs. Envoie-leur une demande de mate, ou rejoins un groupe.`:'Ton profil est prêt. OverMate vient d\'ouvrir : dès qu\'un joueur compatible s\'inscrit, il apparaîtra dans « Mes matchs ».'}</p>
     <div class="rows" style="margin-top:8px">${top.map(({p,c})=>`<a class="row" href="#/joueur/${p.id}" data-close>${avatar(p,56)}<div><b>${esc(p.name)}</b><p>${esc(p.games.slice(0,3).join(', '))}</p></div>${ring(c.pct,'ring-sm')}</a>`).join('')}</div>
     <div class="dlg-actions"><a class="btn btn-ghost" href="#/groupes" data-close>Voir les groupes</a><button class="btn btn-ac" data-close>C'est parti</button></div>`);
 }
@@ -2491,6 +2497,19 @@ const DB = {
 };
 
 
+// Site en ligne (Firebase configuré) : on retire tous les profils et groupes de démonstration
+if(AUTH_LIVE){
+  PLAYERS.length=0; DEMO_SQUADS.length=0;
+  const isDemo=id=>/^p\d+$/.test(String(id));
+  S.requests=(S.requests||[]).filter(r=>!isDemo(r.from)&&!isDemo(r.to));
+  S.notifs=(S.notifs||[]).filter(n=>!isDemo(n.from));
+  Object.keys(S.chats||{}).forEach(k=>{ if(isDemo(k)) delete S.chats[k]; });
+  Object.keys(S.unread||{}).forEach(k=>{ if(isDemo(k)) delete S.unread[k]; });
+  Object.keys(S.ratings||{}).forEach(k=>{ if(isDemo(k)) delete S.ratings[k]; });
+  ['blocked','hidden','banned'].forEach(k=>{ if(Array.isArray(S[k])) S[k]=S[k].filter(x=>!isDemo(x)); });
+  S.reports=(S.reports||[]).filter(r=>!isDemo(r.id));
+  S.joined=[]; save();
+}
 applySkin(S.skin||'defaut');
 route();
 initAuth();
