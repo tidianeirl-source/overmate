@@ -313,6 +313,21 @@ html[data-skin="manga"] .hero-title small{ -webkit-text-stroke:0; text-shadow:no
 html[data-skin="manga"] .frame{ background-image:radial-gradient(rgba(0,0,0,.06) 1px,transparent 1.3px); background-size:8px 8px; }
 
 /* --- Lo-fi --- */
+html[data-skin="awale"]{
+  --frame:#1E120A;
+  --frame-bg:radial-gradient(rgba(247,233,212,.07) 1.4px,transparent 1.9px) 0 0/22px 22px,
+    repeating-linear-gradient(135deg,transparent 0 30px,rgba(226,162,59,.05) 30px 33px),#1E120A;
+  --bg:#2A1A10; --s1:#36231A; --s2:#432C1F; --line:#5E4130; --tx:#F7E9D4; --mu:#C9AE8C;
+  --pk:#E2A23B; --pk2:#F2C46D; --on-pk:#2A1A10; --field:#21140C; --glass:rgba(42,26,16,.88); --glass-solid:#2A1A10;
+  --hi:#7FB85A; --mid:#E2A23B; --warm:#D9622B; --lo:#D9483B;
+  --fd:'Syne','Trebuchet MS',sans-serif; --fdw:800; --fb:'DM Sans','Segoe UI',sans-serif; --case:none;
+  --rf:30px; --rc:22px; --ri:14px;
+  --art-bg:#24160D; --art-tint:linear-gradient(200deg,transparent 50%,rgba(20,10,4,.6));
+  --title:#F7E9D4; --title-shadow:0 2px 30px rgba(226,162,59,.45); --title-stroke:0 transparent;
+  color-scheme:dark;
+}
+html[data-skin="awale"] h2{ letter-spacing:-.02em; }
+html[data-skin="awale"] .mcard:hover{ box-shadow:0 18px 40px -18px rgba(226,162,59,.55); }
 html[data-skin="lofi"]{
   --frame:#16112A; --frame-bg:#16112A;
   --bg:#251E3B; --s1:#2E2649; --s2:#3B3159; --line:#4D4170; --tx:#F6E7D7; --mu:#BBA9C9;
@@ -1212,7 +1227,7 @@ function viewHome(){
   <section class="hero2">
     <div class="art">${(SKINS[S.skin]||SKINS.defaut).art()}
       <div class="float-match" aria-label="Exemple : 83 % de compatibilité">
-        <div class="duo">${avatar({name:'Toi',avatar:{hue:330}},48)}${avatar({name:'Ton mate',avatar:{hue:200}},48)}</div>
+        <div class="duo">${avatar({name:'Toi',avatar:{hue:330}},48)}${avatar({name:'Mate',avatar:{hue:200}},48)}</div>
         ${ring(83)}<span class="lbl">toi × ton futur mate</span></div>
       <div class="hero-title"><small>matchmaking entre joueurs</small><strong>${'OverMate'.split('').map((c,i)=>`<span class="w" style="--d:${i}">${c}</span>`).join('')}</strong></div>
     </div>
@@ -1647,6 +1662,38 @@ function mangaSVG(){
     <g class="rocket" transform="translate(190 330) rotate(35)"><path d="M0 -40c14 14 18 40 14 66h-28c-4-26 0-52 14-66z" fill="#fff" ${ink}/><circle cy="-6" r="6" fill="#111"/><path d="M-14 26l-14 18h14M14 26l14 18h-14" fill="#fff" ${ink}/><path d="M-6 30q6 24 12 0" fill="none" ${ink} stroke-dasharray="4 4"/></g>`,'');
 }
 
+function awaleSVG(){
+  const R=rng(23); let motifs='', grain='', pits='', seeds='';
+  // fond bogolan : rangées de motifs géométriques
+  for(let y=30;y<640;y+=70) for(let x=(y/70%2?40:5);x<1200;x+=80){
+    const k=(x+y)%4;
+    motifs+= k===0?`<path d="M${x} ${y}l10 -10 10 10 10 -10 10 10" />`
+      : k===1?`<circle cx="${x+20}" cy="${y-4}" r="3.2" fill="#F7E9D4" stroke="none"/><circle cx="${x+34}" cy="${y-4}" r="3.2" fill="#F7E9D4" stroke="none"/>`
+      : k===2?`<path d="M${x+14} ${y-14}v20M${x+4} ${y-4}h20"/>`
+      : `<rect x="${x+8}" y="${y-14}" width="18" height="18" rx="2" transform="rotate(45 ${x+17} ${y-5})"/>`;
+  }
+  // veines du bois
+  for(let i=0;i<14;i++){ const y=250+i*17+R()*6; grain+=`<path d="M190 ${y.toFixed(0)} C420 ${(y-8+R()*16).toFixed(0)} 780 ${(y-8+R()*16).toFixed(0)} 1010 ${y.toFixed(0)}" stroke="#2A1608" stroke-width="${(1+R()*1.6).toFixed(1)}" opacity="${(.18+R()*.18).toFixed(2)}" fill="none"/>`; }
+  const seed=(cx,cy)=>{ const a=R()*180|0, c=R()>.35?'#F2E2C4':'#9A6234';
+    return `<g transform="translate(${cx.toFixed(1)} ${cy.toFixed(1)}) rotate(${a})"><ellipse rx="9.5" ry="7" fill="${c}"/><ellipse rx="9.5" ry="7" fill="url(#awSeedSh)"/><path d="M-6 0h12" stroke="#5A3A20" stroke-width="1.3" opacity=".55"/><ellipse cx="-3" cy="-2.6" rx="3" ry="1.6" fill="#fff" opacity=".45"/></g>`; };
+  const scatter=(cx,cy,rad,n)=>{ let h=''; for(let i=0;i<n;i++){ const a=R()*Math.PI*2, d=Math.sqrt(R())*rad; h+=seed(cx+Math.cos(a)*d, cy+Math.sin(a)*d*0.85); } return h; };
+  const xs=[0,1,2,3,4,5].map(i=>356+i*98);
+  [292,408].forEach(cy=>xs.forEach(cx=>{ pits+=`<circle cx="${cx}" cy="${cy}" r="40" fill="url(#awPit)"/><circle cx="${cx}" cy="${cy}" r="40" fill="none" stroke="#F2C46D" stroke-opacity=".12" stroke-width="2"/>`; seeds+=scatter(cx,cy+3,20,1+(R()*5|0)); }));
+  [[238,350],[962,350]].forEach(([cx,cy],i)=>{ pits+=`<ellipse cx="${cx}" cy="${cy}" rx="52" ry="100" fill="url(#awPit)"/><ellipse cx="${cx}" cy="${cy}" rx="52" ry="100" fill="none" stroke="#F2C46D" stroke-opacity=".12" stroke-width="2"/>`; seeds+=scatter(cx,cy,34,i?14:9); });
+  return svgWrap(`<rect width="1200" height="640" fill="#24160D"/>
+    <g fill="none" stroke="#E2A23B" stroke-width="2.2" stroke-linecap="round" opacity=".13">${motifs}</g>
+    <ellipse cx="600" cy="360" rx="560" ry="240" fill="url(#awGlow)"/>
+    <ellipse cx="606" cy="486" rx="450" ry="34" fill="#000" opacity=".45" filter="url(#awBlur)"/>
+    <rect x="160" y="220" width="880" height="260" rx="130" fill="url(#awWood)"/>
+    <rect x="160" y="220" width="880" height="260" rx="130" fill="none" stroke="#F2C46D" stroke-opacity=".18" stroke-width="3"/>
+    <g clip-path="url(#awClip)">${grain}</g>${pits}${seeds}`,
+   `<linearGradient id="awWood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9C5F2E"/><stop offset=".55" stop-color="#7A4421"/><stop offset="1" stop-color="#5A3016"/></linearGradient>
+    <radialGradient id="awPit" cx=".5" cy=".42" r=".6"><stop offset="0" stop-color="#2A1608"/><stop offset=".75" stop-color="#3F2210"/><stop offset="1" stop-color="#6B3B1B"/></radialGradient>
+    <radialGradient id="awSeedSh" cx=".35" cy=".3" r=".8"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></radialGradient>
+    <radialGradient id="awGlow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#E2A23B" stop-opacity=".18"/><stop offset="1" stop-color="#E2A23B" stop-opacity="0"/></radialGradient>
+    <filter id="awBlur" x="-20%" y="-200%" width="140%" height="500%"><feGaussianBlur stdDeviation="14"/></filter>
+    <clipPath id="awClip"><rect x="160" y="220" width="880" height="260" rx="130"/></clipPath>`);
+}
 function lofiSVG(){
   const R=rng(9); let stars='', back='', front='', wins='', clouds='';
   for(let i=0;i<90;i++) stars+=`<circle class="tw" cx="${R()*1200|0}" cy="${R()*380|0}" r="${(.6+R()*1.6).toFixed(1)}" fill="#FFF4E0" style="--tw:${(R()*4).toFixed(1)}s;--td:${(2+R()*3).toFixed(1)}s"/>`;
@@ -1734,6 +1781,8 @@ const FX = {
   samurai:{ particles:{ kind:'petal', colors:['#C41E3A','#E8697F'], n:12, dmin:10, dmax:17 }, click:'ink', wipe:'slash' },
   soft:   { orbs:['#FF9CC0','#FFC6DB','#F77BAA'], orbO:.35,
             particles:{ kind:'petal', colors:['#F77BAA','#FFC6DB','#E23C7A'], n:14, dmin:9, dmax:16 }, click:'hearts' },
+  awale:  { orbs:['#E2A23B','#D9622B','#7A4421'], orbO:.22,
+            particles:{ kind:'dot', colors:['#F2E2C4','#C9AE8C','#9A6234'], n:12, dmin:14, dmax:22 }, click:'ripple' },
   lofi:   { orbs:['#FFB37C','#8E5BC9','#C2627E'], orbO:.4,
             particles:{ kind:'dot', colors:['#FFF4E0','#FFCCA6'], n:22, dmin:14, dmax:24 }, click:'notes' },
   esth:   { orbs:['#C9B8FF','#FFC2DF','#BFF0E0'], orbO:.5,
@@ -1942,12 +1991,14 @@ const SKINS = {
   soft:  {label:'Soft',       desc:'Rose pastel et fleurs',            sw:['#E9779E','#FFFFFF','#D9478A'], art:()=>bloomSVG()},
   lofi:  {label:'Lo-fi',      desc:'Ville de nuit, tons chauds',       sw:['#16112A','#2E2649','#FFB37C'], art:lofiSVG},
   esth:  {label:'Esthétique', desc:'Pastels et soleil rétro',          sw:['#C9B8FF','#FCFAFF','#8A6CF0'], art:esthSVG},
+  awale: {label:'Awalé',      desc:'Plateau en bois, graines et motifs bogolan', sw:['#1E120A','#3A2618','#E2A23B'], art:awaleSVG},
   sombre:{label:'Sombre',     desc:'Nuit étoilée, montagnes et lucioles',             sw:['#07060F','#1B1738','#FF4D8D'], art:nightSVG},
   ocean: {label:'Océan',      desc:'Fond marin, poissons et bulles',             sw:['#2F7FD8','#FFFFFF','#1F6FD1'], art:oceanSVG},
   menthe:{label:'Menthe',     desc:'Collines, brume et papillons',             sw:['#2FAE87','#FFFFFF','#128A6A'], art:mintSVG},
 };
 /* ---- Boutique de thèmes (prix identiques à functions/index.js) ---- */
-const SHOP = { region:'europe-west1' };
+// enabled:false -> tous les thèmes sont gratuits. Passe à true une fois les fonctions de paiement déployées.
+const SHOP = { enabled:false, region:'europe-west1' };
 // Prix par devise : à garder identiques à PRICES dans functions/index.js
 const CURRENCIES = {
   XOF:{ label:'F CFA (BCEAO)', unit:'F CFA', theme:500,  pack:1500,  countries:['CI','SN','ML','BF','BJ','TG','NE'] },
@@ -1961,12 +2012,12 @@ function curCode(){
   return hit?hit[0]:'XOF';
 }
 const price = (kind,cur=curCode()) => CURRENCIES[cur][kind];
-const PAID_SKINS = ['samurai','soft','lofi','esth','ocean','menthe'];
+const PAID_SKINS = ['samurai','soft','lofi','esth','ocean','menthe','awale'];
 const money = (n,cur=curCode()) => n.toLocaleString('fr-FR').replace(/\u202f|\u00a0/g,' ')+' '+CURRENCIES[cur].unit;
 function ownsAll(){ return !!(S.owned&&S.owned.pack); }
 function canUseSkin(id){
   if(!PAID_SKINS.includes(id)) return true;
-  if(!AUTH_LIVE) return true;                       // mode démo : tout est libre
+  if(!AUTH_LIVE || !SHOP.enabled) return true;      // mode démo ou boutique fermée : tout est libre
   if(S.auth && isAdmin()) return true;   // modérateurs
   return ownsAll() || !!(S.owned&&(S.owned.themes||[]).includes(id));
 }
