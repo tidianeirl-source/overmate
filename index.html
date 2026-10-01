@@ -17,7 +17,7 @@
   --bg:#FFFFFF;               /* intérieur du cadre */
   --s1:#FFF4F8; --s2:#FCE3ED; --line:#F5C6D7;
   --tx:#4A2238; --mu:#97637C;
-  --pk:#D9478A;               /* rose principal (titres, boutons) */
+  --pk:#D4307B;               /* rose principal (titres, boutons) */
   --pk2:#B8346F;              /* rose texte lisible */
   --ac:#D9478A; --ac-ink:#FFFFFF;
   --hi:#139E73; --mid:#C98600; --warm:#E0611F; --lo:#D3304F;
@@ -346,8 +346,8 @@ html[data-skin="lofi"] body::after{ content:''; position:fixed; inset:-50%; poin
 /* --- Esthétique --- */
 html[data-skin="esth"]{
   --frame:#C9B8FF; --frame-bg:linear-gradient(120deg,#C9B8FF,#FFC2DF,#BFF0E0,#C9B8FF);
-  --bg:#FCFAFF; --s1:#F4EFFF; --s2:#E9E0FF; --line:#DACFF7; --tx:#2E2A4A; --mu:#776FA0;
-  --pk:#8A6CF0; --pk2:#6448D2; --on-pk:#fff; --field:#fff; --glass:rgba(255,255,255,.75); --glass-solid:#fff;
+  --bg:#FCFAFF; --s1:#F4EFFF; --s2:#E9E0FF; --line:#DACFF7; --tx:#2E2A4A; --mu:#6C6595;
+  --pk:#7B59EE; --pk2:#6448D2; --on-pk:#fff; --field:#fff; --glass:rgba(255,255,255,.75); --glass-solid:#fff;
   --fd:'Syne',sans-serif; --fdw:800; --fb:'DM Sans','Segoe UI',sans-serif; --case:lowercase;
   --rc:32px; --art-bg:#A99BFF; --art-tint:none; --title:#fff; --title-shadow:0 4px 30px rgba(110,70,220,.55);
 }
@@ -379,7 +379,7 @@ html[data-skin="ocean"]{
 html[data-skin="menthe"]{
   --frame:#2FAE87; --frame-bg:#2FAE87;
   --bg:#FFFFFF; --s1:#F1FBF7; --s2:#D9F3E9; --line:#BFE6D6; --tx:#0F3A2D; --mu:#4B7666;
-  --pk:#128A6A; --pk2:#0E6E54; --on-pk:#fff; --hi:#0F8F66;
+  --pk:#118365; --pk2:#0E6E54; --on-pk:#fff; --hi:#0F8F66;
   --fd:'Chakra Petch',sans-serif; --fdw:700; --fb:'Sora','Segoe UI',sans-serif; --case:none;
   --art-bg:#EAFBF4; --art-tint:none;
   --title:#0E6B4F; --title-shadow:0 2px 14px rgba(255,255,255,.8);
@@ -390,7 +390,7 @@ html[data-skin="menthe"]{
 html[data-skin="defaut"]{
   --frame:#0D0F1E; --frame-bg:#0D0F1E;
   --bg:#0D0F1E; --s1:#171A2E; --s2:#20243C; --line:#2E3350; --tx:#F2F3FF; --mu:#9BA2C8;
-  --pk:#7C5CFF; --pk2:#B4A1FF; --on-pk:#FFFFFF; --field:#0B0D1A; --glass:rgba(23,26,46,.86); --glass-solid:#171A2E;
+  --pk:#7654FF; --pk2:#B4A1FF; --on-pk:#FFFFFF; --field:#0B0D1A; --glass:rgba(23,26,46,.86); --glass-solid:#171A2E;
   --hi:#C8FF4D; --mid:#FFC93D; --warm:#FF8A3D; --lo:#FF5A7A;
   --fd:'Outfit',sans-serif; --fdw:700; --fb:'Inter','Segoe UI',sans-serif; --case:none;
   --rf:28px; --rc:18px; --ri:12px; --r:24px;
@@ -950,7 +950,7 @@ html[data-skin="esth"] .mcard:hover::before{ opacity:1; }
   <button class="skin-btn" type="button" aria-label="Changer de thème" title="Changer de thème"></button>
 </header>
 <main id="app" tabindex="-1"></main>
-<footer class="foot"><a href="#/aide">Aide</a><a href="#/cgu">CGU</a><a href="#/confidentialite">Confidentialité</a><a href="#/contact">Nous écrire</a><span>© 2026 OverMate</span></footer>
+<footer class="foot"><a href="#/aide">Aide</a><a href="#/cgu">CGU</a><a href="#/confidentialite">Confidentialité</a><a href="#/cookies">Cookies</a><a href="#/remboursement">Remboursement</a><a href="#/contact">Nous écrire</a><span>© 2026 OverMate</span></footer>
 </div>
 <nav class="tabbar" aria-label="Navigation" id="tabbar"></nav>
 <dialog id="dlg"></dialog>
@@ -1159,7 +1159,7 @@ const app=document.getElementById('app');
 function route(){
   const [, name='accueil', arg] = location.hash.split('/');
   const views={accueil:viewHome, connexion:()=>viewAuth('login'), inscription:()=>viewAuth('signup'), profil:viewProfile, matchs:viewMatches, recherche:viewSearch, parametres:viewSettings, joueur:viewPlayer,
-    messages:viewMessages, groupes:viewSquads, aide:viewHelp, cgu:()=>viewLegal('cgu'), confidentialite:()=>viewLegal('privacy'), contact:viewContact, paiement:viewPayment, moderation:viewAdmin};
+    messages:viewMessages, groupes:viewSquads, aide:viewHelp, cgu:()=>viewLegal('cgu'), confidentialite:()=>viewLegal('privacy'), cookies:viewCookies, remboursement:viewRefund, contact:viewContact, paiement:viewPayment, moderation:viewAdmin};
   if(name.startsWith('@')){ const nm=decodeURIComponent(name.slice(1)).toLowerCase(); const p=PLAYERS.find(x=>x.name.toLowerCase()===nm); document.body.classList.remove('is-home'); viewPlayer(S.me&&S.me.name.toLowerCase()===nm?'me':(p?p.id:'?')); renderNav(''); window.scrollTo(0,0); app.firstElementChild?.classList.add('page-in'); animateAfterRender(); return; }
   const v = views[name] || viewHome;
   clearInterval(scTimer);
@@ -2038,7 +2038,7 @@ function buyModal(id){
     : `<div class="field buy-cur"><label for="buy-cur">Devise</label><select id="buy-cur">${Object.entries(CURRENCIES).map(([k,v])=>`<option value="${k}" ${k===cur?'selected':''}>${v.label} (${k})</option>`).join('')}</select></div>
       <div class="buy-opts" id="buy-opts"></div>
       ${minor?`<label class="buy-consent"><input type="checkbox" id="buy-parent"> Un parent ou tuteur est d'accord avec cet achat.</label>`:''}
-      <p class="muted buy-note">Paiement sécurisé par CinetPay : Orange Money, MTN, Moov, Wave ou carte bancaire. Achat définitif, lié à ton compte.</p>
+      <p class="muted buy-note">Paiement sécurisé par CinetPay : Orange Money, MTN, Moov, Wave ou carte bancaire. Lié à ton compte, remboursable 14 jours : <a href="#/remboursement" data-close>politique de remboursement</a>.</p>
       <p class="ferr" id="buy-err" role="alert"></p>`;
   modal(`<h3>Thème ${esc(t.label)}</h3><p class="muted">${esc(t.desc)}</p>
     <div class="buy-sw sw" style="--a:${t.sw[0]};--b:${t.sw[1]};--c2:${t.sw[2]}"><i></i></div>
@@ -2504,18 +2504,47 @@ function viewLegal(kind){
     <h3>5. Modération et signalements</h3><p>Chaque utilisateur peut signaler ou bloquer un autre utilisateur. Les signalements sont examinés par l'équipe de modération. Un profil que tu signales disparaît aussitôt de ton côté ; l'équipe de modération décide ensuite de le masquer ou de bannir le compte pour tout le monde.</p>
     <h3>6. Responsabilité</h3><p>OverMate facilite la mise en relation mais n'organise pas les parties et n'est pas partie aux échanges entre utilisateurs. Reste prudent : ne partage jamais d'informations personnelles sensibles (adresse, école, numéro de téléphone) avec un inconnu.</p>
     <h3>7. Suppression du compte</h3><p>Tu peux supprimer ton compte à tout moment depuis les paramètres. Ton profil, tes données privées, tes demandes de mate, tes blocages et tes notifications sont alors effacés, sauf obligation légale de conservation.</p>
-    <h3>8. Thèmes payants</h3><p>Certains thèmes visuels sont payants, à l'unité ou en pack. Le paiement est traité par CinetPay (Mobile Money ou carte bancaire). Un thème acheté reste lié à ton compte tant qu'il existe. Les thèmes sont purement esthétiques et ne donnent aucun avantage pour la mise en relation. Les achats des utilisateurs de moins de 18 ans nécessitent l'accord d'un parent ou tuteur. En cas de paiement débité sans déblocage, écris-nous via « Nous écrire » avec la référence de la transaction.</p>
+    <h3>8. Thèmes payants</h3><p>Certains thèmes visuels sont payants, à l'unité ou en pack. Le paiement est traité par CinetPay (Mobile Money ou carte bancaire). Un thème acheté reste lié à ton compte tant qu'il existe. Les thèmes sont purement esthétiques et ne donnent aucun avantage pour la mise en relation. Les achats des utilisateurs de moins de 18 ans nécessitent l'accord d'un parent ou tuteur. Les conditions de remboursement sont détaillées dans la <a href="#/remboursement">politique de remboursement</a>.</p>
     <h3>9. Modifications</h3><p>Les présentes conditions peuvent évoluer ; tu seras informé des changements importants.</p>`
     :`
     <h3>1. Données collectées</h3><p>Pour créer ton compte : e-mail, pseudo, date de naissance, et, si tu utilises Google, ton nom et ta photo Google. Pour ton profil : jeux, pseudos en jeu, horaires, jours, style, plateformes, pays, langues, pseudo Discord. Pour le fonctionnement : demandes de mate, messages, signalements, blocages.</p>
-    <h3>2. Ce qui est visible</h3><p>Les autres utilisateurs voient uniquement ton pseudo, ton avatar, tes jeux et tes habitudes de jeu, ainsi que ton pseudo Discord si tu l'as rendu visible. Ton e-mail, ta date de naissance et ton âge exact ne sont jamais affichés.</p>
+    <h3>2. Ce qui est visible</h3><p>Les autres utilisateurs voient uniquement ton pseudo, ton avatar, tes jeux et tes habitudes de jeu, ainsi que ton pseudo Discord si tu l'as rendu visible. Ton e-mail, ta date de naissance et ton âge exact ne sont jamais affichés. Ton e-mail reste uniquement dans le service de connexion (Firebase Authentication) : il n'est pas recopié dans la base de données du site.</p>
     <h3>3. Utilisation</h3><p>Les données servent à calculer les compatibilités, à faire fonctionner les demandes de mate, les messages et les groupes, à séparer les tranches d'âge et à assurer la modération. Aucune donnée n'est vendue. Aucune publicité ciblée.</p>
     <h3>4. Hébergement</h3><p>Les données sont stockées sur Firebase, un service de Google Cloud. Elles sont protégées par des règles d'accès : ton e-mail et ta date de naissance ne sont lisibles que par toi et par la modération.</p>
     <h3>5. Conservation</h3><p>Les données sont conservées tant que le compte existe, puis supprimées. Les signalements peuvent être conservés anonymisés pour la sécurité du service.</p>
     <h3>6. Tes droits</h3><p>Tu peux consulter, modifier et supprimer tes données depuis ton compte, ou en nous écrivant via le formulaire <a href="#/contact">Nous écrire</a>. Les utilisateurs mineurs peuvent exercer ces droits avec un parent ou tuteur. En Côte d'Ivoire, tu peux aussi saisir l'ARTCI, l'autorité chargée de la protection des données personnelles.</p>
     <h3>7. Paiements</h3><p>Les paiements sont traités par CinetPay. OverMate ne reçoit ni ton numéro de carte ni ton code Mobile Money ; nous conservons uniquement la référence de la transaction, l'article acheté, le montant et son statut.</p>
-    <h3>8. Cookies</h3><p>Le site utilise uniquement le stockage nécessaire au fonctionnement (session, thème choisi). Pas de cookies publicitaires.</p>`}
+    <h3>8. Cookies</h3><p>Le site utilise uniquement le stockage nécessaire au fonctionnement (session, thème choisi). Pas de cookies publicitaires ni de mesure d'audience. Le détail est dans la <a href="#/cookies">politique de cookies</a>.</p>`}
     </div>`;
+}
+
+/* ---- Politique de cookies ---- */
+function viewCookies(){
+  app.innerHTML=`<div class="wrap page legal"><div class="page-head"><div><h2>Politique de cookies</h2><p>Dernière mise à jour : octobre 2026</p></div></div>
+    <h3>En bref</h3><p>OverMate n'utilise <b>aucun cookie publicitaire ni outil de mesure d'audience</b>. Nous utilisons seulement ce qui est indispensable au fonctionnement du site. C'est pourquoi aucun bandeau de consentement ne s'affiche : ce type de stockage n'en nécessite pas.</p>
+    <h3>Ce que le site enregistre dans ton navigateur</h3>
+    <p><b>Stockage local du site</b> : ta session, le thème choisi, ta devise, tes préférences d'affichage et un brouillon de ton profil. Ces données restent sur ton appareil et servent uniquement au fonctionnement d'OverMate.</p>
+    <p><b>Firebase Authentication (Google)</b> : garde ta connexion ouverte entre deux visites.</p>
+    <p><b>Connexion avec Google</b> : si tu choisis ce mode de connexion, Google dépose ses propres cookies pendant l'identification, selon sa politique de confidentialité.</p>
+    <p><b>Polices d'écriture</b> : les polices sont chargées depuis Google Fonts ; ton adresse IP est donc transmise à Google lors de ce chargement, sans cookie.</p>
+    <p><b>Paiement</b> : lors d'un achat, la page de paiement CinetPay peut utiliser ses propres cookies, nécessaires à la transaction.</p>
+    <h3>Comment les supprimer</h3><p>Te déconnecter efface ta session. Tu peux aussi effacer les données du site dans les réglages de ton navigateur (rubrique « Données des sites » ou « Cookies »). Tu devras alors te reconnecter et rechoisir ton thème.</p>
+    <h3>Évolution</h3><p>Si un jour nous ajoutons un outil de mesure d'audience ou de publicité, nous te demanderons ton accord avant de l'activer.</p>
+  </div>`;
+}
+
+/* ---- Politique de remboursement ---- */
+function viewRefund(){
+  app.innerHTML=`<div class="wrap page legal"><div class="page-head"><div><h2>Politique de remboursement</h2><p>Dernière mise à jour : octobre 2026</p></div></div>
+    <h3>Ce qui est vendu</h3><p>OverMate vend des thèmes visuels, à l'unité ou en pack. Ce sont des contenus numériques, débloqués sur ton compte dès que le paiement est confirmé. Ils changent seulement l'apparence du site et ne donnent aucun avantage pour trouver des mates.</p>
+    <h3>Satisfait ou remboursé pendant 14 jours</h3><p>Tu peux demander le remboursement d'un achat dans les <b>14 jours</b> qui suivent le paiement, même si tu as simplement changé d'avis. Le thème remboursé est alors retiré de ton compte.</p>
+    <h3>Remboursement intégral à tout moment</h3>
+    <p><b>Paiement débité sans déblocage</b> : si le thème n'apparaît pas sur ton compte, nous le débloquons ou nous te remboursons, au choix.</p>
+    <p><b>Double paiement ou mauvais montant</b> : la somme payée en trop t'est rendue.</p>
+    <p><b>Achat d'un mineur sans accord parental</b> : un parent ou tuteur peut demander l'annulation de l'achat.</p>
+    <h3>Comment faire la demande</h3><p>Écris-nous via <a href="#/contact">Nous écrire</a> en indiquant la référence de la transaction (elle commence par <b>OM</b> et figure dans ton reçu CinetPay), ton pseudo et le motif. Nous répondons sous 7 jours. Le remboursement est versé sur le moyen de paiement utilisé lors de l'achat (numéro Mobile Money ou carte bancaire).</p>
+    <h3>Compte supprimé ou banni</h3><p>Les thèmes sont liés à ton compte. Si tu supprimes ton compte, ils sont perdus et ne sont pas remboursés au-delà des 14 jours. En cas de bannissement pour non-respect des règles, les achats ne sont pas remboursés.</p>
+  </div>`;
 }
 
 /* ---- Nous écrire (formulaire enregistré dans Firebase, aucun contact affiché) ---- */
@@ -2632,7 +2661,7 @@ const DB = {
   },
   async saveProfile(me){ if(!this.live) return; const uid=this.uid(); const {dob,id,age,...pub}=me;
     try{ const ref=this.db.collection('profiles').doc(uid); const isNew=!(await ref.get().catch(()=>({exists:false}))).exists;
-      await this.db.collection('private').doc(uid).set({dob,email:S.auth.email||'',updatedAt:Date.now()},{merge:true});
+      await this.db.collection('private').doc(uid).set({dob,updatedAt:Date.now()},{merge:true});
       await this.db.collection('usernames').doc(me.name.toLowerCase()).set({uid});
       const {banned,hidden,rejoue,moderator,...safe}=pub;
       const data={...safe,nameLower:me.name.toLowerCase(),ageGroup:ageGroup(me),privacy:S.privacy,discordPublic:S.privacy.discord,online:true,lastSeen:Date.now(),updatedAt:Date.now()};
