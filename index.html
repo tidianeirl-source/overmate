@@ -474,6 +474,24 @@ html[data-skin="samurai"] .float-match{ border:2px solid var(--pk); }
 .skin .sw i::before{ content:''; position:absolute; left:8px; top:9px; width:46%; height:6px; border-radius:3px; background:var(--c2); opacity:.5; }
 .skin .sw i::after{ content:''; position:absolute; right:8px; bottom:8px; width:16px; height:16px; border-radius:50%; background:var(--c2); }
 .skin b{ font-size:15px; }
+.skin-lock{ display:inline-flex; width:15px; height:15px; vertical-align:-2px; color:var(--mu); }
+.skin-lock svg{ width:100%; height:100%; }
+.pack-cta{ margin-top:12px; width:100%; display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 16px; border-radius:var(--ri); border:2px dashed var(--pk); background:transparent; color:var(--tx); font:inherit; font-weight:700; cursor:pointer; }
+.pack-cta strong{ color:var(--pk2,var(--pk)); }
+.pack-cta:hover{ background:color-mix(in srgb,var(--pk) 10%,transparent); }
+.buy-sw{ display:block; height:84px; border-radius:14px; background:var(--a); padding:12px; margin:14px 0; }
+.buy-sw i{ display:block; height:100%; border-radius:9px; background:var(--b); position:relative; }
+.buy-sw i::after{ content:''; position:absolute; right:12px; bottom:12px; width:22px; height:22px; border-radius:50%; background:var(--c2); }
+.buy-opts{ display:grid; gap:10px; }
+.buy-cur{ margin-bottom:12px; }
+.buy-opt{ display:grid; grid-template-columns:1fr auto; grid-template-rows:auto auto; column-gap:12px; text-align:left; padding:12px 14px; border-radius:var(--ri); border:2px solid var(--line); background:var(--field); color:var(--tx); font:inherit; cursor:pointer; }
+.buy-opt b{ grid-column:1; } .buy-opt span{ grid-column:1; font-size:13px; color:var(--mu); }
+.buy-opt strong{ grid-column:2; grid-row:1 / span 2; align-self:center; color:var(--pk2,var(--pk)); white-space:nowrap; }
+.buy-opt.best{ border-color:var(--pk); }
+.buy-opt:hover:not(:disabled){ border-color:var(--pk); }
+.buy-opt:disabled{ opacity:.6; cursor:wait; }
+.buy-consent{ display:flex; gap:8px; align-items:flex-start; margin-top:12px; font-size:14px; }
+.buy-note{ font-size:13px; margin-top:10px; }
 .skin small{ font-size:12px; color:var(--mu); line-height:1.3; }
 dialog:has(.skins){ width:min(620px,calc(100% - 32px)); }
 
@@ -1126,7 +1144,7 @@ const app=document.getElementById('app');
 function route(){
   const [, name='accueil', arg] = location.hash.split('/');
   const views={accueil:viewHome, connexion:()=>viewAuth('login'), inscription:()=>viewAuth('signup'), profil:viewProfile, matchs:viewMatches, recherche:viewSearch, parametres:viewSettings, joueur:viewPlayer,
-    messages:viewMessages, groupes:viewSquads, aide:viewHelp, cgu:()=>viewLegal('cgu'), confidentialite:()=>viewLegal('privacy'), contact:viewContact, moderation:viewAdmin};
+    messages:viewMessages, groupes:viewSquads, aide:viewHelp, cgu:()=>viewLegal('cgu'), confidentialite:()=>viewLegal('privacy'), contact:viewContact, paiement:viewPayment, moderation:viewAdmin};
   if(name.startsWith('@')){ const nm=decodeURIComponent(name.slice(1)).toLowerCase(); const p=PLAYERS.find(x=>x.name.toLowerCase()===nm); document.body.classList.remove('is-home'); viewPlayer(S.me&&S.me.name.toLowerCase()===nm?'me':(p?p.id:'?')); renderNav(''); window.scrollTo(0,0); app.firstElementChild?.classList.add('page-in'); animateAfterRender(); return; }
   const v = views[name] || viewHome;
   clearInterval(scTimer);
@@ -1527,7 +1545,7 @@ function viewSettings(){
   const blocked=PLAYERS.filter(p=>S.blocked.includes(p.id)), w=S.weights||CONFIG.weights, mates=matesList();
   const tg=(k,t,h)=>`<div class="toggle"><div><label for="pv-${k}" class="lbl">${t}</label><p class="hint">${h}</p></div><input class="switch" type="checkbox" id="pv-${k}" data-pv="${k}" ${S.privacy[k]?'checked':''}></div>`;
   app.innerHTML=`<div class="wrap page" style="max-width:760px"><div class="page-head"><h2>Paramètres</h2></div><div class="form">
-    <section class="panel"><h3>Thème</h3><p class="hint">Change l'apparence de tout le site.</p>${skinGrid()}</section>
+    <section class="panel"><h3>Thème</h3><p class="hint">Change l'apparence de tout le site.</p>${skinGrid()}${AUTH_LIVE&&PAID_SKINS.some(x=>!canUseSkin(x))?`<div class="field" style="margin-top:12px;max-width:320px"><label for="set-cur">Devise des prix</label><select id="set-cur">${Object.entries(CURRENCIES).map(([k,v])=>`<option value="${k}" ${k===curCode()?'selected':''}>${v.label} (${k})</option>`).join('')}</select></div>`:''}</section>
     <section class="panel"><h3>Confidentialité</h3><div>
       ${tg('discord','Afficher mon pseudo Discord','Les autres joueurs peuvent le copier depuis ton profil.')}
       ${tg('tags','Afficher mes pseudos en jeu','Visibles sur ton profil public.')}
@@ -1928,12 +1946,101 @@ const SKINS = {
   ocean: {label:'Océan',      desc:'Fond marin, poissons et bulles',             sw:['#2F7FD8','#FFFFFF','#1F6FD1'], art:oceanSVG},
   menthe:{label:'Menthe',     desc:'Collines, brume et papillons',             sw:['#2FAE87','#FFFFFF','#128A6A'], art:mintSVG},
 };
+/* ---- Boutique de thèmes (prix identiques à functions/index.js) ---- */
+const SHOP = { region:'europe-west1' };
+// Prix par devise : à garder identiques à PRICES dans functions/index.js
+const CURRENCIES = {
+  XOF:{ label:'F CFA (BCEAO)', unit:'F CFA', theme:500,  pack:1500,  countries:['CI','SN','ML','BF','BJ','TG','NE'] },
+  XAF:{ label:'F CFA (BEAC)',  unit:'F CFA', theme:500,  pack:1500,  countries:['CM','GA','CG'] },
+  GNF:{ label:'Franc guinéen', unit:'GNF',   theme:7000, pack:21000, countries:['GN'] },
+  CDF:{ label:'Franc congolais', unit:'FC',  theme:2500, pack:7500,  countries:['CD'] },
+};
+function curCode(){
+  if(S.currency && CURRENCIES[S.currency]) return S.currency;
+  const c=S.me&&S.me.country; const hit=Object.entries(CURRENCIES).find(([,v])=>v.countries.includes(c));
+  return hit?hit[0]:'XOF';
+}
+const price = (kind,cur=curCode()) => CURRENCIES[cur][kind];
+const PAID_SKINS = ['samurai','soft','lofi','esth','ocean','menthe'];
+const money = (n,cur=curCode()) => n.toLocaleString('fr-FR').replace(/\u202f|\u00a0/g,' ')+' '+CURRENCIES[cur].unit;
+function ownsAll(){ return !!(S.owned&&S.owned.pack); }
+function canUseSkin(id){
+  if(!PAID_SKINS.includes(id)) return true;
+  if(!AUTH_LIVE) return true;                       // mode démo : tout est libre
+  if(S.auth && isAdmin()) return true;   // modérateurs
+  return ownsAll() || !!(S.owned&&(S.owned.themes||[]).includes(id));
+}
+const LOCK_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+let _preview=null;
+function previewSkin(id){
+  const back=S.skinWanted||S.skin||'defaut'; clearTimeout(_preview);
+  applySkin(id,true,{preview:true}); route(); toast(`Aperçu du thème ${SKINS[id].label} pendant 20 secondes`);
+  _preview=setTimeout(()=>{ _preview=null; applySkin(back,true); route(); toast('Fin de l\'aperçu'); },20000);
+}
+function buyModal(id){
+  const t=SKINS[id], live=DB.live&&DB.fns, signed=!!S.auth, hasProfile=!!(S.me&&S.me.dob), minor=hasProfile&&ageGroup(S.me)==='minor';
+  let cur=curCode();
+  const eco=c=>price('theme',c)*PAID_SKINS.length-price('pack',c);
+  const body = !live ? `<p class="muted">Les achats sont disponibles sur le site en ligne.</p>`
+    : !signed ? `<p class="muted">Connecte-toi pour débloquer ce thème.</p><p><a class="btn btn-ac" href="#/connexion" data-close>Se connecter</a></p>`
+    : !hasProfile ? `<p class="muted">Termine ton profil avant de faire un achat.</p><p><a class="btn btn-ac" href="#/profil" data-close>Compléter mon profil</a></p>`
+    : `<div class="field buy-cur"><label for="buy-cur">Devise</label><select id="buy-cur">${Object.entries(CURRENCIES).map(([k,v])=>`<option value="${k}" ${k===cur?'selected':''}>${v.label} (${k})</option>`).join('')}</select></div>
+      <div class="buy-opts" id="buy-opts"></div>
+      ${minor?`<label class="buy-consent"><input type="checkbox" id="buy-parent"> Un parent ou tuteur est d'accord avec cet achat.</label>`:''}
+      <p class="muted buy-note">Paiement sécurisé par CinetPay : Orange Money, MTN, Moov, Wave ou carte bancaire. Achat définitif, lié à ton compte.</p>
+      <p class="ferr" id="buy-err" role="alert"></p>`;
+  modal(`<h3>Thème ${esc(t.label)}</h3><p class="muted">${esc(t.desc)}</p>
+    <div class="buy-sw sw" style="--a:${t.sw[0]};--b:${t.sw[1]};--c2:${t.sw[2]}"><i></i></div>
+    ${body}
+    <div class="dlg-actions"><button class="btn btn-ghost" type="button" id="buy-try">Essayer 20 secondes</button><button class="btn" data-close>Fermer</button></div>`, d=>{
+    d.querySelector('#buy-try').onclick=()=>{ d.close(); previewSkin(id); };
+    const opts=d.querySelector('#buy-opts');
+    const draw=()=>{ if(!opts) return; const e=eco(cur);
+      opts.innerHTML=`<button type="button" class="buy-opt" data-buy="theme:${id}"><b>Ce thème</b><span>${esc(t.label)}</span><strong>${money(price('theme',cur),cur)}</strong></button>
+        <button type="button" class="buy-opt best" data-buy="pack"><b>Tous les thèmes</b><span>${PAID_SKINS.length} thèmes, et les prochains${e>0?` · ${money(e,cur)} d'économie`:''}</span><strong>${money(price('pack',cur),cur)}</strong></button>`;
+      bind(); };
+    const sel=d.querySelector('#buy-cur'); if(sel) sel.onchange=()=>{ cur=sel.value; S.currency=cur; save(); draw(); };
+    function bind(){ d.querySelectorAll('[data-buy]').forEach(b=>b.onclick=async()=>{
+      const err=d.querySelector('#buy-err'), pc=d.querySelector('#buy-parent');
+      if(minor && !(pc&&pc.checked)){ err.textContent='Coche la case pour confirmer l\'accord de ton parent ou tuteur.'; return; }
+      d.querySelectorAll('[data-buy]').forEach(x=>x.disabled=true); const lbl=b.querySelector('strong').textContent; b.querySelector('strong').textContent='Redirection…'; err.textContent='';
+      try{ const r=await DB.fns.httpsCallable('createPayment')({item:b.dataset.buy,currency:cur,parentConsent:!!(pc&&pc.checked)}); location.href=r.data.url; }
+      catch(e){ err.textContent=(e&&e.message)||'Le paiement n\'a pas pu démarrer.'; d.querySelectorAll('[data-buy]').forEach(x=>x.disabled=false); b.querySelector('strong').textContent=lbl; }
+    }); }
+    draw();
+  });
+}
+document.addEventListener('change',e=>{ if(e.target&&e.target.id==='set-cur'){ S.currency=e.target.value; save(); const y=scrollY; route(); scrollTo(0,y); } });
+/* ---- Retour de paiement ---- */
+function viewPayment(tx){
+  const box=(h,p,act='')=>`<div class="wrap page"><div class="empty"><h3>${h}</h3><p class="muted">${p}</p>${act}</div></div>`;
+  if(!tx){ app.innerHTML=box('Paiement interrompu','Aucun montant n\'a été débité. Tu peux réessayer depuis le choix des thèmes.','<a class="btn" href="#/parametres">Mes thèmes</a>'); return; }
+  if(!S.auth){ app.innerHTML=box('Connecte-toi','Connecte-toi avec le compte qui a fait l\'achat pour le récupérer.','<a class="btn btn-ac" href="#/connexion">Se connecter</a>'); return; }
+  app.innerHTML=box('Vérification du paiement…','Ça prend quelques secondes.');
+  let tries=0;
+  const check=async()=>{
+    if(!location.hash.startsWith('#/paiement')) return;
+    if(!(DB.live&&DB.fns)){ if(tries++<10) return setTimeout(check,800); app.innerHTML=box('Vérification impossible','Recharge la page dans un instant.'); return; }
+    try{ const r=(await DB.fns.httpsCallable('checkPayment')({tx})).data;
+      if(r.status==='paid'){ await DB.loadPurchases(); const item=String(r.item||''), th=item.startsWith('theme:')?item.slice(6):null;
+        applySkin(th||S.skinWanted||S.skin, true);
+        app.innerHTML=box('Merci, c\'est débloqué !', th?`Le thème ${esc(SKINS[th]?.label||th)} est à toi et vient d'être activé.`:'Tous les thèmes sont à toi. Choisis celui que tu préfères.','<a class="btn btn-ac" href="#/parametres">Choisir mon thème</a>'); return; }
+      if(r.status==='failed'){ app.innerHTML=box('Paiement non abouti','Le paiement a été refusé ou annulé. Aucun thème n\'a été débloqué.','<a class="btn" href="#/parametres">Réessayer</a>'); return; }
+      if(r.status==='review'){ app.innerHTML=box('Paiement en vérification','Le montant reçu ne correspond pas au prix. La modération va vérifier : écris-nous via « Nous écrire » avec la référence '+esc(tx)+'.'); return; }
+      if(tries++<8) return setTimeout(check,5000);
+      app.innerHTML=box('Paiement en attente',`Si tu as validé le paiement sur ton téléphone, il sera pris en compte automatiquement dans quelques minutes. Référence : ${esc(tx)}`,'<button class="btn" type="button" onclick="route()">Vérifier à nouveau</button>');
+    }catch(e){ app.innerHTML=box('Vérification impossible',(e&&e.message)||'Réessaie dans un instant.','<button class="btn" type="button" onclick="route()">Réessayer</button>'); }
+  };
+  check();
+}
 const PALETTE_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.9 1.4-2l-.3-.8c-.4-1.1.4-2.2 1.6-2.2H17a4 4 0 0 0 4-4c0-5-4-9-9-9z"/><circle cx="7.5" cy="11" r="1.2" fill="currentColor"/><circle cx="10.5" cy="7" r="1.2" fill="currentColor"/><circle cx="15" cy="7.5" r="1.2" fill="currentColor"/></svg>';
 const skinBtn = () => `<button class="skin-btn" type="button" aria-label="Changer de thème" title="Changer de thème">${PALETTE_ICON}</button>`;
-const skinGrid = () => `<div class="skins">${Object.entries(SKINS).map(([id,t])=>`<button type="button" class="skin" data-skin-pick="${id}" aria-pressed="${(S.skin||'defaut')===id}"><span class="sw" style="--a:${t.sw[0]};--b:${t.sw[1]};--c2:${t.sw[2]}"><i></i></span><b>${t.label}</b><small>${t.desc}</small></button>`).join('')}</div>`;
+const skinGrid = () => `<div class="skins">${Object.entries(SKINS).map(([id,t])=>`<button type="button" class="skin" data-skin-pick="${id}" aria-pressed="${(S.skin||'defaut')===id}"><span class="sw" style="--a:${t.sw[0]};--b:${t.sw[1]};--c2:${t.sw[2]}"><i></i></span><b>${t.label}${canUseSkin(id)?'':` <span class="skin-lock">${LOCK_SVG}</span>`}</b><small>${canUseSkin(id)?t.desc:money(price('theme'))}</small></button>`).join('')}</div>${AUTH_LIVE&&!ownsAll()&&PAID_SKINS.some(x=>!canUseSkin(x))?`<button type="button" class="pack-cta" data-buy-pack><span>Tous les thèmes</span><strong>${money(price('pack'))}</strong></button>`:''}`;
 
-function applySkin(id, anim){ setTimeout(updateFavicon,0);
+function applySkin(id, anim, opts={}){ setTimeout(updateFavicon,0);
   if(!SKINS[id]) id='defaut';
+  if(!opts.preview){ S.skinWanted=id; if(_preview){ clearTimeout(_preview); _preview=null; } }
+  if(!opts.preview && !canUseSkin(id)) id='defaut';
   const r=document.documentElement;
   if(anim && !matchMedia('(prefers-reduced-motion: reduce)').matches){ r.classList.add('skin-anim'); setTimeout(()=>r.classList.remove('skin-anim'),650); }
   r.dataset.skin=id; S.skin=id; save();
@@ -1944,8 +2051,11 @@ function skinPicker(){
 }
 document.addEventListener('click',e=>{
   if(e.target.closest('.skin-btn')){ skinPicker(); return; }
+  if(e.target.closest('[data-buy-pack]')){ buyModal(PAID_SKINS.find(x=>!canUseSkin(x))||PAID_SKINS[0]); return; }
   const b=e.target.closest('[data-skin-pick]'); if(!b) return;
-  const id=b.dataset.skinPick; if(id===S.skin) return;
+  const id=b.dataset.skinPick;
+  if(!canUseSkin(id)){ buyModal(id); return; }
+  if(id===S.skin) return;
   applySkin(id,true);
   document.querySelectorAll('[data-skin-pick]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.skinPick===id));
   const y=window.scrollY; if(!b.closest('#app')) { route(); window.scrollTo(0,y); }
@@ -2019,7 +2129,7 @@ function onSignedIn(u){
     if(location.hash===target) route(); else location.hash=target;
   } else route();
 }
-function onSignedOut(){ S.auth=null; S.me=null; S.requests=[]; S.notifs=[]; S.chats={}; save(); route(); }
+function onSignedOut(){ S.owned=null; S.auth=null; S.me=null; S.requests=[]; S.notifs=[]; S.chats={}; save(); route(); }
 async function signOut(){
   await DB.setPresence(false); DB._unsub.forEach(u=>u()); DB._unsub=[]; clearInterval(DB._hb);
   if(AUTH_LIVE){ try{ google.accounts.id.disableAutoSelect(); await firebase.auth().signOut(); }catch(e){} }
@@ -2343,7 +2453,8 @@ function viewLegal(kind){
     <h3>5. Modération et signalements</h3><p>Chaque utilisateur peut signaler ou bloquer un autre utilisateur. Les signalements sont examinés par l'équipe de modération. Un profil que tu signales disparaît aussitôt de ton côté ; l'équipe de modération décide ensuite de le masquer ou de bannir le compte pour tout le monde.</p>
     <h3>6. Responsabilité</h3><p>OverMate facilite la mise en relation mais n'organise pas les parties et n'est pas partie aux échanges entre utilisateurs. Reste prudent : ne partage jamais d'informations personnelles sensibles (adresse, école, numéro de téléphone) avec un inconnu.</p>
     <h3>7. Suppression du compte</h3><p>Tu peux supprimer ton compte à tout moment depuis les paramètres. Ton profil, tes données privées, tes demandes de mate, tes blocages et tes notifications sont alors effacés, sauf obligation légale de conservation.</p>
-    <h3>8. Modifications</h3><p>Les présentes conditions peuvent évoluer ; tu seras informé des changements importants.</p>`
+    <h3>8. Thèmes payants</h3><p>Certains thèmes visuels sont payants, à l'unité ou en pack. Le paiement est traité par CinetPay (Mobile Money ou carte bancaire). Un thème acheté reste lié à ton compte tant qu'il existe. Les thèmes sont purement esthétiques et ne donnent aucun avantage pour la mise en relation. Les achats des utilisateurs de moins de 18 ans nécessitent l'accord d'un parent ou tuteur. En cas de paiement débité sans déblocage, écris-nous via « Nous écrire » avec la référence de la transaction.</p>
+    <h3>9. Modifications</h3><p>Les présentes conditions peuvent évoluer ; tu seras informé des changements importants.</p>`
     :`
     <h3>1. Données collectées</h3><p>Pour créer ton compte : e-mail, pseudo, date de naissance, et, si tu utilises Google, ton nom et ta photo Google. Pour ton profil : jeux, pseudos en jeu, horaires, jours, style, plateformes, pays, langues, pseudo Discord. Pour le fonctionnement : demandes de mate, messages, signalements, blocages.</p>
     <h3>2. Ce qui est visible</h3><p>Les autres utilisateurs voient uniquement ton pseudo, ton avatar, tes jeux et tes habitudes de jeu, ainsi que ton pseudo Discord si tu l'as rendu visible. Ton e-mail, ta date de naissance et ton âge exact ne sont jamais affichés.</p>
@@ -2351,7 +2462,8 @@ function viewLegal(kind){
     <h3>4. Hébergement</h3><p>Les données sont stockées sur Firebase, un service de Google Cloud. Elles sont protégées par des règles d'accès : ton e-mail et ta date de naissance ne sont lisibles que par toi et par la modération.</p>
     <h3>5. Conservation</h3><p>Les données sont conservées tant que le compte existe, puis supprimées. Les signalements peuvent être conservés anonymisés pour la sécurité du service.</p>
     <h3>6. Tes droits</h3><p>Tu peux consulter, modifier et supprimer tes données depuis ton compte, ou en nous écrivant via le formulaire <a href="#/contact">Nous écrire</a>. Les utilisateurs mineurs peuvent exercer ces droits avec un parent ou tuteur. En Côte d'Ivoire, tu peux aussi saisir l'ARTCI, l'autorité chargée de la protection des données personnelles.</p>
-    <h3>7. Cookies</h3><p>Le site utilise uniquement le stockage nécessaire au fonctionnement (session, thème choisi). Pas de cookies publicitaires.</p>`}
+    <h3>7. Paiements</h3><p>Les paiements sont traités par CinetPay. OverMate ne reçoit ni ton numéro de carte ni ton code Mobile Money ; nous conservons uniquement la référence de la transaction, l'article acheté, le montant et son statut.</p>
+    <h3>8. Cookies</h3><p>Le site utilise uniquement le stockage nécessaire au fonctionnement (session, thème choisi). Pas de cookies publicitaires.</p>`}
     </div>`;
 }
 
@@ -2431,7 +2543,8 @@ const DB = {
   toUid(id){ return id==='me' ? this.uid() : id; },
   fromUid(u){ return u===this.uid() ? 'me' : u; },
   pairId(id){ return [this.uid(),id].sort().join('_'); },
-  async init(){ if(!AUTH_LIVE) return; try{ await loadScript(`https://www.gstatic.com/firebasejs/${FB_VERSION}/firebase-firestore-compat.js`); this.db=firebase.firestore(); this.live=true; }catch(e){ console.error(e); toast('Base de données indisponible'); } },
+  async init(){ if(!AUTH_LIVE) return; try{ await loadScript(`https://www.gstatic.com/firebasejs/${FB_VERSION}/firebase-firestore-compat.js`); this.db=firebase.firestore(); this.live=true;
+    try{ await loadScript(`https://www.gstatic.com/firebasejs/${FB_VERSION}/firebase-functions-compat.js`); this.fns=firebase.app().functions(SHOP.region); }catch(e){ console.error(e); } }catch(e){ console.error(e); toast('Base de données indisponible'); } },
   async loadAll(){
     if(!this.live||!this.uid()) return; const uid=this.uid(), db=this.db; this._loading=true; this._err=null; this._noProfile=false;
     try{
@@ -2450,9 +2563,11 @@ const DB = {
       const sq=await db.collection('squads').where('ageGroup','==',g).get(); DEMO_SQUADS.length=0; S.squads=[]; S.joined=[];
       sq.forEach(d=>{ const s={...d.data(),id:d.id}; s.members=s.members.map(m=>this.fromUid(m)); s.owner=this.fromUid(s.owner); if(s.members.includes('me')&&s.owner!=='me') S.joined.push(s.id); (s.owner==='me'?S.squads:DEMO_SQUADS).push(s); });
       const ad=await db.collection('admins').doc(uid).get(); if(ad.exists&&!ADMINS.includes(uid)) ADMINS.push(uid);
+      await this.loadPurchases();
       const isModNow=ad.exists, wasMod=!!(prof.data()||{}).moderator;
       if(isModNow!==wasMod){ try{ await db.collection('profiles').doc(uid).update({moderator:isModNow}); if(S.me) S.me.moderator=isModNow; }catch(e){ console.error(e); } }
       if(ad.exists) await this.loadReports();
+      { const before=S.skin; applySkin(S.skinWanted||S.skin); if(S.skin!==before) route(); }
       this._loaded=true; this._loading=false; if(location.hash.startsWith('#/moderation')) route();
       this._unsub.forEach(u=>u()); this._unsub=[];
       this._unsub.push(db.collection('notifications').doc(uid).collection('items').orderBy('at','desc').limit(40).onSnapshot(snap=>{
@@ -2486,6 +2601,7 @@ const DB = {
   async saveNotif(toId,n){ if(!this.live) return; try{ await this.db.collection('notifications').doc(this.toUid(toId)).collection('items').add({...n,from:this.toUid(n.from),at:Date.now(),read:false}); }catch(e){ console.error(e); } },
   async rate(id,v){ if(!this.live) return; try{ await this.db.collection('ratings').doc(`${this.uid()}_${id}`).set({by:this.uid(),target:id,value:v,at:Date.now()}); const F=firebase.firestore.FieldValue; if(v>0) await this.db.collection('profiles').doc(id).update({rejoue:F.increment(1)}); }catch(e){ console.error(e); } },
   async setPresence(on){ if(!this.live||!this.uid()||!S.me) return; try{ await this.db.collection('profiles').doc(this.uid()).update({online:on&&S.privacy.online,lastSeen:Date.now()}); }catch(e){} },
+  async loadPurchases(){ if(!this.live||!this.uid()) return; try{ const d=await this.db.collection('purchases').doc(this.uid()).get(); const x=d.exists?d.data():{}; S.owned={pack:!!x.pack,themes:Array.isArray(x.themes)?x.themes:[]}; save(); }catch(e){ console.error(e); } },
   async loadReports(){ if(!this.live) return; const db=this.db;
     try{ const rs=await db.collection('reports').orderBy('at','desc').limit(300).get();
       S.reports=[]; rs.forEach(d=>{ const r=d.data(); S.reports.push({rid:d.id,id:r.target,by:r.by,reason:r.reason,details:r.details,at:r.at,status:r.status}); });
@@ -2521,7 +2637,7 @@ if(AUTH_LIVE){
   S.reports=(S.reports||[]).filter(r=>!isDemo(r.id));
   S.joined=[]; save();
 }
-applySkin(S.skin||'defaut');
+applySkin(S.skinWanted||S.skin||'defaut');
 route();
 initAuth();
 demoScheduleIncoming();
