@@ -2360,7 +2360,15 @@ function viewContact(){
 /* ---- Modération (administrateurs) ---- */
 const isAdmin = () => !!S.auth && (ADMINS.includes(S.auth.email)||ADMINS.includes(S.auth.uid));
 function viewAdmin(){
-  if(!isAdmin()){ app.innerHTML=`<div class="wrap page"><div class="empty"><h3>Accès réservé à la modération</h3><a class="btn" href="#/accueil">Retour</a></div></div>`; return; }
+  if(!isAdmin()){
+    const uid=S.auth&&S.auth.uid, waiting=DB.live&&uid&&!DB._loaded;
+    const why=!S.auth?'Connecte-toi avec ton compte modérateur.'
+      :DB._noProfile?"Ton profil n'est pas encore enregistré : termine la création de ton profil, puis reviens ici."
+      :DB._err?`Erreur de chargement (${esc(DB._err)}).`
+      :"Aucun document admins/{ton UID} n'a été trouvé dans Firestore.";
+    app.innerHTML=waiting?`<div class="wrap page"><div class="empty"><h3>Vérification de tes droits…</h3></div></div>`
+      :`<div class="wrap page"><div class="empty"><h3>Accès réservé à la modération</h3><p class="muted">${why}</p>${uid?`<p class="muted">Ton UID : <code style="user-select:all;word-break:break-all">${esc(uid)}</code></p>`:''}<a class="btn" href="#/accueil">Retour</a></div></div>`;
+    return; }
   const groups={}; S.reports.forEach(r=>{ (groups[r.id]||(groups[r.id]=[])).push(r); });
   const rows=Object.entries(groups).sort((a,b)=>b[1].length-a[1].length);
   app.innerHTML=`<div class="wrap page"><div class="page-head"><div><h2>Modération</h2><p>${S.reports.filter(r=>r.status==='open').length} signalement(s) à traiter · ${S.hidden.length} profil(s) masqué(s) · ${S.banned.length} banni(s)</p></div></div>
@@ -2415,7 +2423,7 @@ const DB = {
       if(prof.exists){ S.me={...prof.data(),id:'me',dob:priv.exists?priv.data().dob:''}; S.profiles[uid]=S.me; }
       if(priv.exists&&priv.data().dob) S.dobs[uid]=priv.data().dob;
       if(prof.exists&&prof.data().banned){ toast('Ce compte a été suspendu.'); await signOut(); return; }
-      if(!prof.exists){ save(); return; }
+      if(!prof.exists){ this._loaded=true; this._noProfile=true; save(); if(location.hash.startsWith('#/moderation')) route(); return; }
       const g=S.me&&S.me.dob?ageGroup(S.me):'adult';
       const ps=await db.collection('profiles').where('ageGroup','==',g).where('hidden','==',false).limit(300).get();
       PLAYERS.length=0; ps.forEach(d=>{ if(d.id!==uid) PLAYERS.push({...d.data(),id:d.id,age:undefined}); });
@@ -2427,6 +2435,7 @@ const DB = {
       sq.forEach(d=>{ const s={...d.data(),id:d.id}; s.members=s.members.map(m=>this.fromUid(m)); s.owner=this.fromUid(s.owner); if(s.members.includes('me')&&s.owner!=='me') S.joined.push(s.id); (s.owner==='me'?S.squads:DEMO_SQUADS).push(s); });
       const ad=await db.collection('admins').doc(uid).get(); if(ad.exists&&!ADMINS.includes(uid)) ADMINS.push(uid);
       if(ad.exists) await this.loadReports();
+      this._loaded=true; if(location.hash.startsWith('#/moderation')) route();
       this._unsub.forEach(u=>u()); this._unsub=[];
       this._unsub.push(db.collection('notifications').doc(uid).collection('items').orderBy('at','desc').limit(40).onSnapshot(snap=>{
         snap.docChanges().forEach(ch=>{ if(ch.type==='added'){ const n=ch.doc.data(); if(!S.notifs.some(x=>x.id===ch.doc.id)){ S.notifs.unshift({...n,id:ch.doc.id,from:this.fromUid(n.from)}); } } });
@@ -2435,7 +2444,7 @@ const DB = {
         if(ch.type==='removed'){ S.requests=S.requests.filter(x=>x.id!==ch.doc.id); } else if(ex) ex.status=r.status; else S.requests.push({id:ch.doc.id,from:this.fromUid(r.from),to:'me',status:r.status,at:r.at}); }); save(); renderNotifBadge(); }));
       save(); this.setPresence(true); clearInterval(this._hb); this._hb=setInterval(()=>this.setPresence(true),60000);
       addEventListener('beforeunload',()=>this.setPresence(false));
-    }catch(e){ console.error(e); toast('Erreur de chargement des données'); }
+    }catch(e){ console.error(e); this._loaded=true; this._err=(e&&e.code)||String(e); toast('Erreur de chargement des données'); if(location.hash.startsWith('#/moderation')) route(); }
   },
   async saveProfile(me){ if(!this.live) return; const uid=this.uid(); const {dob,id,age,...pub}=me;
     try{ const ref=this.db.collection('profiles').doc(uid); const isNew=!(await ref.get().catch(()=>({exists:false}))).exists;
