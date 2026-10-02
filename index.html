@@ -3,7 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>OverMate · Trouve ton prochain mate</title>
+<title>Coopô · Trouve ton prochain mate</title>
+<meta name="description" content="Coopô réunit les gamers d'Afrique francophone : trouve des joueurs qui jouent aux mêmes jeux, aux mêmes heures et avec le même style que toi.">
+<meta property="og:title" content="Coopô · Trouve ton prochain mate">
+<meta property="og:description" content="Trouve des joueurs qui jouent aux mêmes jeux, aux mêmes heures et avec le même style que toi.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Coopô">
+
 <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAWl0lEQVR42uVbe3gU5bl/v28uu7P3Sy6EJGAAkxiuEgTF6EaFEALCqedZWm0VbXvwadWjttJqLyxLK63t0556a5/6HIu2lh6T1iOWSzDksgm3QCAFJIKQBEKum+xmd3Z2Zmd3Zr7zR2d9UgoaEJQe37/y7M7OzPf7fu/vvX0BuMbN5/Nh+Bwb+twvfuHChXMA4KqxAF+Di0Zer5cCAFJVVbU2I8P1DQDQPB4P/XkAgAAAqampUW+++WaX0+ncyLLGzqvpCvhaontpaWlGWdn8EgAAt9t9p9PppDVNKwAAkpWVRf7fAuDz+RAA4Ozs7N+bTI5cAACKopyyLAPG+J45c+ZkVldXa1fjfT9zADweD+33+7Vly5atcrvdSxFCpwAAwuFwK8/zqtPpzCooKPAjhIjX6/0nV/B6vdQn0YfPHIA0tc1m8zKr1Uo0TSsEALR79+6jqVRqG03TYLPZ1tx111031dTUqLpAfmg1NTVqIBBQ/mUBCAaDCABAVdUEIQSMRuMjuhiiaDS6luf5GMMwlMlk+s6FEqSlS5feV1VVtVFfC7pUwfxMACCEoPMZEIlEtsRiMeRyuVYsW7bMCwCkvr7+g5GRkZ8AAFgsloVFRUXWmpoadewiEUJ3Z2dnP1NRUfEMABCv14uveQAQQmQshX0+H66vr98ej8f3WCwWsNlsv5g5c6YTANDIyMhrsiwnaJo2JxKJD+nv9/s1r9dLbd++/d6BgYGfsSz7wwsBdM0BUF1dnblly5ZpY2nc0dGBAEATRfE/eZ6XzGZzfm5u7goAIIcOHRpQVTUsy/Kxs2fPRvTfEB08DQCgtrb2+6qqinl5eXfqwoivOQAIIZgQgqZPn31DQcHUSp/Ph8vLy3GaBR6Ph965c+fh0dHRX9M0rXEcNxMAYOXKlY5EIqHxPP/MGLAAALDH46F8Ph8NAArLsqNGo3H6WF25lgBAp06dYhBChDOYih129+1+v18rLy+n0nqgawGSJOkvmqZhhFAQAEAQhAJBEJ6qra3d7fP5sL7rGAC0QCCg+P1+BQBYAMghhJy71Be74vl1mtbTp09HXq+X6D6vFRYWygCljNNlf5BlmTmN+/ZdhxA6k2bH+vXrqerqanjzzTdNsVhMjEQifwQAVF9f/zcAaF+zZg0DAGo6XV6wYEFpZmbmYwAwBABFFEXRvb29ewEAAoGAdq2Vm0x7+7Gy/Ly8Z11uxy2qokFCTp4b7B/4wb7W3X954IEH4ukLFy6cv9JotOCGhob/9Xg8dFZWFtGFDQAAZs+e7TCZTHZBENy5ubmL7Xb7T41GI4yOjna/8847hQCg6OsinyYACADI/PmVtiVLbrlh6dLFVllOFU+cMDHDZDEXGg3GOzIynRMAAOIxWQMEyGAwIJoB4KPxmBCPB+Lx+LFolB8YHQ31jYwMdf/ud5tDu3Zt7QEAmDlzZl5WVtYKm812DwDMUBTFbDQaQ6Ojo6sVRbE4nc63WJZlw+Hwo3V1dS97vV5qLGifhgsQAIADB2r5W2+94ajD4TANDw+fJHFVGk3xE90OUh0ahkojZ/wqazAwqqoqGAM9ODhcn0wm30gk5A5ZVkai0REZIZKgaVretWurcOutt053uVzfomn6HoPB4NA0DWj6w1e2mM3mzVu2bMmdNGlS8YwZM+5mWXY1APymurpaQwh9ei5ACEHl5eXU/fffP4dl2ffTlG5paSkbHBxMeL3eNgCAo0c7PNddN3mb1WoynzrV+URh4bTnL3JL65IlS75rNpuf5DjOpKoqJJNJ1WazDW3cuDFD0zRm3bp1MDw8nFQUZZ/JZMKRSMQXj8d5h8NxvLa2Vv5URFBXcKwLj7Jhw4ah66+//u1QKHRQ07SJCKHb7Hb7PEIIffz4cTxjRkmgsbFlef7EPFdh0bS3dNFk29razPPmzYv6/X7N4/FUut3ul4xG41RFUSCRSKgYYwQAlNVqDebk5NgAgOU4DjDGBqfTWc6yLMiy/EJ9ff0sQgga7+5/IgYQQiiE0Id+1tXVNbmjo8OUm5v7xTlz5vj09Haz0+n8sn4tQQhphBAAgMyqquX3Ygw3q6o6M5FIfLexsXHHokWL1lksFp/JZEKEEEUUxShCiGMYxgQAkEgkUjNnziQAwHZ0dADDMAAAKZqmsSAIR+bOnXuT3+/XrnoYJIRghJDq8XiMmzdv/joA3BSPx9+nKCrA8/x2APABADAMs6SxsdGCEBJ0MSuYNGmSz2g0fslsNhvi8TiEQqGVjY2NO5ctW7bF7XbfLYoiDAwMnHC73cWpVGonxjjPZDKVybJMOI5jjh07BgAAHMcBIQQ0TUMIIQwAJ9Lp8XgF8HIAQDrFtM7Ozn/PzMz8ZTKZbA+Hw98rLCzsAADo6enZGIlE3k2lUq9hjG+3Wq1PV1dXb3j11VcfsFgsv6IoykwIgVgsFgmHw8ubmpr2VlVV7bTb7YtlWSbhcPi0IAjdbre7GCEUisfjtQ6H43aMcVLTNMxxHNI34e+ZHMYolUohQRBev+rlsL7zWjAY/PmUKVP+HIvFXs7IyPi3wsLCDkII9eKLL7pPnjzZ6nQ6l2RlZf0pIyPjG4cOHXrl+PHjRlmWT1EUJWCME6lUigwNDa1qamras2LFir0ZGRmLBUEQ+vv7D4uiGKJpOkdRFIIxrmhsbPxDOBx+x2AwsAghommakl68pmkqwzCUKIr7Ghsbd+mZonpVAEj7fDQafTYzM/Opnp6eJ3Jzc39GCGF8Ph9GCKnNzc2RxYsXbyGEoMbGRpoQQj388MM9fr+fb2pqCkiStNtoNBpjsdgTe/bsqauqqtpus9luliSJyLIsJBKJUZZlHQ6HYwrGWDObzUV33XXX6u3bt68cHR19jRCCDQYDjRACVVU1jDFKJBIJURS/AQDa5SYw41786dOnvzB16tS3QqHQOxkZGSsJIQxCSBmbdaVZMjY19vv9pKSkxFxUVHQumUzu2bZt2/KKiopfZWVlPS4IAi8IwgjG2CTL8qjb7S5iGAZrmkYQQkRRlDjP8w/u2rXrLY/HM4/juDKj0fg9g8HgTqVSeGRk5IvNzc3Vl+r742aAHuq0l156yZKdnf1rVVWTBw8e/A4hBOmFCTmv1v+HnWhqasIAQPLy8u5VFMU0Ojp67+LFiyvcbvfjiqIooVCoMxqNnmAYxup2uwtpmsaqqpK0WSwWq8Fg+AkAMIFAoE2SJGQwGNwAgCORyNebm5urPR4PfTmLH68LUAghUlFRsdJisUyIRCLvLl269CQA4FWrVn3sQ8vLyzUAAIPB8E1Zljfu3bs3ZjAYfo0xBkEQFE3TbA6HYzbHcWaapil951WWZTFCiBoeHv7Vtm3bZpaVlc1avnx5ID8//5eSJAX7+/uXNzQ0vOrxeOhP0hNE46V/KBT6s8vluqe7u3t1QUHBGzowyjjuT8rKyjLtdvuuwcHBeU6nc21WVtaz0Wg0PDo6esZut9/gcDi4VCoFhBCNoijMMAzE4/H9wWDwO+fOneucNWvWUyaT6Um96Nna1dX1SEdHR88nXfx4wiDS4z1tNBpn643KwwghUl1dTcYJMFEUpSASibxgsVjMdrv9B6qqquFw+H2KoliLxWJUVZUghIBlWSxJUl8oFHqO5/m27Ozs+3Jych41mUzA8/x74XD4x/X19W+m2+E1NTWfaPEfCwAhBBBC8MgjjzgpispNJpNiR0fHkP4C41Fdond8O/fv39+2aFHFD00mExeNRkWDwTDB4XBMJoQgQoim7/rBkZGRzU6nc67b7X6BZVmIxWLvDw4OPl9XV/cHABDXrFnDHDp0CK7E4j/WBfSkh8RisSyLxXJOUZTRgwcPFixcuFBKfzdeFpSUlFimTJlywmw258ZiMZHjOBNN06AoCkEIIUmSgoqinHE6nfMZhoFoNLpHEIRfNDQ07ACAxIVurLNAG2/tf9mZYGtrK7rtttsQANCHDx+mLnHyQwUCATU/f+LdDocjNxQKnYlEIufMZvNCQgjGGCNVVQnLshkOhyNLEIQjwWBwfUNDw5b0wm655ZbJTqfzNk3TJqh/DxFnBwcH99TU1AyNEXPtqgGwc+dOceHChTxN087c3FwnAAjr168fV9dF7/URluVW0DRNRFEctVqtkzHGlO77GsuyWFVVNDIysm7nzp0/BYAUAEBxcXHO5MmTn6Eo6l6WZTNYlgWWZSGZTALHccH8/PzN3d3dPz5x4kRIzze0KwoAQojoVI+tW7fuFMdxNxcUFEwEgHPTp08fTxKF9PjMYoxvkiQJYYyzbDZbrqqqoDc4sKqqciQSub+urq5GH31RfX1907Kzs2vNZvN1PM8nJEmK0jRtlySJTyaTSNM0o8vleoKm6aVms3mZ3+/vvBwmjCsPAACQJOlvAEBcLtcM3f/QeDVm3rx5eTRNT47H4xLDMJRexmoURZFkMikODAwsq6urq1mzZg1TUlJCDhw4wLhcrmqKoq7TGyFGo9FolGU5FI/HzQzDWE0mkzkejyeMRmPRpEmTdtx0001un893yfXNx17c1NQEAADRaLQRAJDZbC4bq/AfZWmQzGbzRIZhaEKIxLKsSdM0wBgThBAOhUJrdu/eXT9v3ryikydPEr/frxUXF3/JarXOkiQpIYricCgUempgYOCGtra24mQyeXcqlWqhKIpCCDHJZFK02+3XO53O5/RyGF1RDSgvL1cBANrb2xsnT54sm0ympU8++SSHMR53JKBp2pH+k2EYk6qqGsMwFM/zDS0tLX9ctGjRfQBw565du/4DAICiqEU0TROGYfjOzs7yY8eOnUzfa2BgYAcA1C5duvR/nE7nKlmWDcFgcIhl2a8sWLDguZqamlOX4gofywBdB6hVq1YNx2KxrUajMfuhhx66U9M01NTUNN6IQGGMQW9cYIQQiKKohsPhp6ZNm2YwmUwvGwwGPs0qjLEVAFA8Hv/FsWPHTlZWVhrS09/S0lIGAMjg4OCTkiRFGYahZFnmk8kkcjqdq/TIc3VGYz09PS8DAOTl5T2CECLl5eXjir+qqgqapqUbKipFUTiZTB7Yt29f+5QpU77sdDodhBAtrRmapvWnUiktGo02AwC2Wq2KvqPk0KFDKa/XS7W3t/critIcjUaTHMflOJ1Ohqbp+WMnzlcMAISQSgjBN954YyAajR6yWq1L6urqZgKAVl1dfVEW1NTUEF1Ae0RRTFEUZdaZAKqqNgEAYln2wVQqBRjjuWkGCILwe4QQdrvduQCgnT/rCwaDyOfzYU3T+miaRgCgUBSFWJbN0Qew2tVgAAIArbOz8wc0TeM5c+Z8Tz+28rGpcGtra7eiKJ0sy4LeHAWKok7ofcMbQqFQCGM8f/78+Xk+nw83Nzfvi0ajLwHAYx6Ph05XlGNzC7/fryGEMliWZURR5BVFgVQqdckZ4bgB0FlAlZaW1oZCoVq32/2l1tbWeRhj9SNYQPS4rqiq2kpRFMEYE53mUQCgNU0zxuPxk6qqUpmZmev9fr9WWVlp2L59+2OiKL4hiuIiPcHB6fS3pKSE3HjjjRMNBkMFQohwHGfneV6QZbkPAGDVqlVXbTxOCCHowIEDjyqKkiouLv4NIQR0Flww/KTpqyjKX5Fu+o3MAJBKJpMRlmWnIIQUq9X6tSVLlny9trZW9vl8dCAQ+O+BgYFAup7weDx0SUkJ8fv9Wk5Ozk9YlrWxLItUVU0hhBgAOHJVx+N6twdXVVV19vb2fttms807c+bM2jQ7LvSbQCCgAgAaHh6ulSTpLEVRtKqqAAD5AIAwxkMOh8NuMBhYRVEUjuN+u3jx4kf0sTf09vZK6YmwPg4nd9xxxzMMwzwQDAa7FUVRTCaTw2q1GhKJRMOliuAlzwXSi0UIvRgOh5dMnjz5Zy0tLe8ihI5UV1dTF+gSEb1qi2dmZm5gGOZVPb++EwCeA4CA2WwuFUUxpWkajRACt9v90sqVK7+STCbfiMfjDf39/X1ms9k1ceLERRzHfZNhmBsVRQFFUU6HQqHhnJyc+YIgHGlubt6v5ybjbo9RcHmGmpqa0GuvvbZ9+vTp906cONE7Ojr6u7Vr16YAAAUCgX/YgY6ODuLz+fCmTZva8/LybjGZTNMQQnm5ubmbCSGHEEKPqqqqxuPxPkmShhRFYTmOm2q326s0Tfua3W5/0O12r7VarfeIopiRSCT4VColxWKxM6lUiuI4brIgCGu6urre7+jooDo6OsilKPtlWXq3W1paZi9YsOBwPB7f6nQ6VxJCaABQL5AhYkIImTt3bk5+fn6ry+XKGx4e/tO2bdvuW7RokS87O3v9yMhILyFEs9lseTRNI57nR6PR6FmXyzWToiiaECKnUikpHo8PKIoiGQwG1m63z+B5/vn6+vonLqcz/Immw+l+4blz58rz8vIag8Hg89nZ2U9cqF0+poGhejyeednZ2duMRmPWmTNnVjQ3N/+1oqLitaysrNXRaFQWBCFkt9sdAID1itEoimKMEJIwm82IpmkHQojmOA6Ghob+tGPHjvsutznyic4I6XpA5+fnN50+ffoLWVlZj4ui+F2EUIoQQo09D6gnRqrX66UCgUDb2bNny2Ox2F6Hw/HO7bfffse77777YDgc/pHZbKYtFssEnucjCCEaY8wMDw8foSiKlSTpaG9vb4uqqjQhRBkaGvrxjh077htzduiS84ArdT6ARggpkiTdZTQad4XD4Y1ut/v7hBAMAOR8dxhDVbqysnIdTdPfBID/2rp167Mej6c4IyNjvaqqiwHApZfOQAiBVCoFmqaNqqq6PRaL/bKlpeXwmHH4ZbXFrtgZoTQIfX19t7pcrrpkMvkHu93+MEII3nzzzX+KDj6fD2/YsEEjhIDH4ym22WxrZVnGkUjktwcOHNhfWFiYkZWVNd1isRQxDGNVFCWeSqW6Dxw4cJDn+fB5QF4bpgsgvPfee5OSyeT7giA0rF692jj2u/M3YOzh57Kyssz58+ffXFpamnOxZ+zfv9+2adMfi9P3PN/NrgUQKL0kpQVB+HMsFus8ceLErPR3F/kvMHz+KXCfz4d9Pl/68/QijX3nBvaGw9Hojh07cuBaNX1Amk6FvxWNRgf7+vqeGMuUi+zc+ae9sc/nw+2N7Y7jx08uGhwcbiGEEFUhhI8KnV1dZ+5vbW2doJ8WRZ+pBlxkqIoRQurRo0eLc3NzXwEAORKJfGvq1KnHxrBFGyuSjz32WGZpaekNU6Zcn2swGCc57Y4Cm916W/aEzBIAADGeVDSNYIvVgAEAhofDQ/G49O7IyFA3xvjUkSNHw8HgwHtPP/30ufEII/o0dCE9Q+zt7X2I47iHZVkO8Dz/8+Li4pELAIEIIfDKK6/Qa9asIU1NTUaWtbknTcq5yWaxrLXarPNVlYAoikEhHvvRwEDfLkWx9UtSX9JqtapdXV2a1+vVxjm0+XTM5/NhPSTCpk2bjMFg8PH+/v63Ozs7v93W1pZz/rUX25jKykrDyHBkrxhP8E1NTdfDv5qNrRh37txp7urquv+DDz544ciRI08ePnx49sUqSn1+aAAA6Ozs/mpPT98mAIDubmL8KMA+Uw34qGemT5mlP2hra5ubSqVmSZJEeJ7vOXPmTGd7e3vw9ddfl9N+nE6q2traFtK0ofDtt//y+vr16y+p8rtWAPgHIDDGavrQU3V1NaUoSvbAwIDp4MGDsaKiouEx4y4EAMTn8zk4jrM8/fTTvZcwoL22zefz4Y9qrn6ujBCCPsav0ZXM/v4PhEa8y+k79PMAAAAASUVORK5CYII=">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -55,6 +61,7 @@ p{ margin:0; }
 body.is-home .top{ display:none; }
 .logo{ width:54px; height:54px; border-radius:50%; background:var(--pk); transition:background .4s; display:grid; place-items:center; flex:none; text-decoration:none; overflow:hidden; }
 .logo img{ width:42px; height:42px; display:block; transition:transform .5s cubic-bezier(.3,1.6,.5,1); animation:spinIn 1s cubic-bezier(.3,1.6,.5,1) both; }
+.brand-o{ color:var(--pk2,var(--pk)); font-weight:inherit; }
 .mod-badge{ display:inline-block; width:1em; height:1em; margin-left:.28em; vertical-align:-.14em; flex:none; overflow:visible; }
 .mod-badge .mb-seal{ fill:var(--pk); stroke:var(--pk); stroke-width:1.5; stroke-linejoin:round; }
 .mod-badge .mb-check{ fill:none; stroke:var(--on-pk,#fff); stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
@@ -677,7 +684,7 @@ html[data-skin="defaut"] .home-grid{ padding-top:40px; }
 @media (max-width:1100px){ .navpill a{ padding:6px 11px; font-size:14px; } }
 @media (max-width:860px){ .admin-stats{ grid-template-columns:1fr 1fr; } .foot{ padding-bottom:0; } }
 
-/* --- Vitrine d'accueil (thème OverMate) --- */
+/* --- Vitrine d'accueil (thème Coopô) --- */
 @property --b1{ syntax:'<color>'; inherits:true; initial-value:#6A48F0; }
 @property --b2{ syntax:'<color>'; inherits:true; initial-value:#2A1C86; }
 .showcase{ position:relative; overflow:hidden; margin:-14px -14px 0; padding:16px 26px 26px; border-radius:var(--rf) var(--rf) 0 0; color:#fff; min-height:640px; display:flex; flex-direction:column;
@@ -943,14 +950,14 @@ html[data-skin="esth"] .mcard:hover::before{ opacity:1; }
 <div class="frame">
 <div class="orbs" aria-hidden="true"></div>
 <header class="top">
-  <a class="logo" href="#/accueil" aria-label="OverMate, accueil"></a>
+  <a class="logo" href="#/accueil" aria-label="Coopô, accueil"></a>
   <nav class="navpill" aria-label="Navigation principale"></nav>
   <div class="top-right"></div>
   <button class="notif-btn" type="button" aria-label="Notifications" title="Notifications"></button>
   <button class="skin-btn" type="button" aria-label="Changer de thème" title="Changer de thème"></button>
 </header>
 <main id="app" tabindex="-1"></main>
-<footer class="foot"><a href="#/aide">Aide</a><a href="#/cgu">CGU</a><a href="#/confidentialite">Confidentialité</a><a href="#/cookies">Cookies</a><a href="#/remboursement">Remboursement</a><a href="#/contact">Nous écrire</a><span>© 2026 OverMate</span></footer>
+<footer class="foot"><a href="#/aide">Aide</a><a href="#/cgu">CGU</a><a href="#/confidentialite">Confidentialité</a><a href="#/cookies">Cookies</a><a href="#/remboursement">Remboursement</a><a href="#/contact">Nous écrire</a><span>© 2026 Coopô</span></footer>
 </div>
 <nav class="tabbar" aria-label="Navigation" id="tabbar"></nav>
 <dialog id="dlg"></dialog>
@@ -1129,7 +1136,7 @@ const LOGO_MASK='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3
 document.documentElement.style.setProperty('--logo',`url("${LOGO_MASK}")`);
 const LOGO='<i class="logo-mark" aria-hidden="true"></i>';
 // Badge de certification des modérateurs
-const MOD_SVG='<svg class="mod-badge" viewBox="0 0 24 24" role="img" aria-label="Modérateur certifié OverMate"><title>Modérateur certifié OverMate</title><path class="mb-seal" d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path class="mb-check" d="m9 12 2 2 4-4"/></svg>';
+const MOD_SVG='<svg class="mod-badge" viewBox="0 0 24 24" role="img" aria-label="Modérateur certifié Coopô"><title>Modérateur certifié Coopô</title><path class="mb-seal" d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path class="mb-check" d="m9 12 2 2 4-4"/></svg>';
 const isMod = p => !!p && (p.moderator===true || ((p.id==='me' || (S.auth && p.id===S.auth.uid)) && isAdmin()));
 const modBadge = p => isMod(p) ? MOD_SVG : '';
 // Favicon aux couleurs du thème actif
@@ -1151,7 +1158,7 @@ function renderNav(active){
   document.querySelectorAll('.skin-btn').forEach(b=>b.innerHTML=PALETTE_ICON);
   renderNotifBadge();
   const online=visible().filter(p=>p.online).length;
-  const liveTxt = online ? `${online} joueur${online>1?'s':''} en ligne` : (S.auth ? 'Bienvenue sur OverMate' : 'Nouveau : rejoins les premiers');
+  const liveTxt = online ? `${online} joueur${online>1?'s':''} en ligne` : (S.auth ? 'Bienvenue sur Coopô' : 'Nouveau : rejoins les premiers');
   document.querySelectorAll('.top-right').forEach(t=>t.innerHTML=`<span class="live">${liveTxt}</span><small>${S.auth?'connecté : '+esc(S.me?.name||S.auth.name):S.me?'profil : '+esc(S.me.name):'<a href="#/connexion">se connecter</a>'}</small>`);
   document.getElementById('tabbar').innerHTML = NAV.filter(([r])=>TAB.includes(r)).map(([r,l])=>`<a href="#/${r}" ${cur(r)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[r]}</svg>${TAB_LBL[r]||l}</a>`).join('');
 }
@@ -1229,9 +1236,9 @@ function viewHome(){
       <div class="float-match" aria-label="Exemple : 83 % de compatibilité">
         <div class="duo">${avatar({name:'Toi',avatar:{hue:330}},48)}${avatar({name:'Mate',avatar:{hue:200}},48)}</div>
         ${ring(83)}<span class="lbl">toi × ton futur mate</span></div>
-      <div class="hero-title"><small>matchmaking entre joueurs</small><strong>${'OverMate'.split('').map((c,i)=>`<span class="w" style="--d:${i}">${c}</span>`).join('')}</strong></div>
+      <div class="hero-title"><small>matchmaking entre joueurs</small><strong>${'Coopô'.split('').map((c,i)=>`<span class="w${c==='ô'?' brand-o':''}" style="--d:${i}">${c}</span>`).join('')}</strong></div>
     </div>
-    <div class="tab tl"><a class="logo" href="#/accueil" aria-label="OverMate, accueil"></a><nav class="navpill" aria-label="Navigation principale"></nav><button class="notif-btn" type="button" aria-label="Notifications"></button>${skinBtn()}</div>
+    <div class="tab tl"><a class="logo" href="#/accueil" aria-label="Coopô, accueil"></a><nav class="navpill" aria-label="Navigation principale"></nav><button class="notif-btn" type="button" aria-label="Notifications"></button>${skinBtn()}</div>
     <div class="tab tr"><div class="top-right"></div></div>
     <div class="tab bl">
       <h2>trouve ton prochain <span class="hl">mate</span></h2>
@@ -1253,7 +1260,7 @@ function viewHome(){
     </section>
     <section class="reveal" style="--d:1">
       <h2>${S.me?'tes meilleurs matchs':featured.length?'en ligne maintenant':'les premiers arrivent'}</h2>
-      ${featured.length?'':`<div class="empty"><p class="muted">${S.me?'Pas encore de joueur compatible inscrit : OverMate vient d\'ouvrir. Invite tes amis, chaque nouvel inscrit peut devenir ton mate.':'Les profils des joueurs sont visibles une fois connecté. Crée ton compte pour découvrir les joueurs qui te correspondent.'}</p>${S.me?'':'<a class="btn btn-ac" href="#/inscription">Créer mon compte</a>'}</div>`}
+      ${featured.length?'':`<div class="empty"><p class="muted">${S.me?'Pas encore de joueur compatible inscrit : Coopô vient d\'ouvrir. Invite tes amis, chaque nouvel inscrit peut devenir ton mate.':'Les profils des joueurs sont visibles une fois connecté. Crée ton compte pour découvrir les joueurs qui te correspondent.'}</p>${S.me?'':'<a class="btn btn-ac" href="#/inscription">Créer mon compte</a>'}</div>`}
       <div class="rows">${featured.map(({p,c})=>`<a class="row" href="#/joueur/${p.id}">${avatar(p,64)}
         <div><b>${esc(p.name)}${modBadge(p)}</b><p>${esc(p.games.slice(0,3).join(', '))}</p></div>
         ${c?ring(c.pct,'ring-sm'):'<span class="online">En ligne</span>'}</a>`).join('')}</div>
@@ -1367,7 +1374,7 @@ function initDob(){
     if(D.value && M.value && Y.value){
       draft.dob=`${Y.value}-${M.value.padStart(2,'0')}-${D.value.padStart(2,'0')}`;
       const a=ageFrom(draft.dob);
-      if(a<CONFIG.minAge){ st.className='dob-status bad'; st.innerHTML=`<b>${a} ans</b><span>Il faut avoir au moins ${CONFIG.minAge} ans pour utiliser OverMate.</span>`; }
+      if(a<CONFIG.minAge){ st.className='dob-status bad'; st.innerHTML=`<b>${a} ans</b><span>Il faut avoir au moins ${CONFIG.minAge} ans pour utiliser Coopô.</span>`; }
       else{ const minor=a<CONFIG.adultAge; st.className='dob-status ok';
         st.innerHTML=`<b>${a} ans</b><span>${!CONFIG.separateMinors?'Parfait, tu peux trouver ton mate.':minor?`Tu verras les joueurs de ${CONFIG.minAge} à ${CONFIG.adultAge-1} ans.`:`Tu verras les joueurs de ${CONFIG.adultAge} ans et plus.`}</span>`; }
       if(animate){ st.classList.remove('pop'); void st.offsetWidth; st.classList.add('pop'); }
@@ -1419,7 +1426,7 @@ function submitProfile(e){
     else if(pw!==pw2) errs.push('Les deux mots de passe ne sont pas identiques.'); }
   const age=ageFrom(draft.dob);
   if(age===null) errs.push('Indique ta date de naissance.');
-  else if(age<CONFIG.minAge) errs.push(`Tu dois avoir au moins ${CONFIG.minAge} ans pour utiliser OverMate.`);
+  else if(age<CONFIG.minAge) errs.push(`Tu dois avoir au moins ${CONFIG.minAge} ans pour utiliser Coopô.`);
   else if(age>100) errs.push('Vérifie ta date de naissance.');
   if(!draft.games.length) errs.push('Sélectionne au moins un jeu.');
   if(!draft.hours.length) errs.push('Indique au moins un horaire de jeu.');
@@ -1453,12 +1460,12 @@ function viewMatches(){
       <div class="chips"><button type="button" class="chip" data-sort="compat" aria-pressed="${S.sort!=='online'}">Compatibilité</button><button type="button" class="chip" data-sort="online" aria-pressed="${S.sort==='online'}">En ligne d'abord</button><a class="btn btn-ghost btn-sm" href="#/recherche">Filtrer</a></div></div>
     ${onlineNow.length?`<h3 style="margin-bottom:10px"><span class="online"></span> En ligne maintenant</h3><div class="online-strip">${onlineNow.slice(0,10).map(({p,c})=>`<a class="online-card" href="#/joueur/${p.id}">${avatar(p,56)}<b>${esc(p.name)}${modBadge(p)}</b><span style="color:${tier(c.pct)}">${c.pct} %</span></a>`).join('')}</div>`:''}
     ${mates.length?`<h3 style="margin-bottom:10px">Mes mates</h3><div class="mates-strip">${mates.map(p=>`<a class="mate-pill" href="#/joueur/${p.id}">${avatar(p,28)}${esc(p.name)}${modBadge(p)}</a>`).join('')}</div>`:''}
-    ${r.length?'':`<div class="empty"><h3>OverMate vient d'ouvrir</h3><p class="muted">Les premiers joueurs arrivent. Partage le site à tes amis : dès qu'un joueur compatible s'inscrit, il apparaît ici.</p><button class="btn btn-ac" type="button" id="share-site">Partager OverMate</button></div>`}
+    ${r.length?'':`<div class="empty"><h3>Coopô vient d'ouvrir</h3><p class="muted">Les premiers joueurs arrivent. Partage le site à tes amis : dès qu'un joueur compatible s'inscrit, il apparaît ici.</p><button class="btn btn-ac" type="button" id="share-site">Partager Coopô</button></div>`}
     <div class="grid">${r.slice(0,shown).map((m,i)=>matchCard(m,i===0,i)).join('')}</div>
     ${r.length>shown?'<div style="text-align:center;margin-top:24px"><button class="btn" id="more">Voir plus de joueurs</button></div>':''}
   </div>`;
   document.getElementById('more')?.addEventListener('click',()=>{ shown+=9; viewMatches(); animateAfterRender(); });
-  document.getElementById('share-site')?.addEventListener('click',async()=>{ const url=location.origin+location.pathname, data={title:'OverMate',text:'Viens trouver ton mate de jeu sur OverMate',url};
+  document.getElementById('share-site')?.addEventListener('click',async()=>{ const url=location.origin+location.pathname, data={title:'Coopô',text:'Viens trouver ton mate de jeu sur Coopô',url};
     try{ if(navigator.share) await navigator.share(data); else { await navigator.clipboard.writeText(url); toast('Lien copié'); } }catch(e){} });
   app.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{ S.sort=b.dataset.sort; save(); viewMatches(); animateAfterRender(); });
   onboarding();
@@ -1846,7 +1853,7 @@ document.addEventListener('pointerdown',e=>{
 });
 let fxW=innerWidth; addEventListener('resize',()=>{ if((innerWidth<700)!==(fxW<700)){ fxW=innerWidth; buildFx(); } });
 
-/* ---- Accueil « vitrine » du thème OverMate : objets gaming qui défilent ---- */
+/* ---- Accueil « vitrine » du thème Coopô : objets gaming qui défilent ---- */
 const OBJ = {
   manette: () => `<svg viewBox="0 0 400 300" aria-hidden="true"><defs><linearGradient id="og1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#343A5E"/><stop offset="1" stop-color="#12142A"/></linearGradient></defs>
     <path d="M118 84h164a62 62 0 0 1 60 78l-15 58a33 33 0 0 1-57 12l-26-34H156l-26 34a33 33 0 0 1-57-12L58 162a62 62 0 0 1 60-78z" fill="url(#og1)" stroke="#4A5080" stroke-width="3"/>
@@ -1891,7 +1898,7 @@ let scI=0, scTimer=null;
 function showcaseHTML(){
   const online=visible().filter(p=>p.online).length, s=SHOW[0], n=SHOW[1];
   return `<section class="showcase" id="showcase" style="--b1:${s.b1};--b2:${s.b2}">
-    <div class="sc-top"><a class="logo" href="#/accueil" aria-label="OverMate, accueil"></a><span class="sc-brand">OverMate</span><nav class="navpill" aria-label="Navigation principale"></nav>
+    <div class="sc-top"><a class="logo" href="#/accueil" aria-label="Coopô, accueil"></a><span class="sc-brand">Coop<b class="brand-o">ô</b></span><nav class="navpill" aria-label="Navigation principale"></nav>
       <div class="sc-right"><button class="notif-btn" type="button" aria-label="Notifications"></button>${skinBtn()}</div></div>
     <div class="sc-body">
       <div class="sc-text">
@@ -1986,7 +1993,7 @@ function mintSVG(){
 }
 
 const SKINS = {
-  defaut:{label:'OverMate',   desc:'Le thème officiel : nuit, violet et citron',     sw:['#07070F','#171A2E','#7C5CFF'], art:shapesSVG},
+  defaut:{label:'Coopô',   desc:'Le thème officiel : nuit, violet et citron',     sw:['#07070F','#171A2E','#7C5CFF'], art:shapesSVG},
   samurai:{label:'Samouraï',  desc:'Rouge, crème et vagues japonaises', sw:['#C41E3A','#F4ECE1','#17110F'], art:samuraiSVG},
   soft:  {label:'Soft',       desc:'Rose pastel et fleurs',            sw:['#E9779E','#FFFFFF','#D9478A'], art:()=>bloomSVG()},
   lofi:  {label:'Lo-fi',      desc:'Ville de nuit, tons chauds',       sw:['#16112A','#2E2649','#FFB37C'], art:lofiSVG},
@@ -2282,7 +2289,7 @@ async function doSignup(){
   if(!MAIL_RE.test(mail)) e.mail='Entre une adresse e-mail valide.';
   if(pw.length<CONFIG.minPassword||!/[a-zA-Z]/.test(pw)||!/\d/.test(pw)) e.pw=`Au moins ${CONFIG.minPassword} caractères, avec une lettre et un chiffre.`;
   if(age===null) e.dob='Indique ta date de naissance.';
-  else if(age<CONFIG.minAge) e.dob=`Tu dois avoir au moins ${CONFIG.minAge} ans pour utiliser OverMate.`;
+  else if(age<CONFIG.minAge) e.dob=`Tu dois avoir au moins ${CONFIG.minAge} ans pour utiliser Coopô.`;
   if(showErrs(e)) return;
   busy(true);
   try{
@@ -2471,7 +2478,7 @@ function rate(id,v){ S.ratings[id]=v; save(); DB.rate(id,v); toast(v>0?'Merci ! 
 function shareLink(name){ return location.href.split('#')[0]+'#/@'+encodeURIComponent(name); }
 async function shareProfile(){
   const url=shareLink(S.me.name);
-  if(navigator.share){ try{ await navigator.share({title:'Mon profil OverMate',text:`Deviens mon mate sur OverMate : ${S.me.name}`,url}); return; }catch(e){} }
+  if(navigator.share){ try{ await navigator.share({title:'Mon profil Coopô',text:`Deviens mon mate sur Coopô : ${S.me.name}`,url}); return; }catch(e){} }
   try{ await navigator.clipboard.writeText(url); toast('Lien de ton profil copié'); }
   catch(e){ modal(`<h3>Ton lien</h3><input type="text" readonly value="${esc(url)}" onfocus="this.select()"><div class="dlg-actions"><button class="btn" data-close>Fermer</button></div>`); }
 }
@@ -2497,12 +2504,12 @@ function viewLegal(kind){
   const cgu=kind==='cgu';
   app.innerHTML=`<div class="wrap page legal"><div class="page-head"><div><h2>${cgu?"Conditions générales d'utilisation":'Politique de confidentialité'}</h2><p>Dernière mise à jour : octobre 2026</p></div></div>
     ${cgu?`
-    <h3>1. Objet</h3><p>OverMate est un service de mise en relation entre joueurs de jeux vidéo, édité depuis la Côte d'Ivoire par Konate Tidiane. En créant un compte, tu acceptes les présentes conditions.</p>
+    <h3>1. Objet</h3><p>Coopô est un service de mise en relation entre joueurs de jeux vidéo, édité depuis la Côte d'Ivoire par Konate Tidiane. En créant un compte, tu acceptes les présentes conditions.</p>
     <h3>2. Âge minimum</h3><p>Le service est réservé aux personnes âgées d'au moins ${CONFIG.minAge} ans. Les utilisateurs de ${CONFIG.minAge} à ${CONFIG.adultAge-1} ans ne sont mis en relation qu'avec des utilisateurs de la même tranche d'âge. Toute fausse déclaration d'âge entraîne la suppression du compte.</p>
     <h3>3. Compte</h3><p>Tu es responsable de la confidentialité de ton mot de passe et de l'usage de ton compte. Un seul compte par personne. Le pseudo ne doit pas usurper l'identité d'un tiers.</p>
     <h3>4. Comportement</h3><p>Sont interdits : le harcèlement, les propos haineux ou discriminatoires, les contenus sexuels, les arnaques, la collecte de données d'autres utilisateurs et toute sollicitation d'un mineur par un adulte. L'éditeur peut masquer, suspendre ou supprimer un compte sans préavis en cas de manquement.</p>
     <h3>5. Modération et signalements</h3><p>Chaque utilisateur peut signaler ou bloquer un autre utilisateur. Les signalements sont examinés par l'équipe de modération. Un profil que tu signales disparaît aussitôt de ton côté ; l'équipe de modération décide ensuite de le masquer ou de bannir le compte pour tout le monde.</p>
-    <h3>6. Responsabilité</h3><p>OverMate facilite la mise en relation mais n'organise pas les parties et n'est pas partie aux échanges entre utilisateurs. Reste prudent : ne partage jamais d'informations personnelles sensibles (adresse, école, numéro de téléphone) avec un inconnu.</p>
+    <h3>6. Responsabilité</h3><p>Coopô facilite la mise en relation mais n'organise pas les parties et n'est pas partie aux échanges entre utilisateurs. Reste prudent : ne partage jamais d'informations personnelles sensibles (adresse, école, numéro de téléphone) avec un inconnu.</p>
     <h3>7. Suppression du compte</h3><p>Tu peux supprimer ton compte à tout moment depuis les paramètres. Ton profil, tes données privées, tes demandes de mate, tes blocages et tes notifications sont alors effacés, sauf obligation légale de conservation.</p>
     <h3>8. Thèmes payants</h3><p>Certains thèmes visuels sont payants, à l'unité ou en pack. Le paiement est traité par CinetPay (Mobile Money ou carte bancaire). Un thème acheté reste lié à ton compte tant qu'il existe. Les thèmes sont purement esthétiques et ne donnent aucun avantage pour la mise en relation. Les achats des utilisateurs de moins de 18 ans nécessitent l'accord d'un parent ou tuteur. Les conditions de remboursement sont détaillées dans la <a href="#/remboursement">politique de remboursement</a>.</p>
     <h3>9. Modifications</h3><p>Les présentes conditions peuvent évoluer ; tu seras informé des changements importants.</p>`
@@ -2513,7 +2520,7 @@ function viewLegal(kind){
     <h3>4. Hébergement</h3><p>Les données sont stockées sur Firebase, un service de Google Cloud. Elles sont protégées par des règles d'accès : ton e-mail et ta date de naissance ne sont lisibles que par toi et par la modération.</p>
     <h3>5. Conservation</h3><p>Les données sont conservées tant que le compte existe, puis supprimées. Les signalements peuvent être conservés anonymisés pour la sécurité du service.</p>
     <h3>6. Tes droits</h3><p>Tu peux consulter, modifier et supprimer tes données depuis ton compte, ou en nous écrivant via le formulaire <a href="#/contact">Nous écrire</a>. Les utilisateurs mineurs peuvent exercer ces droits avec un parent ou tuteur. En Côte d'Ivoire, tu peux aussi saisir l'ARTCI, l'autorité chargée de la protection des données personnelles.</p>
-    <h3>7. Paiements</h3><p>Les paiements sont traités par CinetPay. OverMate ne reçoit ni ton numéro de carte ni ton code Mobile Money ; nous conservons uniquement la référence de la transaction, l'article acheté, le montant et son statut.</p>
+    <h3>7. Paiements</h3><p>Les paiements sont traités par CinetPay. Coopô ne reçoit ni ton numéro de carte ni ton code Mobile Money ; nous conservons uniquement la référence de la transaction, l'article acheté, le montant et son statut.</p>
     <h3>8. Cookies</h3><p>Le site utilise uniquement le stockage nécessaire au fonctionnement (session, thème choisi). Pas de cookies publicitaires ni de mesure d'audience. Le détail est dans la <a href="#/cookies">politique de cookies</a>.</p>`}
     </div>`;
 }
@@ -2521,9 +2528,9 @@ function viewLegal(kind){
 /* ---- Politique de cookies ---- */
 function viewCookies(){
   app.innerHTML=`<div class="wrap page legal"><div class="page-head"><div><h2>Politique de cookies</h2><p>Dernière mise à jour : octobre 2026</p></div></div>
-    <h3>En bref</h3><p>OverMate n'utilise <b>aucun cookie publicitaire ni outil de mesure d'audience</b>. Nous utilisons seulement ce qui est indispensable au fonctionnement du site. C'est pourquoi aucun bandeau de consentement ne s'affiche : ce type de stockage n'en nécessite pas.</p>
+    <h3>En bref</h3><p>Coopô n'utilise <b>aucun cookie publicitaire ni outil de mesure d'audience</b>. Nous utilisons seulement ce qui est indispensable au fonctionnement du site. C'est pourquoi aucun bandeau de consentement ne s'affiche : ce type de stockage n'en nécessite pas.</p>
     <h3>Ce que le site enregistre dans ton navigateur</h3>
-    <p><b>Stockage local du site</b> : ta session, le thème choisi, ta devise, tes préférences d'affichage et un brouillon de ton profil. Ces données restent sur ton appareil et servent uniquement au fonctionnement d'OverMate.</p>
+    <p><b>Stockage local du site</b> : ta session, le thème choisi, ta devise, tes préférences d'affichage et un brouillon de ton profil. Ces données restent sur ton appareil et servent uniquement au fonctionnement de Coopô.</p>
     <p><b>Firebase Authentication (Google)</b> : garde ta connexion ouverte entre deux visites.</p>
     <p><b>Connexion avec Google</b> : si tu choisis ce mode de connexion, Google dépose ses propres cookies pendant l'identification, selon sa politique de confidentialité.</p>
     <p><b>Polices d'écriture</b> : les polices sont chargées depuis Google Fonts ; ton adresse IP est donc transmise à Google lors de ce chargement, sans cookie.</p>
@@ -2536,7 +2543,7 @@ function viewCookies(){
 /* ---- Politique de remboursement ---- */
 function viewRefund(){
   app.innerHTML=`<div class="wrap page legal"><div class="page-head"><div><h2>Politique de remboursement</h2><p>Dernière mise à jour : octobre 2026</p></div></div>
-    <h3>Ce qui est vendu</h3><p>OverMate vend des thèmes visuels, à l'unité ou en pack. Ce sont des contenus numériques, débloqués sur ton compte dès que le paiement est confirmé. Ils changent seulement l'apparence du site et ne donnent aucun avantage pour trouver des mates.</p>
+    <h3>Ce qui est vendu</h3><p>Coopô vend des thèmes visuels, à l'unité ou en pack. Ce sont des contenus numériques, débloqués sur ton compte dès que le paiement est confirmé. Ils changent seulement l'apparence du site et ne donnent aucun avantage pour trouver des mates.</p>
     <h3>Satisfait ou remboursé pendant 14 jours</h3><p>Tu peux demander le remboursement d'un achat dans les <b>14 jours</b> qui suivent le paiement, même si tu as simplement changé d'avis. Le thème remboursé est alors retiré de ton compte.</p>
     <h3>Remboursement intégral à tout moment</h3>
     <p><b>Paiement débité sans déblocage</b> : si le thème n'apparaît pas sur ton compte, nous le débloquons ou nous te remboursons, au choix.</p>
@@ -2604,7 +2611,7 @@ function submitReport(id,reason,details){
 function onboarding(){
   if(!S.onboard||!S.me) return; S.onboard=false; save();
   const top=ranked().slice(0,3);
-  modal(`<h3>Bienvenue, ${esc(S.me.name)} 🎮</h3><p class="muted">${top.length?`Voici tes ${top.length} meilleurs matchs. Envoie-leur une demande de mate, ou rejoins un groupe.`:'Ton profil est prêt. OverMate vient d\'ouvrir : dès qu\'un joueur compatible s\'inscrit, il apparaîtra dans « Mes matchs ».'}</p>
+  modal(`<h3>Bienvenue, ${esc(S.me.name)} 🎮</h3><p class="muted">${top.length?`Voici tes ${top.length} meilleurs matchs. Envoie-leur une demande de mate, ou rejoins un groupe.`:'Ton profil est prêt. Coopô vient d\'ouvrir : dès qu\'un joueur compatible s\'inscrit, il apparaîtra dans « Mes matchs ».'}</p>
     <div class="rows" style="margin-top:8px">${top.map(({p,c})=>`<a class="row" href="#/joueur/${p.id}" data-close>${avatar(p,56)}<div><b>${esc(p.name)}${modBadge(p)}</b><p>${esc(p.games.slice(0,3).join(', '))}</p></div>${ring(c.pct,'ring-sm')}</a>`).join('')}</div>
     <div class="dlg-actions"><a class="btn btn-ghost" href="#/groupes" data-close>Voir les groupes</a><button class="btn btn-ac" data-close>C'est parti</button></div>`);
 }
