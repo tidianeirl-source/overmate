@@ -520,6 +520,9 @@ html[data-skin="samurai"] .float-match{ border:2px solid var(--pk); }
 .buy-sw i::after{ content:''; position:absolute; right:12px; bottom:12px; width:22px; height:22px; border-radius:50%; background:var(--c2); }
 .buy-opts{ display:grid; gap:10px; }
 .buy-cur{ margin-bottom:12px; }
+.buy-soon .buy-opt{ opacity:.55; cursor:default; }
+.soon-note{ display:grid; gap:4px; margin-top:12px; padding:12px 14px; border-radius:var(--ri); background:color-mix(in srgb,var(--pk) 12%,transparent); border:1.5px dashed var(--pk); font-size:14px; }
+.soon-note b{ color:var(--pk2,var(--pk)); font-size:15px; }
 .buy-opt{ display:grid; grid-template-columns:1fr auto; grid-template-rows:auto auto; column-gap:12px; text-align:left; padding:12px 14px; border-radius:var(--ri); border:2px solid var(--line); background:var(--field); color:var(--tx); font:inherit; cursor:pointer; }
 .buy-opt b{ grid-column:1; } .buy-opt span{ grid-column:1; font-size:13px; color:var(--mu); }
 .buy-opt strong{ grid-column:2; grid-row:1 / span 2; align-self:center; color:var(--pk2,var(--pk)); white-space:nowrap; }
@@ -2028,8 +2031,9 @@ const SKINS = {
   menthe:{label:'Menthe',     desc:'Collines, brume et papillons',             sw:['#2FAE87','#FFFFFF','#128A6A'], art:mintSVG},
 };
 /* ---- Boutique de thèmes (prix identiques à functions/index.js) ---- */
-// enabled:false -> tous les thèmes sont gratuits. Passe à true une fois les fonctions de paiement déployées.
-const SHOP = { enabled:false, region:'europe-west1' };
+// enabled  : true -> les thèmes payants sont verrouillés (false -> tout est gratuit)
+// payments : false -> le bouton d'achat affiche « Bientôt disponible ». Passe à true une fois CinetPay et les fonctions prêts.
+const SHOP = { enabled:true, payments:false, region:'europe-west1' };
 // Prix par devise : à garder identiques à PRICES dans functions/index.js
 const CURRENCIES = {
   XOF:{ label:'F CFA (BCEAO)', unit:'F CFA', theme:500,  pack:1500,  countries:['CI','SN','ML','BF','BJ','TG','NE'] },
@@ -2063,7 +2067,12 @@ function buyModal(id){
   const t=SKINS[id], live=DB.live&&DB.fns, signed=!!S.auth, hasProfile=!!(S.me&&S.me.dob), minor=hasProfile&&ageGroup(S.me)==='minor';
   let cur=curCode();
   const eco=c=>price('theme',c)*PAID_SKINS.length-price('pack',c);
-  const body = !live ? `<p class="muted">Les achats sont disponibles sur le site en ligne.</p>`
+  const body = !SHOP.payments ? `<div class="buy-opts buy-soon" aria-disabled="true">
+        <div class="buy-opt"><b>Ce thème</b><span>${esc(t.label)}</span><strong>${money(price('theme',cur),cur)}</strong></div>
+        <div class="buy-opt best"><b>Tous les thèmes</b><span>${PAID_SKINS.length} thèmes, et les prochains</span><strong>${money(price('pack',cur),cur)}</strong></div>
+      </div>
+      <div class="soon-note"><b>Bientôt disponible</b><span>Le paiement par Mobile Money (Orange Money, MTN, Moov, Wave) arrive très bientôt. En attendant, essaie ce thème gratuitement pendant 20 secondes.</span></div>`
+    : !live ? `<p class="muted">Les achats sont disponibles sur le site en ligne.</p>`
     : !signed ? `<p class="muted">Connecte-toi pour débloquer ce thème.</p><p><a class="btn btn-ac" href="#/connexion" data-close>Se connecter</a></p>`
     : !hasProfile ? `<p class="muted">Termine ton profil avant de faire un achat.</p><p><a class="btn btn-ac" href="#/profil" data-close>Compléter mon profil</a></p>`
     : `<div class="field buy-cur"><label for="buy-cur">Devise</label><select id="buy-cur">${Object.entries(CURRENCIES).map(([k,v])=>`<option value="${k}" ${k===cur?'selected':''}>${v.label} (${k})</option>`).join('')}</select></div>
@@ -2076,7 +2085,7 @@ function buyModal(id){
     ${body}
     <div class="dlg-actions"><button class="btn btn-ghost" type="button" id="buy-try">Essayer 20 secondes</button><button class="btn" data-close>Fermer</button></div>`, d=>{
     d.querySelector('#buy-try').onclick=()=>{ d.close(); previewSkin(id); };
-    const opts=d.querySelector('#buy-opts');
+    const opts=SHOP.payments?d.querySelector('#buy-opts'):null;
     const draw=()=>{ if(!opts) return; const e=eco(cur);
       opts.innerHTML=`<button type="button" class="buy-opt" data-buy="theme:${id}"><b>Ce thème</b><span>${esc(t.label)}</span><strong>${money(price('theme',cur),cur)}</strong></button>
         <button type="button" class="buy-opt best" data-buy="pack"><b>Tous les thèmes</b><span>${PAID_SKINS.length} thèmes, et les prochains${e>0?` · ${money(e,cur)} d'économie`:''}</span><strong>${money(price('pack',cur),cur)}</strong></button>`;
