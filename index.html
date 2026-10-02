@@ -68,6 +68,36 @@ p{ margin:0; }
 body.is-home .top{ display:none; }
 .logo{ width:54px; height:54px; border-radius:50%; background:var(--pk); transition:background .4s; display:grid; place-items:center; flex:none; text-decoration:none; overflow:hidden; }
 .logo img{ width:42px; height:42px; display:block; transition:transform .5s cubic-bezier(.3,1.6,.5,1); animation:spinIn 1s cubic-bezier(.3,1.6,.5,1) both; }
+.dispo-panel{ margin-bottom:6px; }
+.dispo-head{ display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.dispo-head h3{ margin:0; }
+.pill-live{ font-size:12px; font-weight:700; padding:3px 10px; border-radius:999px; background:color-mix(in srgb,var(--hi) 18%,transparent); color:var(--hi); }
+.dot-live{ display:inline-block; width:10px; height:10px; border-radius:50%; background:var(--hi); box-shadow:0 0 0 0 color-mix(in srgb,var(--hi) 60%,transparent); animation:livepulse 1.6s infinite; margin-right:8px; }
+@keyframes livepulse{ 0%{ box-shadow:0 0 0 0 color-mix(in srgb,var(--hi) 55%,transparent); } 70%{ box-shadow:0 0 0 9px transparent; } 100%{ box-shadow:0 0 0 0 transparent; } }
+.dispo-cta{ display:inline-flex; align-items:center; }
+.dispo-me{ display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; padding:12px 14px; border-radius:var(--ri); background:color-mix(in srgb,var(--hi) 10%,transparent); border:1.5px solid color-mix(in srgb,var(--hi) 40%,transparent); margin-bottom:12px; }
+.dispo-list{ display:grid; gap:10px; margin-top:12px; }
+.dispo-card{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 12px; border-radius:var(--ri); background:var(--field); border:1.5px solid var(--line); }
+.dispo-card.same{ border-color:color-mix(in srgb,var(--hi) 50%,transparent); }
+.dc-who{ display:flex; align-items:center; gap:10px; text-decoration:none; color:inherit; min-width:0; }
+.dc-who div{ display:grid; min-width:0; }
+.dc-who b{ font-size:15px; }
+.dc-who span{ font-size:13px; color:var(--mu); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dc-who em{ font-size:12px; color:var(--mu); font-style:normal; opacity:.85; }
+.dc-act{ display:flex; align-items:center; gap:10px; flex:none; }
+.dc-compat{ font-weight:800; color:var(--hi); font-size:12px; font-style:normal; margin-left:8px; white-space:nowrap; }
+.dc-who b{ display:flex; align-items:center; flex-wrap:wrap; gap:2px 0; }
+.dc-sent{ font-size:12px; white-space:nowrap; }
+.dispo-empty{ margin:8px 0 0; font-size:14px; }
+.dp-durs{ display:flex; flex-wrap:wrap; gap:8px; }
+.chip-btn{ padding:8px 14px; border-radius:999px; border:1.5px solid var(--line); background:var(--field); color:var(--tx); font:inherit; font-size:14px; cursor:pointer; }
+.chip-btn.on{ border-color:var(--pk); background:color-mix(in srgb,var(--pk) 14%,transparent); color:var(--pk2,var(--pk)); font-weight:700; }
+.tag-live{ display:inline-block; margin-left:8px; font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px; background:color-mix(in srgb,var(--hi) 18%,transparent); color:var(--hi); vertical-align:middle; }
+.ref-row{ display:flex; gap:8px; margin:10px 0; }
+.ref-link{ flex:1; min-width:0; padding:10px 12px; border-radius:var(--ri); border:1.5px solid var(--line); background:var(--field); color:var(--tx); font:inherit; font-size:13px; }
+.ref-stats{ font-size:14px; color:var(--mu); }
+.ref-stats b{ color:var(--tx); font-size:18px; }
+.btn-sm{ padding:7px 12px; font-size:13px; }
 .install-foot{ position:relative; z-index:1; display:flex; justify-content:center; padding:26px 16px 4px; }
 .install-foot .btn{ display:inline-flex; align-items:center; gap:8px; }
 .install-foot svg{ width:20px; height:20px; }
@@ -1121,7 +1151,7 @@ const list = (arr,map) => arr.length ? arr.map(map).join(' • ') : '—';
 
 function matchCard({p,c}, top=false, i=0){
   return `<a class="mcard${top?' top-match':''}" href="#/joueur/${p.id}" style="--i:${i};--c:${c?tier(c.pct):'var(--line)'}">
-    <div class="mc-head">${avatar(p,top?64:52)}<div><span class="mc-name">${esc(p.name)}${modBadge(p)}</span>${p.online?'<span class="online">En ligne</span>':''}</div>${c?ring(c.pct, top?'ring-lg':''):''}</div>
+    <div class="mc-head">${avatar(p,top?64:52)}<div><span class="mc-name">${esc(p.name)}${modBadge(p)}${dispoActive(p)?`<span class="tag-live">Dispo · ${esc(p.dispo.game)}</span>`:''}</span>${p.online?'<span class="online">En ligne</span>':''}</div>${c?ring(c.pct, top?'ring-lg':''):''}</div>
     <dl class="facts">
       <div><dt>${c?'Jeux en commun':'Jeux'}</dt><dd>${esc(list(c?c.common.games:p.games,g=>g))}</dd></div>
       <div><dt>Horaires</dt><dd>${list(p.hours,h=>L(HOURS,h))}</dd></div>
@@ -1242,6 +1272,7 @@ function bloomSVG(){
   return `<svg class="bloom" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="${W}" height="${H}" fill="#3A6340"/>${leaves}${flowers}${petals}</svg>`;
 }
 function viewHome(){
+  if(DB.live&&S.me&&DB._loaded){ const before=PLAYERS.length; DB.refreshPlayers().then(()=>{ if(location.hash==='#/accueil'||location.hash===''||location.hash==='#/') refreshAfterData(); }); }
   const w = S.weights||CONFIG.weights, tot=Object.values(w).reduce((a,b)=>a+b,0)||1;
   const active=Object.entries(w).filter(([,v])=>v>0);
   const featured = S.me ? ranked().slice(0,3) : visible().filter(p=>p.online).slice(0,3).map(p=>({p,c:null}));
@@ -1267,6 +1298,7 @@ function viewHome(){
     </div>
   </section>`}
   <div class="marq${S.skin==='defaut'?' hide':''}" aria-hidden="true"><div class="marq-track"><span>trouve ton mate</span><b>✺</b><span>mêmes jeux</span><b>✺</b><span>mêmes horaires</span><b>✺</b><span>même style</span><b>✺</b><span>joue ensemble</span><b>✺</b><span>trouve ton mate</span><b>✺</b><span>mêmes jeux</span><b>✺</b><span>mêmes horaires</span><b>✺</b><span>même style</span><b>✺</b><span>joue ensemble</span><b>✺</b></div></div>
+  <div class="wrap" style="padding-top:26px">${dispoSection()}</div>
   <div class="home-grid">
     <section class="reveal">
       <h2>comment ça marche</h2>
@@ -1486,7 +1518,7 @@ function viewMatches(){
       <div class="chips"><button type="button" class="chip" data-sort="compat" aria-pressed="${S.sort!=='online'}">Compatibilité</button><button type="button" class="chip" data-sort="online" aria-pressed="${S.sort==='online'}">En ligne d'abord</button><a class="btn btn-ghost btn-sm" href="#/recherche">Filtrer</a></div></div>
     ${onlineNow.length?`<h3 style="margin-bottom:10px"><span class="online"></span> En ligne maintenant</h3><div class="online-strip">${onlineNow.slice(0,10).map(({p,c})=>`<a class="online-card" href="#/joueur/${p.id}">${avatar(p,56)}<b>${esc(p.name)}${modBadge(p)}</b><span style="color:${tier(c.pct)}">${c.pct} %</span></a>`).join('')}</div>`:''}
     ${mates.length?`<h3 style="margin-bottom:10px">Mes mates</h3><div class="mates-strip">${mates.map(p=>`<a class="mate-pill" href="#/joueur/${p.id}">${avatar(p,28)}${esc(p.name)}${modBadge(p)}</a>`).join('')}</div>`:''}
-    ${r.length?'':`<div class="empty"><h3>Coopô vient d'ouvrir</h3><p class="muted">Les premiers joueurs arrivent. Partage le site à tes amis : dès qu'un joueur compatible s'inscrit, il apparaît ici.</p><button class="btn btn-ac" type="button" id="share-site">Partager Coopô</button></div>`}
+    ${r.length?'':`<div class="empty"><h3>Coopô vient d'ouvrir</h3><p class="muted">Les premiers joueurs arrivent. Partage le site à tes amis : dès qu'un joueur compatible s'inscrit, il apparaît ici.</p><button class="btn btn-ac" type="button" id="ref-share">Inviter mes amis</button></div>`}
     <div class="grid">${r.slice(0,shown).map((m,i)=>matchCard(m,i===0,i)).join('')}</div>
     ${r.length>shown?'<div style="text-align:center;margin-top:24px"><button class="btn" id="more">Voir plus de joueurs</button></div>':''}
   </div>`;
@@ -1594,6 +1626,7 @@ function viewSettings(){
   const tg=(k,t,h)=>`<div class="toggle"><div><label for="pv-${k}" class="lbl">${t}</label><p class="hint">${h}</p></div><input class="switch" type="checkbox" id="pv-${k}" data-pv="${k}" ${S.privacy[k]?'checked':''}></div>`;
   app.innerHTML=`<div class="wrap page" style="max-width:760px"><div class="page-head"><h2>Paramètres</h2></div><div class="form">
     <section class="panel"><h3>Thème</h3><p class="hint">Change l'apparence de tout le site.</p>${skinGrid()}${AUTH_LIVE&&PAID_SKINS.some(x=>!canUseSkin(x))?`<div class="field" style="margin-top:12px;max-width:320px"><label for="set-cur">Devise des prix</label><select id="set-cur">${Object.entries(CURRENCIES).map(([k,v])=>`<option value="${k}" ${k===curCode()?'selected':''}>${v.label} (${k})</option>`).join('')}</select></div>`:''}</section>
+    ${refSection()}
     <section class="panel"><h3>Application</h3><div data-install-box>${installHTML()}</div></section>
     <section class="panel"><h3>Confidentialité</h3><div>
       ${tg('discord','Afficher mon pseudo Discord','Les autres joueurs peuvent le copier depuis ton profil.')}
@@ -2054,6 +2087,7 @@ function canUseSkin(id){
   if(!PAID_SKINS.includes(id)) return true;
   if(!AUTH_LIVE || !SHOP.enabled) return true;      // mode démo ou boutique fermée : tout est libre
   if(S.auth && isAdmin()) return true;   // modérateurs
+  const rw=S.rewards||{}; if((rw.referrals||0)>=REF_REWARD.all) return true; if(id===REF_REWARD.one&&(rw.referred||(rw.referrals||0)>=1)) return true;
   return ownsAll() || !!(S.owned&&(S.owned.themes||[]).includes(id));
 }
 const LOCK_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
@@ -2102,6 +2136,61 @@ function buyModal(id){
   });
 }
 document.addEventListener('change',e=>{ if(e.target&&e.target.id==='set-cur'){ S.currency=e.target.value; save(); const y=scrollY; route(); scrollTo(0,y); } });
+/* ================= Dispo maintenant ================= */
+const DISPO_DUR=[['1',"1 heure"],['2',"2 heures"],['3',"3 heures"],['5',"Toute la soirée"]];
+const dispoActive = p => !!(p && p.dispo && p.dispo.until > Date.now());
+const dispoList = () => visible().filter(dispoActive).sort((a,b)=>{ const sa=S.me&&S.me.games.includes(a.dispo.game)?1:0, sb=S.me&&S.me.games.includes(b.dispo.game)?1:0; if(sa!==sb) return sb-sa; return (S.me?compat(S.me,b).pct-compat(S.me,a).pct:0); });
+const fmtUntil = ts => new Date(ts).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+function dispoModal(){
+  if(!S.me) { location.hash='#/inscription'; return; }
+  const games=S.me.games.length?S.me.games:GAMES.slice(0,8);
+  modal(`<h3>Je suis dispo maintenant</h3><p class="muted">Dis à quel jeu tu joues et pendant combien de temps : les joueurs compatibles te verront en tête de liste.</p>
+    <div class="field"><label for="dp-game">Jeu</label><select id="dp-game">${games.map(g=>`<option value="${esc(g)}">${esc(g)}</option>`).join('')}</select></div>
+    <div class="field"><label>Pendant</label><div class="dp-durs">${DISPO_DUR.map(([v,l],i)=>`<button type="button" class="chip-btn${i===1?' on':''}" data-dur="${v}">${l}</button>`).join('')}</div></div>
+    <div class="field"><label for="dp-note">Un mot (facultatif)</label><input id="dp-note" maxlength="60" placeholder="Ranked, vocal ok, chill…"></div>
+    <div class="dlg-actions"><button class="btn btn-ghost" data-close>Annuler</button><button class="btn btn-ac" id="dp-go">Je suis dispo</button></div>`, d=>{
+    let dur=2; d.querySelectorAll('[data-dur]').forEach(b=>b.onclick=()=>{ d.querySelectorAll('[data-dur]').forEach(x=>x.classList.remove('on')); b.classList.add('on'); dur=+b.dataset.dur; });
+    d.querySelector('#dp-go').onclick=async()=>{ const dispo={game:d.querySelector('#dp-game').value,note:d.querySelector('#dp-note').value.trim().slice(0,60),since:Date.now(),until:Date.now()+dur*3600*1000};
+      S.me.dispo=dispo; save(); d.close(); toast(`Tu es dispo pour ${dispo.game} jusqu'à ${fmtUntil(dispo.until)}`); await DB.setDispo(dispo); route(); };
+  });
+}
+async function dispoStop(){ if(!S.me) return; S.me.dispo=null; save(); toast("Tu n'es plus affiché comme dispo"); await DB.setDispo(null); route(); }
+function dispoCard(p){
+  const q=reqWith(p.id), mate=!!q&&q.status==='accepted', same=S.me&&S.me.games.includes(p.dispo.game);
+  const act = mate?`<a class="btn btn-sm" href="#/messages/${p.id}">Écrire</a>` : q?`<span class="muted dc-sent">Envoyée</span>` : `<button class="btn btn-sm btn-ac" data-dispo-mate="${p.id}">Duo ?</button>`;
+  const pct=S.me?compat(S.me,p).pct:null;
+  return `<div class="dispo-card${same?' same':''}"><a href="#/joueur/${p.id}" class="dc-who">${avatar(p,44)}<div><b>${esc(p.name)}${modBadge(p)}${pct!=null?`<i class="dc-compat">${pct} %</i>`:''}</b><span>${esc(p.dispo.game)} · jusqu'à ${fmtUntil(p.dispo.until)}</span>${p.dispo.note?`<em>${esc(p.dispo.note)}</em>`:''}</div></a><div class="dc-act">${act}</div></div>`;
+}
+function dispoSection(){
+  const list=dispoList(), mine=dispoActive(S.me);
+  const head = mine ? `<div class="dispo-me"><span class="dot-live"></span><b>Tu es dispo pour ${esc(S.me.dispo.game)}</b><span class="muted">jusqu'à ${fmtUntil(S.me.dispo.until)}</span><button class="btn btn-sm btn-ghost" id="dispo-stop">Je ne suis plus dispo</button></div>`
+    : S.me ? `<button class="btn btn-ac dispo-cta" id="dispo-go"><span class="dot-live"></span>Je suis dispo maintenant</button>`
+    : `<p class="muted">Connecte-toi pour dire que tu es dispo et voir qui joue en ce moment.</p>`;
+  const body = !S.me ? '' : list.length ? `<div class="dispo-list">${list.slice(0,8).map(dispoCard).join('')}</div>${list.length>8?`<p class="muted" style="font-size:13px">et ${list.length-8} autres…</p>`:''}`
+    : `<p class="muted dispo-empty">Personne n'est dispo pour l'instant. ${mine?'Tu es en tête de liste : les prochains joueurs te verront en premier.':'Sois le premier : les joueurs compatibles te verront tout de suite.'}</p>`;
+  return `<section class="panel dispo-panel reveal" id="dispo"><div class="dispo-head"><h3>Dispo maintenant</h3>${S.me&&list.length?`<span class="pill-live">${list.length} joueur${list.length>1?'s':''}</span>`:''}</div>${head}${body}</section>`;
+}
+document.addEventListener('click',e=>{
+  if(e.target.closest('#dispo-go')) dispoModal();
+  if(e.target.closest('#dispo-stop')) dispoStop();
+  const m=e.target.closest('[data-dispo-mate]'); if(m){ const p=PLAYERS.find(x=>x.id===m.dataset.dispoMate); if(p){ sendRequest(p); route(); } }
+});
+
+/* ================= Parrainage ================= */
+(function captureRef(){ try{ const u=new URL(location.href); const r=u.searchParams.get('ref'); if(r){ localStorage.setItem('coopo_ref',r.toLowerCase().slice(0,20)); u.searchParams.delete('ref'); history.replaceState(null,'',u.pathname+(u.search||'')+u.hash); } }catch(e){} })();
+const REF_REWARD={ one:'soft', all:3 };   // 1 filleul : thème Soft pour les deux · 3 filleuls : tous les thèmes
+const refLink = () => S.me ? `${location.origin}${location.pathname}?ref=${encodeURIComponent(S.me.name.toLowerCase())}` : '';
+async function shareRef(){ const url=refLink(); const data={title:'Coopô',text:`Rejoins-moi sur Coopô pour trouver des mates de jeu : avec mon lien, on gagne tous les deux un thème.`,url};
+  try{ if(navigator.share) await navigator.share(data); else { await navigator.clipboard.writeText(url); toast('Lien de parrainage copié'); } }catch(e){} }
+function refSection(){
+  if(!S.me) return '';
+  const rw=S.rewards||{}, n=rw.referrals||0;
+  return `<section class="panel ref-panel"><h3>Parraine tes amis</h3><p class="hint">Partage ton lien. Quand un ami crée son compte avec, vous recevez <b>tous les deux le thème ${esc(SKINS[REF_REWARD.one].label)}</b>. À ${REF_REWARD.all} amis parrainés, tu débloques <b>tous les thèmes</b>.</p>
+    <div class="ref-row"><input class="ref-link" readonly value="${esc(refLink())}" aria-label="Ton lien de parrainage"><button class="btn btn-ac" type="button" id="ref-share">Partager</button></div>
+    <div class="ref-stats"><b>${n}</b> ami${n>1?'s':''} parrainé${n>1?'s':''}${n>=REF_REWARD.all?' · tous les thèmes débloqués 🎉':n>0?' · thème '+esc(SKINS[REF_REWARD.one].label)+' débloqué':''}${rw.referred?' · tu as été parrainé : thème '+esc(SKINS[REF_REWARD.one].label)+' offert':''}</div></section>`;
+}
+document.addEventListener('click',e=>{ if(e.target.closest('#ref-share')) shareRef(); const i=e.target.closest('.ref-link'); if(i){ i.select(); } });
+
 /* ---- Application installable (PWA) ---- */
 let _installEvt=null;
 const isStandalone=()=>matchMedia('(display-mode: standalone)').matches || navigator.standalone===true;
@@ -2729,9 +2818,9 @@ const DB = {
     try{ const ref=this.db.collection('profiles').doc(uid); const isNew=!(await ref.get().catch(()=>({exists:false}))).exists;
       await this.db.collection('private').doc(uid).set({dob,updatedAt:Date.now()},{merge:true});
       await this.db.collection('usernames').doc(me.name.toLowerCase()).set({uid});
-      const {banned,hidden,rejoue,moderator,...safe}=pub;
+      const {banned,hidden,rejoue,moderator,dispo,...safe}=pub;
       const data={...safe,nameLower:me.name.toLowerCase(),ageGroup:ageGroup(me),privacy:S.privacy,discordPublic:S.privacy.discord,online:true,lastSeen:Date.now(),updatedAt:Date.now()};
-      if(isNew){ Object.assign(data,{banned:false,hidden:false,rejoue:0}); await ref.set(data); await this.loadAll(); }
+      if(isNew){ Object.assign(data,{banned:false,hidden:false,rejoue:0}); await ref.set(data); await this.applyReferral(); await this.loadAll(); }
       else await ref.set(data,{merge:true}); }
     catch(e){ console.error(e); toast("Le profil n'a pas pu être enregistré en ligne"); } },
   async saveRequest(r){ if(!this.live) return; const from=this.toUid(r.from), to=this.toUid(r.to);
@@ -2747,7 +2836,19 @@ const DB = {
   async saveNotif(toId,n){ if(!this.live) return; try{ await this.db.collection('notifications').doc(this.toUid(toId)).collection('items').add({...n,from:this.toUid(n.from),at:Date.now(),read:false}); }catch(e){ console.error(e); } },
   async rate(id,v){ if(!this.live) return; try{ await this.db.collection('ratings').doc(`${this.uid()}_${id}`).set({by:this.uid(),target:id,value:v,at:Date.now()}); const F=firebase.firestore.FieldValue; if(v>0) await this.db.collection('profiles').doc(id).update({rejoue:F.increment(1)}); }catch(e){ console.error(e); } },
   async setPresence(on){ if(!this.live||!this.uid()||!S.me) return; try{ await this.db.collection('profiles').doc(this.uid()).update({online:on&&S.privacy.online,lastSeen:Date.now()}); }catch(e){} },
-  async loadPurchases(){ if(!this.live||!this.uid()) return; try{ const d=await this.db.collection('purchases').doc(this.uid()).get(); const x=d.exists?d.data():{}; S.owned={pack:!!x.pack,themes:Array.isArray(x.themes)?x.themes:[]}; save(); }catch(e){ console.error(e); } },
+  async setDispo(d){ if(!this.live||!this.uid()) return; try{ await this.db.collection('profiles').doc(this.uid()).update({dispo:d||null}); }catch(e){ console.error(e); toast('Statut non enregistré en ligne'); } },
+  async refreshPlayers(){ if(!this.live||!this.uid()||!S.me||!S.me.dob) return; if(this._lastPlayers&&Date.now()-this._lastPlayers<45000) return; this._lastPlayers=Date.now();
+    try{ const uid=this.uid(), g=ageGroup(S.me); const ps=await this.db.collection('profiles').where('ageGroup','==',g).where('hidden','==',false).limit(300).get();
+      const fresh=[]; ps.forEach(d=>{ if(d.id!==uid) fresh.push({...d.data(),id:d.id,age:undefined}); }); const keep=PLAYERS.filter(p=>p._reported&&!fresh.some(f=>f.id===p.id)); PLAYERS.length=0; fresh.concat(keep).forEach(p=>PLAYERS.push(p)); }catch(e){ console.error(e); } },
+  async applyReferral(){ if(!this.live||!this.uid()||!S.me) return; const code=(localStorage.getItem('coopo_ref')||'').toLowerCase(); if(!code||code===S.me.name.toLowerCase()) return;
+    try{ const un=await this.db.collection('usernames').doc(code).get(); if(!un.exists||un.data().uid===this.uid()){ localStorage.removeItem('coopo_ref'); return; }
+      const by=un.data().uid, db=this.db, b=db.batch();
+      b.set(db.collection('referrals').doc(this.uid()),{by,byName:code,at:Date.now()});
+      b.set(db.collection('rewards').doc(by),{referrals:firebase.firestore.FieldValue.increment(1)},{merge:true});
+      b.set(db.collection('rewards').doc(this.uid()),{referred:true},{merge:true});
+      await b.commit(); localStorage.removeItem('coopo_ref'); S.rewards={...(S.rewards||{}),referred:true}; save(); toast(`Parrainage validé : le thème ${SKINS[REF_REWARD.one].label} est à toi !`); }
+    catch(e){ console.error(e); localStorage.removeItem('coopo_ref'); } },
+  async loadPurchases(){ if(!this.live||!this.uid()) return; try{ const d=await this.db.collection('purchases').doc(this.uid()).get(); const x=d.exists?d.data():{}; S.owned={pack:!!x.pack,themes:Array.isArray(x.themes)?x.themes:[]}; const r=await this.db.collection('rewards').doc(this.uid()).get(); S.rewards=r.exists?r.data():{}; save(); }catch(e){ console.error(e); } },
   async loadReports(){ if(!this.live) return; const db=this.db;
     try{ const rs=await db.collection('reports').orderBy('at','desc').limit(300).get();
       S.reports=[]; rs.forEach(d=>{ const r=d.data(); S.reports.push({rid:d.id,id:r.target,by:r.by,reason:r.reason,details:r.details,at:r.at,status:r.status}); });
