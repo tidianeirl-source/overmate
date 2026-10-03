@@ -364,6 +364,47 @@ html[data-skin="manga"] .hero-title small{ -webkit-text-stroke:0; text-shadow:no
 html[data-skin="manga"] .frame{ background-image:radial-gradient(rgba(0,0,0,.06) 1px,transparent 1.3px); background-size:8px 8px; }
 
 /* --- Lo-fi --- */
+html[data-skin="glass"]{
+  --frame:#080808;
+  --frame-bg:var(--shards-bg, none) 0 0/900px 900px, radial-gradient(60% 50% at 50% 30%, #1E1E1E, #070707 75%);
+  --bg:rgba(30,30,32,.42); --s1:rgba(255,255,255,.06); --s2:rgba(255,255,255,.10); --line:rgba(255,255,255,.16);
+  --tx:#F4F4F4; --mu:#B8B8BC; --pk:#E8FF3A; --pk2:#F0FF8A; --on-pk:#0B0B0B; --field:rgba(255,255,255,.07);
+  --glass:rgba(28,28,30,.6); --glass-solid:#1B1B1D;
+  --hi:#E8FF3A; --mid:#F0FF8A; --warm:#FFFFFF; --lo:#9A9AA0;
+  --fd:'Inter','Helvetica Neue',sans-serif; --fdw:600; --fb:'Inter','Helvetica Neue',sans-serif; --case:none;
+  --rf:44px; --rc:30px; --ri:18px;
+  --art-bg:#0B0B0B; --art-tint:none;
+  --title:#F4F4F4; --title-shadow:none; --title-stroke:0 transparent;
+  color-scheme:dark;
+}
+html[data-skin="glass"],html[data-skin="glass"] body{ background-attachment:fixed; }
+html[data-skin="glass"] .frame{ background:linear-gradient(160deg,rgba(255,255,255,.10),rgba(255,255,255,.02) 40%,rgba(255,255,255,.05));
+  -webkit-backdrop-filter:blur(30px) saturate(110%); backdrop-filter:blur(30px) saturate(110%);
+  border:1.5px solid rgba(255,255,255,.22); box-shadow:inset 0 1.5px 0 rgba(255,255,255,.35),inset 0 -1px 0 rgba(255,255,255,.08),0 40px 100px rgba(0,0,0,.6); }
+html[data-skin="glass"] .top{ background:transparent; }
+html[data-skin="glass"] .tl::before,html[data-skin="glass"] .tl::after,html[data-skin="glass"] .tr::before,html[data-skin="glass"] .tr::after,
+html[data-skin="glass"] .bl::before,html[data-skin="glass"] .bl::after{ display:none; }
+html[data-skin="glass"] .tab{ background:rgba(34,34,36,.55); -webkit-backdrop-filter:blur(22px); backdrop-filter:blur(22px); border:1.5px solid rgba(255,255,255,.2); box-shadow:inset 0 1px 0 rgba(255,255,255,.3); }
+html[data-skin="glass"] :is(.panel,.mcard,.empty,.filters,.pp-side,.navpill,.mate-pill,.dispo-card,.buy-opt,.skin,.ref-link,.float-match){
+  background:linear-gradient(155deg,rgba(255,255,255,.12),rgba(255,255,255,.03) 55%,rgba(255,255,255,.06));
+  border:1.5px solid rgba(255,255,255,.2);
+  -webkit-backdrop-filter:blur(18px); backdrop-filter:blur(18px);
+  box-shadow:inset 0 1.5px 0 rgba(255,255,255,.3),inset 0 -1px 0 rgba(255,255,255,.06),0 18px 50px rgba(0,0,0,.45); }
+html[data-skin="glass"] .empty{ border-style:dashed; }
+html[data-skin="glass"] dialog{ background:rgba(26,26,28,.78); -webkit-backdrop-filter:blur(28px); backdrop-filter:blur(28px); border:1.5px solid rgba(255,255,255,.22); box-shadow:inset 0 1.5px 0 rgba(255,255,255,.3),0 50px 120px rgba(0,0,0,.7); }
+html[data-skin="glass"] .btn-ac{ background:#E8FF3A; color:#0B0B0B; box-shadow:0 10px 30px rgba(232,255,58,.25); }
+html[data-skin="glass"] .btn:not(.btn-ac){ background:rgba(255,255,255,.07); border-color:rgba(255,255,255,.22); color:#F4F4F4; -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); }
+html[data-skin="glass"] :is(input,select,textarea){ background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.2); }
+html[data-skin="glass"] .tabbar{ background:rgba(22,22,24,.65); -webkit-backdrop-filter:blur(22px); backdrop-filter:blur(22px); border-top:1.5px solid rgba(255,255,255,.18); }
+html[data-skin="glass"] h2{ letter-spacing:-.03em; font-weight:600; }
+html[data-skin="glass"] h2 .hl, html[data-skin="glass"] .hero2 h2 .hl{ color:#E8FF3A; }
+html[data-skin="glass"] .ring{ --rb:#18181A !important; }
+@media (max-width:820px), (prefers-reduced-transparency: reduce){
+  html[data-skin="glass"],html[data-skin="glass"] body{ background-attachment:scroll; }
+  html[data-skin="glass"] .frame{ -webkit-backdrop-filter:none; backdrop-filter:none; background:rgba(24,24,26,.82); }
+  html[data-skin="glass"] :is(.panel,.mcard,.empty,.filters,.pp-side,.navpill,.mate-pill,.dispo-card,.buy-opt,.skin,.ref-link,.float-match,.tab){
+    -webkit-backdrop-filter:none; backdrop-filter:none; background:linear-gradient(155deg,rgba(255,255,255,.11),rgba(255,255,255,.04)); }
+}
 html[data-skin="awale"]{
   --frame:#1E120A;
   --frame-bg:radial-gradient(rgba(247,233,212,.07) 1.4px,transparent 1.9px) 0 0/22px 22px,
@@ -550,6 +591,8 @@ html[data-skin="samurai"] .float-match{ border:2px solid var(--pk); }
 .buy-sw i::after{ content:''; position:absolute; right:12px; bottom:12px; width:22px; height:22px; border-radius:50%; background:var(--c2); }
 .buy-opts{ display:grid; gap:10px; }
 .buy-cur{ margin-bottom:12px; }
+.prem{ font-style:normal; font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:2px 7px; border-radius:999px; background:linear-gradient(90deg,#F2B100,#E4461F); color:#fff; margin-left:6px; vertical-align:middle; }
+.skin small .prem{ margin-left:4px; }
 .buy-soon .buy-opt{ opacity:.55; cursor:default; }
 .soon-note{ display:grid; gap:4px; margin-top:12px; padding:12px 14px; border-radius:var(--ri); background:color-mix(in srgb,var(--pk) 12%,transparent); border:1.5px dashed var(--pk); font-size:14px; }
 .soon-note b{ color:var(--pk2,var(--pk)); font-size:15px; }
@@ -1272,7 +1315,7 @@ function bloomSVG(){
   return `<svg class="bloom" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="${W}" height="${H}" fill="#3A6340"/>${leaves}${flowers}${petals}</svg>`;
 }
 function viewHome(){
-  if(DB.live&&S.me&&DB._loaded){ const before=PLAYERS.length; DB.refreshPlayers().then(()=>{ if(location.hash==='#/accueil'||location.hash===''||location.hash==='#/') refreshAfterData(); }); }
+  if(DB.live&&S.me&&DB._loaded){ DB.refreshPlayers().then(changed=>{ if(changed&&(location.hash==='#/accueil'||location.hash===''||location.hash==='#/')) refreshAfterData(); }).catch(()=>{}); }
   const w = S.weights||CONFIG.weights, tot=Object.values(w).reduce((a,b)=>a+b,0)||1;
   const active=Object.entries(w).filter(([,v])=>v>0);
   const featured = S.me ? ranked().slice(0,3) : visible().filter(p=>p.online).slice(0,3).map(p=>({p,c:null}));
@@ -1325,6 +1368,10 @@ function viewProfile(){
   if(!S.auth && !S.me){ location.hash='#/inscription'; return; }
   const isNew=!S.me;
   draft = JSON.parse(JSON.stringify(S.me || { name:S.auth?suggestName(S.auth.name):'', avatar:S.auth&&S.auth.photo?{src:S.auth.photo}:{hue:265}, discord:'', games:[], tags:{}, ranks:{}, hours:[], days:[], style:'', goal:'both', voice:'parfois', platforms:[], country:'', langs:['fr'] }));
+  // profil incomplet (ancienne version, données partielles) : on complète les champs manquants au lieu de planter
+  draft={ name:'', avatar:{hue:265}, discord:'', games:[], tags:{}, ranks:{}, hours:[], days:[], style:'', goal:'both', voice:'parfois', platforms:[], country:'', langs:['fr'], ...draft };
+  if(!draft.avatar||typeof draft.avatar!=='object') draft.avatar={hue:265};
+  ['games','hours','days','platforms','langs'].forEach(k=>{ if(!Array.isArray(draft[k])) draft[k]=[]; }); ['tags','ranks'].forEach(k=>{ if(!draft[k]||typeof draft[k]!=='object') draft[k]={}; });
   draft.ranks=draft.ranks||{}; draft.langs=draft.langs||['fr'];
   if(!draft.dob) draft.dob=knownDob();
   const hues=[265,330,10,45,150,200];
@@ -1495,11 +1542,16 @@ function submitProfile(e){
 function publicMe(){ return {...S.me, online:S.privacy.online}; }
 
 /* ----- Mes matchs ----- */
+let _lastRefresh=0;
 function refreshAfterData(){
+  if(Date.now()-_lastRefresh<800) return; _lastRefresh=Date.now();
   const a=document.activeElement, typing=a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&a.value;
   const h=location.hash||'#/accueil';
   if(!typing && /^#\/(accueil|matchs|groupes|messages|moderation|joueur|recherche)?(\/|$)/.test(h)) { const y=scrollY; route(); scrollTo(0,y); }
 }
+// Profil venu de Firestore : on complète les champs manquants pour qu'aucune page ne plante
+function normP(p){ p=p||{}; ['games','hours','days','platforms','langs'].forEach(k=>{ if(!Array.isArray(p[k])) p[k]=[]; }); ['tags','ranks'].forEach(k=>{ if(!p[k]||typeof p[k]!=='object') p[k]={}; });
+  if(!p.avatar||typeof p.avatar!=='object') p.avatar={hue:265}; if(typeof p.name!=='string'||!p.name) p.name='Joueur'; return p; }
 const dataPending = () => DB.live && !!S.auth && !DB._loaded;
 function loadingView(title){ app.innerHTML=`<div class="wrap page"><div class="page-head"><div><h2>${title}</h2></div></div><div class="empty loading-box"><span class="spinner" aria-hidden="true"></span><p class="muted">Chargement de tes données…</p></div></div>`; }
 function needProfile(title){
@@ -1625,7 +1677,7 @@ function viewSettings(){
   const blocked=PLAYERS.filter(p=>S.blocked.includes(p.id)), w=S.weights||CONFIG.weights, mates=matesList();
   const tg=(k,t,h)=>`<div class="toggle"><div><label for="pv-${k}" class="lbl">${t}</label><p class="hint">${h}</p></div><input class="switch" type="checkbox" id="pv-${k}" data-pv="${k}" ${S.privacy[k]?'checked':''}></div>`;
   app.innerHTML=`<div class="wrap page" style="max-width:760px"><div class="page-head"><h2>Paramètres</h2></div><div class="form">
-    <section class="panel"><h3>Thème</h3><p class="hint">Change l'apparence de tout le site.</p>${skinGrid()}${AUTH_LIVE&&PAID_SKINS.some(x=>!canUseSkin(x))?`<div class="field" style="margin-top:12px;max-width:320px"><label for="set-cur">Devise des prix</label><select id="set-cur">${Object.entries(CURRENCIES).map(([k,v])=>`<option value="${k}" ${k===curCode()?'selected':''}>${v.label} (${k})</option>`).join('')}</select></div>`:''}</section>
+    <section class="panel"><h3>Thème</h3><p class="hint">Change l'apparence de tout le site.</p>${skinGrid()}${AUTH_LIVE&&PAID_SKINS.some(x=>!canUseSkin(x))&&(SHOP.currencies||Object.keys(CURRENCIES)).length>1?`<div class="field" style="margin-top:12px;max-width:320px"><label for="set-cur">Devise des prix</label><select id="set-cur">${Object.entries(CURRENCIES).filter(([k])=>curOK(k)).map(([k,v])=>`<option value="${k}" ${k===curCode()?'selected':''}>${v.label} (${k})</option>`).join('')}</select></div>`:''}</section>
     ${refSection()}
     <section class="panel"><h3>Application</h3><div data-install-box>${installHTML()}</div></section>
     <section class="panel"><h3>Confidentialité</h3><div>
@@ -1729,6 +1781,39 @@ function mangaSVG(){
     <g class="rocket" transform="translate(190 330) rotate(35)"><path d="M0 -40c14 14 18 40 14 66h-28c-4-26 0-52 14-66z" fill="#fff" ${ink}/><circle cy="-6" r="6" fill="#111"/><path d="M-14 26l-14 18h14M14 26l14 18h-14" fill="#fff" ${ink}/><path d="M-6 30q6 24 12 0" fill="none" ${ink} stroke-dasharray="4 4"/></g>`,'');
 }
 
+const GLASS_SHARDS=[["M764 465L793 342L660 367L710 480Z",30,0.17],["M747 670L791 680L795 584L745 607L736 627Z",42,0.19],["M79 -51L31 -53L-0 -6L82 45L116 33L120 19Z",30,0.12],["M79 849L31 847L-0 894L82 945L116 933L120 919Z",30,0.12],["M979 -51L931 -53L900 -6L982 45L1016 33L1020 19Z",30,0.12],["M979 849L931 847L900 894L982 945L1016 933L1020 919Z",30,0.12],["M723 687L697 786L654 782L664 682L695 680Z",26,0.17],["M77 418L76 417L132 347L161 406L149 413Z",29,0.06],["M260 -119L277 -165L425 -60L349 2L309 0Z",39,0.26],["M260 781L277 735L425 840L349 902L309 900Z",39,0.26],["M574 680L646 785L579 832L504 812L546 718Z",21,0.18],["M351 168L448 217L371 227L333 192Z",20,0.21],["M518 149L450 103L473 5L559 81Z",25,0.21],["M832 531L766 473L712 488L673 512L745 600L794 576Z",36,0.23],["M658 360L792 335L797 326L705 254L695 252L639 330L655 359Z",20,0.26],["M-58 -175L24 -201L33 -193L23 -59L-8 -13L-82 7L-106 -16L-124 -72Z",23,0.07],["M-58 725L24 699L33 707L23 841L-8 887L-82 907L-106 884L-124 828Z",23,0.07],["M842 -175L924 -201L933 -193L923 -59L892 -13L818 7L794 -16L776 -72Z",23,0.07],["M842 725L924 699L933 707L923 841L892 887L818 907L794 884L776 828Z",23,0.07],["M674 128L632 202L694 244L704 245L733 189L687 129Z",32,0.14],["M395 99L445 98L468 0L458 -58L432 -54L356 8Z",39,0.24],["M395 999L445 998L468 900L458 842L432 846L356 908Z",39,0.24],["M158 551L55 606L171 624Z",26,0.27],["M696 -105L763 -69L781 -14L630 36L621 33L586 -62L653 -109L654 -109Z",25,0.17],["M696 795L763 831L781 886L630 936L621 933L586 838L653 791L654 791Z",25,0.17],["M335 426L270 420L208 238L237 239L345 320L336 426Z",24,0.27],["M515 154L447 108L396 109L377 130L455 214L464 216L520 173Z",22,0.07],["M86 472L76 422L148 416L101 475Z",29,0.28],["M243 696L229 574L212 543L192 525L176 531L163 551L176 624L198 684Z",41,0.22],["M418 666L477 812L455 830L430 834L281 729L281 721L349 664L416 662Z",41,0.26],["M689 248L632 326L583 307L571 265L574 212L626 207Z",31,0.13],["M728 688L747 676L790 687L835 719L769 823L702 787Z",38,0.21],["M330 196L240 232L348 313L384 291L368 230Z",27,0.08],["M667 124L624 49L615 45L565 84L525 152L529 171L572 203L625 198Z",37,0.12],["M128 22L124 36L213 86L238 63L243 52L192 -35L151 -20Z",42,0.11],["M128 922L124 936L213 986L238 963L243 952L192 865L151 880Z",42,0.11],["M688 616L622 582L622 578L668 515L668 515L739 603L730 623Z",21,0.24],["M650 781L650 781L577 675L580 650L602 630L659 680Z",21,0.1],["M480 426L344 435L343 436L348 510L455 559L487 510Z",33,0.25],["M87 54L64 161L187 221L190 220L210 93L121 43Z",23,0.13],["M617 396L520 402L493 421L631 478Z",38,0.27],["M569 673L572 648L453 628L424 657L425 660L541 710Z",31,0.09],["M631 481L492 425L491 425L490 426L497 510L613 571L659 509Z",18,0.11],["M523 179L468 222L448 292L463 315L563 264L566 211Z",21,0.21],["M2 420L-63 318L-53 310L25 323L58 409Z",21,0.17],["M902 420L837 318L847 310L925 323L958 409Z",21,0.17],["M137 342L166 401L229 437L263 419L201 237L194 234L190 234L135 303Z",36,0.19],["M712 248L804 321L831 310L840 302L868 184L831 140L741 192Z",23,0.24],["M125 297L181 229L58 169L-22 184L-49 302L29 316Z",36,0.22],["M1025 297L1081 229L958 169L878 184L851 302L929 316Z",36,0.22],["M274 715L342 658L328 601L235 578L249 701Z",21,0.09],["M540 717L425 666L484 813L498 811Z",42,0.15],["M648 362L631 333L582 314L523 397L620 391Z",25,0.17],["M692 125L809 81L828 132L739 184Z",35,0.27],["M-83 78L-81 19L-7 -0L75 51L53 158L-27 173L-64 129Z",25,0.26],["M-83 978L-81 919L-7 900L75 951L53 1058L-27 1073L-64 1029Z",25,0.26],["M817 78L819 19L893 -0L975 51L953 158L873 173L836 129Z",25,0.26],["M817 978L819 919L893 900L975 951L953 1058L873 1073L836 1029Z",25,0.26],["M667 506L666 506L638 479L624 397L652 368L655 369L705 482Z",18,0.18],["M105 477L174 523L190 516L228 447L164 410L153 418Z",34,0.08],["M77 706L42 697L32 688L31 620L52 611L168 629L190 689Z",21,0.15],["M481 417L458 322L442 300L390 298L354 320L345 427L480 418Z",43,0.19],["M218 541L326 550L327 595L234 572Z",42,0.24],["M252 55L247 66L361 130L368 124L388 103L350 12L309 10Z",30,0.23],["M83 -53L123 17L146 -24L117 -66Z",18,0.08],["M83 847L123 917L146 876L117 834Z",18,0.08],["M-60 538L-18 548L22 618L23 686L-58 712L-103 680L-98 583Z",39,0.24],["M840 538L882 548L922 618L923 686L842 712L797 680L802 583Z",39,0.24],["M219 -89L196 -40L247 48L303 2L255 -117Z",24,0.18],["M219 811L196 860L247 948L303 902L255 783Z",24,0.18],["M725 683L744 671L733 628L690 622L697 676Z",33,0.25],["M452 220L454 220L463 222L442 292L390 290L375 230Z",33,0.15],["M124 798L115 828L80 841L31 840L41 706L76 715Z",27,0.15],["M353 166L366 137L373 131L451 215L450 215Z",34,0.25],["M198 518L235 449L269 430L334 436L339 510L326 545L218 536Z",29,0.11],["M217 803L133 795L85 712L199 695L244 707L268 721L269 729L252 774Z",24,0.22],["M693 674L686 620L620 586L604 626L662 675Z",39,0.08],["M416 652L349 654L334 597L333 552L347 518L453 567L445 624Z",19,0.19],["M597 622L575 643L456 623L465 566L496 518L613 579L613 583Z",21,0.24],["M65 409L32 324L128 305L130 344L74 414Z",26,0.09],["M82 472L-10 533L5 426L62 416L71 420L72 422Z",41,0.1],["M982 472L890 533L905 426L962 416L971 420L972 422Z",41,0.1],["M343 166L357 136L243 72L219 95L199 222L206 226L236 226L326 190Z",25,0.09],["M84 478L-8 539L-10 542L30 612L51 603L154 548L167 528L98 482Z",21,0.06],["M984 478L892 539L890 542L930 612L951 603L1054 548L1067 528L998 482Z",21,0.06],["M213 809L130 802L120 832L150 873L190 859Z",19,0.1],["M490 416L517 397L576 314L564 272L464 322L488 416Z",19,0.19],["M610 34L576 -60L501 -80L487 -78L465 -60L474 -2L560 74Z",35,0.15],["M610 934L576 840L501 820L487 822L465 840L474 898L560 974Z",35,0.15],["M838 525L881 534L883 532L898 425L833 323L806 335L801 344L772 467Z",26,0.17],["M677 119L634 44L785 -6L809 18L807 76L690 120Z",40,0.25],["M677 1019L634 944L785 894L809 918L807 976L690 1020Z",40,0.25]];
+function shardsMarkup(op=1){ return GLASS_SHARDS.map(([d,g,hl])=>`<path d="${d}" fill="rgb(${g},${g},${g+2})" stroke="rgba(255,255,255,${hl})" stroke-width="2" stroke-linejoin="round"/>`).join(''); }
+(function(){ try{ const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="900" height="900" viewBox="0 0 900 900"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".07"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></linearGradient></defs><rect width="900" height="900" fill="#050505"/>${shardsMarkup()}<rect width="900" height="900" fill="url(#g)"/></svg>`;
+  document.documentElement.style.setProperty('--shards-bg',`url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`); }catch(e){} })();
+function glassSVG(){
+  const shards=shardsMarkup();
+  // plaque principale : carré arrondi avec une encoche en bas à droite (comme le mockup)
+  const X=330,Y=70,W=540,H=470,r=56, nx=X+W-250, ny=Y+H-118;
+  const main=`M${X+r} ${Y} H${X+W-r} Q${X+W} ${Y} ${X+W} ${Y+r} V${ny-26} Q${X+W} ${ny} ${X+W-26} ${ny} H${nx+40} Q${nx} ${ny} ${nx-18} ${ny+34} L${nx-42} ${Y+H-22} Q${nx-54} ${Y+H} ${nx-84} ${Y+H} H${X+r} Q${X} ${Y+H} ${X} ${Y+H-r} V${Y+r} Q${X} ${Y} ${X+r} ${Y} Z`;
+  const pill=`M${nx+10} ${ny+26} H${X+W-24} Q${X+W} ${ny+26} ${X+W} ${ny+50} V${Y+H+56} Q${X+W} ${Y+H+80} ${X+W-24} ${Y+H+80} H${nx+10} Q${nx-14} ${Y+H+80} ${nx-14} ${Y+H+56} V${ny+50} Q${nx-14} ${ny+26} ${nx+10} ${ny+26} Z`;
+  const pane=(d,id)=>`<clipPath id="${id}"><path d="${d}"/></clipPath>
+    <path d="${d}" transform="translate(0 30)" fill="#000" opacity=".55" filter="url(#gsSh)"/>
+    <g clip-path="url(#${id})"><g transform="translate(-30 -18) scale(1.06)" filter="url(#gsFrost)">${shards}</g>
+      <rect width="1200" height="640" fill="url(#gsTint)"/>
+      <ellipse cx="${X+W*.62}" cy="${Y+H*.28}" rx="260" ry="150" fill="#fff" opacity=".10" filter="url(#gsSmudge)"/>
+      <ellipse cx="${X+W*.25}" cy="${Y+H*.75}" rx="200" ry="120" fill="#fff" opacity=".05" filter="url(#gsSmudge)"/></g>
+    <path d="${d}" fill="none" stroke="url(#gsEdge)" stroke-width="3"/>`;
+  return svgWrap(`<rect width="1200" height="640" fill="#050505"/><g transform="scale(1.1) translate(-40 -60)">${shards}</g>
+    <rect width="1200" height="640" fill="url(#gsVig)"/>
+    ${pane(main,'gsA')}${pane(pill,'gsB')}
+    <g font-family="Inter,Helvetica Neue,Arial,sans-serif" fill="#F4F4F4">
+      <text x="${X+46}" y="${Y+100}" font-size="52" font-weight="500" letter-spacing="-1.5">Joue</text>
+      <text x="${X+46}" y="${Y+158}" font-size="52" font-weight="500" letter-spacing="-1.5" fill="#E8FF3A">ensemble</text>
+      <g transform="translate(${X+W-150} ${Y+58})"><circle cx="10" cy="10" r="10" fill="none" stroke="#F4F4F4" stroke-width="2"/><circle cx="24" cy="10" r="10" fill="none" stroke="#F4F4F4" stroke-width="2"/><text x="42" y="17" font-size="20">Coopô</text></g>
+      
+      <text x="${nx+70}" y="${Y+H+40}" font-size="20" opacity=".9">87 % compatible</text></g>`,
+   `<filter id="gsFrost" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="14"/></filter>
+    <filter id="gsSmudge" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="40"/></filter>
+    <filter id="gsSh" x="-20%" y="-20%" width="140%" height="160%"><feGaussianBlur stdDeviation="26"/></filter>
+    <linearGradient id="gsTint" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9A9AA0" stop-opacity=".42"/><stop offset=".5" stop-color="#5A5A60" stop-opacity=".30"/><stop offset="1" stop-color="#7A7A80" stop-opacity=".36"/></linearGradient>
+    <linearGradient id="gsEdge" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".35" stop-color="#fff" stop-opacity=".25"/><stop offset=".7" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#fff" stop-opacity=".55"/></linearGradient>
+    <radialGradient id="gsVig" cx=".5" cy=".45" r=".75"><stop offset=".45" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".7"/></radialGradient>`);
+}
 function awaleSVG(){
   const R=rng(23); let motifs='', grain='', pits='', seeds='';
   // fond bogolan : rangées de motifs géométriques
@@ -1848,6 +1933,8 @@ const FX = {
   samurai:{ particles:{ kind:'petal', colors:['#C41E3A','#E8697F'], n:12, dmin:10, dmax:17 }, click:'ink', wipe:'slash' },
   soft:   { orbs:['#FF9CC0','#FFC6DB','#F77BAA'], orbO:.35,
             particles:{ kind:'petal', colors:['#F77BAA','#FFC6DB','#E23C7A'], n:14, dmin:9, dmax:16 }, click:'hearts' },
+  glass:  { orbs:['#3A3A3E','#1E1E20','#E8FF3A'], orbO:.12,
+            particles:{ kind:'dot', colors:['#FFFFFF','#E8FF3A','#9A9AA0'], n:8, dmin:16, dmax:28 }, click:'ripple' },
   awale:  { orbs:['#E2A23B','#D9622B','#7A4421'], orbO:.22,
             particles:{ kind:'dot', colors:['#F2E2C4','#C9AE8C','#9A6234'], n:12, dmin:14, dmax:22 }, click:'ripple' },
   lofi:   { orbs:['#FFB37C','#8E5BC9','#C2627E'], orbO:.4,
@@ -2058,6 +2145,7 @@ const SKINS = {
   soft:  {label:'Soft',       desc:'Rose pastel et fleurs',            sw:['#E9779E','#FFFFFF','#D9478A'], art:()=>bloomSVG()},
   lofi:  {label:'Lo-fi',      desc:'Ville de nuit, tons chauds',       sw:['#16112A','#2E2649','#FFB37C'], art:lofiSVG},
   esth:  {label:'Esthétique', desc:'Pastels et soleil rétro',          sw:['#C9B8FF','#FCFAFF','#8A6CF0'], art:esthSVG},
+  glass: {label:'Glass',      desc:'Verre dépoli sur éclats noirs, touche jaune', sw:['#0B0B0B','#3A3A3E','#E8FF3A'], art:glassSVG, premium:true},
   awale: {label:'Awalé',      desc:'Plateau en bois, graines et motifs bogolan', sw:['#1E120A','#3A2618','#E2A23B'], art:awaleSVG},
   sombre:{label:'Sombre',     desc:'Nuit étoilée, montagnes et lucioles',             sw:['#07060F','#1B1738','#FF4D8D'], art:nightSVG},
   ocean: {label:'Océan',      desc:'Fond marin, poissons et bulles',             sw:['#2F7FD8','#FFFFFF','#1F6FD1'], art:oceanSVG},
@@ -2066,21 +2154,25 @@ const SKINS = {
 /* ---- Boutique de thèmes (prix identiques à functions/index.js) ---- */
 // enabled  : true -> les thèmes payants sont verrouillés (false -> tout est gratuit)
 // payments : false -> le bouton d'achat affiche « Bientôt disponible ». Passe à true une fois CinetPay et les fonctions prêts.
-const SHOP = { enabled:true, payments:false, region:'europe-west1' };
+// api : laisse vide pour Firebase (formule Blaze) ; ou l'adresse d'un serveur Vercel, par exemple 'https://coopo-paiement.vercel.app/api'
+const SHOP = { enabled:true, payments:false, api:'', region:'europe-west1', currencies:['XOF'] };   // currencies : devises encaissables (même liste que dans api/_lib.js)
 // Prix par devise : à garder identiques à PRICES dans functions/index.js
 const CURRENCIES = {
-  XOF:{ label:'F CFA (BCEAO)', unit:'F CFA', theme:500,  pack:1500,  countries:['CI','SN','ML','BF','BJ','TG','NE'] },
-  XAF:{ label:'F CFA (BEAC)',  unit:'F CFA', theme:500,  pack:1500,  countries:['CM','GA','CG'] },
-  GNF:{ label:'Franc guinéen', unit:'GNF',   theme:7000, pack:21000, countries:['GN'] },
-  CDF:{ label:'Franc congolais', unit:'FC',  theme:2500, pack:7500,  countries:['CD'] },
+  XOF:{ label:'F CFA (BCEAO)', unit:'F CFA', theme:500,  premium:1000,  pack:2500,  countries:['CI','SN','ML','BF','BJ','TG','NE'] },
+  XAF:{ label:'F CFA (BEAC)',  unit:'F CFA', theme:500,  premium:1000,  pack:2500,  countries:['CM','GA','CG'] },
+  GNF:{ label:'Franc guinéen', unit:'GNF',   theme:7000, premium:14000, pack:35000, countries:['GN'] },
+  CDF:{ label:'Franc congolais', unit:'FC',  theme:2500, premium:5000,  pack:12500, countries:['CD'] },
 };
+const curOK = c => !SHOP.currencies || SHOP.currencies.includes(c);
 function curCode(){
-  if(S.currency && CURRENCIES[S.currency]) return S.currency;
-  const c=S.me&&S.me.country; const hit=Object.entries(CURRENCIES).find(([,v])=>v.countries.includes(c));
-  return hit?hit[0]:'XOF';
+  if(S.currency && CURRENCIES[S.currency] && curOK(S.currency)) return S.currency;
+  const c=S.me&&S.me.country; const hit=Object.entries(CURRENCIES).find(([k,v])=>v.countries.includes(c)&&curOK(k));
+  return hit?hit[0]:(SHOP.currencies&&SHOP.currencies[0])||'XOF';
 }
 const price = (kind,cur=curCode()) => CURRENCIES[cur][kind];
-const PAID_SKINS = ['samurai','soft','lofi','esth','ocean','menthe','awale'];
+const PAID_SKINS = ['samurai','soft','lofi','esth','ocean','menthe','awale','glass'];
+const PREMIUM_SKINS = ['glass'];   // thèmes à 1 000 F
+const skinPrice = (id,cur=curCode()) => price(PREMIUM_SKINS.includes(id)?'premium':'theme',cur);
 const money = (n,cur=curCode()) => n.toLocaleString('fr-FR').replace(/\u202f|\u00a0/g,' ')+' '+CURRENCIES[cur].unit;
 function ownsAll(){ return !!(S.owned&&S.owned.pack); }
 function canUseSkin(id){
@@ -2100,16 +2192,16 @@ function previewSkin(id){
 function buyModal(id){
   const t=SKINS[id], live=DB.live&&DB.fns, signed=!!S.auth, hasProfile=!!(S.me&&S.me.dob), minor=hasProfile&&ageGroup(S.me)==='minor';
   let cur=curCode();
-  const eco=c=>price('theme',c)*PAID_SKINS.length-price('pack',c);
+  const eco=c=>PAID_SKINS.reduce((a,x)=>a+skinPrice(x,c),0)-price('pack',c);
   const body = !SHOP.payments ? `<div class="buy-opts buy-soon" aria-disabled="true">
-        <div class="buy-opt"><b>Ce thème</b><span>${esc(t.label)}</span><strong>${money(price('theme',cur),cur)}</strong></div>
+        <div class="buy-opt"><b>Ce thème${t.premium?' <em class="prem">Premium</em>':''}</b><span>${esc(t.label)}</span><strong>${money(skinPrice(id,cur),cur)}</strong></div>
         <div class="buy-opt best"><b>Tous les thèmes</b><span>${PAID_SKINS.length} thèmes, et les prochains</span><strong>${money(price('pack',cur),cur)}</strong></div>
       </div>
       <div class="soon-note"><b>Bientôt disponible</b><span>Le paiement par Mobile Money (Orange Money, MTN, Moov, Wave) arrive très bientôt. En attendant, essaie ce thème gratuitement pendant 20 secondes.</span></div>`
     : !live ? `<p class="muted">Les achats sont disponibles sur le site en ligne.</p>`
     : !signed ? `<p class="muted">Connecte-toi pour débloquer ce thème.</p><p><a class="btn btn-ac" href="#/connexion" data-close>Se connecter</a></p>`
     : !hasProfile ? `<p class="muted">Termine ton profil avant de faire un achat.</p><p><a class="btn btn-ac" href="#/profil" data-close>Compléter mon profil</a></p>`
-    : `<div class="field buy-cur"><label for="buy-cur">Devise</label><select id="buy-cur">${Object.entries(CURRENCIES).map(([k,v])=>`<option value="${k}" ${k===cur?'selected':''}>${v.label} (${k})</option>`).join('')}</select></div>
+    : `${(SHOP.currencies||Object.keys(CURRENCIES)).length>1?`<div class="field buy-cur"><label for="buy-cur">Devise</label><select id="buy-cur">${Object.entries(CURRENCIES).filter(([k])=>curOK(k)).map(([k,v])=>`<option value="${k}" ${k===cur?'selected':''}>${v.label} (${k})</option>`).join('')}</select></div>`:''}
       <div class="buy-opts" id="buy-opts"></div>
       ${minor?`<label class="buy-consent"><input type="checkbox" id="buy-parent"> Un parent ou tuteur est d'accord avec cet achat.</label>`:''}
       <p class="muted buy-note">Paiement sécurisé par CinetPay : Orange Money, MTN, Moov, Wave ou carte bancaire. Lié à ton compte, remboursable 14 jours : <a href="#/remboursement" data-close>politique de remboursement</a>.</p>
@@ -2121,7 +2213,7 @@ function buyModal(id){
     d.querySelector('#buy-try').onclick=()=>{ d.close(); previewSkin(id); };
     const opts=SHOP.payments?d.querySelector('#buy-opts'):null;
     const draw=()=>{ if(!opts) return; const e=eco(cur);
-      opts.innerHTML=`<button type="button" class="buy-opt" data-buy="theme:${id}"><b>Ce thème</b><span>${esc(t.label)}</span><strong>${money(price('theme',cur),cur)}</strong></button>
+      opts.innerHTML=`<button type="button" class="buy-opt" data-buy="theme:${id}"><b>Ce thème${t.premium?' <em class="prem">Premium</em>':''}</b><span>${esc(t.label)}</span><strong>${money(skinPrice(id,cur),cur)}</strong></button>
         <button type="button" class="buy-opt best" data-buy="pack"><b>Tous les thèmes</b><span>${PAID_SKINS.length} thèmes, et les prochains${e>0?` · ${money(e,cur)} d'économie`:''}</span><strong>${money(price('pack',cur),cur)}</strong></button>`;
       bind(); };
     const sel=d.querySelector('#buy-cur'); if(sel) sel.onchange=()=>{ cur=sel.value; S.currency=cur; save(); draw(); };
@@ -2238,7 +2330,7 @@ function viewPayment(tx){
 }
 const PALETTE_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.9 1.4-2l-.3-.8c-.4-1.1.4-2.2 1.6-2.2H17a4 4 0 0 0 4-4c0-5-4-9-9-9z"/><circle cx="7.5" cy="11" r="1.2" fill="currentColor"/><circle cx="10.5" cy="7" r="1.2" fill="currentColor"/><circle cx="15" cy="7.5" r="1.2" fill="currentColor"/></svg>';
 const skinBtn = () => `<button class="skin-btn" type="button" aria-label="Changer de thème" title="Changer de thème">${PALETTE_ICON}</button>`;
-const skinGrid = () => `<div class="skins">${Object.entries(SKINS).map(([id,t])=>`<button type="button" class="skin" data-skin-pick="${id}" aria-pressed="${(S.skin||'defaut')===id}"><span class="sw" style="--a:${t.sw[0]};--b:${t.sw[1]};--c2:${t.sw[2]}"><i></i></span><b>${t.label}${canUseSkin(id)?'':` <span class="skin-lock">${LOCK_SVG}</span>`}</b><small>${canUseSkin(id)?t.desc:money(price('theme'))}</small></button>`).join('')}</div>${AUTH_LIVE&&!ownsAll()&&PAID_SKINS.some(x=>!canUseSkin(x))?`<button type="button" class="pack-cta" data-buy-pack><span>Tous les thèmes</span><strong>${money(price('pack'))}</strong></button>`:''}`;
+const skinGrid = () => `<div class="skins">${Object.entries(SKINS).map(([id,t])=>`<button type="button" class="skin" data-skin-pick="${id}" aria-pressed="${(S.skin||'defaut')===id}"><span class="sw" style="--a:${t.sw[0]};--b:${t.sw[1]};--c2:${t.sw[2]}"><i></i></span><b>${t.label}${canUseSkin(id)?'':` <span class="skin-lock">${LOCK_SVG}</span>`}</b><small>${canUseSkin(id)?t.desc:money(skinPrice(id))}${t.premium&&!canUseSkin(id)?' · premium':''}</small></button>`).join('')}</div>${AUTH_LIVE&&!ownsAll()&&PAID_SKINS.some(x=>!canUseSkin(x))?`<button type="button" class="pack-cta" data-buy-pack><span>Tous les thèmes</span><strong>${money(price('pack'))}</strong></button>`:''}`;
 
 function applySkin(id, anim, opts={}){ setTimeout(updateFavicon,0);
   if(!SKINS[id]) id='defaut';
@@ -2779,18 +2871,22 @@ const DB = {
   fromUid(u){ return u===this.uid() ? 'me' : u; },
   pairId(id){ return [this.uid(),id].sort().join('_'); },
   async init(){ if(!AUTH_LIVE) return; try{ await loadScript(`https://www.gstatic.com/firebasejs/${FB_VERSION}/firebase-firestore-compat.js`); this.db=firebase.firestore(); this.live=true;
-    try{ await loadScript(`https://www.gstatic.com/firebasejs/${FB_VERSION}/firebase-functions-compat.js`); this.fns=firebase.app().functions(SHOP.region); }catch(e){ console.error(e); } }catch(e){ console.error(e); toast('Base de données indisponible'); } },
+    if(SHOP.api){ const api=SHOP.api.replace(/\/$/,''); this.fns={ httpsCallable: name => async (data) => {
+        const u=firebase.auth().currentUser; if(!u) throw new Error('Connecte-toi pour continuer.');
+        const token=await u.getIdToken(); const r=await fetch(`${api}/${name}`,{ method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}, body:JSON.stringify(data||{}) });
+        let j={}; try{ j=await r.json(); }catch(e){} if(!r.ok) throw new Error(j.error||'Le serveur de paiement ne répond pas.'); return { data:j }; } }; }
+    else { try{ await loadScript(`https://www.gstatic.com/firebasejs/${FB_VERSION}/firebase-functions-compat.js`); this.fns=firebase.app().functions(SHOP.region); }catch(e){ console.error(e); } } }catch(e){ console.error(e); toast('Base de données indisponible'); } },
   async loadAll(){
     if(!this.live||!this.uid()) return; const uid=this.uid(), db=this.db; this._loading=true; this._err=null; this._noProfile=false;
     try{
       const [prof,priv]=await Promise.all([db.collection('profiles').doc(uid).get(),db.collection('private').doc(uid).get()]);
-      if(prof.exists){ S.me={...prof.data(),id:'me',dob:priv.exists?priv.data().dob:''}; S.profiles[uid]=S.me; }
+      if(prof.exists){ S.me=normP({...prof.data(),id:'me',dob:priv.exists?priv.data().dob:''}); S.profiles[uid]=S.me; }
       if(priv.exists&&priv.data().dob) S.dobs[uid]=priv.data().dob;
       if(prof.exists&&prof.data().banned){ toast('Ce compte a été suspendu.'); await signOut(); return; }
       if(!prof.exists){ this._loaded=true; this._loading=false; this._noProfile=true; save(); refreshAfterData(); return; }
       const g=S.me&&S.me.dob?ageGroup(S.me):'adult';
       const ps=await db.collection('profiles').where('ageGroup','==',g).where('hidden','==',false).limit(300).get();
-      PLAYERS.length=0; ps.forEach(d=>{ if(d.id!==uid) PLAYERS.push({...d.data(),id:d.id,age:undefined}); });
+      PLAYERS.length=0; ps.forEach(d=>{ if(d.id!==uid) PLAYERS.push(normP({...d.data(),id:d.id,age:undefined})); });
       const rq=await db.collection('requests').where('participants','array-contains',uid).get();
       S.requests=[]; rq.forEach(d=>{ const r=d.data(); S.requests.push({id:d.id,from:this.fromUid(r.from),to:this.fromUid(r.to),status:r.status,at:r.at}); });
       const bl=await db.collection('blocks').doc(uid).collection('list').get(); S.blocked=[]; bl.forEach(d=>S.blocked.push(d.id));
@@ -2837,9 +2933,9 @@ const DB = {
   async rate(id,v){ if(!this.live) return; try{ await this.db.collection('ratings').doc(`${this.uid()}_${id}`).set({by:this.uid(),target:id,value:v,at:Date.now()}); const F=firebase.firestore.FieldValue; if(v>0) await this.db.collection('profiles').doc(id).update({rejoue:F.increment(1)}); }catch(e){ console.error(e); } },
   async setPresence(on){ if(!this.live||!this.uid()||!S.me) return; try{ await this.db.collection('profiles').doc(this.uid()).update({online:on&&S.privacy.online,lastSeen:Date.now()}); }catch(e){} },
   async setDispo(d){ if(!this.live||!this.uid()) return; try{ await this.db.collection('profiles').doc(this.uid()).update({dispo:d||null}); }catch(e){ console.error(e); toast('Statut non enregistré en ligne'); } },
-  async refreshPlayers(){ if(!this.live||!this.uid()||!S.me||!S.me.dob) return; if(this._lastPlayers&&Date.now()-this._lastPlayers<45000) return; this._lastPlayers=Date.now();
+  async refreshPlayers(){ if(!this.live||!this.uid()||!S.me||!S.me.dob) return false; if(this._refreshing||(this._lastPlayers&&Date.now()-this._lastPlayers<45000)) return false; this._lastPlayers=Date.now(); this._refreshing=true;
     try{ const uid=this.uid(), g=ageGroup(S.me); const ps=await this.db.collection('profiles').where('ageGroup','==',g).where('hidden','==',false).limit(300).get();
-      const fresh=[]; ps.forEach(d=>{ if(d.id!==uid) fresh.push({...d.data(),id:d.id,age:undefined}); }); const keep=PLAYERS.filter(p=>p._reported&&!fresh.some(f=>f.id===p.id)); PLAYERS.length=0; fresh.concat(keep).forEach(p=>PLAYERS.push(p)); }catch(e){ console.error(e); } },
+      const fresh=[]; ps.forEach(d=>{ if(d.id!==uid) fresh.push(normP({...d.data(),id:d.id,age:undefined})); }); const keep=PLAYERS.filter(p=>p._reported&&!fresh.some(f=>f.id===p.id)); PLAYERS.length=0; fresh.concat(keep).forEach(p=>PLAYERS.push(p)); return true; }catch(e){ console.error(e); return false; } finally{ this._refreshing=false; } },
   async applyReferral(){ if(!this.live||!this.uid()||!S.me) return; const code=(localStorage.getItem('coopo_ref')||'').toLowerCase(); if(!code||code===S.me.name.toLowerCase()) return;
     try{ const un=await this.db.collection('usernames').doc(code).get(); if(!un.exists||un.data().uid===this.uid()){ localStorage.removeItem('coopo_ref'); return; }
       const by=un.data().uid, db=this.db, b=db.batch();
@@ -2854,7 +2950,7 @@ const DB = {
       S.reports=[]; rs.forEach(d=>{ const r=d.data(); S.reports.push({rid:d.id,id:r.target,by:r.by,reason:r.reason,details:r.details,at:r.at,status:r.status}); });
       const ids=[...new Set(S.reports.map(r=>r.id))].filter(id=>!PLAYERS.some(p=>p.id===id));
       const docs=await Promise.all(ids.map(id=>db.collection('profiles').doc(id).get().catch(()=>null)));
-      docs.forEach(d=>{ if(d&&d.exists) PLAYERS.push({...d.data(),id:d.id,age:undefined,_reported:true}); });
+      docs.forEach(d=>{ if(d&&d.exists) PLAYERS.push(normP({...d.data(),id:d.id,age:undefined,_reported:true})); });
       S.hidden=PLAYERS.filter(p=>p.hidden).map(p=>p.id); S.banned=PLAYERS.filter(p=>p.banned).map(p=>p.id); save();
     }catch(e){ console.error(e); toast('Signalements indisponibles'); } },
   async closeReports(target){ if(!this.live) return; try{ const b=this.db.batch(); S.reports.filter(r=>r.id===target&&r.rid&&r.status!=='done').forEach(r=>b.update(this.db.collection('reports').doc(r.rid),{status:'done'})); await b.commit(); }catch(e){ console.error(e); } },

@@ -2,7 +2,7 @@
    - Le site se met à jour tout seul : la page est toujours demandée au réseau en premier.
    - Hors connexion, la dernière version enregistrée s'affiche.
    - Firebase, Google, CinetPay et les polices ne sont jamais mis en cache ici. */
-const CACHE = 'coopo-v1';
+const CACHE = 'coopo-v2';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', e => {
