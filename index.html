@@ -98,6 +98,8 @@ body.is-home .top{ display:none; }
 .ref-stats{ font-size:14px; color:var(--mu); }
 .ref-stats b{ color:var(--tx); font-size:18px; }
 .btn-sm{ padding:7px 12px; font-size:13px; }
+.logged-out .navpill,.logged-out .tabbar,.logged-out .top-right .live,.logged-out .notif-btn{ display:none !important; }
+.logged-out .frame{ padding-bottom:14px; }
 .install-foot{ position:relative; z-index:1; display:flex; justify-content:center; padding:26px 16px 4px; }
 .install-foot .btn{ display:inline-flex; align-items:center; gap:8px; }
 .install-foot svg{ width:20px; height:20px; }
@@ -1254,8 +1256,18 @@ function renderNav(active){
   document.getElementById('tabbar').innerHTML = NAV.filter(([r])=>TAB.includes(r)).map(([r,l])=>`<a href="#/${r}" ${cur(r)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[r]}</svg>${TAB_LBL[r]||l}</a>`).join('');
 }
 const app=document.getElementById('app');
+// Pages accessibles sans être connecté (connexion, pages légales, aide, contact, installation)
+const PUBLIC_ROUTES=['connexion','inscription','cgu','confidentialite','cookies','remboursement','contact','aide','app'];
 function route(){
   const [, name='accueil', arg] = location.hash.split('/');
+  if(!S.auth && !PUBLIC_ROUTES.includes(name)){
+    try{ if(name && name!=='accueil') sessionStorage.setItem('coopo_after_login', location.hash); }catch(e){}
+    document.body.classList.add('logged-out');
+    let invited=false; try{ invited=!!localStorage.getItem('coopo_ref'); }catch(e){}
+    const gate=invited?'#/inscription':'#/connexion';   // un ami invité arrive directement sur l'inscription
+    if(location.hash!==gate){ location.replace(gate); return; }
+  }
+  document.body.classList.toggle('logged-out', !S.auth);
   const views={accueil:viewHome, connexion:()=>viewAuth('login'), inscription:()=>viewAuth('signup'), profil:viewProfile, matchs:viewMatches, recherche:viewSearch, parametres:viewSettings, joueur:viewPlayer,
     messages:viewMessages, groupes:viewSquads, aide:viewHelp, cgu:()=>viewLegal('cgu'), confidentialite:()=>viewLegal('privacy'), cookies:viewCookies, remboursement:viewRefund, contact:viewContact, app:viewApp, paiement:viewPayment, moderation:viewAdmin};
   if(name.startsWith('@')){ const nm=decodeURIComponent(name.slice(1)).toLowerCase(); const p=PLAYERS.find(x=>x.name.toLowerCase()===nm); document.body.classList.remove('is-home'); viewPlayer(S.me&&S.me.name.toLowerCase()===nm?'me':(p?p.id:'?')); renderNav(''); window.scrollTo(0,0); app.firstElementChild?.classList.add('page-in'); animateAfterRender(); return; }
@@ -2421,11 +2433,12 @@ function onSignedIn(u){
   if(DB.live && (isNewSession || (!DB._loaded && !DB._loading))) DB.loadAll();
   if(isNewSession){
     toast(`Connecté en tant que ${u.name || u.email}`);
-    const target = S.me ? '#/matchs' : '#/profil';
+    let back=''; try{ back=sessionStorage.getItem('coopo_after_login')||''; sessionStorage.removeItem('coopo_after_login'); }catch(e){}
+    const target = S.me ? (back||'#/accueil') : '#/profil';
     if(location.hash===target) route(); else location.hash=target;
   } else route();
 }
-function onSignedOut(){ S.owned=null; S.auth=null; S.me=null; S.requests=[]; S.notifs=[]; S.chats={}; save(); route(); }
+function onSignedOut(){ S.owned=null; S.auth=null; S.me=null; S.requests=[]; S.notifs=[]; S.chats={}; save(); if(location.hash!=='#/connexion') location.hash='#/connexion'; else route(); }
 async function signOut(){
   await DB.setPresence(false); DB._unsub.forEach(u=>u()); DB._unsub=[]; clearInterval(DB._hb);
   if(AUTH_LIVE){ try{ google.accounts.id.disableAutoSelect(); await firebase.auth().signOut(); }catch(e){} }
