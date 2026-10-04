@@ -100,6 +100,11 @@ body.is-home .top{ display:none; }
 .btn-sm{ padding:7px 12px; font-size:13px; }
 .logged-out .navpill,.logged-out .tabbar,.logged-out .top-right .live,.logged-out .notif-btn{ display:none !important; }
 .logged-out .frame{ padding-bottom:14px; }
+.no-profile .navpill,.no-profile .tabbar,.no-profile .notif-btn{ display:none !important; }
+.no-profile .frame{ padding-bottom:14px; }
+.inst-steps{ margin:8px 0 14px; padding-left:22px; display:grid; gap:10px; line-height:1.5; }
+.inst-diag{ margin-top:10px; font-size:13px; } .inst-diag summary{ cursor:pointer; color:var(--mu); }
+.linklike{ background:none; border:0; padding:0; font:inherit; color:var(--pk2,var(--pk)); text-decoration:underline; cursor:pointer; }
 .install-foot{ position:relative; z-index:1; display:flex; justify-content:center; padding:26px 16px 4px; }
 .install-foot .btn{ display:inline-flex; align-items:center; gap:8px; }
 .install-foot svg{ width:20px; height:20px; }
@@ -1256,6 +1261,8 @@ function renderNav(active){
   document.getElementById('tabbar').innerHTML = NAV.filter(([r])=>TAB.includes(r)).map(([r,l])=>`<a href="#/${r}" ${cur(r)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[r]}</svg>${TAB_LBL[r]||l}</a>`).join('');
 }
 const app=document.getElementById('app');
+// Profil complet = pseudo, date de naissance et au moins un jeu
+const profileComplete = () => !!(S.me && S.me.name && S.me.dob && Array.isArray(S.me.games) && S.me.games.length);
 // Pages accessibles sans être connecté (connexion, pages légales, aide, contact, installation)
 const PUBLIC_ROUTES=['connexion','inscription','cgu','confidentialite','cookies','remboursement','contact','aide','app'];
 function route(){
@@ -1268,6 +1275,13 @@ function route(){
     if(location.hash!==gate){ location.replace(gate); return; }
   }
   document.body.classList.toggle('logged-out', !S.auth);
+  // Connecté mais profil pas encore rempli : seule la création du profil est accessible
+  if(S.auth && !profileComplete() && !PUBLIC_ROUTES.includes(name) && name!=='profil'){
+    if(dataPending()){ document.body.classList.add('no-profile'); loadingView('Coopô'); renderNav(''); return; }   // on attend de savoir si le profil existe
+    try{ if(name && name!=='accueil') sessionStorage.setItem('coopo_after_profile', location.hash); }catch(e){}
+    if(location.hash!=='#/profil'){ location.replace('#/profil'); return; }
+  }
+  document.body.classList.toggle('no-profile', !!S.auth && !profileComplete());
   const views={accueil:viewHome, connexion:()=>viewAuth('login'), inscription:()=>viewAuth('signup'), profil:viewProfile, matchs:viewMatches, recherche:viewSearch, parametres:viewSettings, joueur:viewPlayer,
     messages:viewMessages, groupes:viewSquads, aide:viewHelp, cgu:()=>viewLegal('cgu'), confidentialite:()=>viewLegal('privacy'), cookies:viewCookies, remboursement:viewRefund, contact:viewContact, app:viewApp, paiement:viewPayment, moderation:viewAdmin};
   if(name.startsWith('@')){ const nm=decodeURIComponent(name.slice(1)).toLowerCase(); const p=PLAYERS.find(x=>x.name.toLowerCase()===nm); document.body.classList.remove('is-home'); viewPlayer(S.me&&S.me.name.toLowerCase()===nm?'me':(p?p.id:'?')); renderNav(''); window.scrollTo(0,0); app.firstElementChild?.classList.add('page-in'); animateAfterRender(); return; }
@@ -1389,7 +1403,7 @@ function viewProfile(){
   const hues=[265,330,10,45,150,200];
   app.innerHTML = `<div class="wrap page">
   <div class="page-head"><div><h2>${isNew?'Créer mon profil':'Mon profil'}</h2>
-    <p>${isNew?'Étape 2 sur 3 · Ajoute tes jeux et tes habitudes pour découvrir tes matchs.':'Tes modifications mettent à jour tes pourcentages de compatibilité.'}</p></div>
+    <p>${isNew?'Étape 2 sur 3 · Ajoute tes jeux et tes habitudes pour découvrir tes matchs. Ton profil est nécessaire pour accéder à Coopô.':'Tes modifications mettent à jour tes pourcentages de compatibilité.'}</p>${isNew&&S.auth?`<p class="muted" style="font-size:13px">Connecté : ${esc(S.auth.email||S.auth.name||'')} · <button class="linklike" type="button" data-signout>Se déconnecter</button></p>`:''}</div>
     ${isNew?'':'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" type="button" id="preview">Voir mon profil public</button><button class="btn btn-sm" type="button" id="share">Partager mon profil</button><a class="btn btn-sm" href="#/parametres">Paramètres</a></div>'}</div>
   ${isNew&&!S.auth?`<section class="panel login" style="margin-bottom:18px"><h3>Gagne du temps</h3><p class="muted">Crée ton compte en un clic : ton nom et ta photo sont préremplis.</p><div class="gbtn"></div><div class="or"><span>ou remplis le formulaire avec un mot de passe</span></div></section>`:''}
   <form class="form" id="pf" novalidate>
@@ -1549,7 +1563,8 @@ function submitProfile(e){
   if(!draft.langs.length) draft.langs=['fr'];
   S.me={...draft,id:'me'}; if(S.auth) S.profiles[S.auth.uid]=S.me; if(isNew) S.onboard=true; save(); DB.saveProfile(S.me); demoScheduleIncoming();
   toast(isNew?'Profil créé':'Modifications enregistrées');
-  location.hash='#/matchs';
+  let next='#/matchs'; if(isNew){ try{ next=sessionStorage.getItem('coopo_after_profile')||sessionStorage.getItem('coopo_after_login')||'#/matchs'; sessionStorage.removeItem('coopo_after_profile'); sessionStorage.removeItem('coopo_after_login'); }catch(e){} }
+  location.hash=next;
 }
 function publicMe(){ return {...S.me, online:S.privacy.online}; }
 
@@ -1559,7 +1574,7 @@ function refreshAfterData(){
   if(Date.now()-_lastRefresh<800) return; _lastRefresh=Date.now();
   const a=document.activeElement, typing=a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&a.value;
   const h=location.hash||'#/accueil';
-  if(!typing && /^#\/(accueil|matchs|groupes|messages|moderation|joueur|recherche)?(\/|$)/.test(h)) { const y=scrollY; route(); scrollTo(0,y); }
+  if(!typing && /^#\/(accueil|matchs|groupes|messages|moderation|joueur|recherche|parametres)?(\/|$)/.test(h)) { const y=scrollY; route(); scrollTo(0,y); }
 }
 // Profil venu de Firestore : on complète les champs manquants pour qu'aucune page ne plante
 function normP(p){ p=p||{}; ['games','hours','days','platforms','langs'].forEach(k=>{ if(!Array.isArray(p[k])) p[k]=[]; }); ['tags','ranks'].forEach(k=>{ if(!p[k]||typeof p[k]!=='object') p[k]={}; });
@@ -2301,11 +2316,65 @@ const isStandalone=()=>matchMedia('(display-mode: standalone)').matches || navig
 const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); _installEvt=e; refreshInstallUI(); });
 addEventListener('appinstalled',()=>{ _installEvt=null; toast('Coopô est installée sur ton appareil'); refreshInstallUI(); });
+function envInfo(){
+  const ua=navigator.userAgent||'';
+  const inApp=/FBAN|FBAV|FB_IAB|Instagram|musical_ly|Bytedance|TikTok|Snapchat|Line\/|WhatsApp|wv\)|; wv/i.test(ua);
+  const ios=isIOS(), android=/android/i.test(ua);
+  const iosSafari=ios && /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(ua) && !inApp;
+  const iosChrome=ios && /CriOS/i.test(ua);
+  const samsung=/SamsungBrowser/i.test(ua), firefox=/Firefox|FxiOS/i.test(ua);
+  return {ua,inApp,ios,android,iosSafari,iosChrome,samsung,firefox};
+}
+const SHARE_ICO='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg>';
+function installSteps(){
+  const e=envInfo(); const url=location.origin+location.pathname;
+  if(e.inApp) return {title:"Ouvre Coopô dans ton navigateur", steps:[
+      "Tu es dans le navigateur d'une appli (TikTok, WhatsApp, Instagram…) : l'installation y est impossible.",
+      e.ios?"Touche les <b>⋯</b> en haut à droite, puis <b>Ouvrir dans Safari</b>.":"Touche les <b>⋮</b> en haut à droite, puis <b>Ouvrir dans Chrome</b> (ou « Ouvrir dans le navigateur »).",
+      "Dans Safari ou Chrome, reviens sur cette page et touche à nouveau « Installer l'application »."], copy:url};
+  if(e.ios && !e.iosSafari && !e.iosChrome) return {title:"Ouvre Coopô dans Safari", steps:[
+      "Sur iPhone, l'installation se fait depuis <b>Safari</b> (ou Chrome à partir d'iOS 16.4).",
+      "Copie le lien ci-dessous, ouvre <b>Safari</b> et colle-le dans la barre d'adresse.",
+      "Puis suis les étapes « Partager » › « Sur l'écran d'accueil »."], copy:url};
+  if(e.ios) return {title:"Installer sur iPhone", steps:[
+      `Touche le bouton <b>Partager</b> ${SHARE_ICO} ${e.iosChrome?'en haut à droite (dans la barre d\'adresse)':'en bas de l\'écran (au centre)'}.`,
+      "Fais défiler et choisis <b>Sur l'écran d'accueil</b>. S'il n'apparaît pas, touche <b>Modifier les actions</b> en bas de la liste pour l'ajouter.",
+      "Touche <b>Ajouter</b> en haut à droite : l'icône Coopô apparaît sur ton écran d'accueil."]};
+  if(e.firefox) return {title:"Installer sur Android", steps:[
+      "Firefox installe mal les applications web : ouvre plutôt cette page dans <b>Chrome</b>.",
+      "Dans Chrome, touche <b>⋮</b> en haut à droite, puis <b>Installer l'application</b> ou <b>Ajouter à l'écran d'accueil</b>."], copy:url};
+  if(e.samsung) return {title:"Installer avec Samsung Internet", steps:[
+      "Touche le menu <b>≡</b> en bas à droite.", "Choisis <b>Ajouter la page à</b>, puis <b>Écran d'accueil</b>."]};
+  if(e.android) return {title:"Installer sur Android", steps:[
+      "Touche les <b>⋮</b> en haut à droite de Chrome.",
+      "Choisis <b>Installer l'application</b>. Si tu ne le vois pas, choisis <b>Ajouter à l'écran d'accueil</b>, puis <b>Installer</b>.",
+      "L'icône Coopô apparaît sur ton écran d'accueil et dans tes applications."]};
+  return {title:"Installer sur ordinateur", steps:[
+      "Dans Chrome ou Edge, clique sur l'icône d'installation <b>⊕</b> à droite de la barre d'adresse.",
+      "Ou ouvre le menu <b>⋮</b>, puis <b>Caster, enregistrer et partager</b> › <b>Installer la page en tant qu'application</b>.",
+      "Sur téléphone, ouvre Coopô dans Chrome (Android) ou Safari (iPhone)."]};
+}
+async function installDiag(){
+  const out=[]; try{ const r=await fetch('manifest.webmanifest',{cache:'no-store'}); out.push(r.ok?'✅ manifest.webmanifest trouvé':'❌ manifest.webmanifest introuvable (fichier non déposé sur GitHub ?)'); if(r.ok){ const m=await r.json(); for(const ic of (m.icons||[])){ const ri=await fetch(ic.src,{cache:'no-store'}); out.push((ri.ok?'✅ ':'❌ ')+ic.src+(ri.ok?'':' introuvable')); } } }catch(e){ out.push('❌ manifest illisible'); }
+  try{ const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration(); out.push(reg?'✅ service worker (sw.js) actif':'❌ service worker inactif (sw.js manquant ?)'); }catch(e){ out.push('❌ service worker indisponible'); }
+  out.push(location.protocol==='https:'?'✅ connexion sécurisée (https)':'❌ le site doit être en https');
+  return out;
+}
+function installModal(){
+  if(isStandalone()){ toast('Coopô est déjà installée sur cet appareil'); return; }
+  const st=installSteps();
+  modal(`<h3>${st.title}</h3><ol class="inst-steps">${st.steps.map(x=>`<li>${x}</li>`).join('')}</ol>
+    ${st.copy?`<div class="ref-row"><input class="ref-link" readonly value="${esc(st.copy)}" aria-label="Lien du site"><button class="btn btn-ac" type="button" id="inst-copy">Copier</button></div>`:''}
+    ${(S.auth&&isAdmin())?`<details class="inst-diag"><summary>Diagnostic (modération)</summary><div id="inst-diag" class="muted">Vérification…</div></details>`:''}
+    <div class="dlg-actions"><button class="btn" data-close>Fermer</button></div>`, d=>{
+    const c=d.querySelector('#inst-copy'); if(c) c.onclick=async()=>{ try{ await navigator.clipboard.writeText(st.copy); toast('Lien copié'); }catch(e){ d.querySelector('.ref-link').select(); } };
+    const dg=d.querySelector('#inst-diag'); if(dg) installDiag().then(l=>dg.innerHTML=l.map(esc).join('<br>'));
+  });
+}
 function installHTML(){
   if(isStandalone()) return `<p class="hint">Coopô est déjà installée sur cet appareil. Merci !</p>`;
   if(_installEvt) return `<p class="hint">Ajoute Coopô à ton écran d'accueil : elle s'ouvre comme une vraie application, en plein écran.</p><button class="btn btn-ac" type="button" id="install-app">Installer l'application</button>`;
-  if(isIOS()) return `<p class="hint">Sur iPhone : touche le bouton <b>Partager</b> de Safari (le carré avec une flèche), puis <b>Sur l'écran d'accueil</b>.</p>`;
-  return `<p class="hint">Ouvre Coopô dans Chrome sur ton téléphone, puis menu <b>⋮</b> et <b>Installer l'application</b> (ou <b>Ajouter à l'écran d'accueil</b>).</p>`;
+  return `<p class="hint">Ajoute Coopô à ton écran d'accueil : elle s'ouvre comme une vraie application, en plein écran.</p><button class="btn btn-ac" type="button" data-install-go>Installer l'application</button>`;
 }
 function viewApp(){
   app.innerHTML=`<div class="wrap page legal"><div class="page-head"><div><h2>L'application Coopô</h2><p>Installe Coopô sur ton téléphone : une icône sur ton écran d'accueil, l'ouverture en plein écran, sans passer par le navigateur.</p></div></div>
@@ -2313,7 +2382,7 @@ function viewApp(){
 }
 function refreshInstallUI(){ document.querySelectorAll('[data-install-box]').forEach(b=>b.innerHTML=installHTML()); document.querySelectorAll('[data-install-foot]').forEach(b=>b.hidden=isStandalone()); }
 setTimeout(refreshInstallUI,0);
-document.addEventListener('click',e=>{ if(!e.target.closest('[data-install-go]')) return; if(_installEvt){ _installEvt.prompt(); _installEvt.userChoice.finally(()=>{ _installEvt=null; refreshInstallUI(); }); } else location.hash='#/app'; });
+document.addEventListener('click',e=>{ if(!e.target.closest('[data-install-go]')) return; if(_installEvt){ try{ _installEvt.prompt(); _installEvt.userChoice.finally(()=>{ _installEvt=null; refreshInstallUI(); }); }catch(x){ installModal(); } } else installModal(); });
 document.addEventListener('click',async e=>{ if(!e.target.closest('#install-app')||!_installEvt) return;
   _installEvt.prompt(); try{ await _installEvt.userChoice; }catch(x){} _installEvt=null; refreshInstallUI(); });
 try{ if('serviceWorker' in navigator && location.protocol==='https:' && !/claude|claudeusercontent/.test(location.hostname)) addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{})); }catch(e){}
