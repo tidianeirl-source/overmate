@@ -638,7 +638,12 @@ dialog:has(.skins){ width:min(620px,calc(100% - 32px)); }
 
 /* --- Connexion --- */
 .login{ justify-items:center; text-align:center; gap:16px; padding:34px 26px; }
-.gbtn{ min-height:44px; display:flex; justify-content:center; }
+.gbtn{ min-height:44px; display:flex; justify-content:center; max-width:100%; overflow:hidden; border-radius:999px; }
+/* le bouton Google est une iframe : sans ceci, elle prend un fond blanc opaque sur les thèmes sombres */
+.gbtn iframe{ color-scheme:normal; max-width:100% !important; }
+.auth,.auth > *,.auth-form,.auth-side,.auth-intro,.auth-steps{ min-width:0; }
+.auth{ overflow:hidden; }
+body{ overflow-x:clip; }
 .demo-g small{ font-weight:500; opacity:.7; text-transform:none; }
 .or{ display:flex; align-items:center; gap:12px; width:100%; color:var(--mu); font-size:13px; }
 .or::before,.or::after{ content:''; flex:1; height:1.5px; background:var(--line); }
@@ -714,7 +719,7 @@ input.invalid{ border-color:var(--lo) !important; animation:shake .35s; }
 .auth-switch a{ color:var(--tx); font-weight:700; }
 .demo-note{ text-align:center; }
 @media (max-width:900px){
-  .auth{ grid-template-columns:1fr; min-height:0; }
+  .auth{ grid-template-columns:minmax(0,1fr); min-height:0; }
   .auth-side{ min-height:300px; padding:26px 20px; gap:22px; }
   .auth-intro{ grid-template-columns:1fr; gap:8px; }
   .auth-form{ padding:28px 12px 18px; }
@@ -2399,7 +2404,7 @@ function viewPayment(tx){
     if(!(DB.live&&DB.fns)){ if(tries++<10) return setTimeout(check,800); app.innerHTML=box('Vérification impossible','Recharge la page dans un instant.'); return; }
     try{ const r=(await DB.fns.httpsCallable('checkPayment')({tx})).data;
       if(r.status==='paid'){ await DB.loadPurchases(); const item=String(r.item||''), th=item.startsWith('theme:')?item.slice(6):null;
-        applySkin(th||S.skinWanted||S.skin, true);
+        applySkin(th||S.skinWanted||S.skin, true); if(th) DB.saveSkin(th);
         app.innerHTML=box('Merci, c\'est débloqué !', th?`Le thème ${esc(SKINS[th]?.label||th)} est à toi et vient d'être activé.`:'Tous les thèmes sont à toi. Choisis celui que tu préfères.','<a class="btn btn-ac" href="#/parametres">Choisir mon thème</a>'); return; }
       if(r.status==='failed'){ app.innerHTML=box('Paiement non abouti','Le paiement a été refusé ou annulé. Aucun thème n\'a été débloqué.','<a class="btn" href="#/parametres">Réessayer</a>'); return; }
       if(r.status==='review'){ app.innerHTML=box('Paiement en vérification','Le montant reçu ne correspond pas au prix. La modération va vérifier : écris-nous via « Nous écrire » avec la référence '+esc(tx)+'.'); return; }
@@ -2432,8 +2437,8 @@ document.addEventListener('click',e=>{
   const b=e.target.closest('[data-skin-pick]'); if(!b) return;
   const id=b.dataset.skinPick;
   if(!canUseSkin(id)){ buyModal(id); return; }
-  if(id===S.skin) return;
-  applySkin(id,true);
+  if(id===S.skin && S.skinWanted===id) return;
+  applySkin(id,true); DB.saveSkin(id);
   document.querySelectorAll('[data-skin-pick]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.skinPick===id));
   const y=window.scrollY; if(!b.closest('#app')) { route(); window.scrollTo(0,y); }
   toast(`Thème ${SKINS[id].label} activé`);
@@ -2485,7 +2490,7 @@ async function onGoogleCredential({ credential }){
 function renderGoogleButtons(root=document){
   root.querySelectorAll('.gbtn').forEach(el=>{
     if(AUTH_LIVE && window.google?.accounts?.id){
-      el.innerHTML=''; google.accounts.id.renderButton(el,{ theme:'outline', size:'large', shape:'pill', text:'continue_with', locale:'fr', width:300 });
+      el.innerHTML=''; const w=Math.max(200,Math.min(360,Math.floor((el.parentElement||el).clientWidth||300))); google.accounts.id.renderButton(el,{ theme:'outline', size:'large', shape:'pill', text:'continue_with', locale:'fr', width:w });
     } else if(!el.firstChild){
       el.innerHTML=`<button type="button" class="btn btn-ghost demo-g">Continuer avec Google <small>(démo)</small></button>`;
     }
@@ -2497,6 +2502,7 @@ const suggestName = n => (n||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
 function onSignedIn(u){
   const isNewSession = !S.auth || S.auth.uid!==u.uid;
   S.auth = { provider:'google', ...u };
+  { const sk=S.skinByUser&&S.skinByUser[u.uid]; if(sk&&SKINS[sk]&&sk!==S.skinWanted){ S.skinWanted=sk; applySkin(sk); } }
   S.me = S.profiles[u.uid] || null;
   save();
   if(DB.live && (isNewSession || (!DB._loaded && !DB._loading))) DB.loadAll();
@@ -2962,7 +2968,7 @@ const DB = {
     if(!this.live||!this.uid()) return; const uid=this.uid(), db=this.db; this._loading=true; this._err=null; this._noProfile=false;
     try{
       const [prof,priv]=await Promise.all([db.collection('profiles').doc(uid).get(),db.collection('private').doc(uid).get()]);
-      if(prof.exists){ S.me=normP({...prof.data(),id:'me',dob:priv.exists?priv.data().dob:''}); S.profiles[uid]=S.me; }
+      if(prof.exists){ S.me=normP({...prof.data(),id:'me',dob:priv.exists?priv.data().dob:''}); { const sk=prof.data().skin; if(sk&&SKINS[sk]) S.skinWanted=sk; } S.profiles[uid]=S.me; }
       if(priv.exists&&priv.data().dob) S.dobs[uid]=priv.data().dob;
       if(prof.exists&&prof.data().banned){ toast('Ce compte a été suspendu.'); await signOut(); return; }
       if(!prof.exists){ this._loaded=true; this._loading=false; this._noProfile=true; save(); refreshAfterData(); return; }
@@ -2996,7 +3002,7 @@ const DB = {
     try{ const ref=this.db.collection('profiles').doc(uid); const isNew=!(await ref.get().catch(()=>({exists:false}))).exists;
       await this.db.collection('private').doc(uid).set({dob,updatedAt:Date.now()},{merge:true});
       await this.db.collection('usernames').doc(me.name.toLowerCase()).set({uid});
-      const {banned,hidden,rejoue,moderator,dispo,...safe}=pub;
+      const {banned,hidden,rejoue,moderator,dispo,skin,...safe}=pub;
       const data={...safe,nameLower:me.name.toLowerCase(),ageGroup:ageGroup(me),privacy:S.privacy,discordPublic:S.privacy.discord,online:true,lastSeen:Date.now(),updatedAt:Date.now()};
       if(isNew){ Object.assign(data,{banned:false,hidden:false,rejoue:0}); await ref.set(data); await this.applyReferral(); await this.loadAll(); }
       else await ref.set(data,{merge:true}); }
@@ -3014,6 +3020,9 @@ const DB = {
   async saveNotif(toId,n){ if(!this.live) return; try{ await this.db.collection('notifications').doc(this.toUid(toId)).collection('items').add({...n,from:this.toUid(n.from),at:Date.now(),read:false}); }catch(e){ console.error(e); } },
   async rate(id,v){ if(!this.live) return; try{ await this.db.collection('ratings').doc(`${this.uid()}_${id}`).set({by:this.uid(),target:id,value:v,at:Date.now()}); const F=firebase.firestore.FieldValue; if(v>0) await this.db.collection('profiles').doc(id).update({rejoue:F.increment(1)}); }catch(e){ console.error(e); } },
   async setPresence(on){ if(!this.live||!this.uid()||!S.me) return; try{ await this.db.collection('profiles').doc(this.uid()).update({online:on&&S.privacy.online,lastSeen:Date.now()}); }catch(e){} },
+  saveSkin(id){ try{ if(S.auth){ S.skinByUser=S.skinByUser||{}; S.skinByUser[S.auth.uid]=id; save(); } }catch(e){}
+    if(!this.live||!this.uid()||!S.me) return; clearTimeout(this._skinT);
+    this._skinT=setTimeout(()=>{ this.db.collection('profiles').doc(this.uid()).update({skin:id}).catch(e=>console.error(e)); },600); },
   async setDispo(d){ if(!this.live||!this.uid()) return; try{ await this.db.collection('profiles').doc(this.uid()).update({dispo:d||null}); }catch(e){ console.error(e); toast('Statut non enregistré en ligne'); } },
   async refreshPlayers(){ if(!this.live||!this.uid()||!S.me||!S.me.dob) return false; if(this._refreshing||(this._lastPlayers&&Date.now()-this._lastPlayers<45000)) return false; this._lastPlayers=Date.now(); this._refreshing=true;
     try{ const uid=this.uid(), g=ageGroup(S.me); const ps=await this.db.collection('profiles').where('ageGroup','==',g).where('hidden','==',false).limit(300).get();
