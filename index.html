@@ -2249,7 +2249,7 @@ const SKINS = {
 // enabled  : true -> les thèmes payants sont verrouillés (false -> tout est gratuit)
 // payments : false -> le bouton d'achat affiche « Bientôt disponible ». Passe à true une fois CinetPay et les fonctions prêts.
 // api : laisse vide pour Firebase (formule Blaze) ; ou l'adresse d'un serveur Vercel, par exemple 'https://coopo-paiement.vercel.app/api'
-const SHOP = { enabled:true, payments:false, api:'', region:'europe-west1', currencies:['XOF'] };   // currencies : devises encaissables (même liste que dans api/_lib.js)
+const SHOP = { enabled:true, payments:(()=>{try{if(/[?&]testpay=1/.test(location.search))localStorage.setItem('coopo_testpay','1');return localStorage.getItem('coopo_testpay')==='1';}catch(e){return false;}})(), api:'https://coopo-paiement.vercel.app/api', region:'europe-west1', currencies:['XOF'] };   // currencies : devises encaissables (même liste que dans api/_lib.js)
 // Prix par devise : à garder identiques à PRICES dans functions/index.js
 const CURRENCIES = {
   XOF:{ label:'F CFA (BCEAO)', unit:'F CFA', theme:500,  premium:1000,  pack:2500,  countries:['CI','SN','ML','BF','BJ','TG','NE'] },
