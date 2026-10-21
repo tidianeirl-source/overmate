@@ -1135,6 +1135,28 @@ html[data-skin="esth"] .mcard:hover::before{ opacity:1; }
 @media (max-width:640px){ .gp-row{ grid-template-columns:1fr 1fr; } .gp-row input{ grid-column:1/-1; } }
 .rank.role{ opacity:.8; }
 </style>
+<style id="defaut-retouches">
+/* ---- Retouches du thème Coopô (défaut) ---- */
+html[data-skin="defaut"]{ --mu:#B6BCE0; }
+/* « Nouveau » ne concurrence plus le titre principal */
+html[data-skin="defaut"] .sc-stat b{ font-size:clamp(28px,3.2vw,40px) !important; line-height:1.05; }
+/* Petits textes plus lisibles */
+html[data-skin="defaut"] .sc-stat span, html[data-skin="defaut"] .sc-lbl{ color:rgba(255,255,255,.92) !important; font-size:14px !important; }
+/* Le citron sur le bouton clé */
+html[data-skin="defaut"] .dispo-cta{ background:var(--hi) !important; color:#111 !important; box-shadow:0 10px 30px -12px rgba(200,255,77,.55); }
+html[data-skin="defaut"] .dispo-cta:hover{ filter:brightness(1.06); }
+/* Scores de match aux couleurs du thème */
+html[data-skin="defaut"] .ring[style*="--mid"]{ --c:#E2FF8F !important; }
+html[data-skin="defaut"] .ring[style*="--warm"]{ --c:var(--pk2) !important; }
+/* Titres et détails */
+html[data-skin="defaut"] section.reveal > h2{ color:var(--tx) !important; }
+html[data-skin="defaut"] section.reveal > h2::first-letter{ text-transform:uppercase; }
+html[data-skin="defaut"] .nudge{ display:flex !important; align-items:center; gap:14px; }
+html[data-skin="defaut"] .nudge > div{ flex:1; min-width:0; }
+html[data-skin="defaut"] .nudge-go{ flex:none; display:grid; place-items:center; width:34px; height:34px; border-radius:50%; background:var(--s2); color:var(--hi) !important; font-size:20px; margin:0 !important; }
+html[data-skin="defaut"] .hero-cta .linkbtn{ display:inline-flex; align-items:center; padding:13px 22px; border:1px solid rgba(255,255,255,.35); border-radius:999px; text-decoration:none !important; color:#fff !important; font-weight:600; margin-left:6px; }
+html[data-skin="defaut"] .hero-cta .linkbtn:hover{ background:rgba(255,255,255,.08); }
+</style>
 </head>
 <body>
 
