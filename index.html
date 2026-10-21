@@ -548,8 +548,8 @@ html[data-skin="defaut"]{
   --title:#fff; --title-shadow:0 0 30px rgba(124,92,255,.6);
   color-scheme:dark;
 }
-html[data-skin="defaut"] .top-right .live::before{ background:var(--hi); }
-html[data-skin="defaut"] h2{ letter-spacing:-.01em; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .top-right .live::before{ background:var(--hi); }
+html:is([data-skin="defaut"],[data-skin="sombre"]) h2{ letter-spacing:-.01em; }
 
 /* --- Samouraï --- */
 html[data-skin="samurai"]{
@@ -778,7 +778,7 @@ input.invalid{ border-color:var(--lo) !important; animation:shake .35s; }
 
 /* --- Accueil allégé --- */
 .marq.hide{ display:none; }
-html[data-skin="defaut"] .home-grid{ padding-top:40px; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .home-grid{ padding-top:40px; }
 .trust{ font-size:13px; color:var(--mu); font-weight:600; }
 .score-line{ margin-top:18px; color:var(--mu); font-size:14px; line-height:1.9; }
 .score-line span{ display:inline-block; margin-right:6px; padding:2px 10px; border-radius:var(--rp); background:color-mix(in srgb,var(--k) 16%,transparent); color:var(--tx); font-weight:600; font-size:13px; }
@@ -877,7 +877,7 @@ html[data-skin="defaut"] .home-grid{ padding-top:40px; }
 .sc-dots i{ width:8px; height:8px; border-radius:4px; background:rgba(255,255,255,.35); transition:.3s; } .sc-dots i.on{ background:#fff; width:24px; }
 .sc-thumb{ position:absolute; z-index:2; right:22px; bottom:20px; width:74px; height:74px; border-radius:16px; border:1.5px solid rgba(255,255,255,.25); background:rgba(0,0,0,.3); padding:6px; cursor:pointer; transition:.2s; }
 .sc-thumb:hover{ transform:scale(1.08); background:rgba(0,0,0,.45); } .sc-thumb svg{ width:100%; height:100%; }
-html[data-skin="defaut"] .frame{ padding-top:14px; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .frame{ padding-top:14px; }
 @media (max-width:980px){
   .sc-body{ grid-template-columns:1fr 1fr; } .sc-side{ grid-column:1 / -1; justify-items:start; text-align:left; } .sc-pills{ justify-content:flex-start; } }
 @media (max-width:760px){
@@ -1005,7 +1005,7 @@ dialog[open]::backdrop{ animation:fade .25s ease; }
 #wipe.panels i:nth-child(1){ left:-5%; } #wipe.panels i:nth-child(2){ left:30%; } #wipe.panels i:nth-child(3){ left:65%; }
 @keyframes panelOut{ to{ transform:skewX(-8deg) translateY(-112%); } }
 
-html[data-skin="defaut"] .page-in, html[data-skin="lofi"] .page-in, html[data-skin="menthe"] .page-in{ animation:pageBlur .65s cubic-bezier(.2,.8,.2,1) both; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .page-in, html[data-skin="lofi"] .page-in, html[data-skin="menthe"] .page-in{ animation:pageBlur .65s cubic-bezier(.2,.8,.2,1) both; }
 @keyframes pageBlur{ from{ opacity:0; filter:blur(14px); transform:translateY(12px) scale(.99); } }
 html[data-skin="soft"] .page-in{ animation:pageBloom .6s cubic-bezier(.3,1.4,.5,1) both; }
 @keyframes pageBloom{ from{ opacity:0; transform:scale(.94); } }
@@ -1013,7 +1013,7 @@ html[data-skin="esth"] .page-in{ animation:pageIris .8s cubic-bezier(.6,0,.2,1) 
 @keyframes pageIris{ from{ clip-path:circle(0% at 50% 18%); } to{ clip-path:circle(150% at 50% 18%); } }
 html[data-skin="samurai"] .page-in{ animation:pageCut .6s cubic-bezier(.7,0,.2,1) .12s both; }
 @keyframes pageCut{ from{ clip-path:polygon(0 0,0 0,-30% 100%,-30% 100%); } to{ clip-path:polygon(0 0,130% 0,100% 100%,-30% 100%); } }
-html[data-skin="sombre"] .page-in{ animation:pageGlitch .5s steps(1) both; }
+html[data-skin="sombre-v1"] .page-in{ animation:pageGlitch .5s steps(1) both; }
 @keyframes pageGlitch{ 0%{ opacity:0; } 15%{ opacity:1; transform:translateX(-10px); clip-path:inset(8% 0 62% 0); filter:hue-rotate(80deg); }
   30%{ transform:translateX(8px); clip-path:inset(48% 0 18% 0); } 45%{ transform:translateX(-4px); clip-path:inset(0 0 0 0); filter:none; } 60%,100%{ transform:none; opacity:1; } }
 html[data-skin="ocean"] .page-in{ animation:pageWave .7s cubic-bezier(.2,.8,.2,1) both; }
@@ -1022,7 +1022,7 @@ html[data-skin="manga"] .page-in{ animation:pageManga .45s cubic-bezier(.3,1.6,.
 @keyframes pageManga{ from{ opacity:0; transform:scale(.9) rotate(-1.5deg); } }
 
 /* Titres animés */
-html[data-skin="defaut"] .page-head h2::after, html[data-skin="menthe"] .page-head h2::after{
+html:is([data-skin="defaut"],[data-skin="sombre"]) .page-head h2::after, html[data-skin="menthe"] .page-head h2::after{
   content:'✺'; display:inline-block; margin-left:.3em; font-size:.55em; vertical-align:middle; color:var(--pk); animation:spin 7s linear infinite; }
 html[data-skin="samurai"] :is(.page-head h2,.home-grid h2,.bl h2){ position:relative; isolation:isolate; width:fit-content; padding-bottom:6px; }
 html[data-skin="samurai"] :is(.page-head h2,.home-grid h2,.bl h2)::after{ content:''; position:absolute; left:-4px; right:-12px; bottom:-2px; height:9px; z-index:-1;
@@ -1035,7 +1035,7 @@ html[data-skin="lofi"] h2{ animation:lofiGlow 4s ease-in-out infinite; }
 @keyframes lofiGlow{ 50%{ text-shadow:0 0 20px rgba(255,179,124,.6); } }
 html[data-skin="esth"] h2{ background:linear-gradient(90deg,#8A6CF0,#FF8FC4,#5FCFAE,#8A6CF0) 0 0/300% 100%; -webkit-background-clip:text; background-clip:text; color:transparent; animation:shimmer 6s linear infinite; }
 @keyframes shimmer{ to{ background-position:300% 0; } }
-html[data-skin="sombre"] h2{ text-shadow:0 0 14px rgba(255,77,141,.65); animation:neon 5s steps(1) infinite; }
+html[data-skin="sombre-v1"] h2{ text-shadow:0 0 14px rgba(255,77,141,.65); animation:neon 5s steps(1) infinite; }
 @keyframes neon{ 0%,18%,22%,60%,63%,100%{ opacity:1; } 20%,61.5%{ opacity:.4; } }
 html[data-skin="ocean"] :is(.page-head h2,.home-grid h2,.bl h2){ width:fit-content; padding-bottom:12px; animation:waveX 2s linear infinite;
   background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='8'><path d='M0 4 Q10 0 20 4 T40 4' fill='none' stroke='%231F6FD1' stroke-width='2.5'/></svg>") 0 100%/40px 8px repeat-x; }
@@ -1045,7 +1045,7 @@ html[data-skin="soft"] :is(.page-head h2,.home-grid h2,.bl h2){ animation:softIn
 
 /* Survol des cartes */
 html[data-skin="manga"] .mcard:hover{ transform:translate(-2px,-3px) rotate(-.6deg); }
-html[data-skin="sombre"] .mcard:hover{ box-shadow:0 0 0 1px var(--c),0 0 28px -4px var(--c); }
+html[data-skin="sombre-v1"] .mcard:hover{ box-shadow:0 0 0 1px var(--c),0 0 28px -4px var(--c); }
 html[data-skin="lofi"] .mcard:hover{ box-shadow:0 18px 40px -16px rgba(255,179,124,.6); transform:translateY(-3px) rotate(.4deg); }
 html[data-skin="soft"] .mcard:hover{ transform:translateY(-4px) scale(1.015); }
 html[data-skin="samurai"] .mcard::before{ content:''; position:absolute; left:0; top:0; height:4px; width:100%; background:var(--pk); transform:scaleX(0); transform-origin:left; transition:transform .45s cubic-bezier(.7,0,.2,1); }
@@ -1135,27 +1135,46 @@ html[data-skin="esth"] .mcard:hover::before{ opacity:1; }
 @media (max-width:640px){ .gp-row{ grid-template-columns:1fr 1fr; } .gp-row input{ grid-column:1/-1; } }
 .rank.role{ opacity:.8; }
 </style>
-<style id="defaut-retouches">
-/* ---- Retouches du thème Coopô (défaut) ---- */
-html[data-skin="defaut"]{ --mu:#B6BCE0; }
-/* « Nouveau » ne concurrence plus le titre principal */
-html[data-skin="defaut"] .sc-stat b{ font-size:clamp(28px,3.2vw,40px) !important; line-height:1.05; }
-/* Petits textes plus lisibles */
-html[data-skin="defaut"] .sc-stat span, html[data-skin="defaut"] .sc-lbl{ color:rgba(255,255,255,.92) !important; font-size:14px !important; }
+<style id="coopo-themes">
+/* ==== Coopô : thème clair (défaut) et thème sombre, même famille de couleurs ==== */
+html[data-skin="defaut"]{
+  --frame:#ECEAF5; --frame-bg:#ECEAF5;
+  --bg:#F6F5FB; --s1:#FFFFFF; --s2:#F0EEF8; --line:#E3E0EE; --tx:#16131F; --mu:#5F5A72;
+  --pk:#6A4BFF; --pk2:#5A3EE8; --on-pk:#FFFFFF; --field:#FFFFFF; --glass:rgba(255,255,255,.88); --glass-solid:#FFFFFF;
+  --hi:#5E9E00; --mid:#7E62FF; --warm:#9C86FF; --lo:#F0476A;
+  --art-bg:radial-gradient(circle at 75% 35%,#6A4BFF,#2A1F5C 55%,#1A1433);
+  --art-tint:linear-gradient(200deg,transparent 50%,rgba(106,75,255,.18));
+  --title:#fff; --title-shadow:0 0 30px rgba(106,75,255,.5);
+  color-scheme:light;
+}
+html[data-skin="sombre"]{
+  --frame:#0C0A14; --frame-bg:#0C0A14;
+  --bg:#0C0A14; --s1:#16131F; --s2:#201C2C; --line:#2D2840; --tx:#F4F2FA; --mu:#A9A4BC;
+  --pk:#7B5CFF; --pk2:#B9A6FF; --on-pk:#FFFFFF; --field:#100E19; --glass:rgba(22,19,31,.88); --glass-solid:#16131F;
+  --hi:#D4FF3F; --mid:#E2FF8F; --warm:#B9A6FF; --lo:#FF5A7A;
+  --fd:'Outfit',sans-serif; --fdw:700; --fb:'Inter','Segoe UI',sans-serif; --case:none;
+  --rf:28px; --rc:18px; --ri:12px; --r:24px;
+  --art-bg:radial-gradient(circle at 75% 35%,#6A4BFF,#241B4D 55%,#0C0A14);
+  --art-tint:linear-gradient(200deg,transparent 50%,rgba(123,92,255,.18));
+  --title:#fff; --title-shadow:0 0 30px rgba(123,92,255,.55);
+  color-scheme:dark;
+}
+/* Haut de page : le titre principal domine */
+html:is([data-skin="defaut"],[data-skin="sombre"]) .sc-stat b{ font-size:clamp(28px,3.2vw,40px) !important; line-height:1.05; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .sc-stat span, html:is([data-skin="defaut"],[data-skin="sombre"]) .sc-lbl{ color:rgba(255,255,255,.92) !important; font-size:14px !important; }
 /* Le citron sur le bouton clé */
-html[data-skin="defaut"] .dispo-cta{ background:var(--hi) !important; color:#111 !important; box-shadow:0 10px 30px -12px rgba(200,255,77,.55); }
-html[data-skin="defaut"] .dispo-cta:hover{ filter:brightness(1.06); }
-/* Scores de match aux couleurs du thème */
-html[data-skin="defaut"] .ring[style*="--mid"]{ --c:#E2FF8F !important; }
-html[data-skin="defaut"] .ring[style*="--warm"]{ --c:var(--pk2) !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .dispo-cta{ background:#D4FF3F !important; color:#111 !important; box-shadow:0 10px 30px -12px rgba(160,210,30,.55); }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .dispo-cta:hover{ filter:brightness(1.05); }
 /* Titres et détails */
-html[data-skin="defaut"] section.reveal > h2{ color:var(--tx) !important; }
-html[data-skin="defaut"] section.reveal > h2::first-letter{ text-transform:uppercase; }
-html[data-skin="defaut"] .nudge{ display:flex !important; align-items:center; gap:14px; }
-html[data-skin="defaut"] .nudge > div{ flex:1; min-width:0; }
-html[data-skin="defaut"] .nudge-go{ flex:none; display:grid; place-items:center; width:34px; height:34px; border-radius:50%; background:var(--s2); color:var(--hi) !important; font-size:20px; margin:0 !important; }
-html[data-skin="defaut"] .hero-cta .linkbtn{ display:inline-flex; align-items:center; padding:13px 22px; border:1px solid rgba(255,255,255,.35); border-radius:999px; text-decoration:none !important; color:#fff !important; font-weight:600; margin-left:6px; }
-html[data-skin="defaut"] .hero-cta .linkbtn:hover{ background:rgba(255,255,255,.08); }
+html:is([data-skin="defaut"],[data-skin="sombre"]) section.reveal > h2{ color:var(--tx) !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) section.reveal > h2::first-letter{ text-transform:uppercase; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .nudge{ display:flex !important; align-items:center; gap:14px; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .nudge > div{ flex:1; min-width:0; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .nudge-go{ flex:none; display:grid; place-items:center; width:34px; height:34px; border-radius:50%; font-size:20px; margin:0 !important; }
+html[data-skin="defaut"] .nudge-go{ background:var(--pk); color:#fff !important; }
+html[data-skin="sombre"] .nudge-go{ background:var(--s2); color:#D4FF3F !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .hero-cta .linkbtn{ display:inline-flex; align-items:center; padding:13px 22px; border:1px solid rgba(255,255,255,.35); border-radius:999px; text-decoration:none !important; color:#fff !important; font-weight:600; margin-left:6px; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .hero-cta .linkbtn:hover{ background:rgba(255,255,255,.08); }
 </style>
 </head>
 <body>
@@ -1479,7 +1498,7 @@ function viewHome(){
   let off=0;
   const donut = active.map(([k,v])=>{ const len=v/tot*251.3; const el=`<circle cx="50" cy="50" r="40" stroke="${CRITERIA[k].color}" stroke-dasharray="${len.toFixed(1)} 251.3" stroke-dashoffset="${(-off).toFixed(1)}"/>`; off+=len; return el; }).join('');
   app.innerHTML = `<div>
-  ${S.skin==='defaut' ? showcaseHTML() : `
+  ${(S.skin==='defaut'||S.skin==='sombre') ? showcaseHTML() : `
   <section class="hero2">
     <div class="art">${(SKINS[S.skin]||SKINS.defaut).art()}
       <div class="float-match" aria-label="Exemple : 83 % de compatibilité">
@@ -1497,7 +1516,7 @@ function viewHome(){
       ${S.me?'':'<p class="trust">Gratuit · dès 15 ans · profils modérés</p>'}
     </div>
   </section>`}
-  <div class="marq${S.skin==='defaut'?' hide':''}" aria-hidden="true"><div class="marq-track"><span>trouve ton mate</span><b>✺</b><span>mêmes jeux</span><b>✺</b><span>mêmes horaires</span><b>✺</b><span>même style</span><b>✺</b><span>joue ensemble</span><b>✺</b><span>trouve ton mate</span><b>✺</b><span>mêmes jeux</span><b>✺</b><span>mêmes horaires</span><b>✺</b><span>même style</span><b>✺</b><span>joue ensemble</span><b>✺</b></div></div>
+  <div class="marq${(S.skin==='defaut'||S.skin==='sombre')?' hide':''}" aria-hidden="true"><div class="marq-track"><span>trouve ton mate</span><b>✺</b><span>mêmes jeux</span><b>✺</b><span>mêmes horaires</span><b>✺</b><span>même style</span><b>✺</b><span>joue ensemble</span><b>✺</b><span>trouve ton mate</span><b>✺</b><span>mêmes jeux</span><b>✺</b><span>mêmes horaires</span><b>✺</b><span>même style</span><b>✺</b><span>joue ensemble</span><b>✺</b></div></div>
   <div class="wrap home-top" style="padding-top:26px">${dispoSection()}${boardsTeaser()}${profileNudge()}${gamesPulse()}</div>
   <div class="home-grid${S.me?' is-member':''}">
     <section class="reveal how">
@@ -2136,7 +2155,7 @@ const FX = {
             particles:{ kind:'dot', colors:['#FFF4E0','#FFCCA6'], n:22, dmin:14, dmax:24 }, click:'notes' },
   esth:   { orbs:['#C9B8FF','#FFC2DF','#BFF0E0'], orbO:.5,
             particles:{ kind:'sparkle', chars:['✦','✧','⋆'], colors:['#8A6CF0','#FF8FC4','#5FCFAE'], n:16, dmin:3, dmax:6 }, click:'sparkles' },
-  sombre: { orbs:['#FF4D8D','#6D4CFF','#3EE6B5'], orbO:.35,
+  sombre: { orbs:['#7C5CFF','#5B3FE8','#C8FF4D'], orbO:.3,
             particles:{ kind:'dot', colors:['#3EE6B5','#FF4D8D','#9FD4FF'], n:20, dmin:10, dmax:18 }, click:'sparks' },
   ocean:  { orbs:['#5FB0FF','#1F6FD1','#9FD8FF'], orbO:.25,
             particles:{ kind:'bubble', colors:['#1F6FD1','#5FB0FF'], n:14, dmin:10, dmax:18 }, click:'ripple' },
@@ -2231,10 +2250,10 @@ const OBJ = {
 };
 const SHOW = [
   { id:'manette',   name:'Manette',   caption:'Pour les joueurs console',    b1:'#6A48F0', b2:'#2A1C86', platform:'ps' },
-  { id:'clavier',   name:'Clavier',   caption:'Pour les joueurs PC',          b1:'#242A52', b2:'#0B0D1A', platform:'pc' },
-  { id:'souris',    name:'Souris',    caption:'Précision et réflexes',        b1:'#1AA8A0', b2:'#094A48', platform:'pc' },
-  { id:'casque',    name:'Casque',    caption:'Le vocal qui change tout',     b1:'#FF6A5C', b2:'#8E2219', platform:'xbox' },
-  { id:'telephone', name:'Téléphone', caption:'Pour les joueurs mobile',      b1:'#7FBF1F', b2:'#2C5E0E', platform:'mobile' },
+  { id:'clavier',   name:'Clavier',   caption:'Pour les joueurs PC',          b1:'#3B2E8F', b2:'#140F33', platform:'pc' },
+  { id:'souris',    name:'Souris',    caption:'Précision et réflexes',        b1:'#8B5CF6', b2:'#3A1E8C', platform:'pc' },
+  { id:'casque',    name:'Casque',    caption:'Le vocal qui change tout',     b1:'#5B3FE8', b2:'#1E1550', platform:'xbox' },
+  { id:'telephone', name:'Téléphone', caption:'Pour les joueurs mobile',      b1:'#7A5CFF', b2:'#2B1F6B', platform:'mobile' },
 ];
 let scI=0, scTimer=null;
 function showcaseHTML(){
@@ -2335,13 +2354,13 @@ function mintSVG(){
 }
 
 const SKINS = {
-  defaut:{label:'Coopô',   desc:'Le thème officiel : nuit, violet et citron',     sw:['#07070F','#171A2E','#7C5CFF'], art:shapesSVG},
+  defaut:{label:'Coopô',   desc:'Le thème officiel : clair, violet et citron',     sw:['#F6F5FB','#FFFFFF','#6A4BFF'], art:shapesSVG},
   samurai:{label:'Samouraï',  desc:'Rouge, crème et vagues japonaises', sw:['#C41E3A','#F4ECE1','#17110F'], art:samuraiSVG},
   soft:  {label:'Soft',       desc:'Rose pastel et fleurs',            sw:['#E9779E','#FFFFFF','#D9478A'], art:()=>bloomSVG()},
   lofi:  {label:'Lo-fi',      desc:'Ville de nuit, tons chauds',       sw:['#16112A','#2E2649','#FFB37C'], art:lofiSVG},
   esth:  {label:'Esthétique', desc:'Pastels et soleil rétro',          sw:['#C9B8FF','#FCFAFF','#8A6CF0'], art:esthSVG},
   awale: {label:'Awalé',      desc:'Plateau en bois, graines et motifs bogolan', sw:['#1E120A','#3A2618','#E2A23B'], art:awaleSVG},
-  sombre:{label:'Sombre',     desc:'Nuit étoilée, montagnes et lucioles',             sw:['#07060F','#1B1738','#FF4D8D'], art:nightSVG},
+  sombre:{label:'Sombre',     desc:'La version nuit du thème officiel',             sw:['#0C0A14','#16131F','#D4FF3F'], art:shapesSVG},
   ocean: {label:'Océan',      desc:'Fond marin, poissons et bulles',             sw:['#2F7FD8','#FFFFFF','#1F6FD1'], art:oceanSVG},
   menthe:{label:'Menthe',     desc:'Collines, brume et papillons',             sw:['#2FAE87','#FFFFFF','#128A6A'], art:mintSVG},
 };
@@ -2614,7 +2633,7 @@ const skinBtn = () => `<button class="skin-btn" type="button" aria-label="Change
 const skinGrid = () => `<div class="skins">${Object.entries(SKINS).map(([id,t])=>`<button type="button" class="skin" data-skin-pick="${id}" aria-pressed="${(S.skin||'defaut')===id}"><span class="sw" style="--a:${t.sw[0]};--b:${t.sw[1]};--c2:${t.sw[2]}"><i></i></span><b>${t.label}${canUseSkin(id)?'':` <span class="skin-lock">${LOCK_SVG}</span>`}</b><small>${canUseSkin(id)?t.desc:money(skinPrice(id))}${t.premium&&!canUseSkin(id)?' · premium':''}</small></button>`).join('')}</div>${AUTH_LIVE&&!ownsAll()&&PAID_SKINS.some(x=>!canUseSkin(x))?`<button type="button" class="pack-cta" data-buy-pack><span>Tous les thèmes</span><strong>${money(price('pack'))}</strong></button>`:''}`;
 
 const FONT_SPECS={"Zen Dots": "Zen+Dots", "Quicksand": "Quicksand:wght@500;600;700", "Bangers": "Bangers", "M PLUS Rounded 1c": "M+PLUS+Rounded+1c:wght@500;700;800", "Righteous": "Righteous", "Nunito": "Nunito:wght@500;700", "Syne": "Syne:wght@600;700;800", "DM Sans": "DM+Sans:wght@500;700", "Chakra Petch": "Chakra+Petch:wght@500;600;700", "Sora": "Sora:wght@500;600", "Outfit": "Outfit:wght@600;700", "Inter": "Inter:wght@400;500;600;700", "Anton": "Anton", "Source Sans 3": "Source+Sans+3:wght@400;600;700", "Noto Serif JP": "Noto+Serif+JP:wght@700"};
-const SKIN_FONTS={"soft": ["Zen Dots", "Quicksand"], "manga": ["Bangers", "M PLUS Rounded 1c"], "glass": ["Inter"], "awale": ["Syne", "DM Sans"], "lofi": ["Righteous", "Nunito"], "esth": ["Syne", "DM Sans"], "sombre": ["Chakra Petch", "Sora"], "ocean": ["Chakra Petch", "Sora"], "menthe": ["Chakra Petch", "Sora"], "defaut": ["Outfit", "Inter"], "samurai": ["Anton", "Source Sans 3", "Noto Serif JP"]};
+const SKIN_FONTS={"soft": ["Zen Dots", "Quicksand"], "manga": ["Bangers", "M PLUS Rounded 1c"], "glass": ["Inter"], "awale": ["Syne", "DM Sans"], "lofi": ["Righteous", "Nunito"], "esth": ["Syne", "DM Sans"], "sombre": ["Outfit", "Inter"], "ocean": ["Chakra Petch", "Sora"], "menthe": ["Chakra Petch", "Sora"], "defaut": ["Outfit", "Inter"], "samurai": ["Anton", "Source Sans 3", "Noto Serif JP"]};
 const _fontsLoaded=new Set();
 function loadSkinFonts(id){ const list=(SKIN_FONTS[id]||[]).filter(f=>FONT_SPECS[f]&&!_fontsLoaded.has(f)); if(!list.length) return;
   list.forEach(f=>_fontsLoaded.add(f)); const l=document.createElement('link'); l.rel='stylesheet';
