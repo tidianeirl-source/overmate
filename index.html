@@ -1176,6 +1176,95 @@ html[data-skin="sombre"] .nudge-go{ background:var(--s2); color:#D4FF3F !importa
 html:is([data-skin="defaut"],[data-skin="sombre"]) .hero-cta .linkbtn{ display:inline-flex; align-items:center; padding:13px 22px; border:1px solid rgba(255,255,255,.35); border-radius:999px; text-decoration:none !important; color:#fff !important; font-weight:600; margin-left:6px; }
 html:is([data-skin="defaut"],[data-skin="sombre"]) .hero-cta .linkbtn:hover{ background:rgba(255,255,255,.08); }
 </style>
+<style id="coopo-scene">
+/* ==== Accueil plein écran avec scène illustrée (thèmes Coopô et Sombre) ==== */
+html[data-skin="defaut"]{ --cs-sky1:#5B3FE8; --cs-sky2:#B9A6FF; --cs-far:#7E62F5; --cs-h1:#5235D6; --cs-h2:#3A27A8; --cs-h3:#271C78; --cs-fg:#150F3F; --cs-fg2:#1F1659; --cs-star:#fff; --cs-cloud:rgba(255,255,255,.22); --cs-how:#1A1433; }
+html[data-skin="sombre"]{ --cs-sky1:#0B0918; --cs-sky2:#33257A; --cs-far:#2E2370; --cs-h1:#221A58; --cs-h2:#18123F; --cs-h3:#110D2C; --cs-fg:#06050C; --cs-fg2:#0C0A18; --cs-star:#fff; --cs-cloud:rgba(185,166,255,.12); --cs-how:#110E1E; }
+html:is([data-skin="defaut"],[data-skin="sombre"]){ overflow-x:clip; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) body{ overflow-x:clip; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .frame:has(#showcase){ overflow:visible; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .showcase{
+  width:100vw; margin:-28px 0 0 calc(50% - 50vw); border-radius:0; min-height:100vh; min-height:100svh;
+  padding:18px max(26px, calc(50vw - 640px)) 40px; background:linear-gradient(180deg,var(--cs-sky1),var(--cs-sky2) 78%) !important; isolation:isolate;
+}
+html:is([data-skin="defaut"],[data-skin="sombre"]) .showcase::after{ display:none; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .showcase :is(.sc-stage,.sc-dots,.sc-thumb,.sc-arrows){ display:none !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .sc-body{ flex:1; align-items:center; position:relative; z-index:2; padding-bottom:18vh; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .sc-text{ max-width:560px; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .sc-text h1{ font-size:clamp(40px,5.6vw,78px) !important; line-height:1.02; text-shadow:0 4px 30px rgba(20,10,60,.35); }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .sc-text p{ font-size:17px; max-width:440px; color:rgba(255,255,255,.92); }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .sc-lbl, html:is([data-skin="defaut"],[data-skin="sombre"]) .sc-pills{ display:none !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .sc-side{ position:absolute; z-index:3; right:max(26px, calc(50vw - 640px)); bottom:7vh; margin:0; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .sc-stat{ display:flex; align-items:center; gap:10px; padding:10px 18px 10px 14px; border-radius:999px; background:rgba(10,6,30,.45); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,.14); text-align:left; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .sc-stat b{ font-size:22px !important; color:#D4FF3F; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .sc-stat span{ font-size:14px !important; }
+
+.cscene{ position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+.cs-l{ position:absolute; left:0; bottom:0; width:100%; height:100%; will-change:transform; }
+.cs-sky{ transform:translateY(calc(var(--sy,0) * .25px)); }
+.cs-far{ transform:translateY(calc(var(--sy,0) * .18px)); }
+.cs-mid{ transform:translateY(calc(var(--sy,0) * .1px)); }
+.cs-near{ transform:translateY(calc(var(--sy,0) * .04px)); }
+.cs-front{ transform:translateY(calc(var(--sy,0) * -.16px)) scale(calc(1 + var(--sy,0) * .00025)); transform-origin:50% 100%; }
+.cs-star{ fill:var(--cs-star); opacity:.7; animation:csTw 4s ease-in-out infinite; }
+html[data-skin="defaut"] .cs-star{ opacity:.45; }
+.cs-sun{ fill:#D4FF3F; }
+.cs-glow{ animation:csGlow 6s ease-in-out infinite; transform-origin:1210px 250px; }
+.cs-clouds path{ fill:var(--cs-cloud); }
+.cs-clouds{ animation:csDrift 40s linear infinite alternate; }
+.cs-city rect, .cs-city circle:not(.cs-blink){ fill:var(--cs-far); }
+.cs-win{ fill:#D4FF3F; opacity:.8; }
+.cs-win-b{ animation:csTw 3s steps(2) infinite; }
+.cs-hill1{ fill:var(--cs-h1); }
+.cs-mast path{ stroke:var(--cs-h2); }
+.cs-wave{ stroke:#D4FF3F !important; opacity:0; animation:csWave 2.4s ease-out infinite; }
+.cs-blink{ fill:#FF5A7A; animation:csTw 1.6s steps(2) infinite; }
+.cs-hill2{ fill:var(--cs-h2); }
+.cs-tree path, .cs-tree ellipse{ fill:var(--cs-h3); stroke:var(--cs-h3); }
+.cs-house rect:not(.cs-win), .cs-house path{ fill:var(--cs-h3); }
+.cs-hill3{ fill:var(--cs-h3); }
+.cs-fly{ fill:#D4FF3F; animation:csFly 7s ease-in-out infinite; filter:drop-shadow(0 0 4px #D4FF3F); }
+.cs-fg{ fill:var(--cs-fg); }
+.cs-fg2{ fill:var(--cs-fg2); }
+.cs-flower{ fill:#D4FF3F; }
+.cs-sway{ transform-origin:150px 900px; animation:csSway 7s ease-in-out infinite; }
+.cs-sway-r{ transform-origin:1450px 900px; animation-delay:-3.5s; }
+@keyframes csTw{ 50%{ opacity:.15; } }
+@keyframes csGlow{ 50%{ transform:scale(1.08); opacity:.8; } }
+@keyframes csDrift{ to{ transform:translateX(60px); } }
+@keyframes csWave{ 0%{ opacity:0; transform:translateY(6px); } 30%{ opacity:.9; } 100%{ opacity:0; transform:translateY(-8px); } }
+@keyframes csFly{ 0%,100%{ transform:translate(0,0); opacity:.2; } 50%{ transform:translate(14px,-26px); opacity:1; } }
+@keyframes csSway{ 0%,100%{ transform:rotate(0deg); } 50%{ transform:rotate(2.2deg); } }
+
+/* Section « Comment marche Coopô ? » : les cartes s'agrandissent au survol */
+.how{ width:100vw; margin-left:calc(50% - 50vw); background:var(--cs-how); color:#fff; padding:72px max(26px, calc(50vw - 600px)) 80px; margin-bottom:28px; }
+.how-head{ display:grid; grid-template-columns:1fr 1.2fr; gap:28px 60px; align-items:end; margin-bottom:36px; }
+.how-head h2{ font-family:var(--fd); font-size:clamp(30px,3.6vw,48px); line-height:1.05; margin:0; color:#fff !important; }
+.how-head p{ margin:0; color:rgba(255,255,255,.78); font-size:16px; line-height:1.6; }
+.how-cards{ display:flex; gap:16px; min-height:290px; }
+.how-card{ flex:1 1 0; min-width:0; display:flex; flex-direction:column; gap:10px; padding:26px 22px; border-radius:22px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); color:#fff; text-decoration:none; transition:flex-grow .55s cubic-bezier(.2,.8,.2,1), background .35s, transform .35s; overflow:hidden; }
+.how-card.on{ flex-grow:2.1; background:#6A4BFF; border-color:transparent; }
+html[data-skin="sombre"] .how-card.on{ background:#2A1F6E; border-color:rgba(212,255,63,.35); }
+.how-ico{ width:52px; height:52px; border-radius:50%; display:grid; place-items:center; font-size:22px; background:rgba(255,255,255,.1); color:#D4FF3F; flex:none; transition:transform .45s; }
+.how-card.on .how-ico{ background:#D4FF3F; color:#16131F; transform:scale(1.08); }
+.how-card b{ font-family:var(--fd); font-size:19px; margin-top:auto; }
+.how-txt{ color:rgba(255,255,255,.82); font-size:14px; line-height:1.55; max-height:0; opacity:0; transition:max-height .5s, opacity .35s .1s; }
+.how-go{ font-size:13px; font-weight:600; color:#D4FF3F; opacity:0; transform:translateY(6px); transition:opacity .3s .15s, transform .3s .15s; }
+.how-card.on .how-txt{ max-height:120px; opacity:1; }
+.how-card.on .how-go{ opacity:1; transform:none; }
+@media (max-width:760px){
+  .how-head{ grid-template-columns:1fr; }
+  .how-cards{ flex-direction:column; min-height:0; }
+  .how-card{ flex:none; }
+  .how-card .how-txt{ max-height:120px; opacity:1; }
+  .how-card .how-go{ opacity:1; transform:none; }
+  html:is([data-skin="defaut"],[data-skin="sombre"]) .sc-body{ padding-bottom:28vh; }
+}
+@media (prefers-reduced-motion:reduce){
+  .cs-l{ transform:none !important; }
+  .cscene *, .how-card, .how-txt, .how-go{ animation:none !important; transition:none !important; }
+}
+</style>
 </head>
 <body>
 
@@ -2256,9 +2345,86 @@ const SHOW = [
   { id:'telephone', name:'Téléphone', caption:'Pour les joueurs mobile',      b1:'#7A5CFF', b2:'#2B1F6B', platform:'mobile' },
 ];
 let scI=0, scTimer=null;
+/* ---- Scène plein écran de l'accueil (thèmes Coopô et Sombre) ---- */
+function coopoSceneHTML(){
+  let seed=7; const rnd=()=>{ seed=(seed*9301+49297)%233280; return seed/233280; };
+  // étoiles
+  let stars=''; for(let i=0;i<70;i++){ const x=(rnd()*1600).toFixed(0), y=(rnd()*430).toFixed(0), r=(rnd()*1.6+.4).toFixed(1);
+    stars+=`<circle class="cs-star" cx="${x}" cy="${y}" r="${r}" style="animation-delay:${(rnd()*4).toFixed(2)}s"/>`; }
+  // ville au loin, fenêtres allumées
+  let city='', wins=''; let x=560;
+  const towers=[[46,150],[30,110],[58,205],[36,135],[70,250],[40,170],[52,120],[34,190],[62,140],[44,215],[30,100],[56,165],[40,125]];
+  towers.forEach(([w,h],i)=>{ const y=600-h; city+=`<rect x="${x}" y="${y}" width="${w}" height="${h+40}" rx="3"/>`;
+    if(i===4) city+=`<rect x="${x+w/2-2}" y="${y-46}" width="4" height="46"/><circle class="cs-blink" cx="${x+w/2}" cy="${y-48}" r="4"/>`;
+    for(let wy=y+12; wy<590; wy+=16) for(let wx=x+7; wx<x+w-8; wx+=12) if(rnd()>.62) wins+=`<rect class="${rnd()>.85?'cs-win cs-win-b':'cs-win'}" x="${wx}" y="${wy}" width="5" height="7" rx="1"/>`;
+    x+=w+10; });
+  // antennes relais
+  const mast=(mx,my,s)=>`<g transform="translate(${mx} ${my}) scale(${s})"><path d="M-14 0 L0 -150 L14 0 M-9 -45 H9 M-6 -90 H6 M-11 -20 L8 -70 M11 -20 L-8 -70" fill="none" stroke-width="3"/><circle class="cs-blink" cx="0" cy="-154" r="5"/><path class="cs-wave" d="M-22 -168 Q0 -186 22 -168 M-34 -176 Q0 -204 34 -176" fill="none" stroke-width="3"/></g>`;
+  // baobab
+  const baobab=(bx,by,s)=>`<g transform="translate(${bx} ${by}) scale(${s})"><path d="M-16 0 C-14 -40 -20 -70 -12 -96 C-26 -104 -44 -112 -52 -128 M-12 -96 C-10 -112 -16 -126 -8 -140 M-12 -96 C2 -104 6 -118 4 -136 M-12 -96 C10 -96 30 -104 44 -122 M16 0 C14 -40 18 -70 12 -96 L-12 -96 Z" stroke-width="7" stroke-linecap="round"/><ellipse cx="-52" cy="-134" rx="22" ry="11"/><ellipse cx="-8" cy="-148" rx="18" ry="10"/><ellipse cx="6" cy="-142" rx="20" ry="10"/><ellipse cx="46" cy="-128" rx="24" ry="12"/></g>`;
+  // petites maisons
+  const house=(hx,hy)=>`<g transform="translate(${hx} ${hy})"><rect x="-22" y="-26" width="44" height="26" rx="2"/><path d="M-28 -24 L0 -46 L28 -24 Z"/><rect class="cs-win" x="-12" y="-18" width="9" height="9" rx="1"/><rect class="cs-win cs-win-b" x="4" y="-18" width="9" height="9" rx="1"/></g>`;
+  // lucioles
+  let flies=''; for(let i=0;i<16;i++){ flies+=`<circle class="cs-fly" cx="${(rnd()*1600).toFixed(0)}" cy="${(620+rnd()*200).toFixed(0)}" r="${(rnd()*2+2).toFixed(1)}" style="animation-delay:${(rnd()*6).toFixed(2)}s;animation-duration:${(5+rnd()*5).toFixed(1)}s"/>`; }
+  // herbes hautes du premier plan (side 0 = gauche, 1 = droite)
+  const blades=side=>{ const B=side?[[1600,1500,560,40],[1580,1430,640,34],[1560,1380,700,30],[1620,1530,690,34],[1540,1330,760,26],[1600,1460,740,30],[1520,1300,810,22],[1580,1410,800,24]]
+      :[[0,100,560,40],[20,170,640,34],[40,220,700,30],[-20,70,690,34],[60,270,760,26],[0,140,740,30],[80,300,810,22],[20,190,800,24]];
+    return B.map(([bx,tx,ty,w],i)=>{ const cx=(bx+tx)/2+(side?40:-40), cy=(900+ty)/2; return `<path class="${i%2?'cs-fg2':'cs-fg'}" d="M${bx-w} 900 Q${cx-w*.3} ${cy} ${tx} ${ty} Q${cx+w*.6} ${cy+20} ${bx+w} 900 Z"/>`; }).join('')
+      + (side?'<circle class="cs-flower" cx="1500" cy="560" r="9"/><circle class="cs-flower" cx="1330" cy="760" r="7"/>':'<circle class="cs-flower" cx="100" cy="560" r="9"/><circle class="cs-flower" cx="270" cy="760" r="7"/>'); };
+  return `<div class="cscene" aria-hidden="true">
+  <svg class="cs-l cs-sky" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice">
+    <defs><radialGradient id="csSun"><stop offset="0" stop-color="#E4FF7A"/><stop offset=".45" stop-color="#D4FF3F" stop-opacity=".55"/><stop offset="1" stop-color="#D4FF3F" stop-opacity="0"/></radialGradient></defs>
+    <g class="cs-stars">${stars}</g>
+    <circle cx="1210" cy="250" r="190" fill="url(#csSun)" class="cs-glow"/>
+    <circle cx="1210" cy="250" r="62" class="cs-sun"/>
+    <g class="cs-clouds"><path d="M120 210 q40 -40 90 -12 q30 -34 76 -6 q44 -6 52 30 Z"/><path d="M820 150 q30 -28 70 -8 q26 -26 62 -4 q34 -2 40 24 Z"/><path d="M1380 380 q30 -30 72 -10 q24 -24 60 -2 q32 0 38 26 Z"/></g>
+  </svg>
+  <svg class="cs-l cs-far" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice">
+    <g class="cs-city">${city}</g><g>${wins}</g>
+    <path class="cs-hill1" d="M0 640 C180 560 330 600 470 560 C640 512 760 590 930 566 C1110 540 1260 600 1400 570 C1500 552 1560 560 1600 556 V900 H0 Z"/>
+  </svg>
+  <svg class="cs-l cs-mid" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice">
+    <g class="cs-mast">${mast(1040,640,1)}${mast(1290,662,.8)}${mast(300,676,.7)}</g>
+    <path class="cs-hill2" d="M0 700 C160 650 300 690 460 662 C640 630 780 700 980 680 C1180 660 1300 700 1460 672 C1530 660 1570 664 1600 662 V900 H0 Z"/>
+    <g class="cs-tree">${baobab(190,700,1.05)}${baobab(1440,690,.85)}${baobab(760,712,.6)}</g>
+    <g class="cs-house">${house(560,690)}${house(626,696)}${house(1180,704)}</g>
+  </svg>
+  <svg class="cs-l cs-near" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice">
+    <path class="cs-hill3" d="M0 780 C200 740 380 770 600 752 C820 734 980 778 1200 760 C1380 746 1500 764 1600 756 V900 H0 Z"/>
+    <g>${flies}</g>
+  </svg>
+  <svg class="cs-l cs-front" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice">
+    <g class="cs-sway">${blades(0)}</g>
+    <g class="cs-sway cs-sway-r">${blades(1)}</g>
+  </svg>
+</div>`;
+}
+function coopoHowHTML(){
+  const cards=[
+    ['✦','Crée ton profil','Tes jeux, tes horaires et ton style de jeu. Deux minutes suffisent.','#/profil'],
+    ['◎','Reçois tes matchs','Coopô calcule ta compatibilité avec chaque joueur et te montre les meilleurs.','#/matchs'],
+    ['●','Passe en dispo','Un clic, et les joueurs compatibles savent que tu es prêt à jouer.','#/accueil'],
+    ['⚑','Joue ensemble','Ajoute tes mates sur Discord ou WhatsApp et lance la partie.','#/communaute'],
+  ];
+  return `<section class="how" aria-labelledby="how-t">
+    <div class="how-head"><h2 id="how-t">Comment marche Coopô ?</h2><p>Coopô réunit les gamers d'Afrique francophone : tu trouves des joueurs qui jouent aux mêmes jeux, aux mêmes heures et avec le même style que toi.</p></div>
+    <div class="how-cards">${cards.map(([ic,t,d,h],i)=>`<a class="how-card${i===0?' on':''}" href="${h}"><span class="how-ico">${ic}</span><b>${t}</b><span class="how-txt">${d}</span><span class="how-go">En savoir plus ›</span></a>`).join('')}</div>
+  </section>`;
+}
+(function(){
+  let ticking=false;
+  const upd=()=>{ ticking=false; const sc=document.getElementById('showcase'); if(!sc) return;
+    const y=Math.min(window.scrollY, sc.offsetHeight); sc.style.setProperty('--sy', y.toFixed(0)); };
+  window.addEventListener('scroll',()=>{ if(!ticking){ ticking=true; requestAnimationFrame(upd); } },{passive:true});
+  document.addEventListener('mouseover',e=>{ const c=e.target.closest && e.target.closest('.how-card'); if(!c) return;
+    const box=c.parentElement; box.querySelectorAll('.how-card.on').forEach(x=>{ if(x!==c) x.classList.remove('on'); }); c.classList.add('on'); });
+  document.addEventListener('focusin',e=>{ const c=e.target.closest && e.target.closest('.how-card'); if(!c) return;
+    c.parentElement.querySelectorAll('.how-card.on').forEach(x=>{ if(x!==c) x.classList.remove('on'); }); c.classList.add('on'); });
+})();
+
 function showcaseHTML(){
   const online=visible().filter(p=>p.online).length, s=SHOW[0], n=SHOW[1];
-  return `<section class="showcase" id="showcase" style="--b1:${s.b1};--b2:${s.b2}">
+  return `<section class="showcase" id="showcase" style="--b1:${s.b1};--b2:${s.b2}">${coopoSceneHTML()}
     <div class="sc-top"><a class="logo" href="#/accueil" aria-label="Coopô, accueil"></a><span class="sc-brand">Coop<b class="brand-o">ô</b></span><nav class="navpill" aria-label="Navigation principale"></nav>
       <div class="sc-right"><button class="notif-btn" type="button" aria-label="Notifications"></button>${skinBtn()}</div></div>
     <div class="sc-body">
@@ -2280,7 +2446,7 @@ function showcaseHTML(){
     </div>
     <div class="sc-dots" id="sc-dots">${SHOW.map((_,i)=>`<i class="${i?'':'on'}"></i>`).join('')}</div>
     <button type="button" class="sc-thumb" id="sc-thumb" aria-label="Objet suivant : ${n.name}">${OBJ[n.id]()}</button>
-  </section>`;
+  </section>${coopoHowHTML()}`;
 }
 function showSlide(i){
   const sec=document.getElementById('showcase'); if(!sec) return;
