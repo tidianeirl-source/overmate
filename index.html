@@ -2318,7 +2318,6 @@ const SKINS = {
   soft:  {label:'Soft',       desc:'Rose pastel et fleurs',            sw:['#E9779E','#FFFFFF','#D9478A'], art:()=>bloomSVG()},
   lofi:  {label:'Lo-fi',      desc:'Ville de nuit, tons chauds',       sw:['#16112A','#2E2649','#FFB37C'], art:lofiSVG},
   esth:  {label:'Esthétique', desc:'Pastels et soleil rétro',          sw:['#C9B8FF','#FCFAFF','#8A6CF0'], art:esthSVG},
-  glass: {label:'Glass',      desc:'Verre dépoli sur éclats noirs, touche jaune', sw:['#0B0B0B','#3A3A3E','#E8FF3A'], art:glassSVG, premium:true},
   awale: {label:'Awalé',      desc:'Plateau en bois, graines et motifs bogolan', sw:['#1E120A','#3A2618','#E2A23B'], art:awaleSVG},
   sombre:{label:'Sombre',     desc:'Nuit étoilée, montagnes et lucioles',             sw:['#07060F','#1B1738','#FF4D8D'], art:nightSVG},
   ocean: {label:'Océan',      desc:'Fond marin, poissons et bulles',             sw:['#2F7FD8','#FFFFFF','#1F6FD1'], art:oceanSVG},
@@ -2331,10 +2330,10 @@ const SKINS = {
 const SHOP = { enabled:true, payments:(()=>{try{if(/[?&]testpay=1/.test(location.search))localStorage.setItem('coopo_testpay','1');return localStorage.getItem('coopo_testpay')==='1';}catch(e){return false;}})(), api:'https://coopo-paiement.vercel.app/api', region:'europe-west1', currencies:['XOF'] };   // currencies : devises encaissables (même liste que dans api/_lib.js)
 // Prix par devise : à garder identiques à PRICES dans functions/index.js
 const CURRENCIES = {
-  XOF:{ label:'F CFA (BCEAO)', unit:'F CFA', theme:500,  premium:1000,  pack:2500,  countries:['CI','SN','ML','BF','BJ','TG','NE'] },
-  XAF:{ label:'F CFA (BEAC)',  unit:'F CFA', theme:500,  premium:1000,  pack:2500,  countries:['CM','GA','CG'] },
-  GNF:{ label:'Franc guinéen', unit:'GNF',   theme:7000, premium:14000, pack:35000, countries:['GN'] },
-  CDF:{ label:'Franc congolais', unit:'FC',  theme:2500, premium:5000,  pack:12500, countries:['CD'] },
+  XOF:{ label:'F CFA (BCEAO)', unit:'F CFA', theme:1500,  premium:3000,  pack:7500,  countries:['CI','SN','ML','BF','BJ','TG','NE'] },
+  XAF:{ label:'F CFA (BEAC)',  unit:'F CFA', theme:1500,  premium:3000,  pack:7500,  countries:['CM','GA','CG'] },
+  GNF:{ label:'Franc guinéen', unit:'GNF',   theme:21000, premium:42000, pack:105000, countries:['GN'] },
+  CDF:{ label:'Franc congolais', unit:'FC',  theme:7500, premium:15000,  pack:37500, countries:['CD'] },
 };
 const curOK = c => !SHOP.currencies || SHOP.currencies.includes(c);
 function curCode(){
@@ -2343,8 +2342,8 @@ function curCode(){
   return hit?hit[0]:(SHOP.currencies&&SHOP.currencies[0])||'XOF';
 }
 const price = (kind,cur=curCode()) => CURRENCIES[cur][kind];
-const PAID_SKINS = ['samurai','soft','lofi','esth','ocean','menthe','awale','glass'];
-const PREMIUM_SKINS = ['glass'];   // thèmes à 1 000 F
+const PAID_SKINS = ['samurai','soft','lofi','esth','ocean','menthe','awale'];
+const PREMIUM_SKINS = [];   // thèmes premium (3 000 F) : aucun pour l'instant
 const skinPrice = (id,cur=curCode()) => price(PREMIUM_SKINS.includes(id)?'premium':'theme',cur);
 const money = (n,cur=curCode()) => n.toLocaleString('fr-FR').replace(/\u202f|\u00a0/g,' ')+' '+CURRENCIES[cur].unit;
 function ownsAll(){ return !!(S.owned&&S.owned.pack); }
