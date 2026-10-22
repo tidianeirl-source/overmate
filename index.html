@@ -1265,6 +1265,15 @@ html[data-skin="sombre"] .how-card.on{ background:#2A1F6E; border-color:rgba(212
   .cscene *, .how-card, .how-txt, .how-go{ animation:none !important; transition:none !important; }
 }
 </style>
+<style id="coopo-pleine-largeur">
+/* ==== Thèmes Coopô et Sombre : tout le site en pleine largeur ==== */
+html:is([data-skin="defaut"],[data-skin="sombre"]){ --gut:clamp(14px,3vw,40px); }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .frame{ width:100%; max-width:none; margin:0; border-radius:0; min-height:100vh; min-height:100svh; padding:14px var(--gut); }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .showcase{ width:auto !important; margin:-14px calc(-1 * var(--gut)) 0 !important; padding-left:max(26px, calc(50% - 640px)) !important; padding-right:max(26px, calc(50% - 640px)) !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .sc-side{ right:max(26px, calc(50% - 640px)) !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .how{ width:auto; margin:0 calc(-1 * var(--gut)); padding-left:max(26px, calc(50% - 570px)); padding-right:max(26px, calc(50% - 570px)); }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .home-grid{ max-width:1140px; margin-left:auto; margin-right:auto; }
+</style>
 </head>
 <body>
 
