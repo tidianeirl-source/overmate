@@ -1285,9 +1285,9 @@ html:not([data-skin="defaut"]) .hero2 .tr{ padding-right:calc(var(--pad) + 16px)
 html:not([data-skin="defaut"]) .hero2 .bl{ width:min(calc(440px + var(--pad)), 62%); padding-left:calc(var(--pad) + 16px); padding-bottom:26px; }
 html:not([data-skin="defaut"]) .hero2 .hero-title{ right:calc(var(--pad) + 32px); bottom:40px; }
 html:not([data-skin="defaut"]) .hero2 .float-match{ right:calc(var(--pad) + 40px); top:150px; }
-/* les animations d'entrée ne doivent pas laisser de découpe une fois finies */
-.page-in:has(.hero2){ animation-fill-mode:backwards !important; }
-html:not([data-skin="defaut"]) .hero2 .art{ animation-fill-mode:backwards !important; }
+/* pas d'animation d'entrée découpée sur l'accueil plein écran (sinon l'ancien cadre apparaît pendant la transition) */
+.page-in:has(.hero2){ animation:none !important; clip-path:none !important; }
+html:not([data-skin="defaut"]) .hero2 .art{ animation:none !important; clip-path:none !important; }
 @media (max-width:760px){
   html:not([data-skin="defaut"]) body .hero2 .art{ max-height:none; }
   html:not([data-skin="defaut"]) body .hero2 .tab.bl{ display:grid !important; position:absolute; left:0; right:0; bottom:0; width:auto; padding:24px 20px calc(86px + env(safe-area-inset-bottom,0px)); border-radius:var(--r) var(--r) 0 0; }
