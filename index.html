@@ -1274,6 +1274,28 @@ html:is([data-skin="defaut"],[data-skin="sombre"]) .sc-side{ right:max(26px, cal
 html:is([data-skin="defaut"],[data-skin="sombre"]) .how{ width:auto; margin:0 calc(-1 * var(--gut)); padding-left:max(26px, calc(50% - 570px)); padding-right:max(26px, calc(50% - 570px)); }
 html:is([data-skin="defaut"],[data-skin="sombre"]) .home-grid{ max-width:1140px; margin-left:auto; margin-right:auto; }
 </style>
+<style id="coopo-fullhero">
+/* ==== Tous les thèmes : haut de page en plein écran ==== */
+html:has(.hero2), html:has(.hero2) body{ overflow-x:clip; }
+.frame:has(.hero2){ overflow:visible; }
+html:not([data-skin="defaut"]) .hero2{ --pad:max(0px, calc(50vw - 630px)); width:100vw; margin-left:calc(50% - 50vw); margin-top:-28px; }
+html:not([data-skin="defaut"]) .hero2 .art{ min-height:100vh; min-height:100svh; border-radius:0; }
+html:not([data-skin="defaut"]) .hero2 .tl{ padding-left:calc(var(--pad) + 16px); padding-top:14px; }
+html:not([data-skin="defaut"]) .hero2 .tr{ padding-right:calc(var(--pad) + 16px); padding-top:14px; }
+html:not([data-skin="defaut"]) .hero2 .bl{ width:min(calc(440px + var(--pad)), 62%); padding-left:calc(var(--pad) + 16px); padding-bottom:26px; }
+html:not([data-skin="defaut"]) .hero2 .hero-title{ right:calc(var(--pad) + 32px); bottom:40px; }
+html:not([data-skin="defaut"]) .hero2 .float-match{ right:calc(var(--pad) + 40px); top:150px; }
+/* les animations d'entrée ne doivent pas laisser de découpe une fois finies */
+.page-in:has(.hero2){ animation-fill-mode:backwards !important; }
+html:not([data-skin="defaut"]) .hero2 .art{ animation-fill-mode:backwards !important; }
+@media (max-width:760px){
+  html:not([data-skin="defaut"]) body .hero2 .art{ max-height:none; }
+  html:not([data-skin="defaut"]) body .hero2 .tab.bl{ display:grid !important; position:absolute; left:0; right:0; bottom:0; width:auto; padding:24px 20px calc(86px + env(safe-area-inset-bottom,0px)); border-radius:var(--r) var(--r) 0 0; }
+  html:not([data-skin="defaut"]) body .hero2 .bl::before, html:not([data-skin="defaut"]) body .hero2 .bl::after{ display:none; }
+  html:not([data-skin="defaut"]) body .hero2 .hero-title{ display:none; }
+  html:not([data-skin="defaut"]) body .hero2 .float-match{ top:96px; bottom:auto; }
+}
+</style>
 </head>
 <body>
 
