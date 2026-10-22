@@ -22,7 +22,7 @@ self.addEventListener('fetch', e => {
   if (url.origin !== self.location.origin) return;          // services externes : pas de cache
   if (req.mode === 'navigate') {                            // la page : réseau d'abord, puis cache
     e.respondWith(fetch(req).then(res => {
-      const copy = res.clone(); caches.open(CACHE).then(c => c.put('./index.html', copy)); return res;
+      if (res.ok && res.type === 'basic') { const copy = res.clone(); caches.open(CACHE).then(c => c.put('./index.html', copy)); } return res;
     }).catch(() => caches.match('./index.html')));
     return;
   }
