@@ -1296,7 +1296,7 @@ html:not([data-skin="defaut"]) .hero2 .art{ animation:none !important; clip-path
   html:not([data-skin="defaut"]) body .hero2 .float-match{ top:96px; bottom:auto; }
 }
 </style>
-<script>/* thème de la dernière visite, appliqué avant l'affichage */try{var _s=JSON.parse(localStorage.getItem('matematch.v1')||'null');if(_s&&_s.skin)document.documentElement.setAttribute('data-skin',_s.skin);}catch(e){}</script>
+<script>/* thème de la dernière visite, appliqué avant l'affichage */try{var _s=JSON.parse(localStorage.getItem('matematch.v1')||'null');var _k=_s&&(_s.skinOk||_s.skin);if(_k)document.documentElement.setAttribute('data-skin',_k);}catch(e){}</script>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js">
@@ -1455,7 +1455,7 @@ const fresh = () => ({ skin:'defaut', auth:null, profiles:{}, accounts:{}, dobs:
   privacy:{ discord:true, tags:true, online:true } });
 let S = (()=>{ try{ const r=localStorage.getItem(KEY); return r ? {...fresh(),...JSON.parse(r)} : fresh(); }catch(e){ return fresh(); } })();
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
-const BOOT_SKIN = S.skin; // thème réellement affiché à la dernière visite
+const BOOT_SKIN = S.skinOk || S.skin; // dernier thème choisi et affiché (pas un simple aperçu)
 const visible = () => PLAYERS.filter(p=>!S.blocked.includes(p.id) && !S.hidden.includes(p.id) && !S.banned.includes(p.id) && sameGroup(p));
 const ranked = () => visible().map(p=>({p,c:compat(S.me,p)})).sort((x,y)=>y.c.pct-x.c.pct);
 
@@ -2848,7 +2848,7 @@ function applySkin(id, anim, opts={}){ setTimeout(updateFavicon,0);
   loadSkinFonts(id);
   const r=document.documentElement;
   if(anim && !matchMedia('(prefers-reduced-motion: reduce)').matches){ r.classList.add('skin-anim'); setTimeout(()=>r.classList.remove('skin-anim'),650); }
-  r.dataset.skin=id; S.skin=id; save();
+  r.dataset.skin=id; S.skin=id; if(!opts.preview) S.skinOk=id; save();
   setTimeout(()=>{ const m=document.querySelector('meta[name="theme-color"]'); if(m) m.content=getComputedStyle(r).getPropertyValue('--bg').trim()||'#0D0F1E'; },0);
   buildFx();
 }
