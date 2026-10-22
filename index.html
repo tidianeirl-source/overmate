@@ -1306,6 +1306,24 @@ html:not([data-skin="defaut"]) .hero2 .art{ animation:none !important; clip-path
 @media (max-width:760px){ .so-grid{ grid-template-columns:1fr 1fr; } }
 .btn-so{ white-space:nowrap; max-width:100%; overflow:hidden; text-overflow:ellipsis; }
 </style>
+<style id="coopo-prunier">
+/* --- Prunier : fleurs blanches sur rouge profond --- */
+html[data-skin="prunier"]{
+  --frame:#6E0816; --frame-bg:#6E0816;
+  --bg:#FFF8F6; --s1:#FFFFFF; --s2:#FBE9EA; --line:#F1CFD3; --tx:#2B0B10; --mu:#7A4A50;
+  --pk:#C8102E; --pk2:#9E0C22; --on-pk:#FFFFFF; --hi:#C8102E;
+  --field:#FFFFFF; --glass:rgba(255,255,255,.9); --glass-solid:#FFFFFF;
+  --fd:'Shippori Mincho B1',serif; --fdw:800; --fb:'Zen Kaku Gothic New','Segoe UI',sans-serif; --case:none;
+  --art-bg:#C8102E; --art-tint:none;
+  --title:#FFFFFF; --title-shadow:0 2px 24px rgba(60,0,10,.45);
+  color-scheme:light;
+}
+.pr-fall{ transform:translate(var(--x),-40px); animation:prFall var(--dd) linear infinite; animation-delay:calc(var(--dl) * -1); }
+@keyframes prFall{ 0%{ transform:translate(var(--x),-40px) rotate(0deg); } 50%{ transform:translate(calc(var(--x) + var(--sw)),320px) rotate(170deg); } 100%{ transform:translate(var(--x),700px) rotate(340deg); } }
+.pr-sway{ transform-origin:690px 340px; animation:prSway 7s ease-in-out infinite; }
+@keyframes prSway{ 50%{ transform:rotate(1.4deg); } }
+@media (prefers-reduced-motion:reduce){ .pr-fall, .pr-sway{ animation:none; } .pr-fall{ display:none; } }
+</style>
 </head>
 <body>
 
@@ -2317,6 +2335,8 @@ const FX = {
             particles:{ kind:'bubble', colors:['#1F6FD1','#5FB0FF'], n:14, dmin:10, dmax:18 }, click:'ripple' },
   menthe: { orbs:['#7EDDBB','#C7F25B','#128A6A'], orbO:.3,
             particles:{ kind:'leaf', colors:['#22B58A','#7EDDBB','#9BCB3B'], n:11, dmin:11, dmax:18 }, click:'ripple' },
+  prunier:{ orbs:['#FF6B7A','#C8102E','#FFD9DD'], orbO:.16,
+            particles:{ kind:'petal', colors:['#FFFFFF','#F7D6DA'], n:8, dmin:12, dmax:19 }, click:'ink' },
 };
 const rand=(a,b)=>a+Math.random()*(b-a);
 const pick=a=>a[Math.random()*a.length|0];
@@ -2570,6 +2590,41 @@ function nightSVG(){
      <linearGradient id="nsh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff"/></linearGradient>
      <filter id="nglow"><feGaussianBlur stdDeviation="14"/></filter>`);
 }
+/* ---- Illustration : Prunier (fleurs blanches sur rouge profond) ---- */
+function prunierSVG(){
+  const R=rng(88);
+  // une fleur de prunier : 5 pétales arrondis, cœur rouge et étamines dorées
+  const flower=(x,y,s,rot)=>{
+    let p='';
+    for(let i=0;i<5;i++){ const a=rot+i*72;
+      p+=`<path transform="rotate(${a})" d="M0 0 C${-24*s} ${-10*s} ${-30*s} ${-46*s} ${-12*s} ${-58*s} C${-4*s} ${-63*s} ${4*s} ${-63*s} ${12*s} ${-58*s} C${30*s} ${-46*s} ${24*s} ${-10*s} 0 0Z" fill="url(#prPetal)" stroke="#F3D9DC" stroke-width="${.8*s}"/>`; }
+    let st='';
+    for(let i=0;i<16;i++){ const a=(i/16)*Math.PI*2+R()*.2, l=(14+R()*10)*s, ex=Math.cos(a)*l, ey=Math.sin(a)*l;
+      st+=`<line x1="0" y1="0" x2="${ex.toFixed(1)}" y2="${ey.toFixed(1)}" stroke="#F7E7C8" stroke-width="${.9*s}"/><circle cx="${ex.toFixed(1)}" cy="${ey.toFixed(1)}" r="${1.7*s}" fill="#E8B23A"/>`; }
+    return `<g class="pr-flower" transform="translate(${x} ${y})">${p}<circle r="${9*s}" fill="#B3142A" opacity=".85"/><circle r="${5*s}" fill="#7A0A18"/>${st}</g>`;
+  };
+  const bud=(x,y,s)=>`<g transform="translate(${x} ${y})"><circle r="${6*s}" fill="#9E0C22"/><circle r="${6*s}" fill="url(#prBud)"/><circle cx="${-1.8*s}" cy="${-2*s}" r="${2.2*s}" fill="#FFFFFF" opacity=".55"/></g>`;
+  // pétales qui tombent
+  let fall='';
+  for(let i=0;i<14;i++){ const x=(R()*1200)|0, d=(9+R()*9).toFixed(1), dl=(R()*14).toFixed(1), sc=(.6+R()*.7).toFixed(2), sw=(30+R()*80)|0;
+    fall+=`<g class="pr-fall" style="--x:${x}px;--sw:${sw}px;--dd:${d}s;--dl:${dl}s"><path transform="scale(${sc})" d="M0 0 C-7 -3 -9 -13 -3 -17 C-1 -18 1 -18 3 -17 C9 -13 7 -3 0 0Z" fill="#FFFFFF" opacity=".9"/></g>`; }
+  const branch=`<g class="pr-branch" fill="none" stroke-linecap="round">
+    <path d="M-40 600 C120 540 260 470 420 420 C560 376 690 330 800 286 C870 258 920 236 965 212" stroke="#2A1210" stroke-width="7"/>
+    <path d="M-40 600 C120 540 260 470 420 420 C560 376 690 330 800 286 C870 258 920 236 965 212" stroke="#5A2A22" stroke-width="2.4" transform="translate(0 -1.6)" opacity=".55"/>
+    <path d="M520 392 C528 360 530 336 524 312" stroke="#2A1210" stroke-width="3.6"/>
+    <path d="M300 468 C290 440 296 424 306 410" stroke="#2A1210" stroke-width="3"/>
+  </g>`;
+  return svgWrap(`<rect width="1200" height="640" fill="url(#prSky)"/><rect width="1200" height="640" fill="url(#prGlow)"/>
+    ${branch}
+    ${bud(524,310,1.15)}${bud(511,326,.95)}${bud(968,210,1.25)}${bud(306,408,1)}
+    <g class="pr-sway">${flower(720,312,1.25,-12)}${flower(628,384,1.05,20)}</g>
+    <g class="pr-falls">${fall}</g>`,
+    `<linearGradient id="prSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#DD1C2C"/><stop offset=".55" stop-color="#C8102E"/><stop offset="1" stop-color="#5A0410"/></linearGradient>
+     <radialGradient id="prGlow" cx=".62" cy=".42" r=".55"><stop offset="0" stop-color="#FF3B48" stop-opacity=".35"/><stop offset="1" stop-color="#FF3B48" stop-opacity="0"/></radialGradient>
+     <radialGradient id="prBud" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#FF6B7A"/><stop offset="1" stop-color="#9E0C22" stop-opacity="0"/></radialGradient>
+     <radialGradient id="prPetal" cx=".5" cy=".85" r=".9"><stop offset="0" stop-color="#F2D3D6"/><stop offset=".35" stop-color="#FFFFFF"/><stop offset="1" stop-color="#FFFDFB"/></radialGradient>`);
+}
+
 function mintSVG(){
   const R=rng(53); let mist='', leaves='', dew='', bfly='';
   for(let i=0;i<5;i++) mist+=`<g class="cloud" style="--dd:${(50+R()*40)|0}s;--cd:${(R()*60)|0}s" opacity=".55"><ellipse cx="0" cy="${330+i*55}" rx="${220+R()*120|0}" ry="${18+R()*10|0}" fill="#FFFFFF"/></g>`;
@@ -2596,6 +2651,7 @@ const SKINS = {
   sombre:{label:'Sombre',     desc:'La version nuit du thème officiel',             sw:['#0C0A14','#16131F','#D4FF3F'], art:shapesSVG},
   ocean: {label:'Océan',      desc:'Fond marin, poissons et bulles',             sw:['#2F7FD8','#FFFFFF','#1F6FD1'], art:oceanSVG},
   menthe:{label:'Menthe',     desc:'Collines, brume et papillons',             sw:['#2FAE87','#FFFFFF','#128A6A'], art:mintSVG},
+  prunier:{label:'Prunier',    desc:'Fleurs de prunier blanches sur rouge profond', sw:['#C8102E','#FFFFFF','#2A1210'], art:prunierSVG},
 };
 /* ---- Boutique de thèmes (prix identiques à functions/index.js) ---- */
 // enabled  : true -> les thèmes payants sont verrouillés (false -> tout est gratuit)
@@ -2616,7 +2672,7 @@ function curCode(){
   return hit?hit[0]:(SHOP.currencies&&SHOP.currencies[0])||'XOF';
 }
 const price = (kind,cur=curCode()) => CURRENCIES[cur][kind];
-const PAID_SKINS = ['samurai','soft','lofi','esth','ocean','menthe','awale'];
+const PAID_SKINS = ['samurai','soft','lofi','esth','ocean','menthe','awale','prunier'];
 const PREMIUM_SKINS = [];   // thèmes premium (3 000 F) : aucun pour l'instant
 const skinPrice = (id,cur=curCode()) => price(PREMIUM_SKINS.includes(id)?'premium':'theme',cur);
 const money = (n,cur=curCode()) => n.toLocaleString('fr-FR').replace(/\u202f|\u00a0/g,' ')+' '+CURRENCIES[cur].unit;
@@ -2866,8 +2922,8 @@ const PALETTE_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 const skinBtn = () => `<button class="skin-btn" type="button" aria-label="Changer de thème" title="Changer de thème">${PALETTE_ICON}</button>`;
 const skinGrid = () => `<div class="skins">${Object.entries(SKINS).map(([id,t])=>`<button type="button" class="skin" data-skin-pick="${id}" aria-pressed="${(S.skin||'defaut')===id}"><span class="sw" style="--a:${t.sw[0]};--b:${t.sw[1]};--c2:${t.sw[2]}"><i></i></span><b>${t.label}${canUseSkin(id)?'':` <span class="skin-lock">${LOCK_SVG}</span>`}</b><small>${canUseSkin(id)?t.desc:money(skinPrice(id))}${t.premium&&!canUseSkin(id)?' · premium':''}</small></button>`).join('')}</div>${AUTH_LIVE&&!ownsAll()&&PAID_SKINS.some(x=>!canUseSkin(x))?`<button type="button" class="pack-cta" data-buy-pack><span>Tous les thèmes</span><strong>${money(price('pack'))}</strong></button>`:''}`;
 
-const FONT_SPECS={"Zen Dots": "Zen+Dots", "Quicksand": "Quicksand:wght@500;600;700", "Bangers": "Bangers", "M PLUS Rounded 1c": "M+PLUS+Rounded+1c:wght@500;700;800", "Righteous": "Righteous", "Nunito": "Nunito:wght@500;700", "Syne": "Syne:wght@600;700;800", "DM Sans": "DM+Sans:wght@500;700", "Chakra Petch": "Chakra+Petch:wght@500;600;700", "Sora": "Sora:wght@500;600", "Outfit": "Outfit:wght@600;700", "Inter": "Inter:wght@400;500;600;700", "Anton": "Anton", "Source Sans 3": "Source+Sans+3:wght@400;600;700", "Noto Serif JP": "Noto+Serif+JP:wght@700"};
-const SKIN_FONTS={"soft": ["Zen Dots", "Quicksand"], "manga": ["Bangers", "M PLUS Rounded 1c"], "glass": ["Inter"], "awale": ["Syne", "DM Sans"], "lofi": ["Righteous", "Nunito"], "esth": ["Syne", "DM Sans"], "sombre": ["Outfit", "Inter"], "ocean": ["Chakra Petch", "Sora"], "menthe": ["Chakra Petch", "Sora"], "defaut": ["Outfit", "Inter"], "samurai": ["Anton", "Source Sans 3", "Noto Serif JP"]};
+const FONT_SPECS={"Zen Dots": "Zen+Dots", "Quicksand": "Quicksand:wght@500;600;700", "Bangers": "Bangers", "M PLUS Rounded 1c": "M+PLUS+Rounded+1c:wght@500;700;800", "Righteous": "Righteous", "Nunito": "Nunito:wght@500;700", "Syne": "Syne:wght@600;700;800", "DM Sans": "DM+Sans:wght@500;700", "Chakra Petch": "Chakra+Petch:wght@500;600;700", "Sora": "Sora:wght@500;600", "Outfit": "Outfit:wght@600;700", "Inter": "Inter:wght@400;500;600;700", "Anton": "Anton", "Source Sans 3": "Source+Sans+3:wght@400;600;700", "Noto Serif JP": "Noto+Serif+JP:wght@700", "Shippori Mincho B1": "Shippori+Mincho+B1:wght@700;800", "Zen Kaku Gothic New": "Zen+Kaku+Gothic+New:wght@400;500;700"};
+const SKIN_FONTS={"soft": ["Zen Dots", "Quicksand"], "manga": ["Bangers", "M PLUS Rounded 1c"], "glass": ["Inter"], "awale": ["Syne", "DM Sans"], "lofi": ["Righteous", "Nunito"], "esth": ["Syne", "DM Sans"], "sombre": ["Outfit", "Inter"], "ocean": ["Chakra Petch", "Sora"], "menthe": ["Chakra Petch", "Sora"], "defaut": ["Outfit", "Inter"], "samurai": ["Anton", "Source Sans 3", "Noto Serif JP"], "prunier": ["Shippori Mincho B1", "Zen Kaku Gothic New"]};
 const _fontsLoaded=new Set();
 function loadSkinFonts(id){ const list=(SKIN_FONTS[id]||[]).filter(f=>FONT_SPECS[f]&&!_fontsLoaded.has(f)); if(!list.length) return;
   list.forEach(f=>_fontsLoaded.add(f)); const l=document.createElement('link'); l.rel='stylesheet';
