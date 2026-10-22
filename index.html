@@ -1296,6 +1296,10 @@ html:not([data-skin="defaut"]) .hero2 .art{ animation-fill-mode:backwards !impor
   html:not([data-skin="defaut"]) body .hero2 .float-match{ top:96px; bottom:auto; }
 }
 </style>
+<script>/* thème de la dernière visite, appliqué avant l'affichage */try{var _s=JSON.parse(localStorage.getItem('matematch.v1')||'null');if(_s&&_s.skin)document.documentElement.setAttribute('data-skin',_s.skin);}catch(e){}</script>
+<link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js">
+<link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js">
+<link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js">
 </head>
 <body>
 
@@ -1451,6 +1455,7 @@ const fresh = () => ({ skin:'defaut', auth:null, profiles:{}, accounts:{}, dobs:
   privacy:{ discord:true, tags:true, online:true } });
 let S = (()=>{ try{ const r=localStorage.getItem(KEY); return r ? {...fresh(),...JSON.parse(r)} : fresh(); }catch(e){ return fresh(); } })();
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+const BOOT_SKIN = S.skin; // thème réellement affiché à la dernière visite
 const visible = () => PLAYERS.filter(p=>!S.blocked.includes(p.id) && !S.hidden.includes(p.id) && !S.banned.includes(p.id) && sameGroup(p));
 const ranked = () => visible().map(p=>({p,c:compat(S.me,p)})).sort((x,y)=>y.c.pct-x.c.pct);
 
@@ -2587,7 +2592,8 @@ const money = (n,cur=curCode()) => n.toLocaleString('fr-FR').replace(/\u202f|\u0
 function ownsAll(){ return !!(S.owned&&S.owned.pack); }
 function canUseSkin(id){
   if(!PAID_SKINS.includes(id)) return true;
-  if(!AUTH_LIVE || !SHOP.enabled) return true;      // mode démo ou boutique fermée : tout est libre
+  if(!AUTH_LIVE || !SHOP.enabled) return true;
+  if(S.auth && id===BOOT_SKIN && !(()=>{ try{ return DB._checked; }catch(e){ return false; } })()) return true; // déjà validé : affiché tout de suite, revérifié après chargement      // mode démo ou boutique fermée : tout est libre
   if(S.auth && isAdmin()) return true;   // modérateurs
   const rw=S.rewards||{}; if((rw.referrals||0)>=REF_REWARD.all) return true; if(id===REF_REWARD.one&&(rw.referred||(rw.referrals||0)>=1)) return true;
   return ownsAll() || !!(S.owned&&(S.owned.themes||[]).includes(id));
@@ -2934,7 +2940,7 @@ function onSignedIn(u){
     if(location.hash===target) route(); else location.hash=target;
   } else route();
 }
-function onSignedOut(){ S.owned=null; S.auth=null; S.me=null; S.requests=[]; S.notifs=[]; S.chats={}; save(); if(location.hash!=='#/connexion') location.hash='#/connexion'; else route(); }
+function onSignedOut(){ S.owned=null; S.auth=null; S.me=null; S.requests=[]; S.notifs=[]; S.chats={}; applySkin(S.skinWanted||'defaut'); save(); if(location.hash!=='#/connexion') location.hash='#/connexion'; else route(); }
 async function signOut(){
   await DB.setPresence(false); DB._unsub.forEach(u=>u()); DB._unsub=[]; clearInterval(DB._hb);
   if(AUTH_LIVE){ try{ google.accounts.id.disableAutoSelect(); await firebase.auth().signOut(); }catch(e){} }
@@ -3758,16 +3764,17 @@ const DB = {
         else if(ct&&!ct.exists&&S.me&&S.me.discord){ if(await this.saveContacts(S.me)) await db.collection('profiles').doc(uid).set({discord:firebase.firestore.FieldValue.delete()},{merge:true}).catch(e=>console.error(e)); }
       }
       const g=S.me&&S.me.dob?ageGroup(S.me):'adult';
-      const ps=await db.collection('profiles').where('ageGroup','==',g).where('hidden','==',false).limit(300).get();
+      const [ps,rq,bl,rt,sq,ad]=await Promise.all([db.collection('profiles').where('ageGroup','==',g).where('hidden','==',false).limit(300).get(), db.collection('requests').where('participants','array-contains',uid).get(), db.collection('blocks').doc(uid).collection('list').get(), db.collection('ratings').where('by','==',uid).get(), db.collection('squads').where('ageGroup','==',g).get(), db.collection('admins').doc(uid).get(), this.loadPurchases()]);
+      this._checked=true;
       PLAYERS.length=0; ps.forEach(d=>{ if(d.id!==uid) PLAYERS.push(normP({...d.data(),id:d.id,age:undefined})); });
-      const rq=await db.collection('requests').where('participants','array-contains',uid).get();
+      
       S.requests=[]; rq.forEach(d=>{ const r=d.data(); S.requests.push({id:d.id,from:this.fromUid(r.from),to:this.fromUid(r.to),status:r.status,at:r.at}); });
-      const bl=await db.collection('blocks').doc(uid).collection('list').get(); S.blocked=[]; bl.forEach(d=>S.blocked.push(d.id));
-      const rt=await db.collection('ratings').where('by','==',uid).get(); S.ratings={}; rt.forEach(d=>{ S.ratings[d.data().target]=d.data().value; });
-      const sq=await db.collection('squads').where('ageGroup','==',g).get(); DEMO_SQUADS.length=0; S.squads=[]; S.joined=[];
+       S.blocked=[]; bl.forEach(d=>S.blocked.push(d.id));
+       S.ratings={}; rt.forEach(d=>{ S.ratings[d.data().target]=d.data().value; });
+       DEMO_SQUADS.length=0; S.squads=[]; S.joined=[];
       sq.forEach(d=>{ const s={...d.data(),id:d.id}; s.members=s.members.map(m=>this.fromUid(m)); s.owner=this.fromUid(s.owner); if(s.members.includes('me')&&s.owner!=='me') S.joined.push(s.id); (s.owner==='me'?S.squads:DEMO_SQUADS).push(s); });
-      const ad=await db.collection('admins').doc(uid).get(); if(ad.exists&&!ADMINS.includes(uid)) ADMINS.push(uid);
-      await this.loadPurchases();
+       if(ad.exists&&!ADMINS.includes(uid)) ADMINS.push(uid);
+      
       const isModNow=ad.exists, wasMod=!!(prof.data()||{}).moderator;
       if(isModNow!==wasMod){ try{ await db.collection('profiles').doc(uid).update({moderator:isModNow}); if(S.me) S.me.moderator=isModNow; }catch(e){ console.error(e); } }
       if(ad.exists) await this.loadReports();
