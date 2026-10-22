@@ -1335,20 +1335,28 @@ html:not([data-skin="defaut"]) .hero2{ margin-top:-14px !important; }
 html:is([data-skin="defaut"],[data-skin="sombre"]) .showcase{ margin-top:-14px !important; }
 </style>
 <style id="coopo-lofi">
-/* --- Lo-fi : soir d'été façon film d'animation (étoiles filantes, nuages peints, lucioles) --- */
-.lf-star{ fill:#FFFFFF; animation:lfTw var(--d) ease-in-out infinite; animation-delay:calc(var(--dl) * -1); }
-@keyframes lfTw{ 50%{ opacity:.25; } }
-.lf-shoot{ opacity:0; animation:lfShoot var(--d) linear infinite; animation-delay:var(--dl); }
-@keyframes lfShoot{ 0%{ transform:translateX(0); opacity:0; } 2%{ opacity:1; } 11%{ transform:translateX(460px); opacity:0; } 100%{ transform:translateX(460px); opacity:0; } }
-.lf-drift{ animation:lfDrift 60s ease-in-out infinite alternate; }
-@keyframes lfDrift{ to{ transform:translateX(60px); } }
-.lf-win{ fill:#FFC77A; animation:lfWin 7s steps(1) infinite; animation-delay:calc(var(--dl) * -1); }
-@keyframes lfWin{ 0%,80%{ opacity:1; } 84%{ opacity:.35; } 88%{ opacity:1; } }
-.lf-blade{ animation:lfSway 5s ease-in-out infinite alternate; animation-delay:calc(var(--dl) * -1); }
-@keyframes lfSway{ to{ transform:rotate(3deg); } }
-.lf-fly{ fill:#FFE6A0; animation:lfFly var(--d) ease-in-out infinite; animation-delay:calc(var(--dl) * -1); }
-@keyframes lfFly{ 50%{ transform:translate(12px,-18px); opacity:.25; } }
-@media (prefers-reduced-motion:reduce){ .lf-star,.lf-shoot,.lf-drift,.lf-win,.lf-blade,.lf-fly{ animation:none; } .lf-shoot{ display:none; } }
+/* --- Lo-fi : journée d'été façon film d'animation (ciel bleu, gros nuages, herbes au vent) --- */
+html[data-skin="lofi"]{
+  --frame:#1F86C2; --frame-bg:#1F86C2;
+  --bg:#FBF7EA; --s1:#FFFFFF; --s2:#EEF6FB; --line:#D6E6F0; --tx:#17324A; --mu:#56708A;
+  --pk:#1E7FC0; --pk2:#155E92; --on-pk:#FFFFFF; --field:#FFFFFF; --glass:rgba(255,255,255,.9); --glass-solid:#FFFFFF;
+  --hi:#3E9B2E; --mid:#F2B829; --warm:#E8862A; --lo:#E2574C;
+  --fd:'Zen Maru Gothic',sans-serif; --fdw:700; --fb:'Nunito','Segoe UI',sans-serif; --case:none;
+  --art-bg:#1F86C2; --art-tint:none;
+  --title:#FFFFFF; --title-shadow:0 2px 18px rgba(10,60,100,.45);
+  color-scheme:light;
+}
+html[data-skin="lofi"] body::after{ display:none; }
+html[data-skin="lofi"] h2{ animation:none; }
+.et-blade{ animation:etWind 3.2s ease-in-out infinite alternate; animation-delay:calc(var(--dl) * -1); }
+@keyframes etWind{ from{ transform:rotate(-1.5deg); } to{ transform:rotate(4deg); } }
+.et-flower{ animation:etWind 3.6s ease-in-out infinite alternate; animation-delay:calc(var(--dl) * -1); }
+.et-drift{ animation:etDrift 70s ease-in-out infinite alternate; }
+.et-drift2{ animation:etDrift 50s ease-in-out infinite alternate-reverse; }
+@keyframes etDrift{ to{ transform:translateX(70px); } }
+.et-leaf{ opacity:0; animation:etLeaf var(--d) linear infinite; animation-delay:calc(var(--dl) * -1); }
+@keyframes etLeaf{ 0%{ transform:translate(-60px,var(--y)) rotate(0deg); opacity:0; } 8%{ opacity:1; } 50%{ transform:translate(600px,calc(var(--y) - 80px)) rotate(260deg); } 92%{ opacity:1; } 100%{ transform:translate(1260px,calc(var(--y) - 20px)) rotate(540deg); opacity:0; } }
+@media (prefers-reduced-motion:reduce){ .et-blade,.et-flower,.et-drift,.et-drift2,.et-leaf{ animation:none; } .et-leaf{ display:none; } }
 </style>
 </head>
 <body>
@@ -2261,63 +2269,46 @@ function awaleSVG(){
     <clipPath id="awClip"><rect x="160" y="220" width="880" height="260" rx="130"/></clipPath>`);
 }
 function lofiSVG(){
-  const R=rng(31);
+  const R=rng(57);
   const f=n=>n.toFixed(1);
-  // étoiles
-  let stars='';
-  for(let i=0;i<110;i++){ const x=R()*1200, y=R()*330, r=R()<.08?1.8:(.5+R()*1.1);
-    stars+=`<circle class="lf-star" cx="${f(x)}" cy="${f(y)}" r="${f(r)}" style="--d:${(2+R()*4).toFixed(1)}s;--dl:${(R()*5).toFixed(1)}s"/>`; }
-  // étoiles filantes
-  let shoot='';
-  [[160,40,7,0],[620,10,9,3.2],[930,70,11,6.5],[360,120,13,9.1]].forEach(([x,y,d,dl])=>{
-    shoot+=`<g transform="translate(${x} ${y}) rotate(28)"><g class="lf-shoot" style="--d:${d}s;--dl:${dl}s"><line x1="-170" y1="0" x2="0" y2="0" stroke="url(#lfTrail)" stroke-width="2.2" stroke-linecap="round"/><circle r="2.6" fill="#FFFFFF" filter="url(#lfGlowS)"/></g></g>`; });
-  // nuage peint : grappes de bulles éclairées par le couchant
+  // gros cumulus peints : bulles blanches, ombres bleutées en bas
   let cdefs='';
-  const cloud=(cx,cy,w,h,seed,op)=>{ const r=rng(seed), id='lfC'+seed; let b='', hl='';
-    cdefs+=`<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="0" y1="${f(cy-h*1.1)}" x2="0" y2="${f(cy+h*.35)}"><stop offset="0" stop-color="#FFF0D8"/><stop offset=".3" stop-color="#FFC39E"/><stop offset=".62" stop-color="#E58FA2"/><stop offset=".85" stop-color="#8E73C0"/><stop offset="1" stop-color="#5E4C9C"/></linearGradient>`;
-    for(let i=0;i<26;i++){ const t=r(), x=cx+(t-.5)*w, k=1-Math.pow(Math.abs(t-.5)*2,1.6), rad=h*(.22+r()*.3)*(.55+k*.6), top=cy-k*h*(.55+r()*.35);
+  const cloud=(cx,cy,w,h,seed,op,cls)=>{ const r=rng(seed), id='etC'+seed; let b='', hl='', sh='';
+    cdefs+=`<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="0" y1="${f(cy-h)}" x2="0" y2="${f(cy+h*.3)}"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".55" stop-color="#F6FAFC"/><stop offset=".8" stop-color="#C9DCEB"/><stop offset="1" stop-color="#9DBBD6"/></linearGradient>`;
+    for(let i=0;i<30;i++){ const t=r(), x=cx+(t-.5)*w, k=1-Math.pow(Math.abs(t-.5)*2,1.5), rad=h*(.2+r()*.3)*(.5+k*.7), top=cy-k*h*(.5+r()*.45);
       b+=`<circle cx="${f(x)}" cy="${f(top+rad*.5)}" r="${f(rad)}"/>`;
-      if(r()<.4) hl+=`<circle cx="${f(x-rad*.2)}" cy="${f(top+rad*.15)}" r="${f(rad*.45)}"/>`; }
-    b+=`<ellipse cx="${cx}" cy="${f(cy+h*.12)}" rx="${f(w*.52)}" ry="${f(h*.22)}"/>`;
-    return `<g opacity="${op}" filter="url(#lfSoft)"><g fill="url(#${id})">${b}</g><g fill="#FFF3E2" opacity=".18">${hl}</g></g>`; };
-  // maisons japonaises avec toits et fenêtres allumées
-  const house=(x,w,h,roof,lit)=>{ const y=520-h; let win='';
-    for(let i=0;i<lit;i++){ const wx=x+10+i*((w-28)/Math.max(1,lit-1||1)), wy=y+h*.35;
-      win+=`<rect class="lf-win" x="${f(wx)}" y="${f(wy)}" width="12" height="10" rx="1.5" style="--dl:${(R()*6).toFixed(1)}s"/>`; }
-    return `<g><rect x="${x}" y="${y}" width="${w}" height="${h+40}" fill="#2A2050"/><path d="M${x-10} ${y+2} L${x+w/2} ${y-roof} L${x+w+10} ${y+2} Z" fill="#1E1740"/><path d="M${x-12} ${y+3} L${x+w+12} ${y+3}" stroke="#3B2E66" stroke-width="3"/>${win}</g>`; };
-  let town='';
-  [[40,90,46,22,2],[150,70,60,18,1],[240,110,40,26,3],[372,80,52,20,2],[470,60,40,18,1],[548,96,62,22,2],[668,74,48,20,2],[766,104,44,24,3],[890,66,56,18,1],[980,92,40,22,2],[1090,80,64,20,2]].forEach(([x,w,h,r,l])=>town+=house(x,w,h,r,l));
-  // poteau électrique et fils (motif typique des films d'animation)
-  const pole=`<g class="lf-pole"><rect x="884" y="150" width="9" height="400" fill="#140F2C"/><rect x="852" y="178" width="74" height="6" fill="#140F2C"/><rect x="860" y="210" width="58" height="5" fill="#140F2C"/>
-    <circle cx="858" cy="176" r="3" fill="#140F2C"/><circle cx="920" cy="176" r="3" fill="#140F2C"/>
-    <path d="M-20 120 Q430 250 858 178" stroke="#140F2C" stroke-width="1.6" fill="none"/><path d="M-20 160 Q430 280 858 212" stroke="#140F2C" stroke-width="1.4" fill="none"/>
-    <path d="M920 178 Q1060 240 1220 210" stroke="#140F2C" stroke-width="1.6" fill="none"/><path d="M918 212 Q1060 262 1220 246" stroke="#140F2C" stroke-width="1.4" fill="none"/></g>`;
-  // herbes hautes au premier plan
-  let grass='';
-  for(let i=0;i<70;i++){ const x=R()*1200, h=40+R()*90, lean=(R()-.5)*40;
-    grass+=`<path class="lf-blade" style="--dl:${(R()*4).toFixed(1)}s;transform-origin:${f(x)}px 640px" d="M${f(x-4)} 640 Q${f(x+lean*.3)} ${f(640-h*.6)} ${f(x+lean)} ${f(640-h)} Q${f(x+lean*.3+3)} ${f(640-h*.55)} ${f(x+4)} 640Z" fill="${R()<.5?'#120C26':'#1A1236'}"/>`; }
-  let flies='';
-  for(let i=0;i<14;i++) flies+=`<circle class="lf-fly" cx="${f(R()*1200)}" cy="${f(520+R()*100)}" r="${f(1.6+R()*1.6)}" style="--d:${(4+R()*5).toFixed(1)}s;--dl:${(R()*5).toFixed(1)}s"/>`;
-  return svgWrap(`<rect width="1200" height="640" fill="url(#lfSky)"/>
-    <circle cx="960" cy="455" r="260" fill="url(#lfSun)"/>
-    <g class="lf-stars">${stars}</g>
-    <g stroke="url(#lfComet)" stroke-linecap="round" fill="none" filter="url(#lfGlowS)" opacity=".85"><path d="M1060 -20 L760 250" stroke-width="5"/><path d="M1078 -20 L800 236" stroke-width="2" opacity=".6"/></g>
-    ${shoot}
-    <g class="lf-clouds">${cloud(250,400,520,150,3,1)}${cloud(820,380,620,190,7,1)}<g class="lf-drift">${cloud(560,250,260,70,11,.75)}${cloud(1120,300,260,80,13,.8)}</g></g>
-    <path d="M0 470 L120 430 L260 452 L420 410 L560 446 L700 420 L860 452 L1000 418 L1200 446 L1200 640 L0 640Z" fill="#5A4A92" opacity=".55"/>
-    <path d="M0 500 L160 470 L330 492 L520 462 L700 490 L900 468 L1080 490 L1200 476 L1200 640 L0 640Z" fill="#3A2F6E" opacity=".85"/>
-    ${pole}
-    ${town}
-    <rect x="0" y="560" width="1200" height="80" fill="url(#lfGround)"/>
-    <g class="lf-grass">${grass}</g>
-    <g>${flies}</g>`,
-    `<linearGradient id="lfSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14123A"/><stop offset=".28" stop-color="#2E2F78"/><stop offset=".5" stop-color="#6F5AAE"/><stop offset=".66" stop-color="#D98AA0"/><stop offset=".78" stop-color="#FFB27E"/><stop offset=".86" stop-color="#FFD7A0"/></linearGradient>
-     <radialGradient id="lfSun"><stop offset="0" stop-color="#FFE7B8" stop-opacity=".9"/><stop offset=".35" stop-color="#FFB98A" stop-opacity=".45"/><stop offset="1" stop-color="#FF9A7A" stop-opacity="0"/></radialGradient>
-     <linearGradient id="lfGround" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2A1F55"/><stop offset="1" stop-color="#120B26"/></linearGradient>
-     <linearGradient id="lfTrail" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/><stop offset="1" stop-color="#FFFFFF" stop-opacity=".95"/></linearGradient>
-     <linearGradient id="lfComet" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9FD8FF" stop-opacity="0"/><stop offset=".6" stop-color="#B8E2FF" stop-opacity=".7"/><stop offset="1" stop-color="#FFFFFF"/></linearGradient>
-     <filter id="lfSoft" x="-10%" y="-20%" width="120%" height="140%"><feGaussianBlur stdDeviation="1.6"/></filter>${cdefs}
-     <filter id="lfGlowS" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`);
+      if(r()<.45) hl+=`<circle cx="${f(x-rad*.18)}" cy="${f(top+rad*.25)}" r="${f(rad*.6)}"/>`;
+      if(r()<.3) sh+=`<circle cx="${f(x+rad*.3)}" cy="${f(top+rad*.95)}" r="${f(rad*.55)}"/>`; }
+    b+=`<ellipse cx="${cx}" cy="${f(cy+h*.1)}" rx="${f(w*.5)}" ry="${f(h*.2)}"/>`;
+    return `<g class="${cls||''}" opacity="${op}"><g filter="url(#etSoft)"><g fill="url(#${id})">${b}</g><g fill="#B7CFE3" opacity=".25">${sh}</g><g fill="#FFFFFF" opacity=".4">${hl}</g></g></g>`; };
+  // herbes hautes au vent
+  let grassBack='', grassFront='';
+  const blade=(x,base,h,lean,col)=>`<path class="et-blade" style="--dl:${(R()*3).toFixed(1)}s;transform-origin:${f(x)}px ${base}px" d="M${f(x-3.5)} ${base} Q${f(x+lean*.35)} ${f(base-h*.6)} ${f(x+lean)} ${f(base-h)} Q${f(x+lean*.35+3)} ${f(base-h*.55)} ${f(x+3.5)} ${base}Z" fill="${col}"/>`;
+  const greens=['#3E8E2A','#55A832','#6CBF3A','#2F7A24','#84CC48'];
+  for(let i=0;i<120;i++){ const x=R()*1240-20; grassBack+=blade(x,560,40+R()*70,10+R()*40,greens[(R()*5)|0]); }
+  for(let i=0;i<90;i++){ const x=R()*1240-20; grassFront+=blade(x,660,90+R()*130,20+R()*60,greens[(R()*5)|0]); }
+  // fleurs des champs
+  const fl=(x,y,s,c)=>{ let p=''; for(let i=0;i<5;i++){ const a=i*72*Math.PI/180; p+=`<circle cx="${f(Math.cos(a)*5*s)}" cy="${f(Math.sin(a)*5*s)}" r="${f(3.6*s)}" fill="${c}"/>`; }
+    return `<g class="et-flower" style="--dl:${(R()*3).toFixed(1)}s;transform-origin:${f(x)}px ${f(y+40)}px"><path d="M${f(x)} ${f(y)} q2 20 -2 40" stroke="#3E8E2A" stroke-width="2" fill="none"/><g transform="translate(${f(x)} ${f(y)})">${p}<circle r="${f(2.6*s)}" fill="#F7C531"/></g></g>`; };
+  let flowers='';
+  const fcols=['#FFFFFF','#FFFFFF','#F7B6C8','#FFE07A','#FFFFFF'];
+  for(let i=0;i<26;i++){ const x=R()*1200, y=470+R()*120; flowers+=fl(x,y,.8+R()*.7,fcols[(R()*5)|0]); }
+  // feuilles qui s'envolent avec le vent
+  let leaves='';
+  for(let i=0;i<10;i++){ leaves+=`<g class="et-leaf" style="--y:${(120+R()*360)|0}px;--d:${(7+R()*7).toFixed(1)}s;--dl:${(R()*12).toFixed(1)}s"><path d="M0 0 C6 -6 16 -6 22 0 C16 6 6 6 0 0Z" fill="${R()<.5?'#6CBF3A':'#A5D867'}" transform="scale(${(.7+R()*.7).toFixed(2)})"/></g>`; }
+  return svgWrap(`<rect width="1200" height="640" fill="url(#etSky)"/>
+    <rect width="1200" height="640" fill="url(#etLight)"/>
+    ${cloud(980,250,640,260,5,1,'')}${cloud(170,170,420,150,9,1,'et-drift')}${cloud(560,120,260,80,14,.9,'et-drift2')}
+    ${cloud(560,470,900,150,21,1,'')}
+    <path d="M-20 520 C200 470 420 500 640 480 C860 460 1040 500 1220 470 L1220 640 L-20 640Z" fill="#7CC24A"/>
+    <path d="M-20 545 C240 520 470 540 700 525 C900 512 1060 540 1220 520 L1220 640 L-20 640Z" fill="#5FAE36"/>
+    <g>${grassBack}</g>
+    <g>${flowers}</g>
+    <g>${grassFront}</g>
+    <g>${leaves}</g>`,
+    `<linearGradient id="etSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0F6EA8"/><stop offset=".45" stop-color="#1F86C2"/><stop offset=".8" stop-color="#5DB0DB"/><stop offset="1" stop-color="#9ED2EC"/></linearGradient>
+     <radialGradient id="etLight" cx=".75" cy=".1" r=".7"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".25"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient>
+     <filter id="etSoft" x="-10%" y="-20%" width="120%" height="140%"><feGaussianBlur stdDeviation="1.4"/></filter>${cdefs}`);
 }
 
 function esthSVG(){
@@ -2395,7 +2386,7 @@ const FX = {
             particles:{ kind:'dot', colors:['#FFFFFF','#E8FF3A','#9A9AA0'], n:8, dmin:16, dmax:28 }, click:'ripple' },
   awale:  { orbs:['#E2A23B','#D9622B','#7A4421'], orbO:.22,
             particles:{ kind:'dot', colors:['#F2E2C4','#C9AE8C','#9A6234'], n:12, dmin:14, dmax:22 }, click:'ripple' },
-  lofi:   { orbs:['#FFB37C','#8E5BC9','#C2627E'], orbO:.4,
+  lofi:   { orbs:['#9ED2EC','#FFE07A','#7CC24A'], orbO:.22,
             particles:{ kind:'dot', colors:['#FFF4E0','#FFCCA6'], n:22, dmin:14, dmax:24 }, click:'notes' },
   esth:   { orbs:['#C9B8FF','#FFC2DF','#BFF0E0'], orbO:.5,
             particles:{ kind:'sparkle', chars:['✦','✧','⋆'], colors:['#8A6CF0','#FF8FC4','#5FCFAE'], n:16, dmin:3, dmax:6 }, click:'sparkles' },
@@ -2753,7 +2744,7 @@ const SKINS = {
   defaut:{label:'Coopô',   desc:'Le thème officiel : clair, violet et citron',     sw:['#F6F5FB','#FFFFFF','#6A4BFF'], art:shapesSVG},
   samurai:{label:'Samouraï',  desc:'Rouge, crème et vagues japonaises', sw:['#C41E3A','#F4ECE1','#17110F'], art:samuraiSVG},
   soft:  {label:'Soft',       desc:'Rose pastel et fleurs',            sw:['#E9779E','#FFFFFF','#D9478A'], art:()=>bloomSVG()},
-  lofi:  {label:'Lo-fi',      desc:'Soir d\'été, nuages peints et étoiles filantes',       sw:['#16112A','#2E2649','#FFB37C'], art:lofiSVG},
+  lofi:  {label:'Lo-fi',      desc:'Ciel d\'été, grands nuages et herbes au vent', sw:['#1F86C2','#FFFFFF','#6CBF3A'], art:lofiSVG},
   esth:  {label:'Esthétique', desc:'Pastels et soleil rétro',          sw:['#C9B8FF','#FCFAFF','#8A6CF0'], art:esthSVG},
   awale: {label:'Awalé',      desc:'Plateau en bois, graines et motifs bogolan', sw:['#1E120A','#3A2618','#E2A23B'], art:awaleSVG},
   sombre:{label:'Sombre',     desc:'La version nuit du thème officiel',             sw:['#0C0A14','#16131F','#D4FF3F'], art:shapesSVG},
@@ -3030,8 +3021,8 @@ const PALETTE_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 const skinBtn = () => `<button class="skin-btn" type="button" aria-label="Changer de thème" title="Changer de thème">${PALETTE_ICON}</button>`;
 const skinGrid = () => `<div class="skins">${Object.entries(SKINS).map(([id,t])=>`<button type="button" class="skin" data-skin-pick="${id}" aria-pressed="${(S.skin||'defaut')===id}"><span class="sw" style="--a:${t.sw[0]};--b:${t.sw[1]};--c2:${t.sw[2]}"><i></i></span><b>${t.label}${canUseSkin(id)?'':` <span class="skin-lock">${LOCK_SVG}</span>`}</b><small>${canUseSkin(id)?t.desc:money(skinPrice(id))}${t.premium&&!canUseSkin(id)?' · premium':''}</small></button>`).join('')}</div>${AUTH_LIVE&&!ownsAll()&&PAID_SKINS.some(x=>!canUseSkin(x))?`<button type="button" class="pack-cta" data-buy-pack><span>Tous les thèmes</span><strong>${money(price('pack'))}</strong></button>`:''}`;
 
-const FONT_SPECS={"Zen Dots": "Zen+Dots", "Quicksand": "Quicksand:wght@500;600;700", "Bangers": "Bangers", "M PLUS Rounded 1c": "M+PLUS+Rounded+1c:wght@500;700;800", "Righteous": "Righteous", "Nunito": "Nunito:wght@500;700", "Syne": "Syne:wght@600;700;800", "DM Sans": "DM+Sans:wght@500;700", "Chakra Petch": "Chakra+Petch:wght@500;600;700", "Sora": "Sora:wght@500;600", "Outfit": "Outfit:wght@600;700", "Inter": "Inter:wght@400;500;600;700", "Anton": "Anton", "Source Sans 3": "Source+Sans+3:wght@400;600;700", "Noto Serif JP": "Noto+Serif+JP:wght@700", "Shippori Mincho B1": "Shippori+Mincho+B1:wght@700;800", "Zen Kaku Gothic New": "Zen+Kaku+Gothic+New:wght@400;500;700"};
-const SKIN_FONTS={"soft": ["Zen Dots", "Quicksand"], "manga": ["Bangers", "M PLUS Rounded 1c"], "glass": ["Inter"], "awale": ["Syne", "DM Sans"], "lofi": ["Righteous", "Nunito"], "esth": ["Syne", "DM Sans"], "sombre": ["Outfit", "Inter"], "ocean": ["Chakra Petch", "Sora"], "menthe": ["Chakra Petch", "Sora"], "defaut": ["Outfit", "Inter"], "samurai": ["Anton", "Source Sans 3", "Noto Serif JP"], "prunier": ["Shippori Mincho B1", "Zen Kaku Gothic New"]};
+const FONT_SPECS={"Zen Dots": "Zen+Dots", "Quicksand": "Quicksand:wght@500;600;700", "Bangers": "Bangers", "M PLUS Rounded 1c": "M+PLUS+Rounded+1c:wght@500;700;800", "Righteous": "Righteous", "Nunito": "Nunito:wght@500;700", "Zen Maru Gothic": "Zen+Maru+Gothic:wght@500;700", "Syne": "Syne:wght@600;700;800", "DM Sans": "DM+Sans:wght@500;700", "Chakra Petch": "Chakra+Petch:wght@500;600;700", "Sora": "Sora:wght@500;600", "Outfit": "Outfit:wght@600;700", "Inter": "Inter:wght@400;500;600;700", "Anton": "Anton", "Source Sans 3": "Source+Sans+3:wght@400;600;700", "Noto Serif JP": "Noto+Serif+JP:wght@700", "Shippori Mincho B1": "Shippori+Mincho+B1:wght@700;800", "Zen Kaku Gothic New": "Zen+Kaku+Gothic+New:wght@400;500;700"};
+const SKIN_FONTS={"soft": ["Zen Dots", "Quicksand"], "manga": ["Bangers", "M PLUS Rounded 1c"], "glass": ["Inter"], "awale": ["Syne", "DM Sans"], "lofi": ["Zen Maru Gothic", "Nunito"], "esth": ["Syne", "DM Sans"], "sombre": ["Outfit", "Inter"], "ocean": ["Chakra Petch", "Sora"], "menthe": ["Chakra Petch", "Sora"], "defaut": ["Outfit", "Inter"], "samurai": ["Anton", "Source Sans 3", "Noto Serif JP"], "prunier": ["Shippori Mincho B1", "Zen Kaku Gothic New"]};
 const _fontsLoaded=new Set();
 function loadSkinFonts(id){ const list=(SKIN_FONTS[id]||[]).filter(f=>FONT_SPECS[f]&&!_fontsLoaded.has(f)); if(!list.length) return;
   list.forEach(f=>_fontsLoaded.add(f)); const l=document.createElement('link'); l.rel='stylesheet';
