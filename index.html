@@ -1322,11 +1322,9 @@ html[data-skin="prunier"]{
 @keyframes prFall{ 0%{ transform:translate(var(--x),-40px) rotate(0deg); } 50%{ transform:translate(calc(var(--x) + var(--sw)),320px) rotate(170deg); } 100%{ transform:translate(var(--x),700px) rotate(340deg); } }
 .pr-sway{ transform-origin:690px 340px; animation:prSway 7s ease-in-out infinite; }
 @keyframes prSway{ 50%{ transform:rotate(1.4deg); } }
-/* vraie photo (Kevin Martin Jose, licence Unsplash) avec un lent mouvement de caméra ; le dessin reste dessous si la photo ne charge pas */
-.pr-photo{ transform-origin:600px 320px; animation:prKen 40s ease-in-out infinite alternate; }
-@keyframes prKen{ from{ transform:scale(1); } to{ transform:scale(1.08) translate(-12px,6px); } }
+/* vraie photo (Kevin Martin Jose, licence Unsplash) ; le dessin reste dessous si la photo ne charge pas */
 html[data-skin="prunier"] .hero-title .brand-o{ color:#FFD9DD; -webkit-text-fill-color:#FFD9DD; }
-@media (prefers-reduced-motion:reduce){ .pr-fall, .pr-sway, .pr-photo{ animation:none; } .pr-fall{ display:none; } }
+@media (prefers-reduced-motion:reduce){ .pr-fall, .pr-sway{ animation:none; } .pr-fall{ display:none; } }
 </style>
 </head>
 <body>
@@ -2632,8 +2630,8 @@ function prunierSVG(){
   [[150,150,26,.18],[1080,520,34,.14],[980,90,18,.12],[260,560,22,.10],[1150,250,14,.12]].forEach(([x,y,r,o])=>{ bokeh+=`<circle cx="${x}" cy="${y}" r="${r}" fill="#FFE9EC" opacity="${o}"/>`; });
   // pétales qui tombent
   let fall='';
-  for(let i=0;i<9;i++){ const x=(R()*1200)|0, d=(10+R()*9).toFixed(1), dl=(R()*14).toFixed(1), sc=(.2+R()*.18).toFixed(2), sw=(30+R()*80)|0;
-    fall+=`<g class="pr-fall" style="--x:${x}px;--sw:${sw}px;--dd:${d}s;--dl:${dl}s"><path transform="scale(${sc})" d="${petal(1)}" fill="url(#prPetal)" opacity=".92"/></g>`; }
+  for(let i=0;i<9;i++){ const x=(R()*1200)|0, d=(10+R()*9).toFixed(1), dl=(R()*14).toFixed(1), sc=(.11+R()*.08).toFixed(2), sw=(30+R()*80)|0;
+    fall+=`<g class="pr-fall" style="--x:${x}px;--sw:${sw}px;--dd:${d}s;--dl:${dl}s"><path transform="scale(${sc})" d="${petal(1)}" fill="#F8DCE3" opacity=".9"/></g>`; }
   const mainP=[-60,640, 250,500, 650,350, 985,212];
   const twig1=[520,399, 526,372, 530,346, 522,318];
   const twig2=[304,485, 296,466, 298,446, 306,428];
@@ -2646,7 +2644,7 @@ function prunierSVG(){
     ${branch}
     ${bud(522,322,1.05,-6)}${bud(509,337,.85,-48)}${bud(985,212,1.15,62)}${bud(306,430,.9,-14)}${bud(830,256,.95,30)}
     <g class="pr-sway">${flower(712,306,1.2,-14,.92)}${flower(626,378,1.02,22,.88)}</g>
-    <image class="pr-photo" href="https://images.unsplash.com/photo-1681160380794-78863d869b87?w=2400&q=80&auto=format&fit=crop" x="0" y="0" width="1200" height="640" preserveAspectRatio="xMidYMid slice"/>
+    <image class="pr-photo" href="https://images.unsplash.com/photo-1681160380794-78863d869b87?w=2000&q=78&auto=format&fit=crop" x="0" y="0" width="1200" height="640" preserveAspectRatio="xMidYMid slice"/>
     <g class="pr-falls">${fall}</g>
     <rect width="1200" height="640" fill="url(#prVignette)"/>
     <rect width="1200" height="640" filter="url(#prGrain)" opacity=".07"/>`,
