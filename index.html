@@ -1300,6 +1300,12 @@ html:not([data-skin="defaut"]) .hero2 .art{ animation:none !important; clip-path
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js">
+<style id="coopo-socials">
+.so-head{ margin-top:6px; }
+.so-grid{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px 16px; }
+@media (max-width:760px){ .so-grid{ grid-template-columns:1fr 1fr; } }
+.btn-so{ white-space:nowrap; max-width:100%; overflow:hidden; text-overflow:ellipsis; }
+</style>
 </head>
 <body>
 
@@ -1694,6 +1700,8 @@ function viewProfile(){
           ? `<div class="field"><span class="lbl">WhatsApp</span><p class="hint">Pour ta sécurité, le numéro WhatsApp n'est pas proposé avant 18 ans. Utilise Discord ou les messages de Coopô.</p></div>`
           : `<div class="field"><label for="f-wa">Numéro WhatsApp (facultatif)</label><input id="f-wa" type="text" inputmode="tel" autocomplete="tel" maxlength="22" value="${esc(draft.whatsapp||'')}" placeholder="ex. +225 07 00 00 00 00"><span class="hint">Visible uniquement par tes mates, pour vous écrire en un clic.</span></div>`}
       </div>
+<div class="field so-head"><span class="lbl">Réseaux sociaux (facultatif)</span><span class="hint">Visibles uniquement par tes mates. Mets juste ton pseudo (sans le @) ou colle le lien de ton profil.</span></div>
+<div class="so-grid">${SOCIALS.map(([k,l,ph])=>`<div class="field"><label for="f-so-${k}">${l}</label><input id="f-so-${k}" type="text" maxlength="120" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc((draft.socials||{})[k]||'')}" placeholder="${ph}"></div>`).join('')}</div>
       ${S.auth ? `<div class="google-note"><strong>${S.auth.provider==='password'?'Compte e-mail':'Connecté avec Google'}</strong><span class="muted">${esc(S.auth.email)}</span></div>` : `<div class="two">
         <div class="field"><label for="f-pw">${isNew?'Mot de passe':'Nouveau mot de passe (facultatif)'}</label><input id="f-pw" type="password" autocomplete="new-password">
           <div class="strength"><i id="pw-bar" style="--w:0%"></i></div><span class="hint" id="pw-hint">Au moins ${CONFIG.minPassword} caractères, avec une lettre et un chiffre.</span></div>
@@ -1829,6 +1837,7 @@ function submitProfile(e){
   const isNew=!S.me, pw=document.getElementById('f-pw')?.value||'', pw2=document.getElementById('f-pw2')?.value||'';
   draft.name=draft.name.trim(); draft.discord=document.getElementById('f-discord').value.trim().slice(0,40);
   draft.whatsapp=(document.getElementById('f-wa')?.value||'').trim();
+    draft.socials={}; SOCIALS.forEach(([k])=>{ const v=cleanHandle(document.getElementById('f-so-'+k)?.value); if(v) draft.socials[k]=v; });
   const errs=[];
   if(!new RegExp(`^[A-Za-z0-9_.-]{${CONFIG.minUsername},${CONFIG.maxUsername}}$`).test(draft.name)) errs.push("Choisis un nom d'utilisateur de 3 à 20 caractères (lettres, chiffres, _ . -).");
   if(PLAYERS.some(p=>p.name.toLowerCase()===draft.name.toLowerCase())) errs.push("Ce nom d'utilisateur est déjà pris.");
@@ -1964,7 +1973,7 @@ function viewPlayer(id){
     ${mateBtn}
     ${self?`<button class="btn btn-ghost" id="share2">Partager mon profil</button>`
       : mate ? `<div class="contact-box" id="contact-box"><p class="hint">Chargement de ses contacts…</p></div>`
-      : `<p class="hint">Son Discord et son WhatsApp s'affichent une fois que vous êtes mates.</p>`}
+      : `<p class="hint">Ses contacts et réseaux sociaux s'affichent une fois que vous êtes mates.</p>`}
     ${self?'':`<div class="safety"><button class="linkbtn" id="report">Signaler</button><button class="linkbtn" id="block">Bloquer</button>${mate?`<button class="linkbtn" id="unmate">Retirer des mates</button>`:''}</div>`}
   </aside></div></div>`;
   const re=()=>{ viewPlayer(id); animateAfterRender(); };
@@ -1989,10 +1998,31 @@ function viewPlayer(id){
 
 /* ----- Contacts entre mates (Discord / WhatsApp) -----
    Stockés dans contacts/{uid}, lisibles uniquement par la personne et ses mates acceptés. */
+/* ----- Réseaux sociaux (pseudos), rangés avec les contacts : visibles seulement par les mates ----- */
+const SOCIALS = [
+  ['snapchat','Snapchat','ton.pseudo.snap', u=>'https://www.snapchat.com/add/'+u],
+  ['instagram','Instagram','ton.pseudo.insta', u=>'https://www.instagram.com/'+u+'/'],
+  ['tiktok','TikTok','ton.pseudo.tiktok', u=>'https://www.tiktok.com/@'+u],
+  ['x','X (Twitter)','tonpseudo', u=>'https://x.com/'+u],
+  ['youtube','YouTube','tachaine', u=>'https://www.youtube.com/@'+u],
+  ['twitch','Twitch','tonpseudo', u=>'https://www.twitch.tv/'+u],
+];
+// garde seulement le pseudo : enlève le @, les espaces et un éventuel lien collé
+function cleanHandle(v){
+  let s=String(v||'').trim(); if(!s) return '';
+  if(/^https?:\/\//i.test(s) || /\.(com|tv)\//i.test(s)){ s=s.replace(/[?#].*$/,'').replace(/\/+$/,''); s=s.split('/').pop(); }
+  s=s.replace(/^@+/,'').replace(/\s+/g,'');
+  return s.replace(/[^A-Za-z0-9._-]/g,'').slice(0,40);
+}
+function pickSocials(c){ const o={}; SOCIALS.forEach(([k])=>{ const v=cleanHandle(c && c[k]); if(v) o[k]=v; }); return o; }
+function socialLinks(c,sm){
+  const so=(c && c.socials)||{};
+  return SOCIALS.filter(([k])=>so[k]).map(([k,l,,url])=>`<a class="btn btn-ghost btn-so so-${k}${sm}" target="_blank" rel="noopener noreferrer" href="${esc(url(so[k]))}" title="${l} de ce joueur">${l} · ${esc(so[k])}</a>`).join('');
+}
 async function contactsOf(p){
-  if(!DB.live) return { discord: p.discordPublic ? (p.discord||'') : '', whatsapp: p.whatsapp||'' };
+  if(!DB.live) return { discord: p.discordPublic ? (p.discord||'') : '', whatsapp: p.whatsapp||'', socials: pickSocials(p.socials||{}) };
   const c=await DB.getContacts(p.id);
-  const out={ discord:(c&&c.discord)||'', whatsapp:(c&&c.whatsapp)||'' };
+  const out={ discord:(c&&c.discord)||'', whatsapp:(c&&c.whatsapp)||'', socials:pickSocials(c||{}) };
   if(!out.discord && p.discord && p.discordPublic) out.discord=p.discord;   // ancien profil pas encore mis à jour
   return out;
 }
@@ -2000,8 +2030,9 @@ function contactButtons(p,c,compact){
   const sm=compact?' btn-sm':'';
   const wa = /^\+\d{8,15}$/.test(c.whatsapp||'') ? `<a class="btn btn-wa${sm}" target="_blank" rel="noopener" href="https://wa.me/${c.whatsapp.slice(1)}?text=${encodeURIComponent(`Salut ${p.name}, c'est ${S.me?S.me.name:''} de Coopô 🎮 On joue ensemble ?`)}">WhatsApp</a>` : '';
   const dc = c.discord ? `<button class="btn btn-ghost${sm}" type="button" data-copy-discord="${esc(c.discord)}" title="Copier son pseudo Discord">Discord · ${esc(c.discord)}</button>` : '';
-  if(wa||dc) return wa+dc;
-  return compact ? '' : `<p class="hint">${esc(p.name)} n'a pas partagé de Discord ni de WhatsApp. Écrivez-vous dans les messages.</p>`;
+  const so = socialLinks(c,sm);
+  if(wa||dc||so) return wa+dc+so;
+  return compact ? '' : `<p class="hint">${esc(p.name)} n'a pas encore partagé de contact ni de réseau social. Écrivez-vous dans les messages.</p>`;
 }
 async function fillContacts(p,boxId,compact){
   const c=await contactsOf(p); const box=document.getElementById(boxId); if(box) box.innerHTML=contactButtons(p,c,compact);
@@ -3760,7 +3791,7 @@ const DB = {
       if(!prof.exists){ this._loaded=true; this._loading=false; this._noProfile=true; save(); refreshAfterData(); return; }
       { // contacts privés (Discord / WhatsApp) ; un ancien Discord public est déplacé ici
         const ct=await db.collection('contacts').doc(uid).get().catch(()=>null), c=ct&&ct.exists?ct.data():null;
-        if(c&&S.me){ S.me.discord=c.discord||S.me.discord||''; S.me.whatsapp=c.whatsapp||''; }
+        if(c&&S.me){ S.me.discord=c.discord||S.me.discord||''; S.me.whatsapp=c.whatsapp||''; S.me.socials=pickSocials(c); }
         else if(ct&&!ct.exists&&S.me&&S.me.discord){ if(await this.saveContacts(S.me)) await db.collection('profiles').doc(uid).set({discord:firebase.firestore.FieldValue.delete()},{merge:true}).catch(e=>console.error(e)); }
       }
       const g=S.me&&S.me.dob?ageGroup(S.me):'adult';
@@ -3795,14 +3826,14 @@ const DB = {
     try{ const ref=this.db.collection('profiles').doc(uid); const isNew=!(await ref.get().catch(()=>({exists:false}))).exists;
       await this.db.collection('private').doc(uid).set({dob,updatedAt:Date.now()},{merge:true});
       await this.db.collection('usernames').doc(me.name.toLowerCase()).set({uid});
-      const {banned,hidden,rejoue,moderator,dispo,skin,discord,whatsapp,...safe}=pub;
+      const {banned,hidden,rejoue,moderator,dispo,skin,discord,whatsapp,socials,...safe}=pub;
       const data={...safe,nameLower:me.name.toLowerCase(),ageGroup:ageGroup(me),privacy:S.privacy,discordPublic:S.privacy.discord,online:true,lastSeen:Date.now(),updatedAt:Date.now()};
       if(isNew){ Object.assign(data,{banned:false,hidden:false,rejoue:0}); await ref.set(data); await this.saveContacts(me); await this.applyReferral(); await this.loadAll(); }
       else { const ok=await this.saveContacts(me); await ref.set(ok?{...data,discord:firebase.firestore.FieldValue.delete()}:data,{merge:true}); } }
     catch(e){ console.error(e); toast("Le profil n'a pas pu être enregistré en ligne"); } },
   // Contacts privés : lisibles uniquement par la personne et ses mates (règles Firestore)
   async saveContacts(me){ if(!this.live||!this.uid()||!me) return false;
-    try{ await this.db.collection('contacts').doc(this.uid()).set({ discord:S.privacy.discord?String(me.discord||'').slice(0,40):'', whatsapp:me.dob&&ageGroup(me)==='adult'?String(me.whatsapp||''):'', updatedAt:Date.now() }); return true; }
+    try{ await this.db.collection('contacts').doc(this.uid()).set({ discord:S.privacy.discord?String(me.discord||'').slice(0,40):'', whatsapp:me.dob&&ageGroup(me)==='adult'?String(me.whatsapp||''):'', ...Object.fromEntries(SOCIALS.map(([k])=>[k, cleanHandle((me.socials||{})[k])])), updatedAt:Date.now() }); return true; }
     catch(e){ console.error(e); return false; } },
   async getContacts(id){ if(!this.live) return null; try{ const d=await this.db.collection('contacts').doc(id).get(); return d.exists?d.data():{}; }catch(e){ console.error(e); return null; } },
   // Annonces et tournois : boards/{tranche}/annonces et boards/{tranche}/tournois
