@@ -1326,6 +1326,14 @@ html[data-skin="prunier"]{
 html[data-skin="prunier"] .hero-title .brand-o{ color:#FFD9DD; -webkit-text-fill-color:#FFD9DD; }
 @media (prefers-reduced-motion:reduce){ .pr-fall, .pr-sway{ animation:none; } .pr-fall{ display:none; } }
 </style>
+<style id="coopo-fullwidth">
+/* ==== Page pleine largeur : plus de bandes de couleur sur les côtés ==== */
+html body .frame{ width:100%; max-width:none; margin:0; border-radius:0; box-shadow:none; min-height:100vh; min-height:100svh;
+  padding-left:max(14px, calc(50% - 630px)); padding-right:max(14px, calc(50% - 630px)); }
+html[data-skin="samurai"] body .frame::before{ left:calc(max(14px, 50% - 630px) - 7px); }
+html:not([data-skin="defaut"]) .hero2{ margin-top:-14px !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .showcase{ margin-top:-14px !important; }
+</style>
 </head>
 <body>
 
