@@ -1322,8 +1322,11 @@ html[data-skin="prunier"]{
 @keyframes prFall{ 0%{ transform:translate(var(--x),-40px) rotate(0deg); } 50%{ transform:translate(calc(var(--x) + var(--sw)),320px) rotate(170deg); } 100%{ transform:translate(var(--x),700px) rotate(340deg); } }
 .pr-sway{ transform-origin:690px 340px; animation:prSway 7s ease-in-out infinite; }
 @keyframes prSway{ 50%{ transform:rotate(1.4deg); } }
+/* vraie photo (Kevin Martin Jose, licence Unsplash) avec un lent mouvement de caméra ; le dessin reste dessous si la photo ne charge pas */
+.pr-photo{ transform-origin:600px 320px; animation:prKen 40s ease-in-out infinite alternate; }
+@keyframes prKen{ from{ transform:scale(1); } to{ transform:scale(1.08) translate(-12px,6px); } }
 html[data-skin="prunier"] .hero-title .brand-o{ color:#FFD9DD; -webkit-text-fill-color:#FFD9DD; }
-@media (prefers-reduced-motion:reduce){ .pr-fall, .pr-sway{ animation:none; } .pr-fall{ display:none; } }
+@media (prefers-reduced-motion:reduce){ .pr-fall, .pr-sway, .pr-photo{ animation:none; } .pr-fall{ display:none; } }
 </style>
 </head>
 <body>
@@ -2643,6 +2646,7 @@ function prunierSVG(){
     ${branch}
     ${bud(522,322,1.05,-6)}${bud(509,337,.85,-48)}${bud(985,212,1.15,62)}${bud(306,430,.9,-14)}${bud(830,256,.95,30)}
     <g class="pr-sway">${flower(712,306,1.2,-14,.92)}${flower(626,378,1.02,22,.88)}</g>
+    <image class="pr-photo" href="https://images.unsplash.com/photo-1681160380794-78863d869b87?w=2400&q=80&auto=format&fit=crop" x="0" y="0" width="1200" height="640" preserveAspectRatio="xMidYMid slice"/>
     <g class="pr-falls">${fall}</g>
     <rect width="1200" height="640" fill="url(#prVignette)"/>
     <rect width="1200" height="640" filter="url(#prGrain)" opacity=".07"/>`,
