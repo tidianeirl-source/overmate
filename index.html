@@ -2,6 +2,8 @@
 <html lang="fr" data-skin="defaut">
 <head>
 <meta charset="utf-8">
+<!-- Sécurité : le navigateur n'accepte du code, des connexions et des cadres que depuis ces adresses connues (Coopô, Firebase/Google, serveur de paiement). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://accounts.google.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.googleapis.com https://www.gstatic.com https://accounts.google.com https://coopo-paiement.vercel.app; frame-src https://accounts.google.com https://*.firebaseapp.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0D0F1E">
@@ -159,6 +161,7 @@ body.is-home .top{ display:none; }
 .install-foot .btn{ display:inline-flex; align-items:center; gap:8px; }
 .install-foot svg{ width:20px; height:20px; }
 .loading-box{ display:grid; justify-items:center; gap:10px; }
+.bubble-warn{ display:block; margin-top:6px; padding-top:6px; border-top:1px dashed currentColor; font-size:12px; font-style:normal; opacity:.8; }
 /* Squelettes de chargement */
 .sk{ display:block; height:12px; border-radius:6px; background:linear-gradient(90deg,var(--line) 25%,var(--s1) 50%,var(--line) 75%); background-size:200% 100%; animation:skShine 1.2s ease-in-out infinite; }
 .sk-av{ width:52px; height:52px; border-radius:50%; flex:none; }
@@ -2111,11 +2114,21 @@ document.addEventListener('click',async e=>{ const b=e.target.closest('[data-cop
   catch(err){ modal(`<h3>Pseudo Discord</h3><input type="text" readonly value="${esc(v)}" onfocus="this.select()"><div class="dlg-actions"><button class="btn" data-close>Fermer</button></div>`); } });
 
 /* ----- Paramètres ----- */
+/* E-mail non vérifié (comptes créés avec e-mail + mot de passe) : on propose de renvoyer le lien de vérification */
+function emailVerifyPanel(){
+  let u=null; try{ u=AUTH_LIVE&&window.firebase&&firebase.auth?firebase.auth().currentUser:null; }catch(e){}
+  if(!u||u.emailVerified||!u.providerData.some(x=>x&&x.providerId==='password')) return '';
+  return `<section class="panel" id="ev-panel"><h3>Vérifie ton adresse e-mail</h3><p class="hint">Ton adresse n'est pas encore vérifiée. Clique sur le lien reçu par e-mail : ça protège ton compte et permet de le récupérer si tu oublies ton mot de passe.</p><button class="btn" type="button" id="ev-send">Renvoyer l'e-mail de vérification</button></section>`;
+}
+document.addEventListener('click',async e=>{ const b=e.target.closest&&e.target.closest('#ev-send'); if(!b) return; b.disabled=true;
+  try{ const u=firebase.auth().currentUser; await u.reload(); if(u.emailVerified){ toast('Ton e-mail est déjà vérifié'); document.getElementById('ev-panel')?.remove(); return; }
+    await u.sendEmailVerification(); toast('E-mail envoyé. Regarde aussi dans tes spams.'); }
+  catch(err){ console.error(err); toast("L'e-mail n'a pas pu être envoyé. Réessaie dans quelques minutes."); b.disabled=false; } });
 function viewSettings(){
   if(!S.me) return needProfile('Paramètres');
   const blocked=PLAYERS.filter(p=>S.blocked.includes(p.id)), w=S.weights||CONFIG.weights, mates=matesList();
   const tg=(k,t,h)=>`<div class="toggle"><div><label for="pv-${k}" class="lbl">${t}</label><p class="hint">${h}</p></div><input class="switch" type="checkbox" id="pv-${k}" data-pv="${k}" ${S.privacy[k]?'checked':''}></div>`;
-  app.innerHTML=`<div class="wrap page" style="max-width:760px"><div class="page-head"><h2>Paramètres</h2></div><div class="form">
+  app.innerHTML=`<div class="wrap page" style="max-width:760px"><div class="page-head"><h2>Paramètres</h2></div><div class="form">${emailVerifyPanel()}
     <section class="panel"><h3>Thème</h3><p class="hint">Change l'apparence de tout le site.</p>${skinGrid()}${AUTH_LIVE&&PAID_SKINS.some(x=>!canUseSkin(x))&&(SHOP.currencies||Object.keys(CURRENCIES)).length>1?`<div class="field" style="margin-top:12px;max-width:320px"><label for="set-cur">Devise des prix</label><select id="set-cur">${Object.entries(CURRENCIES).filter(([k])=>curOK(k)).map(([k,v])=>`<option value="${k}" ${k===curCode()?'selected':''}>${v.label} (${k})</option>`).join('')}</select></div>`:''}</section>
     ${refSection()}
     <section class="panel"><h3>Application</h3><div data-install-box>${installHTML()}</div><div style="margin-top:14px">${notifySettingHTML()}</div></section>
@@ -3256,6 +3269,7 @@ async function doSignup(){
     if(AUTH_LIVE){
       const cred=await firebase.auth().createUserWithEmailAndPassword(mail,pw);
       await cred.user.updateProfile({ displayName:name });
+      cred.user.sendEmailVerification().catch(e=>console.error(e));   // e-mail de vérification : confirme que l'adresse existe vraiment
       S.dobs[cred.user.uid]=dob; save();
       onSignedIn({ uid:cred.user.uid, name, email:mail, photo:'', provider:'password' });
     } else {
@@ -3427,15 +3441,22 @@ function viewChat(id){
     <form class="chat-form" id="chatform"><input type="text" id="chatin" placeholder="Écris un message…" maxlength="500" autocomplete="off"><button class="btn btn-ac" type="submit">Envoyer</button></form></div>`;
   fillContacts(p,'chat-contacts',true);
   renderChat(id);
-  document.getElementById('chatform').addEventListener('submit',e=>{ e.preventDefault(); const i=document.getElementById('chatin'), t=i.value.trim(); if(!t) return; i.value='';
+  document.getElementById('chatform').addEventListener('submit',e=>{ e.preventDefault(); const i=document.getElementById('chatin'), t=i.value.trim(); if(!t) return;
+    if(S.me&&ageGroup(S.me)==='minor'&&hasPhone(t)){ toast('Pour ta sécurité, les numéros de téléphone ne peuvent pas être envoyés ici.'); return; }   // 15-17 ans : pas de numéro dans le chat
+    i.value='';
     const m={from:'me',text:t,at:Date.now()}; (S.chats[id]||(S.chats[id]=[])).push(m); save(); DB.sendMessage(id,m); renderChat(id);
     if(!AUTH_LIVE && Math.random()<.75) setTimeout(()=>{ const r={from:id,text:pick(CANNED),at:Date.now()}; (S.chats[id]||(S.chats[id]=[])).push(r);
       if(location.hash==='#/messages/'+id){ save(); renderChat(id); } else { S.unread[id]=(S.unread[id]||0)+1; notify({type:'message',from:id,text:`${p.name} : ${r.text}`}); } }, 2000+Math.random()*3000); });
   DB.listenChat(id,()=>{ if(location.hash==='#/messages/'+id) renderChat(id); });
 }
+/* Sécurité du chat : repère les numéros de téléphone et les liens dans un message */
+const hasPhone = t => /(?:\+|\b00)[\s.\-]?\d(?:[\s.\-]?\d){7,14}\b/.test(t) || /\b0\d(?:[\s.\-]?\d{2}){4}\b/.test(t);
+const hasLink = t => /(?:https?:\/\/|www\.)\S+|\b[a-z0-9-]+\.(?:com|net|org|io|gg|me|ly|xyz|app|link|ci|fr|tk)\b/i.test(t);
+const msgWarn = m => m.from==='me' ? '' : hasPhone(m.text) ? '<em class="bubble-warn">Prudence : ne partage ton numéro qu\'avec quelqu\'un que tu connais vraiment.</em>'
+  : hasLink(m.text) ? '<em class="bubble-warn">Prudence avec les liens : ne saisis jamais ton mot de passe sur un site inconnu.</em>' : '';
 function renderChat(id){
   const box=document.getElementById('chatbox'); if(!box) return; const msgs=S.chats[id]||[];
-  box.innerHTML = msgs.length ? msgs.map(m=>`<div class="bubble ${m.from==='me'?'me':''}"><span>${esc(m.text)}</span><small>${ago(m.at)}</small></div>`).join('') : '<p class="muted" style="text-align:center;padding:30px 0">Première partie ensemble ? Propose un créneau 🎮</p>';
+  box.innerHTML = msgs.length ? msgs.map(m=>`<div class="bubble ${m.from==='me'?'me':''}"><span>${esc(m.text)}</span>${msgWarn(m)}<small>${ago(m.at)}</small></div>`).join('') : '<p class="muted" style="text-align:center;padding:30px 0">Première partie ensemble ? Propose un créneau 🎮</p>';
   box.scrollTop=box.scrollHeight;
 }
 
@@ -3730,7 +3751,7 @@ function viewHelp(){
 }
 function viewLegal(kind){
   const cgu=kind==='cgu';
-  app.innerHTML=`<div class="wrap page legal"><div class="page-head"><div><h2>${cgu?"Conditions générales d'utilisation":'Politique de confidentialité'}</h2><p>Dernière mise à jour : octobre 2026</p></div></div>
+  app.innerHTML=`<div class="wrap page legal"><div class="page-head"><div><h2>${cgu?"Conditions générales d'utilisation":'Politique de confidentialité'}</h2><p>Dernière mise à jour : ${cgu?'octobre':'novembre'} 2026</p></div></div>
     ${cgu?`
     <h3>1. Objet</h3><p>Coopô est un service de mise en relation entre joueurs de jeux vidéo, édité depuis la Côte d'Ivoire par Konate Tidiane. En créant un compte, tu acceptes les présentes conditions.</p>
     <h3>2. Âge minimum</h3><p>Le service est réservé aux personnes âgées d'au moins ${CONFIG.minAge} ans. Les utilisateurs de ${CONFIG.minAge} à ${CONFIG.adultAge-1} ans ne sont mis en relation qu'avec des utilisateurs de la même tranche d'âge. Toute fausse déclaration d'âge entraîne la suppression du compte.</p>
@@ -3742,14 +3763,16 @@ function viewLegal(kind){
     <h3>8. Thèmes payants</h3><p>Certains thèmes visuels sont payants, à l'unité ou en pack. Le paiement est traité par CinetPay (Mobile Money ou carte bancaire). Un thème acheté reste lié à ton compte tant qu'il existe. Les thèmes sont purement esthétiques et ne donnent aucun avantage pour la mise en relation. Les achats des utilisateurs de moins de 18 ans nécessitent l'accord d'un parent ou tuteur. Les conditions de remboursement sont détaillées dans la <a href="#/remboursement">politique de remboursement</a>.</p>
     <h3>9. Modifications</h3><p>Les présentes conditions peuvent évoluer ; tu seras informé des changements importants.</p>`
     :`
-    <h3>1. Données collectées</h3><p>Pour créer ton compte : e-mail, pseudo, date de naissance, et, si tu utilises Google, ton nom et ta photo Google. Pour ton profil : jeux, pseudos et rangs en jeu, horaires, jours, style, plateformes, pays, langues. Facultatif : pseudo Discord et, à partir de 18 ans, numéro WhatsApp. Pour la communauté : tes annonces et tes inscriptions aux tournois. Pour le fonctionnement : demandes de mate, messages, signalements, blocages.</p>
-    <h3>2. Ce qui est visible</h3><p>Les autres utilisateurs voient uniquement ton pseudo, ton avatar, tes jeux et tes habitudes de jeu. Ton pseudo Discord et ton numéro WhatsApp ne sont visibles que par tes mates acceptés. Le numéro WhatsApp n'est pas proposé aux 15-17 ans. Ton e-mail, ta date de naissance et ton âge exact ne sont jamais affichés. Ton e-mail reste uniquement dans le service de connexion (Firebase Authentication) : il n'est pas recopié dans la base de données du site. Tes messages privés ne sont lisibles que par toi et ton mate ; si tu signales une conversation, les derniers messages sont joints au signalement et la modération peut consulter cette conversation, uniquement pour traiter le signalement.</p>
+    <h3>1. Données collectées</h3><p>Pour créer ton compte : e-mail, pseudo, date de naissance, et, si tu utilises Google, ton nom et ta photo Google. Pour ton profil : jeux, pseudos et rangs en jeu, horaires, jours, style, plateformes, pays, langues. Facultatif : pseudo Discord, pseudos de réseaux sociaux (Snapchat, Instagram, TikTok, X, YouTube, Twitch) et, à partir de 18 ans, numéro WhatsApp. Pour la communauté : tes annonces et tes inscriptions aux tournois. Pour le fonctionnement : demandes de mate, messages, signalements, blocages, notifications, ton statut « en ligne » et l'heure de ta dernière visite, ton avis « tu rejouerais avec lui ? » sur un joueur, et, si tu es venu par un lien de parrainage, le pseudo de ton parrain. Si tu nous écris par le formulaire de contact : ton message et l'e-mail que tu indiques.</p>
+    <h3>2. Ce qui est visible</h3><p>Les autres utilisateurs voient uniquement ton pseudo, ton avatar, tes jeux et tes habitudes de jeu. Ton statut « en ligne » est visible si tu ne l'as pas désactivé dans les paramètres. Ton pseudo Discord, tes réseaux sociaux et ton numéro WhatsApp ne sont visibles que par tes mates acceptés. Tes avis sur les autres joueurs ne leur sont pas montrés. Le numéro WhatsApp n'est pas proposé aux 15-17 ans. Ton e-mail, ta date de naissance et ton âge exact ne sont jamais affichés. Ton e-mail reste uniquement dans le service de connexion (Firebase Authentication) : il n'est pas recopié dans la base de données du site. Tes messages privés ne sont lisibles que par toi et ton mate ; si tu signales une conversation, les derniers messages sont joints au signalement et la modération peut consulter cette conversation, uniquement pour traiter le signalement.</p>
     <h3>3. Utilisation</h3><p>Les données servent à calculer les compatibilités, à faire fonctionner les demandes de mate, les messages et les groupes, à séparer les tranches d'âge et à assurer la modération. Aucune donnée n'est vendue. Aucune publicité ciblée.</p>
     <h3>4. Hébergement</h3><p>Les données sont stockées sur Firebase, un service de Google Cloud. Elles sont protégées par des règles d'accès : ton e-mail et ta date de naissance ne sont lisibles que par toi et par la modération.</p>
     <h3>5. Conservation</h3><p>Les données sont conservées tant que le compte existe, puis supprimées. Les signalements peuvent être conservés anonymisés pour la sécurité du service.</p>
     <h3>6. Tes droits</h3><p>Tu peux consulter, modifier et supprimer tes données depuis ton compte, ou en nous écrivant via le formulaire <a href="#/contact">Nous écrire</a>. Les utilisateurs mineurs peuvent exercer ces droits avec un parent ou tuteur. En Côte d'Ivoire, tu peux aussi saisir l'ARTCI, l'autorité chargée de la protection des données personnelles.</p>
     <h3>7. Paiements</h3><p>Les paiements sont traités par CinetPay. Coopô ne reçoit ni ton numéro de carte ni ton code Mobile Money ; nous conservons uniquement la référence de la transaction, l'article acheté, le montant et son statut.</p>
-    <h3>8. Cookies</h3><p>Le site utilise uniquement le stockage nécessaire au fonctionnement (session, thème choisi). Pas de cookies publicitaires ni de mesure d'audience. Le détail est dans la <a href="#/cookies">politique de cookies</a>.</p>`}
+    <h3>8. Cookies</h3><p>Le site utilise uniquement le stockage nécessaire au fonctionnement (session, thème choisi). Pas de cookies publicitaires ni de mesure d'audience. Pour afficher le site plus vite, une copie des données que tu as déjà consultées (liste des joueurs, messages) est gardée dans ton navigateur ; elle est effacée quand tu te déconnectes ou quand tu vides les données du site. Le détail est dans la <a href="#/cookies">politique de cookies</a>.</p>
+    <h3>9. Sécurité</h3><p>Les échanges avec le site sont chiffrés (HTTPS). Les mots de passe sont gérés par Firebase Authentication : nous ne les voyons jamais. L'accès aux données est limité par des règles côté serveur, et seule l'équipe de modération peut consulter les signalements. Aucun système n'est infaillible : choisis un mot de passe unique, vérifie ton adresse e-mail et ne partage jamais tes identifiants. Dans les messages, les numéros de téléphone sont bloqués pour les 15-17 ans et un avertissement s'affiche sur les liens reçus.</p>
+    <h3>10. Modifications</h3><p>Cette politique peut évoluer avec le site. La date de mise à jour est indiquée en haut de la page et tu seras informé des changements importants.</p>`}
     </div>`;
 }
 
@@ -3849,6 +3872,7 @@ function viewCookies(){
     <h3>Ce que le site enregistre dans ton navigateur</h3>
     <p><b>Stockage local du site</b> : ta session, le thème choisi, ta devise, tes préférences d'affichage et un brouillon de ton profil. Ces données restent sur ton appareil et servent uniquement au fonctionnement de Coopô.</p>
     <p><b>Firebase Authentication (Google)</b> : garde ta connexion ouverte entre deux visites.</p>
+    <p><b>Copie locale des données</b> : pour un affichage plus rapide, les données déjà consultées (liste des joueurs, messages) sont gardées dans ton navigateur.</p>
     <p><b>Connexion avec Google</b> : si tu choisis ce mode de connexion, Google dépose ses propres cookies pendant l'identification, selon sa politique de confidentialité.</p>
     <p><b>Polices d'écriture</b> : les polices sont chargées depuis Google Fonts ; ton adresse IP est donc transmise à Google lors de ce chargement, sans cookie.</p>
     <p><b>Paiement</b> : lors d'un achat, la page de paiement CinetPay peut utiliser ses propres cookies, nécessaires à la transaction.</p>
