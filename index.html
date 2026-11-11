@@ -159,6 +159,14 @@ body.is-home .top{ display:none; }
 .install-foot .btn{ display:inline-flex; align-items:center; gap:8px; }
 .install-foot svg{ width:20px; height:20px; }
 .loading-box{ display:grid; justify-items:center; gap:10px; }
+/* Squelettes de chargement */
+.sk{ display:block; height:12px; border-radius:6px; background:linear-gradient(90deg,var(--line) 25%,var(--s1) 50%,var(--line) 75%); background-size:200% 100%; animation:skShine 1.2s ease-in-out infinite; }
+.sk-av{ width:52px; height:52px; border-radius:50%; flex:none; }
+.sk-lines{ display:grid; gap:8px; flex:1; }
+.sk-card .mc-head{ display:flex; align-items:center; gap:12px; }
+.sk-card:hover{ transform:none; }
+@keyframes skShine{ to{ background-position:-200% 0; } }
+@media (prefers-reduced-motion: reduce){ .sk{ animation:none; } }
 .spinner{ width:30px; height:30px; border-radius:50%; border:3px solid var(--line); border-top-color:var(--pk); animation:spin .8s linear infinite; }
 @keyframes spin{ to{ transform:rotate(360deg); } }
 @media (prefers-reduced-motion: reduce){ .spinner{ animation-duration:2.4s; } }
@@ -1525,7 +1533,7 @@ const ring = (p,size='') => `<div class="ring ${size}${p>=80?' glow':''}" data-c
 function avatar(u,size=48){
   const a=u.avatar||{hue:260};
   const minor = u.ageGroup==='minor' || (u.dob && ageGroup(u)==='minor');   // jamais de photo pour les 15-17 ans
-  if(a.src && !minor) return `<img class="av" src="${esc(a.src)}" alt="" width="${size}" height="${size}" style="width:${size}px;height:${size}px">`;
+  if(a.src && !minor) return `<img class="av" src="${esc(a.src)}" alt="" loading="lazy" decoding="async" width="${size}" height="${size}" style="width:${size}px;height:${size}px">`;
   return `<span class="av" aria-hidden="true" style="width:${size}px;height:${size}px;--h:${(Number(a.hue)||0)%360};font-size:${Math.round(size*.36)}px">${esc((u.name||'?').slice(0,2).toUpperCase())}</span>`;
 }
 const list = (arr,map) => arr.length ? arr.map(map).join(' • ') : '—';
@@ -1934,7 +1942,9 @@ function refreshAfterData(){
 function normP(p){ p=p||{}; ['games','hours','days','platforms','langs'].forEach(k=>{ if(!Array.isArray(p[k])) p[k]=[]; }); ['tags','ranks','roles'].forEach(k=>{ if(!p[k]||typeof p[k]!=='object') p[k]={}; });
   if(!p.avatar||typeof p.avatar!=='object') p.avatar={hue:265}; if(typeof p.name!=='string'||!p.name) p.name='Joueur'; return p; }
 const dataPending = () => DB.live && !!S.auth && !DB._loaded;
-function loadingView(title){ app.innerHTML=`<div class="wrap page"><div class="page-head"><div><h2>${title}</h2></div></div><div class="empty loading-box"><span class="spinner" aria-hidden="true"></span><p class="muted">Chargement de tes données…</p></div></div>`; }
+/* Écran squelette : on montre tout de suite la forme des cartes pendant que les données arrivent */
+function loadingView(title){ const sk=`<div class="mcard sk-card" aria-hidden="true"><div class="mc-head"><span class="sk sk-av"></span><div class="sk-lines"><span class="sk" style="width:60%"></span><span class="sk" style="width:35%"></span></div></div><span class="sk" style="width:90%"></span><span class="sk" style="width:70%"></span></div>`;
+  app.innerHTML=`<div class="wrap page" aria-busy="true"><div class="page-head"><div><h2>${title}</h2><p class="muted">Chargement de tes données…</p></div></div><div class="grid">${sk.repeat(6)}</div></div>`; }
 function needProfile(title){
   app.innerHTML=`<div class="wrap page"><div class="page-head"><h2>${title}</h2></div><div class="empty"><h3>Crée ton profil pour voir tes matchs</h3>
   <p class="muted">Tes jeux, horaires et style servent à calculer ta compatibilité avec chaque joueur.</p><a class="btn btn-ac" href="#/profil">Créer mon profil</a>${S.auth?'':'<a class="linkbtn" href="#/connexion">J\'ai déjà un compte</a>'}</div></div>`;
@@ -1963,7 +1973,7 @@ function viewMatches(){
 }
 
 /* ----- Recherche ----- */
-const F={q:'',game:'',platform:'',hour:'',style:'',min:0};
+const F={q:'',game:'',platform:'',hour:'',style:'',min:0,shown:24};   // shown : nombre de cartes affichées (pagination)
 function viewSearch(){
   const opt=(arr,sel)=>arr.map(([v,l])=>`<option value="${esc(v)}" ${sel===v?'selected':''}>${esc(l)}</option>`).join('');
   app.innerHTML=`<div class="wrap page">
@@ -1977,8 +1987,10 @@ function viewSearch(){
       ${S.me?`<div class="field" style="grid-column:1 / -1"><label for="s-m">Compatibilité minimum</label><div class="range-row"><input id="s-m" type="range" min="0" max="100" step="5" data-f="min" value="${F.min}"><output id="s-mo">${F.min} %</output></div></div>`:''}
     </div>
     <p class="count" id="count" aria-live="polite"></p><div class="grid" id="results"></div></div>`;
+  let tq; // debounce : on attend que le joueur arrête de taper (250 ms) avant de relancer la recherche
   document.getElementById('filters').addEventListener('input',e=>{ const k=e.target.dataset.f; if(!k) return;
-    F[k]= k==='min' ? +e.target.value : e.target.value; if(k==='min') document.getElementById('s-mo').textContent=F.min+' %'; renderResults(); });
+    F[k]= k==='min' ? +e.target.value : e.target.value; if(k==='min') document.getElementById('s-mo').textContent=F.min+' %';
+    clearTimeout(tq); if(k==='q'||k==='min') tq=setTimeout(()=>{ F.shown=24; renderResults(); },250); else { F.shown=24; renderResults(); } });
   renderResults();
 }
 function renderResults(){
@@ -1987,8 +1999,11 @@ function renderResults(){
     && (!F.platform||p.platforms.includes(F.platform)) && (!F.hour||p.hours.includes(F.hour))
     && (!F.style||p.style===F.style||p.style==='both') && (!c||c.pct>=F.min));
   document.getElementById('count').textContent = `${rows.length} joueur${rows.length>1?'s':''} trouvé${rows.length>1?'s':''}`;
-  document.getElementById('results').innerHTML = rows.length ? rows.map((m,i)=>matchCard(m,false,Math.min(i,10))).join('')
+  // Pagination : on n'affiche que les 24 premiers joueurs, puis 24 de plus à chaque clic
+  document.getElementById('results').innerHTML = rows.length ? rows.slice(0,F.shown).map((m,i)=>matchCard(m,false,Math.min(i,10))).join('')
+      + (rows.length>F.shown?`<div style="grid-column:1/-1;text-align:center;margin-top:8px"><button class="btn" type="button" id="more-results">Voir plus de joueurs (${rows.length-F.shown})</button></div>`:'')
     : `<div class="empty" style="grid-column:1/-1"><h3>Aucun joueur ne correspond</h3><p class="muted">Retire un filtre ou baisse la compatibilité minimum.</p></div>`;
+  const more=document.getElementById('more-results'); if(more) more.onclick=()=>{ F.shown+=24; renderResults(); };
   animateAfterRender(document.getElementById('results'));
 }
 
@@ -3935,7 +3950,7 @@ const DB = {
   toUid(id){ return id==='me' ? this.uid() : id; },
   fromUid(u){ return u===this.uid() ? 'me' : u; },
   pairId(id){ return [this.uid(),id].sort().join('_'); },
-  async init(){ if(!AUTH_LIVE) return; try{ await loadScript(`https://www.gstatic.com/firebasejs/${FB_VERSION}/firebase-firestore-compat.js`); this.db=firebase.firestore(); this.live=true;
+  async init(){ if(!AUTH_LIVE) return; try{ await loadScript(`https://www.gstatic.com/firebasejs/${FB_VERSION}/firebase-firestore-compat.js`); this.db=firebase.firestore(); await this.db.enablePersistence({synchronizeTabs:true}).catch(()=>{}); this.live=true;   // cache Firestore sur l'appareil
     if(SHOP.api){ const api=SHOP.api.replace(/\/$/,''); this.fns={ httpsCallable: name => async (data) => {
         const u=firebase.auth().currentUser; if(!u) throw new Error('Connecte-toi pour continuer.');
         const token=await u.getIdToken(); const r=await fetch(`${api}/${name}`,{ method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}, body:JSON.stringify(data||{}) });
@@ -4052,7 +4067,7 @@ const DB = {
     if(!this.live||!this.uid()||!S.me) return; clearTimeout(this._skinT);
     this._skinT=setTimeout(()=>{ this.db.collection('profiles').doc(this.uid()).update({skin:id}).catch(e=>console.error(e)); },600); },
   async setDispo(d){ if(!this.live||!this.uid()) return; try{ await this.db.collection('profiles').doc(this.uid()).update({dispo:d||null}); }catch(e){ console.error(e); toast('Statut non enregistré en ligne'); } },
-  async refreshPlayers(){ if(!this.live||!this.uid()||!S.me||!S.me.dob) return false; if(this._refreshing||(this._lastPlayers&&Date.now()-this._lastPlayers<45000)) return false; this._lastPlayers=Date.now(); this._refreshing=true;
+  async refreshPlayers(){ if(!this.live||!this.uid()||!S.me||!S.me.dob) return false; if(this._refreshing||(this._lastPlayers&&Date.now()-this._lastPlayers<180000)) return false; this._lastPlayers=Date.now(); this._refreshing=true;
     try{ const uid=this.uid(), g=ageGroup(S.me); const ps=await this.db.collection('profiles').where('ageGroup','==',g).where('hidden','==',false).limit(300).get();
       const fresh=[]; ps.forEach(d=>{ if(d.id!==uid) fresh.push(normP({...d.data(),id:d.id,age:undefined})); }); const keep=PLAYERS.filter(p=>p._reported&&!fresh.some(f=>f.id===p.id)); PLAYERS.length=0; fresh.concat(keep).forEach(p=>PLAYERS.push(p)); return true; }catch(e){ console.error(e); return false; } finally{ this._refreshing=false; } },
   async applyReferral(){ if(!this.live||!this.uid()||!S.me) return; const code=(localStorage.getItem('coopo_ref')||'').toLowerCase(); if(!code||code===S.me.name.toLowerCase()) return;
