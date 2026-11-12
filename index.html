@@ -85,7 +85,7 @@ body.is-home .top{ display:none; }
 .dc-who div{ display:grid; min-width:0; }
 .dc-who b{ font-size:15px; }
 .dc-who span{ font-size:13px; color:var(--mu); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.dc-who em{ font-size:12px; color:var(--mu); font-style:normal; opacity:.85; }
+.dc-who em{ font-size:12px; color:var(--mu); font-style:normal; }
 .dc-act{ display:flex; align-items:center; gap:10px; flex:none; }
 .dc-compat{ font-weight:800; color:var(--hi-tx); font-size:12px; font-style:normal; margin-left:8px; white-space:nowrap; }
 .dc-who b{ display:flex; align-items:center; flex-wrap:wrap; gap:2px 0; }
@@ -728,7 +728,7 @@ input.invalid{ border-color:var(--lo) !important; animation:shake .35s; }
 .chat-box{ flex:1; min-height:320px; max-height:60vh; overflow:auto; display:flex; flex-direction:column; gap:8px; padding:16px; background:var(--s1); border-radius:var(--rc); }
 .bubble{ max-width:78%; align-self:flex-start; padding:10px 14px; border-radius:18px 18px 18px 4px; background:var(--field); border:1.5px solid var(--line); display:grid; gap:2px; animation:pop .25s cubic-bezier(.3,1.6,.5,1); }
 .bubble.me{ align-self:flex-end; background:var(--pk); color:var(--on-pk); border-color:var(--pk); border-radius:18px 18px 4px 18px; }
-.bubble small{ font-size:11px; opacity:.85; } .bubble span{ overflow-wrap:anywhere; }
+.bubble small{ font-size:11px; opacity:.85; } .bubble.me small{ opacity:1; } .bubble span{ overflow-wrap:anywhere; }
 .chat-form{ display:flex; gap:8px; margin-top:12px; }
 .squad h3{ margin:0; } .sq-top{ display:flex; justify-content:space-between; align-items:center; gap:10px; }
 .sq-game{ font:700 13px var(--fb); color:var(--pk2,var(--pk)); background:color-mix(in srgb,var(--pk) 12%,transparent); padding:4px 12px; border-radius:var(--rp); }
@@ -1582,9 +1582,11 @@ let NAV_COUNT=0;   // nombre de pages vues dans cette visite (sert au bouton Ret
 const profileComplete = () => !!(S.me && S.me.name && S.me.dob && Array.isArray(S.me.games) && S.me.games.length);
 // Pages accessibles sans être connecté (connexion, pages légales, aide, contact, installation)
 const PUBLIC_ROUTES=['bienvenue','connexion','inscription','cgu','confidentialite','cookies','remboursement','contact','aide','app'];
+const OFFLINE_OK=['bienvenue','cgu','confidentialite','cookies','remboursement','aide','app'];   // pages lisibles sans serveur
 function route(){
   const [, name='accueil', arg] = location.hash.split('/');
   NAV_COUNT++; if(!(name==='messages'&&arg)) DB.stopChat();   // on n'écoute une conversation que lorsqu'elle est ouverte
+  if(NET_FAIL && !OFFLINE_OK.includes(name) && (S.auth||['connexion','inscription','contact'].includes(name))){ document.body.classList.toggle('logged-out',!S.auth); netFailView(); renderNav(''); return; }
   if(!S.auth && !PUBLIC_ROUTES.includes(name)){
     try{ if(name && name!=='accueil') sessionStorage.setItem('coopo_after_login', location.hash); }catch(e){}
     document.body.classList.add('logged-out');
@@ -2926,38 +2928,64 @@ function loadScript(src){
   return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.async=true;
     s.onload=res; s.onerror=()=>rej(new Error('Échec du chargement : '+src)); document.head.appendChild(s); });
 }
+/* Démarrage de Firebase.
+   AUTH_READY : promesse tenue quand Firebase est chargé ET que la session est connue (connecté ou non).
+   NET_FAIL   : Firebase n'a pas pu être chargé (pas de réseau) -> écran « Connexion impossible », nouvel essai automatique.
+   Le site en ligne ne bascule jamais en mode démo : sinon un joueur recevrait de fausses réponses et ses actions ne seraient pas enregistrées. */
+let AUTH_READY_OK; const AUTH_READY=new Promise(r=>{ AUTH_READY_OK=r; });
+const authReady = (ms=15000) => !AUTH_LIVE ? Promise.resolve(false) : Promise.race([AUTH_READY, new Promise(r=>setTimeout(()=>r(false),ms))]);
+let NET_FAIL=false, _authTries=0, _authBusy=false, _authBound=false, _authRetry=null;
 async function initAuth(){
-  if(!AUTH_LIVE) return;
+  if(!AUTH_LIVE||_authBusy) return; _authBusy=true; clearTimeout(_authRetry);
   try{
-    await loadScript(`https://www.gstatic.com/firebasejs/${FB_VERSION}/firebase-app-compat.js`);
-    await loadScript(`https://www.gstatic.com/firebasejs/${FB_VERSION}/firebase-auth-compat.js`);
-    firebase.initializeApp(AUTH.firebase);
-    await DB.init();
-    firebase.auth().onAuthStateChanged(u=>{
+    if(!window.firebase) await loadScript(`https://www.gstatic.com/firebasejs/${FB_VERSION}/firebase-app-compat.js`);
+    if(!firebase.auth) await loadScript(`https://www.gstatic.com/firebasejs/${FB_VERSION}/firebase-auth-compat.js`);
+    if(!firebase.apps||!firebase.apps.length) firebase.initializeApp(AUTH.firebase);
+    if(!(await DB.init())) throw new Error('Firestore indisponible');
+    const wasDown=NET_FAIL; NET_FAIL=false; _authTries=0;
+    if(!_authBound){ _authBound=true; firebase.auth().onAuthStateChanged(u=>{
       if(u) onSignedIn({ uid:u.uid, name:u.displayName||'', email:u.email||'', photo:u.photoURL||'', provider:(u.providerData[0]&&u.providerData[0].providerId==='password')?'password':'google' });
       else if(S.auth) onSignedOut();
-    });
-    await loadScript('https://accounts.google.com/gsi/client');
-    google.accounts.id.initialize({ client_id:AUTH.googleClientId, callback:onGoogleCredential, ux_mode:'popup', auto_select:false });
-    renderGoogleButtons();
-  }catch(e){ console.error(e); AUTH_LIVE=false; DB.live=false; toast('Firebase est injoignable ici : le site passe en mode démo'); route(); }
+      AUTH_READY_OK(true);
+    }); }
+    if(wasDown) route(); else renderGoogleButtons();
+  }catch(e){ console.error(e); NET_FAIL=true; _authTries++; route(); _authRetry=setTimeout(initAuth,Math.min(60000,4000*_authTries)); }
+  finally{ _authBusy=false; }
+}
+addEventListener('online',()=>{ if(NET_FAIL) initAuth(); });
+function netFailView(){
+  document.body.classList.remove('is-home');
+  app.innerHTML=`<div class="wrap page"><div class="empty"><h3>Connexion impossible</h3><p class="muted">Coopô n'arrive pas à joindre ses serveurs. Vérifie ta connexion internet : la page réessaie toute seule.</p><button class="btn btn-ac" type="button" id="net-retry">Réessayer maintenant</button></div></div>`;
+}
+document.addEventListener('click',e=>{ const b=e.target.closest('#net-retry'); if(b){ b.disabled=true; b.textContent='Nouvel essai…'; initAuth(); } });
+// Bouton Google : le script de Google n'est chargé que sur les pages qui l'affichent (connexion, inscription), pas à chaque visite
+let _gsiReady=false, _gsiLoad=null;
+function ensureGSI(){
+  if(_gsiReady) return Promise.resolve(true);
+  if(!_gsiLoad) _gsiLoad=loadScript('https://accounts.google.com/gsi/client').then(()=>{ google.accounts.id.initialize({ client_id:AUTH.googleClientId, callback:onGoogleCredential, ux_mode:'popup', auto_select:false }); _gsiReady=true; return true; })
+    .catch(e=>{ console.error(e); _gsiLoad=null; return false; });
+  return _gsiLoad;
 }
 // Google renvoie un jeton signé ; Firebase le vérifie et crée/retrouve le compte.
 async function onGoogleCredential({ credential }){
-  try{ await firebase.auth().signInWithCredential(firebase.auth.GoogleAuthProvider.credential(credential)); }
-  catch(e){ console.error(e); toast('La connexion Google a échoué. Réessaie.'); }
+  try{ if(!(await authReady())) throw new Error('hors ligne'); await firebase.auth().signInWithCredential(firebase.auth.GoogleAuthProvider.credential(credential)); }
+  catch(e){ console.error(e); toast('La connexion Google a échoué. Vérifie ta connexion et réessaie.',4000); }
 }
 // Affiche le bouton officiel Google (en production) ou le bouton de démo
 function renderGoogleButtons(root=document){
   const inApp = typeof envInfo==='function' && envInfo().inApp;
   root.querySelectorAll('.gbtn').forEach(el=>{
     if(inApp){ el.innerHTML=`<div class="inapp-note"><b>Connexion Google indisponible ici</b><span>Tu es dans le navigateur d'une appli (TikTok, WhatsApp…). Inscris-toi avec ton e-mail juste en dessous, ou <button class="linklike" type="button" data-install-go>ouvre Coopô dans Chrome ou Safari</button>.</span></div>`; el.classList.add('is-inapp'); return; }
-    if(AUTH_LIVE && window.google?.accounts?.id){
-      el.innerHTML=''; const w=Math.max(200,Math.min(360,Math.floor((el.parentElement||el).clientWidth||300))); google.accounts.id.renderButton(el,{ theme:'outline', size:'large', shape:'pill', text:'continue_with', locale:'fr', width:w });
+    if(AUTH_LIVE){
+      if(_gsiReady){ el.innerHTML=''; const w=Math.max(200,Math.min(360,Math.floor((el.parentElement||el).clientWidth||300))); google.accounts.id.renderButton(el,{ theme:'outline', size:'large', shape:'pill', text:'continue_with', locale:'fr', width:w }); }
+      else if(!el.firstChild) el.innerHTML=`<button type="button" class="btn btn-ghost" disabled>Connexion Google…</button>`;   // en attendant le bouton officiel (jamais le bouton de démo sur le site en ligne)
     } else if(!el.firstChild){
       el.innerHTML=`<button type="button" class="btn btn-ghost demo-g">Continuer avec Google <small>(démo)</small></button>`;
     }
   });
+  if(AUTH_LIVE && !inApp && !_gsiReady && root.querySelector('.gbtn')) ensureGSI().then(ok=>{
+    if(ok) renderGoogleButtons();
+    else document.querySelectorAll('.gbtn').forEach(el=>{ el.innerHTML=`<p class="hint" style="text-align:center">Connexion Google indisponible pour le moment. Utilise ton e-mail juste en dessous.</p>`; }); });
 }
 // Nom d'utilisateur proposé à partir du nom Google
 const suggestName = n => (n||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9_.-]/g,'').slice(0,CONFIG.maxUsername);
@@ -3087,9 +3115,12 @@ function authErr(err){
   if(c==='auth/weak-password') return {pw:'Mot de passe trop faible.'};
   if(['auth/invalid-credential','auth/wrong-password','auth/user-not-found','auth/invalid-login-credentials'].includes(c)) return {pw:'E-mail ou mot de passe incorrect.'};
   if(c==='auth/too-many-requests') return {pw:'Trop de tentatives. Réessaie dans quelques minutes.'};
+  if(c==='auth/network-request-failed') return {mail:OFFLINE_MSG};
+  if(c==='auth/user-disabled') return {mail:'Ce compte a été désactivé.'};
   return {pw:'Une erreur est survenue. Réessaie.'};
 }
 const MAIL_RE=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const OFFLINE_MSG="Coopô n'arrive pas à joindre ses serveurs. Vérifie ta connexion internet, puis réessaie.";
 async function doSignup(){
   const name=aval('a-name'), mail=aval('a-mail').toLowerCase(), pw=document.getElementById('a-pw').value, dob=draft.dob, age=ageFrom(dob), e={};
   if(!new RegExp(`^[A-Za-z0-9_.-]{${CONFIG.minUsername},${CONFIG.maxUsername}}$`).test(name)) e.name=`${CONFIG.minUsername} à ${CONFIG.maxUsername} caractères : lettres, chiffres, _ . -`;
@@ -3102,6 +3133,7 @@ async function doSignup(){
   busy(true); SIGNUP={name,dob};
   try{
     if(AUTH_LIVE){
+      if(!(await authReady())){ showErrs({mail:OFFLINE_MSG}); return; }
       const cred=await firebase.auth().createUserWithEmailAndPassword(mail,pw);
       await cred.user.updateProfile({ displayName:name });
       cred.user.sendEmailVerification().catch(e=>console.error(e));   // e-mail de vérification : confirme que l'adresse existe vraiment
@@ -3122,7 +3154,7 @@ async function doLogin(){
   if(showErrs(e)) return;
   busy(true);
   try{
-    if(AUTH_LIVE) await firebase.auth().signInWithEmailAndPassword(mail,pw);
+    if(AUTH_LIVE){ if(!(await authReady())){ showErrs({mail:OFFLINE_MSG}); return; } await firebase.auth().signInWithEmailAndPassword(mail,pw); }
     else { const acc=S.accounts[mail]; if(!acc){ showErrs({mail:'Aucun compte avec cet e-mail.'}); return; }
       onSignedIn({ uid:acc.uid, name:acc.name, email:mail, photo:'', provider:'password' }); }
   }catch(err){ if(!/^auth\//.test(String(err&&err.code))) console.error(err); showErrs(authErr(err)); }
@@ -3131,8 +3163,8 @@ async function doLogin(){
 async function forgotPw(){
   const mail=aval('a-mail').toLowerCase();
   if(!MAIL_RE.test(mail)){ showErrs({mail:'Entre ton e-mail pour recevoir un lien de réinitialisation.'}); return; }
-  if(AUTH_LIVE){ try{ await firebase.auth().sendPasswordResetEmail(mail); }catch(e){} }
-  toast(AUTH_LIVE?'Si un compte existe, un e-mail vient d\'être envoyé.':'Mode démo : aucun e-mail n\'est envoyé.');
+  if(AUTH_LIVE){ if(!(await authReady())){ showErrs({mail:OFFLINE_MSG}); return; } try{ await firebase.auth().sendPasswordResetEmail(mail); }catch(e){} }
+  toast(AUTH_LIVE?'Si un compte existe, un e-mail vient d\'être envoyé. Regarde aussi dans tes spams.':'Mode démo : aucun e-mail n\'est envoyé.',4000);
 }
 
 /* =========================================================
@@ -3825,12 +3857,16 @@ const DB = {
   toUid(id){ return id==='me' ? this.uid() : id; },
   fromUid(u){ return u===this.uid() ? 'me' : u; },
   pairId(id){ return [this.uid(),id].sort().join('_'); },
-  async init(){ if(!AUTH_LIVE) return; try{ await loadScript(`https://www.gstatic.com/firebasejs/${FB_VERSION}/firebase-firestore-compat.js`); this.db=firebase.firestore(); await this.db.enablePersistence({synchronizeTabs:true}).catch(()=>{}); this.live=true;   // cache Firestore sur l'appareil
+  // Firestore prêt ? Pendant les premières secondes d'une visite (ou sur une connexion lente), une action attend la base au lieu d'être perdue.
+  async ready(){ if(this.live) return true; if(!AUTH_LIVE) return false; const ok=await authReady(20000); if(!ok&&!this._slowToast){ this._slowToast=true; setTimeout(()=>{ this._slowToast=false; },8000); toast("Connexion trop lente : l'action n'a pas été enregistrée. Réessaie.",4000); } return ok&&this.live; },
+  async init(){ if(!AUTH_LIVE) return false; if(this.live) return true;
+    try{ if(!firebase.firestore) await loadScript(`https://www.gstatic.com/firebasejs/${FB_VERSION}/firebase-firestore-compat.js`); this.db=firebase.firestore(); await this.db.enablePersistence({synchronizeTabs:true}).catch(()=>{}); this.live=true;   // cache Firestore sur l'appareil
     if(SHOP.api){ const api=SHOP.api.replace(/\/$/,''); this.fns={ httpsCallable: name => async (data) => {
         const u=firebase.auth().currentUser; if(!u) throw new Error('Connecte-toi pour continuer.');
         const token=await u.getIdToken(); const r=await fetch(`${api}/${name}`,{ method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}, body:JSON.stringify(data||{}) });
         let j={}; try{ j=await r.json(); }catch(e){} if(!r.ok) throw new Error(j.error||'Le serveur de paiement ne répond pas.'); return { data:j }; } }; }
-    else { try{ await loadScript(`https://www.gstatic.com/firebasejs/${FB_VERSION}/firebase-functions-compat.js`); this.fns=firebase.app().functions(SHOP.region); }catch(e){ console.error(e); } } }catch(e){ console.error(e); toast('Base de données indisponible'); } },
+    else { try{ await loadScript(`https://www.gstatic.com/firebasejs/${FB_VERSION}/firebase-functions-compat.js`); this.fns=firebase.app().functions(SHOP.region); }catch(e){ console.error(e); } }
+    return true; }catch(e){ console.error(e); this.live=false; return false; } },
   async loadAll(){
     if(!this.live||!this.uid()) return; const uid=this.uid(), db=this.db; this._loading=true; this._err=null; this._noProfile=false;
     try{
@@ -3901,9 +3937,9 @@ const DB = {
     docs.forEach((d,i)=>{ if(d&&d.exists&&!d.data().hidden&&!PLAYERS.some(p=>p.id===d.id)){ PLAYERS.push(normP({...d.data(),id:d.id,age:undefined,_extra:true})); n++; } else this._miss[need[i]]=1; });
     return n>0; },
   // Le pseudo est-il déjà réservé par un autre compte ?
-  async nameTaken(name){ if(!this.live||!this.uid()) return false; try{ const x=await this.db.collection('usernames').doc(String(name).toLowerCase()).get(); return x.exists&&x.data().uid!==this.uid(); }catch(e){ console.error(e); return false; } },
+  async nameTaken(name){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live||!this.uid()) return false; try{ const x=await this.db.collection('usernames').doc(String(name).toLowerCase()).get(); return x.exists&&x.data().uid!==this.uid(); }catch(e){ console.error(e); return false; } },
   // Enregistre le profil en ligne. Renvoie true si c'est fait ; sinon false, et _saveErr dit pourquoi ('name' = pseudo déjà pris).
-  async saveProfile(me){ if(!this.live) return true; const uid=this.uid(), db=this.db; const {dob,id,age,...pub}=me; const lower=me.name.toLowerCase(); this._saveErr='';
+  async saveProfile(me){ if(!this.live){ if(!AUTH_LIVE) return true; if(!(await this.ready())){ this._saveErr='offline'; return false; } } const uid=this.uid(), db=this.db; const {dob,id,age,...pub}=me; const lower=me.name.toLowerCase(); this._saveErr='';
     try{ const ref=db.collection('profiles').doc(uid); const cur=await ref.get().catch(()=>null); const isNew=!(cur&&cur.exists), oldLower=cur&&cur.exists?String(cur.data().nameLower||cur.data().name||'').toLowerCase():'';
       try{ await db.collection('usernames').doc(lower).set({uid}); }   // en premier : si le pseudo appartient à un autre compte, rien d'autre n'est écrit
       catch(e){ if(String(e&&e.code).includes('permission')){ this._saveErr='name'; return false; } throw e; }
@@ -3917,12 +3953,12 @@ const DB = {
       return true; }
     catch(e){ console.error(e); this._saveErr=(e&&e.code)||'error'; return false; } },
   // Réglages de confidentialité : appliqués tout de suite en ligne (pseudos en jeu masqués = retirés du profil public)
-  async savePrivacy(){ if(!this.live||!this.uid()||!S.me) return; const uid=this.uid();
+  async savePrivacy(){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live||!this.uid()||!S.me) return; const uid=this.uid();
     try{ if(!S.privacy.tags) await this.db.collection('private').doc(uid).set({tags:S.me.tags||{}},{mergeFields:['tags']});   // copie privée d'abord
       await this.db.collection('profiles').doc(uid).update({privacy:S.privacy,discordPublic:S.privacy.discord,tags:S.privacy.tags?(S.me.tags||{}):{},online:!!S.privacy.online,lastSeen:S.privacy.online?Date.now():0}); }
     catch(e){ console.error(e); toast("Réglage non enregistré en ligne. Vérifie ta connexion et réessaie."); } },
   // Contacts privés : lisibles uniquement par la personne et ses mates (règles Firestore)
-  async saveContacts(me){ if(!this.live||!this.uid()||!me) return false;
+  async saveContacts(me){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live||!this.uid()||!me) return false;
     try{ await this.db.collection('contacts').doc(this.uid()).set({ discord:S.privacy.discord?String(me.discord||'').slice(0,40):'', whatsapp:me.dob&&ageGroup(me)==='adult'?String(me.whatsapp||''):'', ...Object.fromEntries(SOCIALS.map(([k])=>[k, cleanHandle((me.socials||{})[k])])), updatedAt:Date.now() }); return true; }
     catch(e){ console.error(e); return false; } },
   async getContacts(id){ if(!this.live) return null; try{ const d=await this.db.collection('contacts').doc(id).get(); return d.exists?d.data():{}; }catch(e){ console.error(e); return null; } },
@@ -3933,17 +3969,17 @@ const DB = {
     try{ const out=[]; for(const gg of (isAdmin()?['adult','minor']:[g])){ const q=await db.collection('boards').doc(gg).collection('tournois').orderBy('date','desc').limit(30).get(); q.forEach(d=>out.push({...d.data(),id:d.id,ageGroup:gg})); } TOURNOIS=out; }catch(e){ console.error(e); }
     this._lastBoards=Date.now(); },
   async refreshBoards(){ if(!this.live||!this.uid()||this._boardsBusy||(this._lastBoards&&Date.now()-this._lastBoards<30000)) return false; this._boardsBusy=true; try{ await this.loadBoards(); return true; }finally{ this._boardsBusy=false; } },
-  async saveAnnonce(a){ if(!this.live) return true; try{ const {by,byName,game,need,rank,when,text,at,until}=a;
+  async saveAnnonce(a){ if(!this.live){ if(!AUTH_LIVE) return true; if(!(await this.ready())) return false; } try{ const {by,byName,game,need,rank,when,text,at,until}=a;
       const ref=await this.db.collection('boards').doc(a.ageGroup).collection('annonces').add({by,byName,game,need,rank,when,text,at,until,replies:[]}); a.id=ref.id; return true; }catch(e){ console.error(e); return false; } },
-  async deleteAnnonce(a){ if(!this.live) return; try{ await this.db.collection('boards').doc(a.ageGroup).collection('annonces').doc(a.id).delete(); }catch(e){ console.error(e); toast("L'annonce n'a pas pu être retirée"); } },
-  async replyAnnonce(a,on){ if(!this.live) return; try{ const F=firebase.firestore.FieldValue; await this.db.collection('boards').doc(a.ageGroup).collection('annonces').doc(a.id).update({replies:on?F.arrayUnion(this.uid()):F.arrayRemove(this.uid())}); }catch(e){ console.error(e); toast("Ta réponse n'a pas pu être enregistrée"); } },
-  async saveTournoi(t){ if(!this.live) return true; try{ const {id,ageGroup:g,...data}=t; const col=this.db.collection('boards').doc(g).collection('tournois');
+  async deleteAnnonce(a){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ await this.db.collection('boards').doc(a.ageGroup).collection('annonces').doc(a.id).delete(); }catch(e){ console.error(e); toast("L'annonce n'a pas pu être retirée"); } },
+  async replyAnnonce(a,on){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ const F=firebase.firestore.FieldValue; await this.db.collection('boards').doc(a.ageGroup).collection('annonces').doc(a.id).update({replies:on?F.arrayUnion(this.uid()):F.arrayRemove(this.uid())}); }catch(e){ console.error(e); toast("Ta réponse n'a pas pu être enregistrée"); } },
+  async saveTournoi(t){ if(!this.live){ if(!AUTH_LIVE) return true; if(!(await this.ready())) return false; } try{ const {id,ageGroup:g,...data}=t; const col=this.db.collection('boards').doc(g).collection('tournois');
       if(id){ const {players,entries,...rest}=data; await col.doc(id).set(rest,{merge:true}); } else { const r=await col.add(data); t.id=r.id; } return true; }catch(e){ console.error(e); return false; } },
-  async deleteTournoi(t){ if(!this.live) return; try{ await this.db.collection('boards').doc(t.ageGroup).collection('tournois').doc(t.id).delete(); }catch(e){ console.error(e); toast("Le tournoi n'a pas pu être supprimé"); } },
-  async joinTournoi(t,on){ if(!this.live) return true; try{ const F=firebase.firestore.FieldValue, uid=this.uid();
+  async deleteTournoi(t){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ await this.db.collection('boards').doc(t.ageGroup).collection('tournois').doc(t.id).delete(); }catch(e){ console.error(e); toast("Le tournoi n'a pas pu être supprimé"); } },
+  async joinTournoi(t,on){ if(!this.live){ if(!AUTH_LIVE) return true; if(!(await this.ready())) return false; } try{ const F=firebase.firestore.FieldValue, uid=this.uid();
       const upd={players:on?F.arrayUnion(uid):F.arrayRemove(uid)}; upd['entries.'+uid]=on?{name:S.me.name,ig:String((S.me.tags||{})[t.game]||'').slice(0,40)}:F.delete();
       await this.db.collection('boards').doc(t.ageGroup).collection('tournois').doc(t.id).update(upd); return true; }catch(e){ console.error(e); toast(on?"L'inscription n'a pas pu être enregistrée":"La désinscription n'a pas pu être enregistrée"); return false; } },
-  async saveRequest(r){ if(!this.live) return; const from=this.toUid(r.from), to=this.toUid(r.to); const db=this.db;
+  async saveRequest(r){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; const from=this.toUid(r.from), to=this.toUid(r.to); const db=this.db;
     try{ const ref=db.collection('requests').doc(`${from}_${to}`), data={from,to,participants:[from,to],status:r.status,at:r.at};
       if(r.status==='pending'){ // nouvelle demande : compteur journalier (20 max), vérifié par les règles Firestore
         const L=db.collection('limits').doc(this.uid()), cur=(await L.get()).data()||{}, today=Math.floor(Date.now()/86400000);
@@ -3953,9 +3989,9 @@ const DB = {
         await this.saveNotif(r.to,{type:'request',from:'me',text:`${S.me.name} veut devenir ton mate`});
       } else await ref.set(data);
     }catch(e){ console.error(e); if(String(e&&e.code).includes('permission')) toast("Demande refusée : limite atteinte ou joueur indisponible."); } },
-  async deleteRequest(r){ if(!this.live) return; try{ await this.db.collection('requests').doc(`${this.toUid(r.from)}_${this.toUid(r.to)}`).delete(); }catch(e){ console.error(e); } },
-  async saveBlock(id,on){ if(!this.live) return; try{ const ref=this.db.collection('blocks').doc(this.uid()).collection('list').doc(id); on?await ref.set({at:Date.now()}):await ref.delete(); }catch(e){ console.error(e); } },
-  async saveReport(rep){ if(!this.live) return; const db=this.db;
+  async deleteRequest(r){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ await this.db.collection('requests').doc(`${this.toUid(r.from)}_${this.toUid(r.to)}`).delete(); }catch(e){ console.error(e); } },
+  async saveBlock(id,on){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ const ref=this.db.collection('blocks').doc(this.uid()).collection('list').doc(id); on?await ref.set({at:Date.now()}):await ref.delete(); }catch(e){ console.error(e); } },
+  async saveReport(rep){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; const db=this.db;
     try{ const msgs=(S.chats[rep.id]||[]).slice(-10).map(m=>({mine:m.from==='me',text:String(m.text||'').slice(0,300),at:m.at||0}));
       const data={target:rep.id,by:this.uid(),reason:rep.reason,details:rep.details||'',at:rep.at,status:'open'}; if(msgs.length) data.messages=msgs;
       await db.collection('reports').add(data);
@@ -3963,7 +3999,7 @@ const DB = {
     }catch(e){ console.error(e); } },
   async loadReportedChat(by,target){ if(!this.live) return []; try{ const id=[by,target].sort().join('_'); const q=await this.db.collection('chats').doc(id).collection('messages').orderBy('at','desc').limit(30).get();
       const out=[]; q.forEach(d=>{ const m=d.data(); out.push({fromTarget:m.from===target,text:m.text,at:m.at}); }); return out.reverse(); }catch(e){ console.error(e); return null; } },
-  async sendMessage(id,m){ if(!this.live) return; const db=this.db;
+  async sendMessage(id,m){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; const db=this.db;
     try{ const F=firebase.firestore.FieldValue, b=db.batch();
       b.set(db.collection('chats').doc(this.pairId(id)).collection('messages').doc(),{from:this.uid(),text:m.text,at:m.at});
       b.set(db.collection('limits').doc(this.uid()),{lastMsg:F.serverTimestamp()},{merge:true});   // 1 message par seconde maximum
@@ -3974,13 +4010,13 @@ const DB = {
     this._chatUnsub=this.db.collection('chats').doc(this.pairId(id)).collection('messages').orderBy('at').limitToLast(200).onSnapshot(snap=>{ S.chats[id]=[]; snap.forEach(d=>{ const m=d.data(); S.chats[id].push({from:this.fromUid(m.from),text:m.text,at:m.at}); }); save(); cb(); },e=>console.error(e)); },
   stopChat(){ if(this._chatUnsub){ try{ this._chatUnsub(); }catch(e){} this._chatUnsub=null; } },
   // Notifications lues : enregistré sur le compte, pour ne pas les revoir « non lues » sur un autre appareil
-  markRead(ids){ if(!this.live||!this.uid()) return; const col=this.db.collection('notifications').doc(this.uid()).collection('items'); [...new Set(ids)].slice(0,40).forEach(id=>col.doc(id).update({read:true}).catch(()=>{})); },
-  async saveSquad(s){ if(!this.live) return; try{ await this.db.collection('squads').doc(s.id).set({...s,owner:this.uid(),members:[this.uid()]}); }catch(e){ console.error(e); } },
-  async deleteSquad(id){ if(!this.live) return; try{ await this.db.collection('squads').doc(id).delete(); }catch(e){ console.error(e); } },
-  async joinSquad(id,on){ if(!this.live) return; try{ const F=firebase.firestore.FieldValue; await this.db.collection('squads').doc(id).update({members:on?F.arrayUnion(this.uid()):F.arrayRemove(this.uid())}); }catch(e){ console.error(e); } },
-  async saveNotif(toId,n){ if(!this.live) return; try{ await this.db.collection('notifications').doc(this.toUid(toId)).collection('items').add({...n,from:this.toUid(n.from),at:Date.now(),read:false}); }catch(e){ console.error(e); } },
+  markRead(ids){ if(!this.live&&AUTH_LIVE){ if(ids.length) this.ready().then(ok=>{ if(ok) this.markRead(ids); }); return; } if(!this.live||!this.uid()) return; const col=this.db.collection('notifications').doc(this.uid()).collection('items'); [...new Set(ids)].slice(0,40).forEach(id=>col.doc(id).update({read:true}).catch(()=>{})); },
+  async saveSquad(s){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ await this.db.collection('squads').doc(s.id).set({...s,owner:this.uid(),members:[this.uid()]}); }catch(e){ console.error(e); } },
+  async deleteSquad(id){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ await this.db.collection('squads').doc(id).delete(); }catch(e){ console.error(e); } },
+  async joinSquad(id,on){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ const F=firebase.firestore.FieldValue; await this.db.collection('squads').doc(id).update({members:on?F.arrayUnion(this.uid()):F.arrayRemove(this.uid())}); }catch(e){ console.error(e); } },
+  async saveNotif(toId,n){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ await this.db.collection('notifications').doc(this.toUid(toId)).collection('items').add({...n,from:this.toUid(n.from),at:Date.now(),read:false}); }catch(e){ console.error(e); } },
   // « Rejouerait avec lui » : le +1 n'est compté qu'une fois par joueur (champ counted, vérifié aussi par les règles Firestore)
-  async rate(id,v){ if(!this.live) return; const db=this.db, uid=this.uid(), ref=db.collection('ratings').doc(`${uid}_${id}`), counted=!!(S.rated&&S.rated[id]);
+  async rate(id,v){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; const db=this.db, uid=this.uid(), ref=db.collection('ratings').doc(`${uid}_${id}`), counted=!!(S.rated&&S.rated[id]);
     const data={by:uid,target:id,value:v,at:Date.now(),counted:counted||v>0};
     try{ const b=db.batch(); b.set(ref,data); if(v>0&&!counted) b.update(db.collection('profiles').doc(id),{rejoue:firebase.firestore.FieldValue.increment(1)}); await b.commit();
       if(v>0){ (S.rated=S.rated||{})[id]=true; save(); } }
@@ -3988,9 +4024,10 @@ const DB = {
   async setPresence(on){ if(!this.live||!this.uid()||!S.me) return; this._lastPres=Date.now();
     try{ await this.db.collection('profiles').doc(this.uid()).update({online:!!(on&&S.privacy.online),lastSeen:S.privacy.online?Date.now():0}); }catch(e){} },   // statut masqué : aucune heure d'activité n'est publiée
   saveSkin(id){ try{ if(S.auth){ S.skinByUser=S.skinByUser||{}; S.skinByUser[S.auth.uid]=id; save(); } }catch(e){}
+    if(!this.live&&AUTH_LIVE){ this.ready().then(ok=>{ if(ok) this.saveSkin(id); }); return; }
     if(!this.live||!this.uid()||!S.me) return; clearTimeout(this._skinT);
     this._skinT=setTimeout(()=>{ this.db.collection('profiles').doc(this.uid()).update({skin:id}).catch(e=>console.error(e)); },600); },
-  async setDispo(d){ if(!this.live||!this.uid()) return; try{ await this.db.collection('profiles').doc(this.uid()).update({dispo:d||null}); }catch(e){ console.error(e); toast('Statut non enregistré en ligne'); } },
+  async setDispo(d){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live||!this.uid()) return; try{ await this.db.collection('profiles').doc(this.uid()).update({dispo:d||null}); }catch(e){ console.error(e); toast('Statut non enregistré en ligne'); } },
   async refreshPlayers(){ if(!this.live||!this.uid()||!S.me||!S.me.dob) return false; if(this._refreshing||(this._lastPlayers&&Date.now()-this._lastPlayers<180000)) return false; this._lastPlayers=Date.now(); this._refreshing=true;
     try{ const uid=this.uid(), g=ageGroup(S.me); const ps=await this.db.collection('profiles').where('ageGroup','==',g).where('hidden','==',false).limit(300).get();
       const fresh=[]; ps.forEach(d=>{ if(d.id!==uid) fresh.push(normP({...d.data(),id:d.id,age:undefined})); }); const keep=PLAYERS.filter(p=>(p._reported||p._extra)&&!fresh.some(f=>f.id===p.id)); PLAYERS.length=0; fresh.concat(keep).forEach(p=>PLAYERS.push(p)); return true; }catch(e){ console.error(e); return false; } finally{ this._refreshing=false; } },
@@ -4017,10 +4054,10 @@ const DB = {
       docs.forEach(d=>{ if(d&&d.exists) PLAYERS.push(normP({...d.data(),id:d.id,age:undefined,_reported:true})); });
       S.hidden=PLAYERS.filter(p=>p.hidden).map(p=>p.id); S.banned=PLAYERS.filter(p=>p.banned).map(p=>p.id); save();
     }catch(e){ console.error(e); toast('Signalements indisponibles'); } },
-  async closeReports(target){ if(!this.live) return; try{ const b=this.db.batch(); S.reports.filter(r=>r.id===target&&r.rid&&r.status!=='done').forEach(r=>b.update(this.db.collection('reports').doc(r.rid),{status:'done'})); await b.commit(); }catch(e){ console.error(e); } },
-  async sendContact(c){ if(!this.live) throw new Error('offline'); await this.db.collection('contact').add({message:c.message,email:c.email||'',uid:this.uid()||'',topic:this.uid()?'general':'connexion',at:Date.now()}); },
+  async closeReports(target){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ const b=this.db.batch(); S.reports.filter(r=>r.id===target&&r.rid&&r.status!=='done').forEach(r=>b.update(this.db.collection('reports').doc(r.rid),{status:'done'})); await b.commit(); }catch(e){ console.error(e); } },
+  async sendContact(c){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) throw new Error('offline'); await this.db.collection('contact').add({message:c.message,email:c.email||'',uid:this.uid()||'',topic:this.uid()?'general':'connexion',at:Date.now()}); },
   // Efface les données du compte. Renvoie false si l'effacement a échoué (le compte n'est alors pas supprimé, pour ne pas laisser de profil orphelin).
-  async deleteAccountData(){ if(!this.live||!this.uid()) return true; const uid=this.uid(), db=this.db, F=firebase.firestore.FieldValue, quiet=p=>p.catch(e=>console.error(e));
+  async deleteAccountData(){ if(!this.live&&AUTH_LIVE&&!(await this.ready())) return false; if(!this.live||!this.uid()) return true; const uid=this.uid(), db=this.db, F=firebase.firestore.FieldValue, quiet=p=>p.catch(e=>console.error(e));
     try{ // d'abord ce qui peut manquer sans gravité : mes groupes, les groupes rejoints, mes annonces
       await Promise.all([ ...(S.squads||[]).map(s=>quiet(db.collection('squads').doc(s.id).delete())),
         ...(S.joined||[]).map(id=>quiet(db.collection('squads').doc(id).update({members:F.arrayRemove(uid)}))),
@@ -4033,8 +4070,8 @@ const DB = {
       if(S.me&&S.me.name) b.delete(db.collection('usernames').doc(S.me.name.toLowerCase()));
       b.delete(db.collection('profiles').doc(uid)); b.delete(db.collection('private').doc(uid)); b.delete(db.collection('contacts').doc(uid)); await b.commit(); return true;
     }catch(e){ console.error(e); return false; } },
-  async adminHide(id,hidden){ if(!this.live) return; try{ await this.db.collection('profiles').doc(id).update({hidden}); }catch(e){ console.error(e); } },
-  async adminBan(id,banned){ if(!this.live) return; try{ await this.db.collection('profiles').doc(id).update({banned,hidden:banned}); }catch(e){ console.error(e); } },
+  async adminHide(id,hidden){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ await this.db.collection('profiles').doc(id).update({hidden}); }catch(e){ console.error(e); } },
+  async adminBan(id,banned){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ await this.db.collection('profiles').doc(id).update({banned,hidden:banned}); }catch(e){ console.error(e); } },
 };
 
 // Site en ligne (Firebase configuré) : on retire tous les profils et groupes de démonstration
