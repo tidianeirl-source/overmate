@@ -1474,6 +1474,9 @@ function ageFrom(dob){
 }
 const ageOf = p => p.dob ? ageFrom(p.dob) : p.age;
 const ageGroup = p => { const a=ageOf(p); if(a==null && p && p.ageGroup) return p.ageGroup; return (a ?? 0) >= CONFIG.adultAge ? 'adult' : 'minor'; };
+// En ligne = statut actif ET activité récente : un onglet fermé sans prévenir ne reste pas « en ligne » pour toujours
+const ONLINE_MS = 5*60*1000;
+const isOnline = p => !!p && !!p.online && (!p.lastSeen || Date.now()-p.lastSeen < ONLINE_MS);
 // Sans profil avec âge, on ne montre que des profils adultes.
 const sameGroup = p => !CONFIG.separateMinors || (S.me && S.me.dob ? ageGroup(p)===ageGroup(S.me) : ageGroup(p)==='adult');
 
@@ -1536,14 +1539,14 @@ const ring = (p,size='') => `<div class="ring ${size}${p>=80?' glow':''}" data-c
 function avatar(u,size=48){
   const a=u.avatar||{hue:260};
   const minor = u.ageGroup==='minor' || (u.dob && ageGroup(u)==='minor');   // jamais de photo pour les 15-17 ans
-  if(a.src && !minor) return `<img class="av" src="${esc(a.src)}" alt="" loading="lazy" decoding="async" width="${size}" height="${size}" style="width:${size}px;height:${size}px">`;
+  if(a.src && !minor && /^data:image\/(png|jpeg|webp);base64,/.test(a.src)) return `<img class="av" src="${esc(a.src)}" alt="" loading="lazy" decoding="async" width="${size}" height="${size}" style="width:${size}px;height:${size}px">`;
   return `<span class="av" aria-hidden="true" style="width:${size}px;height:${size}px;--h:${(Number(a.hue)||0)%360};font-size:${Math.round(size*.36)}px">${esc((u.name||'?').slice(0,2).toUpperCase())}</span>`;
 }
 const list = (arr,map) => arr.length ? arr.map(map).join(' • ') : '—';
 
 function matchCard({p,c}, top=false, i=0){
   return `<a class="mcard${top?' top-match':''}" href="#/joueur/${p.id}" style="--i:${i};--c:${c?tier(c.pct):'var(--line)'}">
-    <div class="mc-head">${avatar(p,top?64:52)}<div><span class="mc-name">${esc(p.name)}${modBadge(p)}${dispoActive(p)?`<span class="tag-live">Dispo · ${esc(p.dispo.game)}</span>`:''}</span>${p.online?'<span class="online">En ligne</span>':''}</div>${c?ring(c.pct, top?'ring-lg':''):''}</div>
+    <div class="mc-head">${avatar(p,top?64:52)}<div><span class="mc-name">${esc(p.name)}${modBadge(p)}${dispoActive(p)?`<span class="tag-live">Dispo · ${esc(p.dispo.game)}</span>`:''}</span>${isOnline(p)?'<span class="online">En ligne</span>':''}</div>${c?ring(c.pct, top?'ring-lg':''):''}</div>
     <dl class="facts">
       <div><dt>${c&&c.common.games.length?'Jeux en commun':'Joue à'}</dt><dd>${esc(list(c&&c.common.games.length?c.common.games:p.games.slice(0,4),g=>g))}</dd></div>
       <div><dt>Horaires</dt><dd>${list(p.hours,h=>L(HOURS,h))}</dd></div>
@@ -1597,18 +1600,20 @@ function renderNav(active){
   document.querySelectorAll('.logo').forEach(l=>l.innerHTML=LOGO);
   document.querySelectorAll('.skin-btn').forEach(b=>b.innerHTML=PALETTE_ICON);
   renderNotifBadge();
-  const online=visible().filter(p=>p.online).length;
+  const online=visible().filter(p=>isOnline(p)).length;
   const liveTxt = online ? `${online} joueur${online>1?'s':''} en ligne` : (S.auth ? 'Bienvenue sur Coopô' : 'Nouveau : rejoins les premiers');
   document.querySelectorAll('.top-right').forEach(t=>t.innerHTML=`<span class="live">${liveTxt}</span><small>${S.auth?'connecté : '+esc(S.me?.name||S.auth.name):S.me?'profil : '+esc(S.me.name):'<a href="#/connexion">se connecter</a>'}</small>`);
   document.getElementById('tabbar').innerHTML = NAV.filter(([r])=>TAB.includes(r)).map(([r,l])=>`<a href="#/${r}" ${cur(r)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[r]}</svg>${TAB_LBL[r]||l}</a>`).join('');
 }
 const app=document.getElementById('app');
+let NAV_COUNT=0;   // nombre de pages vues dans cette visite (sert au bouton Retour)
 // Profil complet = pseudo, date de naissance et au moins un jeu
 const profileComplete = () => !!(S.me && S.me.name && S.me.dob && Array.isArray(S.me.games) && S.me.games.length);
 // Pages accessibles sans être connecté (connexion, pages légales, aide, contact, installation)
 const PUBLIC_ROUTES=['bienvenue','connexion','inscription','cgu','confidentialite','cookies','remboursement','contact','aide','app'];
 function route(){
   const [, name='accueil', arg] = location.hash.split('/');
+  NAV_COUNT++; if(!(name==='messages'&&arg)) DB.stopChat();   // on n'écoute une conversation que lorsqu'elle est ouverte
   if(!S.auth && !PUBLIC_ROUTES.includes(name)){
     try{ if(name && name!=='accueil') sessionStorage.setItem('coopo_after_login', location.hash); }catch(e){}
     document.body.classList.add('logged-out');
@@ -1628,7 +1633,7 @@ function route(){
   document.body.classList.toggle('has-profile', !!S.auth && profileComplete());
   const views={accueil:viewHome, connexion:()=>viewAuth('login'), inscription:()=>viewAuth('signup'), profil:viewProfile, matchs:viewMatches, recherche:viewSearch, parametres:viewSettings, joueur:viewPlayer,
     messages:viewMessages, groupes:viewSquads, aide:viewHelp, cgu:()=>viewLegal('cgu'), confidentialite:()=>viewLegal('privacy'), cookies:viewCookies, remboursement:viewRefund, contact:viewContact, app:viewApp, bienvenue:viewWelcome, paiement:viewPayment, moderation:viewAdmin};
-  if(name.startsWith('@')){ const nm=decodeURIComponent(name.slice(1)).toLowerCase(); const p=PLAYERS.find(x=>x.name.toLowerCase()===nm); document.body.classList.remove('is-home'); viewPlayer(S.me&&S.me.name.toLowerCase()===nm?'me':(p?p.id:'?')); renderNav(''); window.scrollTo(0,0); app.firstElementChild?.classList.add('page-in'); animateAfterRender(); return; }
+  if(name.startsWith('@')){ let nm=''; try{ nm=decodeURIComponent(name.slice(1)).toLowerCase(); }catch(e){} const p=PLAYERS.find(x=>x.name.toLowerCase()===nm); document.body.classList.remove('is-home'); viewPlayer(S.me&&S.me.name.toLowerCase()===nm?'me':(p?p.id:'?')); renderNav(''); window.scrollTo(0,0); app.firstElementChild?.classList.add('page-in'); animateAfterRender(); return; }
   const v = views[name] || viewHome;
   clearInterval(scTimer);
   document.body.classList.toggle('is-home', v===viewHome);
@@ -1665,6 +1670,7 @@ function burst(x,y){
     document.body.appendChild(s); setTimeout(()=>s.remove(),850); }
 }
 window.addEventListener('hashchange',route);
+document.addEventListener('click',e=>{ const b=e.target.closest('[data-back]'); if(!b) return; if(NAV_COUNT>1){ e.preventDefault(); history.back(); } });
 
 /* =========================================================
    7. PAGES
@@ -1688,7 +1694,7 @@ function viewHome(){
   if(DB.live&&S.me&&DB._loaded){ DB.refreshPlayers().then(changed=>{ if(changed&&(location.hash==='#/accueil'||location.hash===''||location.hash==='#/')) refreshAfterData(); }).catch(()=>{}); }
   const w = S.weights||CONFIG.weights, tot=Object.values(w).reduce((a,b)=>a+b,0)||1;
   const active=Object.entries(w).filter(([,v])=>v>0);
-  const featured = S.me ? ranked().slice(0,3) : visible().filter(p=>p.online).slice(0,3).map(p=>({p,c:null}));
+  const featured = S.me ? ranked().slice(0,3) : visible().filter(p=>isOnline(p)).slice(0,3).map(p=>({p,c:null}));
   let off=0;
   const donut = active.map(([k,v])=>{ const len=v/tot*251.3; const el=`<circle cx="50" cy="50" r="40" stroke="${CRITERIA[k].color}" stroke-dasharray="${len.toFixed(1)} 251.3" stroke-dashoffset="${(-off).toFixed(1)}"/>`; off+=len; return el; }).join('');
   app.innerHTML = `<div>
@@ -1891,13 +1897,13 @@ function pwStrength(p){ let s=0; if(p.length>=CONFIG.minPassword) s++; if(/[a-zA
 function loadAvatar(file){
   if(!file||!file.type.startsWith('image/')) return;
   const img=new Image(), url=URL.createObjectURL(file);
-  img.onload=()=>{ const c=document.createElement('canvas'); c.width=c.height=160; const x=c.getContext('2d'), m=Math.min(img.width,img.height);
-    x.drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,160,160); draft.avatar={src:c.toDataURL('image/jpeg',.85)}; URL.revokeObjectURL(url);
+  img.onload=()=>{ const c=document.createElement('canvas'); c.width=c.height=128; const x=c.getContext('2d'), m=Math.min(img.width,img.height);   // 128 px suffisent (affichage 88 px max) : image 2 fois plus légère
+    x.drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,128,128); draft.avatar={src:c.toDataURL('image/jpeg',.72)}; URL.revokeObjectURL(url);
     document.querySelectorAll('[data-hue]').forEach(b=>b.setAttribute('aria-pressed','false')); document.getElementById('av-prev').innerHTML=avatar(draft,48); };
   img.src=url;
 }
-function submitProfile(e){
-  e.preventDefault();
+async function submitProfile(e){
+  e.preventDefault(); const sbtn=e.target.querySelector('button[type=submit]'); if(sbtn&&sbtn.disabled) return;
   const isNew=!S.me, pw=document.getElementById('f-pw')?.value||'', pw2=document.getElementById('f-pw2')?.value||'';
   draft.name=draft.name.trim(); draft.discord=document.getElementById('f-discord').value.trim().slice(0,40);
   draft.whatsapp=(document.getElementById('f-wa')?.value||'').trim();
@@ -1920,18 +1926,26 @@ function submitProfile(e){
     if(!/^\+\d{8,15}$/.test(d)) errs.push("Numéro WhatsApp : commence par l'indicatif du pays, par exemple +225 07 00 00 00 00.");
     else draft.whatsapp=d; }
   const fe=document.getElementById('ferr');
+  if(!errs.length && (!S.me || draft.name.toLowerCase()!==String(S.me.name||'').toLowerCase())){ if(sbtn) sbtn.disabled=true; const taken=await DB.nameTaken(draft.name); if(sbtn) sbtn.disabled=false; if(taken) errs.push("Ce nom d'utilisateur est déjà pris."); }
   if(errs.length){ fe.innerHTML=errs.map(esc).join('<br>'); fe.scrollIntoView({block:'center'}); return; }
   // Le mot de passe n'est jamais stocké ici. En production : l'envoyer en HTTPS au serveur, qui le hache (argon2 / bcrypt).
   Object.keys(draft.tags).forEach(g=>{ if(!draft.games.includes(g)) delete draft.tags[g]; });
   Object.keys(draft.ranks).forEach(g=>{ if(!draft.games.includes(g)) delete draft.ranks[g]; });
   Object.keys(draft.roles||{}).forEach(g=>{ if(!draft.games.includes(g)) delete draft.roles[g]; });
   if(!draft.langs.length) draft.langs=['fr'];
-  S.me={...draft,id:'me'}; if(S.auth) S.profiles[S.auth.uid]=S.me; if(isNew) S.onboard=true; save(); DB.saveProfile(S.me); demoScheduleIncoming();
+  const prevMe=S.me, sLabel=sbtn?sbtn.textContent:'';
+  S.me={...draft,id:'me'}; if(S.auth) S.profiles[S.auth.uid]=S.me; if(isNew) S.onboard=true; save();
+  if(sbtn){ sbtn.disabled=true; sbtn.textContent='Enregistrement…'; }
+  if(!(await DB.saveProfile(S.me))){   // échec : on revient à l'ancien profil, sans faire croire que c'est enregistré
+    S.me=prevMe; if(S.auth&&prevMe) S.profiles[S.auth.uid]=prevMe; save(); if(sbtn){ sbtn.disabled=false; sbtn.textContent=sLabel; }
+    fe.textContent = DB._saveErr==='name' ? "Ce nom d'utilisateur vient d'être pris. Choisis-en un autre." : "Tes modifications n'ont pas pu être enregistrées. Vérifie ta connexion et réessaie.";
+    fe.scrollIntoView({block:'center'}); return; }
+  demoScheduleIncoming();
   toast(isNew?'Profil créé':'Modifications enregistrées');
   let next='#/matchs'; if(isNew){ try{ next=sessionStorage.getItem('coopo_after_profile')||sessionStorage.getItem('coopo_after_login')||'#/matchs'; sessionStorage.removeItem('coopo_after_profile'); sessionStorage.removeItem('coopo_after_login'); }catch(e){} }
   location.hash=next;
 }
-function publicMe(){ return {...S.me, online:S.privacy.online}; }
+function publicMe(){ return {...S.me, online:S.privacy.online, lastSeen:Date.now()}; }
 
 /* ----- Mes matchs ----- */
 let _lastRefresh=0;
@@ -1957,8 +1971,8 @@ function viewMatches(){
   if(dataPending()) return loadingView('Mes matchs');
   if(!S.me) return needProfile('Mes matchs');
   if(!S.me.dob){ app.innerHTML=`<div class="wrap page"><div class="page-head"><h2>Mes matchs</h2></div><div class="empty"><h3>Ajoute ta date de naissance</h3><p class="muted">Elle sert à te proposer des joueurs de ta tranche d'âge. Elle n'est jamais affichée.</p><a class="btn btn-ac" href="#/profil">Compléter mon profil</a></div></div>`; return; }
-  const vis=visible(), mates=matesList(), onlineNow=ranked().filter(({p})=>p.online);
-  let r=ranked(); if(S.sort==='online') r=[...r].sort((a,b)=>(b.p.online-a.p.online)||(b.c.pct-a.c.pct));
+  const vis=visible(), mates=matesList(), onlineNow=ranked().filter(({p})=>isOnline(p));
+  let r=ranked(); if(S.sort==='online') r=[...r].sort((a,b)=>(isOnline(b.p)-isOnline(a.p))||(b.c.pct-a.c.pct));
   app.innerHTML=`<div class="wrap page">
     <div class="page-head"><div><h2>Mes matchs</h2><p>${r.length?`${r.length} joueur${r.length>1?"s":""} classé${r.length>1?"s":""} du plus compatible au moins compatible.`:"Aucun joueur de ta tranche d'âge n'est encore inscrit."}</p></div>
       <div class="chips"><button type="button" class="chip" data-sort="compat" aria-pressed="${S.sort!=='online'}">Compatibilité</button><button type="button" class="chip" data-sort="online" aria-pressed="${S.sort==='online'}">En ligne d'abord</button><a class="btn btn-ghost btn-sm" href="#/recherche">Filtrer</a></div></div>
@@ -2017,15 +2031,15 @@ function viewPlayer(id){
   if(!p){ app.innerHTML=`<div class="wrap page"><div class="empty"><h3>Ce profil n'est pas disponible</h3><a class="btn" href="#/matchs">Retour à mes matchs</a></div></div>`; return; }
   const c=S.me&&!self?compat(S.me,p):null, q=self?null:reqWith(id), mate=!!q&&q.status==='accepted';
   const shared = g => S.me&&!self&&S.me.games.includes(g);
-  const showTags = self ? S.privacy.tags : true;
+  const showTags = self ? S.privacy.tags : !(p.privacy && p.privacy.tags===false);
   const mateBtn = self ? `<a class="btn btn-ac" href="#/profil">Modifier mon profil</a>` : !S.me ? `<a class="btn btn-ac" href="#/inscription">Crée ton compte pour le contacter</a>`
     : !q ? `<button class="btn btn-ac" id="mate">Envoyer une demande de mate</button>`
     : q.status==='pending' && q.from==='me' ? `<p class="hint">Demande envoyée · en attente</p><button class="btn btn-ghost btn-sm" id="cancel">Annuler la demande</button>`
     : q.status==='pending' ? `<p class="hint">${esc(p.name)} veut devenir ton mate</p><div class="nact"><button class="btn btn-ac" id="accept">Accepter</button><button class="btn btn-ghost" id="decline">Refuser</button></div>`
     : `<p class="mates-ok">✓ Vous êtes mates</p><a class="btn btn-ac" href="#/messages/${p.id}">Envoyer un message</a>`;
-  app.innerHTML=`<div class="wrap page"><a class="linkbtn" href="javascript:history.back()" style="display:inline-block;margin-bottom:16px">Retour</a>
+  app.innerHTML=`<div class="wrap page"><a class="linkbtn" href="#/matchs" data-back style="display:inline-block;margin-bottom:16px">Retour</a>
   <div class="pp"><div style="display:grid;gap:24px">
-    <div class="pp-head">${avatar(p,88)}<div><h1>${esc(p.name)}${modBadge(p)}</h1><div class="pp-meta">${isMod(p)?`<span class="mod-tag">${MOD_SVG}Modérateur</span>`:''}${p.online?'<span class="online">En ligne</span>':'<span class="muted" style="font-size:13px">Hors ligne</span>'}${p.country?`<span class="muted">· ${esc(L(COUNTRIES,p.country))}</span>`:''}${(p.langs||[]).length?`<span class="muted">· ${p.langs.map(x=>L(LANGS,x)).join(', ')}</span>`:''}${p.rejoue?`<span class="rejoue" title="Nombre de mates qui rejoueraient avec ce joueur">👍 ${+p.rejoue||0} rejoueraient avec lui</span>`:''}</div></div></div>
+    <div class="pp-head">${avatar(p,88)}<div><h1>${esc(p.name)}${modBadge(p)}</h1><div class="pp-meta">${isMod(p)?`<span class="mod-tag">${MOD_SVG}Modérateur</span>`:''}${isOnline(p)?'<span class="online">En ligne</span>':'<span class="muted" style="font-size:13px">Hors ligne</span>'}${p.country?`<span class="muted">· ${esc(L(COUNTRIES,p.country))}</span>`:''}${(p.langs||[]).length?`<span class="muted">· ${p.langs.map(x=>L(LANGS,x)).join(', ')}</span>`:''}${p.rejoue?`<span class="rejoue" title="Nombre de mates qui rejoueraient avec ce joueur">👍 ${+p.rejoue||0} rejoueraient avec lui</span>`:''}</div></div></div>
     <section class="panel"><h3>Jeux</h3><div class="tags">${p.games.map(g=>`<div class="gametag${shared(g)?' shared':''}"><span>${esc(g)}${p.ranks&&p.ranks[g]?` <small class="rank">${esc(rankLabel(g,p.ranks[g]))}</small>`:''}${p.roles&&p.roles[g]?` <small class="rank role">${esc(p.roles[g])}</small>`:''}</span><em>${showTags&&p.tags[g]?esc(p.tags[g]):(shared(g)?'En commun':'')}</em></div>`).join('')}</div></section>
     <section class="panel"><h3>Habitudes de jeu</h3><dl class="facts">
       <div><dt>Horaires</dt><dd>${list(p.hours,h=>L(HOURS,h))}</dd></div>
@@ -2057,12 +2071,12 @@ function viewPlayer(id){
     d=>d.querySelector('#uok').onclick=()=>{ removeRequest(id); d.close(); toast(`${p.name} retiré de tes mates`); re(); }));
   app.querySelectorAll('[data-rate]').forEach(b=>b.onclick=()=>{ rate(id,+b.dataset.rate); re(); });
   if(mate) fillContacts(p,'contact-box');
-  document.getElementById('report')?.addEventListener('click',()=>modal(`<h3>Signaler ${esc(p.name)}</h3><p class="muted">Ton signalement est examiné par l'équipe de modération. ${esc(p.name)} n'est pas prévenu. Après ${CONFIG.autoHideReports} signalements, le profil est masqué automatiquement en attendant l'examen.</p>
+  document.getElementById('report')?.addEventListener('click',()=>modal(`<h3>Signaler ${esc(p.name)}</h3><p class="muted">La modération examine chaque signalement. ${esc(p.name)} n'est pas prévenu et disparaît tout de suite de ton côté.</p>
     <div class="radio-list">${['Comportement toxique ou harcèlement','Contenu inapproprié','Faux profil ou usurpation','Arnaque','Adulte qui contacte un mineur','Autre'].map((r,i)=>`<label><input type="radio" name="rr" value="${r}" ${i?'':'checked'}> ${r}</label>`).join('')}</div>
     <textarea id="rtxt" rows="3" placeholder="Détails (facultatif)" maxlength="500"></textarea>
     <div class="dlg-actions"><button class="btn btn-ghost" data-close>Annuler</button><button class="btn btn-ac" id="rsend">Envoyer le signalement</button></div>`,
     d=>d.querySelector('#rsend').onclick=()=>{ submitReport(id,d.querySelector('[name=rr]:checked').value,d.querySelector('#rtxt').value); d.close(); toast('Signalement envoyé'); if(S.hidden.includes(id)) location.hash='#/matchs'; }));
-  document.getElementById('block')?.addEventListener('click',()=>modal(`<h3>Bloquer ${esc(p.name)} ?</h3><p class="muted">Vous ne verrez plus vos profils respectifs, et ${esc(p.name)} sera retiré de tes mates. Tu peux le débloquer dans les paramètres.</p>
+  document.getElementById('block')?.addEventListener('click',()=>modal(`<h3>Bloquer ${esc(p.name)} ?</h3><p class="muted">Tu ne verras plus son profil, ${esc(p.name)} ne pourra plus te contacter et sera retiré de tes mates. Tu peux le débloquer dans les paramètres.</p>
     <div class="dlg-actions"><button class="btn btn-ghost" data-close>Annuler</button><button class="btn btn-danger" id="bok">Bloquer</button></div>`,
     d=>d.querySelector('#bok').onclick=()=>{ S.blocked.push(id); removeRequest(id); save(); DB.saveBlock(id,true); d.close(); toast(`${p.name} est bloqué`); location.hash='#/matchs'; }));
 }
@@ -2149,7 +2163,7 @@ function viewSettings(){
     <section class="panel"><h3>Supprimer mon compte</h3><p class="muted">Ton profil, tes mates et tes réglages sont effacés définitivement.</p>
       <div><button class="btn btn-danger" id="del">Supprimer mon compte</button></div></section>
   </div></div>`;
-  app.querySelectorAll('[data-pv]').forEach(i=>i.onchange=()=>{ S.privacy[i.dataset.pv]=i.checked; save(); if(i.dataset.pv==='discord') DB.saveContacts(S.me); toast('Préférence enregistrée'); });
+  app.querySelectorAll('[data-pv]').forEach(i=>i.onchange=()=>{ S.privacy[i.dataset.pv]=i.checked; save(); if(i.dataset.pv==='discord') DB.saveContacts(S.me); DB.savePrivacy(); toast('Préférence enregistrée'); });
   app.querySelectorAll('[data-unblock]').forEach(b=>b.onclick=()=>{ S.blocked=S.blocked.filter(x=>x!==b.dataset.unblock); save(); DB.saveBlock(b.dataset.unblock,false); toast('Joueur débloqué'); viewSettings(); });
   document.getElementById('wsave').onclick=()=>{ const nw={}; app.querySelectorAll('[data-w]').forEach(i=>nw[i.dataset.w]=Math.max(0,Math.min(100,parseInt(i.value,10)||0)));
     if(!Object.values(nw).some(v=>v>0)){ toast('Au moins un critère doit avoir un poids'); return; } S.weights=nw; save(); toast('Poids appliqués'); viewSettings(); };
@@ -2601,7 +2615,7 @@ function coopoHowHTML(){
 })();
 
 function showcaseHTML(){
-  const online=visible().filter(p=>p.online).length, s=SHOW[0], n=SHOW[1];
+  const online=visible().filter(p=>isOnline(p)).length, s=SHOW[0], n=SHOW[1];
   return `<section class="showcase" id="showcase" style="--b1:${s.b1};--b2:${s.b2}">${coopoSceneHTML()}
     <div class="sc-top"><a class="logo" href="#/accueil" aria-label="Coopô, accueil"></a><span class="sc-brand">Coop<b class="brand-o">ô</b></span><nav class="navpill" aria-label="Navigation principale"></nav>
       <div class="sc-right"><button class="notif-btn" type="button" aria-label="Notifications"></button>${skinBtn()}</div></div>
@@ -3043,7 +3057,7 @@ function viewPayment(tx){
       if(r.status==='review'){ app.innerHTML=box('Paiement en vérification','Le montant reçu ne correspond pas au prix. La modération va vérifier : écris-nous via « Nous écrire » avec la référence '+esc(tx)+'.'); return; }
       if(tries++<8) return setTimeout(check,5000);
       app.innerHTML=box('Paiement en attente',`Si tu as validé le paiement sur ton téléphone, il sera pris en compte automatiquement dans quelques minutes. Référence : ${esc(tx)}`,'<button class="btn" type="button" onclick="route()">Vérifier à nouveau</button>');
-    }catch(e){ app.innerHTML=box('Vérification impossible',(e&&e.message)||'Réessaie dans un instant.','<button class="btn" type="button" onclick="route()">Réessayer</button>'); }
+    }catch(e){ app.innerHTML=box('Vérification impossible',esc((e&&e.message)||'Réessaie dans un instant.'),'<button class="btn" type="button" onclick="route()">Réessayer</button>'); }
   };
   check();
 }
@@ -3156,11 +3170,20 @@ function onSignedIn(u){
     if(location.hash===target) route(); else location.hash=target;
   } else route();
 }
-function onSignedOut(){ try{ localStorage.removeItem('coopo_cache'); }catch(e){} S.owned=null; S.auth=null; S.me=null; S.requests=[]; S.notifs=[]; S.chats={}; S.rewards=null; DB._loaded=false; DB._checked=false; DB._notifReady=false; applySkin(S.skinWanted||'defaut'); save(); if(location.hash!=='#/connexion') location.hash='#/connexion'; else route(); }
+// Fin de session : rien de l'ancien compte ne reste sur l'appareil (messages, notifications, demandes, profil, date de naissance)
+function clearSession(){
+  DB.stopChat(); DB._unsub.forEach(u=>u()); DB._unsub=[]; clearInterval(DB._hb);
+  DB._loaded=false; DB._checked=false; DB._notifReady=false; DB._refWait=false; DB._miss={};
+  S.auth=null; S.me=null; S.rewards=null; S.owned=null;
+  if(AUTH_LIVE){ try{ localStorage.removeItem('coopo_cache'); }catch(e){} PLAYERS.length=0; ADMINS.length=0; ANNONCES=[]; TOURNOIS=[];
+    S.requests=[]; S.notifs=[]; S.chats={}; S.unread={}; S.ratings={}; S.rated={}; S.blocked=[]; S.hidden=[]; S.banned=[]; S.reports=[]; S.squads=[]; S.joined=[]; S.profiles={}; S.dobs={}; }
+  save();
+}
+function onSignedOut(){ clearSession(); applySkin(S.skinWanted||'defaut'); if(location.hash!=='#/connexion') location.hash='#/connexion'; else route(); }
 async function signOut(){
-  await DB.setPresence(false); DB._unsub.forEach(u=>u()); DB._unsub=[]; clearInterval(DB._hb);
-  if(AUTH_LIVE){ try{ google.accounts.id.disableAutoSelect(); await firebase.auth().signOut(); }catch(e){} }
-  S.auth=null; S.me=null; S.rewards=null; DB._loaded=false; DB._checked=false; DB._notifReady=false; save(); toast('Tu es déconnecté');
+  await DB.setPresence(false);
+  if(AUTH_LIVE){ try{ google.accounts.id.disableAutoSelect(); }catch(e){} try{ await firebase.auth().signOut(); }catch(e){} }
+  clearSession(); applySkin(S.skinWanted||'defaut'); toast('Tu es déconnecté');
   if(location.hash==='#/accueil') route(); else location.hash='#/accueil';
 }
 async function deleteGoogleAccount(){
@@ -3168,7 +3191,7 @@ async function deleteGoogleAccount(){
     // Firebase n'accepte la suppression qu'après une connexion récente : on vérifie AVANT d'effacer les données
     try{ const tk=await firebase.auth().currentUser.getIdTokenResult(); if(Date.now()-Date.parse(tk.authTime)>4*60*1000){ toast('Par sécurité, déconnecte-toi puis reconnecte-toi, et recommence la suppression'); return false; } }
     catch(e){ toast('Suppression impossible pour le moment, réessaie'); return false; }
-    await DB.deleteAccountData();
+    if(!(await DB.deleteAccountData())){ toast('Suppression impossible pour le moment. Vérifie ta connexion et réessaie.'); return false; }
     try{ await firebase.auth().currentUser.delete(); }
     catch(e){ toast(e.code==='auth/requires-recent-login'?'Reconnecte-toi avec Google puis recommence':'Suppression impossible pour le moment, réessaie'); return false; }
   }
@@ -3366,7 +3389,7 @@ const DEMO_SQUADS=[
 
 /* ---- Migrations d'état ---- */
 ['requests','notifs','squads','joined','hidden','banned'].forEach(k=>{ if(!Array.isArray(S[k])) S[k]=[]; });
-['chats','ratings','unread'].forEach(k=>{ if(!S[k]||typeof S[k]!=='object') S[k]={}; });
+['chats','ratings','unread','rated'].forEach(k=>{ if(!S[k]||typeof S[k]!=='object') S[k]={}; });
 if(S.mates && S.mates.length){ S.mates.forEach(id=>{ if(!S.requests.some(r=>r.to===id||r.from===id)) S.requests.push({id:'r'+id,from:'me',to:id,status:'accepted',at:Date.now()}); }); S.mates=[]; save(); }
 S.reports.forEach(r=>{ if(!r.status) r.status='open'; });
 
@@ -3374,7 +3397,7 @@ S.reports.forEach(r=>{ if(!r.status) r.status='open'; });
 const reqWith = id => S.requests.find(r=>(r.from==='me'&&r.to===id)||(r.from===id&&r.to==='me'));
 const isMate = id => !!reqWith(id) && reqWith(id).status==='accepted';
 const matesList = () => visible().filter(p=>isMate(p.id));
-const pendingReceived = () => S.requests.filter(r=>r.to==='me'&&r.status==='pending');
+const pendingReceived = () => S.requests.filter(r=>r.to==='me'&&r.status==='pending'&&visible().some(p=>p.id===r.from));
 function sendRequest(p){
   const r={id:'r'+Date.now(),from:'me',to:p.id,status:'pending',at:Date.now()}; S.requests.push(r); save(); DB.saveRequest(r);
   toast(`Demande envoyée à ${p.name}`);
@@ -3416,8 +3439,8 @@ function notifCenter(){
     <div class="dlg-actions"><button class="linkbtn" id="nread">Tout marquer comme lu</button><button class="btn" data-close>Fermer</button></div>`,
     d=>{ d.querySelectorAll('[data-acc]').forEach(b=>b.onclick=()=>{ answerRequest(b.dataset.acc,true); d.close(); route(); });
       d.querySelectorAll('[data-dec]').forEach(b=>b.onclick=()=>{ answerRequest(b.dataset.dec,false); d.close(); renderNotifBadge(); });
-      d.querySelectorAll('[data-nid]').forEach(a=>a.addEventListener('click',()=>{ const n=S.notifs.find(x=>x.id===a.dataset.nid); if(n) n.read=true; save(); d.close(); renderNotifBadge(); }));
-      d.querySelector('#nread').onclick=()=>{ S.notifs.forEach(n=>n.read=true); save(); renderNotifBadge(); d.close(); }; });
+      d.querySelectorAll('[data-nid]').forEach(a=>a.addEventListener('click',()=>{ const n=S.notifs.find(x=>x.id===a.dataset.nid); if(n&&!n.read){ n.read=true; DB.markRead([n.id]); } save(); d.close(); renderNotifBadge(); }));
+      d.querySelector('#nread').onclick=()=>{ DB.markRead(S.notifs.filter(n=>!n.read).map(n=>n.id)); S.notifs.forEach(n=>n.read=true); save(); renderNotifBadge(); d.close(); }; });
 }
 document.addEventListener('click',e=>{ if(e.target.closest('.notif-btn')) notifCenter(); });
 
@@ -3429,14 +3452,14 @@ function viewMessages(id){
   const mates=matesList().sort((a,b)=>{ const la=(S.chats[a.id]||[]).slice(-1)[0], lb=(S.chats[b.id]||[]).slice(-1)[0]; return (lb?lb.at:0)-(la?la.at:0); });
   app.innerHTML=`<div class="wrap page" style="max-width:720px"><div class="page-head"><div><h2>Messages</h2><p>Discute avec tes mates. Les messages sont réservés aux mates acceptés.</p></div></div>
     ${mates.length?`<div class="chat-list">${mates.map(p=>{ const msgs=S.chats[p.id]||[], last=msgs.slice(-1)[0], u=S.unread[p.id]||0;
-      return `<a class="chat-row${u?' unread':''}" href="#/messages/${p.id}">${avatar(p,52)}<div><b>${esc(p.name)}${modBadge(p)}${p.online?' <span class="online"></span>':''}</b><span class="muted">${last?esc((last.from==='me'?'Toi : ':'')+last.text):'Dis bonjour 👋'}</span></div>${u?`<span class="badge static">${u}</span>`:last?`<small class="muted">${ago(last.at)}</small>`:''}</a>`; }).join('')}</div>`
+      return `<a class="chat-row${u?' unread':''}" href="#/messages/${p.id}">${avatar(p,52)}<div><b>${esc(p.name)}${modBadge(p)}${isOnline(p)?' <span class="online"></span>':''}</b><span class="muted">${last?esc((last.from==='me'?'Toi : ':'')+last.text):'Dis bonjour 👋'}</span></div>${u?`<span class="badge static">${u}</span>`:last?`<small class="muted">${ago(last.at)}</small>`:''}</a>`; }).join('')}</div>`
     :`<div class="empty"><h3>Pas encore de mates</h3><p class="muted">Envoie une demande à un joueur compatible. Dès qu'il accepte, vous pouvez discuter ici.</p><a class="btn btn-ac" href="#/matchs">Voir mes matchs</a></div>`}</div>`;
 }
 function viewChat(id){
   const p=visible().find(x=>x.id===id);
   if(!p||!isMate(id)){ app.innerHTML=`<div class="wrap page"><div class="empty"><h3>Vous n'êtes pas encore mates</h3><p class="muted">Les messages s'ouvrent une fois la demande de mate acceptée.</p><a class="btn" href="#/messages">Retour aux messages</a></div></div>`; return; }
-  S.unread[id]=0; save(); renderNotifBadge();
-  app.innerHTML=`<div class="wrap page chat-page"><div class="chat-head"><a class="linkbtn" href="#/messages">← Messages</a><a class="chat-who" href="#/joueur/${p.id}">${avatar(p,44)}<div><b>${esc(p.name)}${modBadge(p)}</b>${p.online?'<span class="online">En ligne</span>':'<span class="muted" style="font-size:12px">Hors ligne</span>'}</div></a><div class="chat-contacts" id="chat-contacts"></div></div>
+  S.unread[id]=0; { const seen=S.notifs.filter(n=>!n.read&&n.type==='message'&&n.from===id); seen.forEach(n=>n.read=true); DB.markRead(seen.map(n=>n.id)); } save(); renderNotifBadge();
+  app.innerHTML=`<div class="wrap page chat-page"><div class="chat-head"><a class="linkbtn" href="#/messages">← Messages</a><a class="chat-who" href="#/joueur/${p.id}">${avatar(p,44)}<div><b>${esc(p.name)}${modBadge(p)}</b>${isOnline(p)?'<span class="online">En ligne</span>':'<span class="muted" style="font-size:12px">Hors ligne</span>'}</div></a><div class="chat-contacts" id="chat-contacts"></div></div>
     <div class="chat-box" id="chatbox"></div>
     <form class="chat-form" id="chatform"><input type="text" id="chatin" placeholder="Écris un message…" maxlength="500" autocomplete="off"><button class="btn btn-ac" type="submit">Envoyer</button></form></div>`;
   fillContacts(p,'chat-contacts',true);
@@ -3609,7 +3632,7 @@ document.addEventListener('click',e=>{
 /* ---- Tournois (créés par la modération) ---- */
 let TOURNOIS=[];
 const DEMO_TOURNOIS=[
-  {id:'t1',title:'Coupe Coopô Free Fire',game:'Free Fire',date:Date.now()+5*864e5,format:'Escouades de 4 · élimination directe',max:16,prize:'Thème Glass pour l\'équipe gagnante',desc:'Inscris-toi seul, on complète les escouades. Lobby envoyé sur WhatsApp ou Discord 30 min avant.',players:['p8','p1'],entries:{},status:'open',ageGroup:'adult',at:Date.now()},
+  {id:'t1',title:'Coupe Coopô Free Fire',game:'Free Fire',date:Date.now()+5*864e5,format:'Escouades de 4 · élimination directe',max:16,prize:'Un thème au choix pour l\'équipe gagnante',desc:'Inscris-toi seul, on complète les escouades. Lobby envoyé sur WhatsApp ou Discord 30 min avant.',players:['p8','p1'],entries:{},status:'open',ageGroup:'adult',at:Date.now()},
   {id:'t2',title:'Défi Brawl Stars 15-17',game:'Brawl Stars',date:Date.now()+3*864e5,format:'Solo · 3 manches',max:12,prize:'Thème au choix',desc:'Tournoi réservé aux 15-17 ans.',players:['p15'],entries:{},status:'open',ageGroup:'minor',at:Date.now()},
 ];
 function tournoisAll(){
@@ -3670,7 +3693,7 @@ function editTournoi(id){
     <div class="two"><div class="field"><label for="tm">Places</label><input id="tm" type="text" inputmode="numeric" value="${t?t.max:16}"></div>
       <div class="field"><label for="ta">Pour</label><select id="ta" ${isNew?'':'disabled'}><option value="adult" ${t&&t.ageGroup==='minor'?'':'selected'}>Adultes</option><option value="minor" ${t&&t.ageGroup==='minor'?'selected':''}>15-17 ans</option></select></div></div>
     <div class="field"><label for="tf">Format</label><input id="tf" type="text" maxlength="80" value="${esc(t?t.format:'')}" placeholder="ex. Escouades de 4 · élimination directe"></div>
-    <div class="field"><label for="tp">À gagner (facultatif)</label><input id="tp" type="text" maxlength="80" value="${esc(t?t.prize:'')}" placeholder="ex. Thème Glass pour les gagnants"></div>
+    <div class="field"><label for="tp">À gagner (facultatif)</label><input id="tp" type="text" maxlength="80" value="${esc(t?t.prize:'')}" placeholder="ex. Un thème au choix pour les gagnants"></div>
     <div class="field"><label for="tx">Règles et infos</label><textarea id="tx" rows="3" maxlength="500">${esc(t?t.desc:'')}</textarea></div>
     ${isNew?'':`<div class="field"><label for="ts">Statut</label><select id="ts">${[['open','Inscriptions ouvertes'],['closed','Inscriptions closes'],['done','Terminé']].map(([v,l])=>`<option value="${v}" ${t.status===v?'selected':''}>${l}</option>`).join('')}</select></div>`}
     <p class="err" id="te" role="alert"></p></div>
@@ -3719,7 +3742,7 @@ function boardsTeaser(){
 }
 
 /* ---- « Tu rejouerais avec lui ? » ---- */
-function rate(id,v){ S.ratings[id]=v; save(); DB.rate(id,v); toast(v>0?'Merci ! Ça affine tes prochains matchs.':'Noté. Ce profil descendra dans tes matchs.'); }
+function rate(id,v){ if(S.ratings[id]===v) return; S.ratings[id]=v; save(); DB.rate(id,v); toast(v>0?'Merci ! Ça affine tes prochains matchs.':'Noté. Ce profil descendra dans tes matchs.'); }
 
 /* ---- Partage de profil ---- */
 function shareLink(name){ return location.href.split('#')[0]+'#/@'+encodeURIComponent(name); }
@@ -3780,6 +3803,7 @@ function viewLegal(kind){
 let OB=null;
 function viewOnboard(){
   if(!OB) OB={ step:1, name:suggestName((S.auth&&S.auth.name)||''), games:[], hours:[], weekend:false, style:'' };
+  if(!OB.name && S.auth && S.auth.name) OB.name=suggestName(S.auth.name);
   draft = draft&&draft.dob!==undefined&&!draft.games ? draft : { dob:'' };
   if(!draft.dob) draft.dob=knownDob();
   const step=OB.step, kd=knownDob();
@@ -3819,12 +3843,13 @@ function viewOnboard(){
   app.querySelectorAll('[data-ob-style]').forEach(b=>b.onclick=()=>{ OB.style=b.dataset.obStyle; app.querySelectorAll('[data-ob-style]').forEach(x=>{ const on=x===b; x.classList.toggle('on',on); x.setAttribute('aria-pressed',on); }); });
   const we=app.querySelector('#ob-we'); if(we) we.onchange=()=>{ OB.weekend=we.checked; };
   const back=app.querySelector('#ob-back'); if(back) back.onclick=()=>{ OB.step=1; viewOnboard(); };
-  f.onsubmit=e=>{ e.preventDefault(); const errs=[];
+  f.onsubmit=async e=>{ e.preventDefault(); const errs=[], btn=f.querySelector('button[type=submit]'); if(btn.disabled) return;
     if(OB.step===1){ keepName();
       if(!new RegExp(`^[A-Za-z0-9_.-]{${CONFIG.minUsername},${CONFIG.maxUsername}}$`).test(OB.name)) errs.push("Choisis un pseudo de 3 à 20 caractères (lettres, chiffres, _ . -).");
       else if(PLAYERS.some(p=>p.name.toLowerCase()===OB.name.toLowerCase())) errs.push("Ce pseudo est déjà pris.");
       const age=ageFrom(draft.dob); if(age===null) errs.push('Indique ta date de naissance.'); else if(age<CONFIG.minAge) errs.push(`Il faut avoir au moins ${CONFIG.minAge} ans pour utiliser Coopô.`); else if(age>100) errs.push('Vérifie ta date de naissance.');
       if(!OB.games.length) errs.push('Choisis au moins un jeu.');
+      if(!errs.length){ btn.disabled=true; const taken=await DB.nameTaken(OB.name); btn.disabled=false; if(taken) errs.push("Ce pseudo est déjà pris."); }   // vérifié auprès de tous les comptes, pas seulement des joueurs affichés
       if(errs.length){ err.innerHTML=errs.map(esc).join('<br>'); return; }
       OB.step=2; viewOnboard(); window.scrollTo(0,0); return; }
     if(!OB.hours.length) errs.push('Choisis au moins un moment.');
@@ -3835,8 +3860,15 @@ function viewOnboard(){
     const reg=((navigator.language||'').split('-')[1]||'').toUpperCase(); const country=COUNTRIES.some(c=>c[0]===reg)?reg:'';
     S.me={ id:'me', name:OB.name, dob:draft.dob, games:OB.games, hours:OB.hours, days:OB.weekend?['sam','dim']:[], style:OB.style, goal:'both', voice:'parfois',
       platforms:plats.length?plats:['mobile'], country, langs:['fr'], discord:'', tags:{}, ranks:{}, avatar:{hue:[265,330,10,45,150,200][Math.floor(Math.random()*6)]} };
-    if(S.auth) S.profiles[S.auth.uid]=S.me; S.onboard=true; save(); DB.saveProfile(S.me); if(typeof demoScheduleIncoming==='function') demoScheduleIncoming();
-    OB=null; toast('Profil créé, bienvenue !');
+    if(S.auth) S.profiles[S.auth.uid]=S.me; S.onboard=true; save();
+    btn.disabled=true; btn.textContent='Création du profil…';
+    if(!(await DB.saveProfile(S.me))){   // rien n'est gardé en local si le profil n'existe pas en ligne
+      S.me=null; if(S.auth) delete S.profiles[S.auth.uid]; S.onboard=false; save();
+      if(DB._saveErr==='name'){ OB.step=1; viewOnboard(); const er=app.querySelector('#ob-err'); if(er) er.textContent="Ce pseudo vient d'être pris. Choisis-en un autre."; }
+      else { btn.disabled=false; btn.textContent='Voir mes matchs'; err.textContent="Ton profil n'a pas pu être enregistré. Vérifie ta connexion et réessaie."; }
+      return; }
+    if(typeof demoScheduleIncoming==='function') demoScheduleIncoming();
+    OB=null; toast(DB._refWait?'Profil créé ! Vérifie ton e-mail pour recevoir ton thème offert.':'Profil créé, bienvenue !');
     let next='#/matchs'; try{ next=sessionStorage.getItem('coopo_after_profile')||sessionStorage.getItem('coopo_after_login')||'#/matchs'; sessionStorage.removeItem('coopo_after_profile'); sessionStorage.removeItem('coopo_after_login'); }catch(x){}
     location.hash=next; };
 }
@@ -3928,7 +3960,7 @@ function viewAdmin(){
   const groups={}; S.reports.forEach(r=>{ (groups[r.id]||(groups[r.id]=[])).push(r); });
   const rows=Object.entries(groups).sort((a,b)=>b[1].length-a[1].length);
   app.innerHTML=`<div class="wrap page"><div class="page-head"><div><h2>Modération</h2><p>${S.reports.filter(r=>r.status==='open').length} signalement(s) à traiter · ${S.hidden.length} profil(s) masqué(s) · ${S.banned.length} banni(s)</p></div></div>
-    <div class="admin-stats"><div><b>${PLAYERS.length}</b><span>profils</span></div><div><b>${PLAYERS.filter(p=>p.online).length}</b><span>en ligne</span></div><div><b>${S.requests.filter(r=>r.status==='accepted').length}</b><span>paires de mates</span></div><div><b>${allSquads().length}</b><span>groupes</span></div></div>
+    <div class="admin-stats"><div><b>${PLAYERS.length}</b><span>profils</span></div><div><b>${PLAYERS.filter(p=>isOnline(p)).length}</b><span>en ligne</span></div><div><b>${S.requests.filter(r=>r.status==='accepted').length}</b><span>paires de mates</span></div><div><b>${allSquads().length}</b><span>groupes</span></div></div>
     ${rows.length?rows.map(([id,rs])=>{ const p=PLAYERS.find(x=>x.id===id); const hid=S.hidden.includes(id), ban=S.banned.includes(id), open=rs.filter(r=>r.status==='open').length;
       return `<section class="panel admin-row"><div class="admin-head">${p?avatar(p,44):''}<div><b>${p?esc(p.name)+modBadge(p):esc(id)}</b><span class="muted">${rs.length} signalement(s) · ${open} ouvert(s)${hid?' · <strong>masqué</strong>':''}${ban?' · <strong>banni</strong>':''}</span></div>
         <div class="nact">${ban?`<button class="btn btn-sm" data-unban="${esc(id)}">Lever le ban</button>`:`<button class="btn btn-sm ${hid?'':'btn-ghost'}" data-hide="${esc(id)}">${hid?'Rétablir':'Masquer'}</button><button class="btn btn-sm btn-danger" data-ban="${esc(id)}">Bannir</button>`}${open?`<button class="btn btn-sm" data-done="${esc(id)}">Marquer traité</button>`:''}</div></div>
@@ -3985,7 +4017,11 @@ const DB = {
     try{
       const [prof,priv]=await Promise.all([db.collection('profiles').doc(uid).get(),db.collection('private').doc(uid).get()]);
       const prevMe=S.me||{};
-      if(prof.exists){ S.me=normP({...prof.data(),id:'me',dob:priv.exists?priv.data().dob:''}); { const sk=prof.data().skin; if(sk&&SKINS[sk]) S.skinWanted=sk; } S.profiles[uid]=S.me; }
+      if(prof.exists){ const pd=prof.data(), pv=priv.exists?priv.data():{};
+        S.me=normP({...pd,id:'me',dob:pv.dob||''});
+        if(pv.tags&&typeof pv.tags==='object') S.me.tags=pv.tags;   // pseudos en jeu : la copie privée fait foi (la copie publique est vide quand ils sont masqués)
+        if(pd.privacy&&typeof pd.privacy==='object') ['discord','tags','online'].forEach(k=>{ if(typeof pd.privacy[k]==='boolean') S.privacy[k]=pd.privacy[k]; });   // confidentialité : les réglages du compte, sur tous les appareils
+        { const sk=pd.skin; if(sk&&SKINS[sk]) S.skinWanted=sk; } S.profiles[uid]=S.me; }
       if(priv.exists&&priv.data().dob) S.dobs[uid]=priv.data().dob;
       if(prof.exists&&prof.data().banned){ toast('Ce compte a été suspendu.'); await signOut(); return; }
       if(!prof.exists){ this._loaded=true; this._loading=false; this._noProfile=true; save(); refreshAfterData(); return; }
@@ -3995,18 +4031,19 @@ const DB = {
         else if(!ct&&S.me){ S.me.discord=prevMe.discord||S.me.discord||''; S.me.whatsapp=prevMe.whatsapp||''; S.me.socials=prevMe.socials||{}; }   // lecture ratée : on garde les contacts connus
         else if(ct&&!ct.exists&&S.me&&S.me.discord){ if(await this.saveContacts(S.me)) await db.collection('profiles').doc(uid).set({discord:firebase.firestore.FieldValue.delete()},{merge:true}).catch(e=>console.error(e)); }
       }
-      const g=S.me&&S.me.dob?ageGroup(S.me):'adult';
+      let g=S.me&&S.me.dob?ageGroup(S.me):'adult';
+      // Anniversaire des 18 ans : le groupe d'âge enregistré doit suivre l'âge réel, sinon les règles refusent toutes les lectures
+      if(S.me&&S.me.dob&&prof.data().ageGroup!==g){ try{ await db.collection('profiles').doc(uid).update({ageGroup:g}); }catch(e){ console.error(e); if(prof.data().ageGroup) g=prof.data().ageGroup; } }
       const [ps,rq,bl,rt,sq,ad]=await Promise.all([db.collection('profiles').where('ageGroup','==',g).where('hidden','==',false).limit(300).get(), db.collection('requests').where('participants','array-contains',uid).get(), db.collection('blocks').doc(uid).collection('list').get(), db.collection('ratings').where('by','==',uid).get(), db.collection('squads').where('ageGroup','==',g).get(), db.collection('admins').doc(uid).get(), this.loadPurchases()]);
       this._checked=true;
       PLAYERS.length=0; ps.forEach(d=>{ if(d.id!==uid) PLAYERS.push(normP({...d.data(),id:d.id,age:undefined})); }); this._lastPlayers=Date.now();
-      
       S.requests=[]; rq.forEach(d=>{ const r=d.data(); S.requests.push({id:d.id,from:this.fromUid(r.from),to:this.fromUid(r.to),status:r.status,at:r.at}); });
-       S.blocked=[]; bl.forEach(d=>S.blocked.push(d.id));
-       S.ratings={}; rt.forEach(d=>{ S.ratings[d.data().target]=d.data().value; });
-       DEMO_SQUADS.length=0; S.squads=[]; S.joined=[];
-      sq.forEach(d=>{ const s={...d.data(),id:d.id}; s.members=s.members.map(m=>this.fromUid(m)); s.owner=this.fromUid(s.owner); if(s.members.includes('me')&&s.owner!=='me') S.joined.push(s.id); (s.owner==='me'?S.squads:DEMO_SQUADS).push(s); });
-       if(ad.exists&&!ADMINS.includes(uid)) ADMINS.push(uid); else if(!ad.exists){ const k=ADMINS.indexOf(uid); if(k>=0) ADMINS.splice(k,1); }
-      
+      S.blocked=[]; bl.forEach(d=>S.blocked.push(d.id));
+      S.ratings={}; S.rated={}; rt.forEach(d=>{ const x=d.data(); S.ratings[x.target]=x.value; if(x.counted||x.value===1) S.rated[x.target]=true; });
+      DEMO_SQUADS.length=0; S.squads=[]; S.joined=[];
+      sq.forEach(d=>{ const s={...d.data(),id:d.id}; s.members=(Array.isArray(s.members)?s.members:[]).map(m=>this.fromUid(m)); s.owner=this.fromUid(s.owner); if(s.members.includes('me')&&s.owner!=='me') S.joined.push(s.id); (s.owner==='me'?S.squads:DEMO_SQUADS).push(s); });
+      if(ad.exists&&!ADMINS.includes(uid)) ADMINS.push(uid); else if(!ad.exists){ const k=ADMINS.indexOf(uid); if(k>=0) ADMINS.splice(k,1); }
+      await this.fetchPlayers(S.requests.map(r=>r.from==='me'?r.to:r.from));   // mates et demandes dont le profil n'est pas dans les 300 chargés
       const isModNow=ad.exists, wasMod=!!(prof.data()||{}).moderator;
       if(isModNow!==wasMod){ try{ await db.collection('profiles').doc(uid).update({moderator:isModNow}); if(S.me) S.me.moderator=isModNow; }catch(e){ console.error(e); } }
       await Promise.all([ad.exists?this.loadReports():null, this.loadBoards()]);
@@ -4014,23 +4051,56 @@ const DB = {
       this._loaded=true; this._loading=false; refreshAfterData();
       try{ localStorage.setItem('coopo_cache', JSON.stringify({ uid, players:PLAYERS, admin:ADMINS.includes(uid) })); }catch(e){}
       this._unsub.forEach(u=>u()); this._unsub=[];
+      const lerr=e=>console.error(e);   // une écoute refusée ou coupée ne doit jamais bloquer la page
       this._unsub.push(db.collection('notifications').doc(uid).collection('items').orderBy('at','desc').limit(40).onSnapshot(snap=>{
-        snap.docChanges().forEach(ch=>{ if(ch.type==='added'){ const n=ch.doc.data(); if(!S.notifs.some(x=>x.id===ch.doc.id)){ S.notifs.unshift({...n,id:ch.doc.id,from:this.fromUid(n.from)}); if(this._notifReady&&!n.read) deviceNotify(n); } } }); this._notifReady=true;
-        S.notifs=S.notifs.slice(0,60); save(); renderNotifBadge(); }));
-      this._unsub.push(db.collection('requests').where('to','==',uid).onSnapshot(snap=>{ snap.docChanges().forEach(ch=>{ const r=ch.doc.data(); if(!r) return; const ex=S.requests.find(x=>x.id===ch.doc.id);
-        if(ch.type==='removed'){ S.requests=S.requests.filter(x=>x.id!==ch.doc.id); } else if(ex) ex.status=r.status; else S.requests.push({id:ch.doc.id,from:this.fromUid(r.from),to:'me',status:r.status,at:r.at}); }); save(); renderNotifBadge(); if(location.hash==='#/messages'||location.hash==='#/matchs') refreshAfterData(); }));
-      save(); this.setPresence(true); clearInterval(this._hb); this._hb=setInterval(()=>this.setPresence(true),60000);
-    }catch(e){ console.error(e); this._loaded=true; this._loading=false; this._err=(e&&e.code)||String(e); toast('Erreur de chargement des données'); refreshAfterData(); }
+        snap.docChanges().forEach(ch=>{ const n=ch.doc.data(); if(!n) return; const ex=S.notifs.find(x=>x.id===ch.doc.id);
+          if(ch.type==='added'&&!ex){ const from=this.fromUid(n.from); S.notifs.push({...n,id:ch.doc.id,from});
+            if(!n.read&&n.type==='message'&&location.hash!=='#/messages/'+from) S.unread[from]=(S.unread[from]||0)+1;   // message non lu : pastille sur la conversation
+            if(this._notifReady&&!n.read) deviceNotify(n); }
+          else if(ch.type==='modified'&&ex&&n.read) ex.read=true; });   // lu sur un autre appareil
+        this._notifReady=true;
+        S.notifs.sort((a,b)=>(b.at||0)-(a.at||0)); S.notifs=S.notifs.slice(0,60); save(); renderNotifBadge(); },lerr));
+      // Demandes de mate, dans les deux sens : une demande acceptée par l'autre joueur apparaît tout de suite chez celui qui l'a envoyée
+      this._unsub.push(db.collection('requests').where('participants','array-contains',uid).onSnapshot(snap=>{ let chg=false; const fresh=[];
+        snap.docChanges().forEach(ch=>{ const r=ch.doc.data(); if(!r) return; const from=this.fromUid(r.from), to=this.fromUid(r.to);
+          const i=S.requests.findIndex(x=>x.id===ch.doc.id||(x.from===from&&x.to===to));
+          if(ch.type==='removed'){ if(i>=0){ S.requests.splice(i,1); chg=true; } return; }
+          const row={id:ch.doc.id,from,to,status:r.status,at:r.at};
+          if(i<0){ S.requests.push(row); chg=true; fresh.push(from==='me'?to:from); }
+          else if(S.requests[i].status!==row.status||S.requests[i].id!==row.id){ if(S.requests[i].status!==row.status) chg=true; S.requests[i]=row; } });
+        if(!chg) return; save(); renderNotifBadge();
+        this.fetchPlayers(fresh).catch(()=>{}).then(()=>refreshAfterData()); },lerr));
+      save(); this.setPresence(true); clearInterval(this._hb); this._hb=setInterval(()=>{ if(!document.hidden) this.setPresence(true); },120000);   // toutes les 2 min, seulement si la page est affichée
+      this.applyReferral();   // parrainage en attente (e-mail vérifié depuis la dernière visite)
+    }catch(e){ console.error(e); this._loaded=true; this._loading=false; this._err=(e&&e.code)||String(e); toast('Chargement impossible. Vérifie ta connexion, puis recharge la page.'); refreshAfterData(); }
   },
-  async saveProfile(me){ if(!this.live) return; const uid=this.uid(); const {dob,id,age,...pub}=me;
-    try{ const ref=this.db.collection('profiles').doc(uid); const isNew=!(await ref.get().catch(()=>({exists:false}))).exists;
-      await this.db.collection('private').doc(uid).set({dob,updatedAt:Date.now()},{merge:true});
-      await this.db.collection('usernames').doc(me.name.toLowerCase()).set({uid});
+  // Charge les profils qui manquent (mates ou demandes hors des 300 premiers profils). Renvoie true si au moins un a été ajouté.
+  async fetchPlayers(ids){ if(!this.live||!this.uid()) return false; this._miss=this._miss||{};
+    const need=[...new Set(ids)].filter(id=>id&&id!=='me'&&id!==this.uid()&&!this._miss[id]&&!PLAYERS.some(p=>p.id===id)).slice(0,60); if(!need.length) return false;
+    const docs=await Promise.all(need.map(id=>this.db.collection('profiles').doc(id).get().catch(()=>null))); let n=0;
+    docs.forEach((d,i)=>{ if(d&&d.exists&&!d.data().hidden&&!PLAYERS.some(p=>p.id===d.id)){ PLAYERS.push(normP({...d.data(),id:d.id,age:undefined,_extra:true})); n++; } else this._miss[need[i]]=1; });
+    return n>0; },
+  // Le pseudo est-il déjà réservé par un autre compte ?
+  async nameTaken(name){ if(!this.live||!this.uid()) return false; try{ const x=await this.db.collection('usernames').doc(String(name).toLowerCase()).get(); return x.exists&&x.data().uid!==this.uid(); }catch(e){ console.error(e); return false; } },
+  // Enregistre le profil en ligne. Renvoie true si c'est fait ; sinon false, et _saveErr dit pourquoi ('name' = pseudo déjà pris).
+  async saveProfile(me){ if(!this.live) return true; const uid=this.uid(), db=this.db; const {dob,id,age,...pub}=me; const lower=me.name.toLowerCase(); this._saveErr='';
+    try{ const ref=db.collection('profiles').doc(uid); const cur=await ref.get().catch(()=>null); const isNew=!(cur&&cur.exists), oldLower=cur&&cur.exists?String(cur.data().nameLower||''):'';
+      try{ await db.collection('usernames').doc(lower).set({uid}); }   // en premier : si le pseudo appartient à un autre compte, rien d'autre n'est écrit
+      catch(e){ if(String(e&&e.code).includes('permission')){ this._saveErr='name'; return false; } throw e; }
+      await db.collection('private').doc(uid).set({dob,tags:me.tags||{},updatedAt:Date.now()},{mergeFields:['dob','tags','updatedAt']});
       const {banned,hidden,rejoue,moderator,dispo,skin,discord,whatsapp,socials,...safe}=pub;
-      const data={...safe,nameLower:me.name.toLowerCase(),ageGroup:ageGroup(me),privacy:S.privacy,discordPublic:S.privacy.discord,online:true,lastSeen:Date.now(),updatedAt:Date.now()};
+      const data={...safe,tags:S.privacy.tags?(me.tags||{}):{},nameLower:lower,ageGroup:ageGroup(me),privacy:S.privacy,discordPublic:S.privacy.discord,online:!!S.privacy.online,lastSeen:S.privacy.online?Date.now():0,updatedAt:Date.now()};
       if(isNew){ Object.assign(data,{banned:false,hidden:false,rejoue:0}); await ref.set(data); await this.saveContacts(me); await this.applyReferral(); await this.loadAll(); }
-      else { const ok=await this.saveContacts(me); await ref.set(ok?{...data,discord:firebase.firestore.FieldValue.delete()}:data,{merge:true}); } }
-    catch(e){ console.error(e); toast("Le profil n'a pas pu être enregistré en ligne"); } },
+      else { const ok=await this.saveContacts(me);
+        await ref.update(ok?{...data,discord:firebase.firestore.FieldValue.delete()}:data);   // update remplace chaque champ en entier : un rang, un pseudo en jeu ou une photo retirés disparaissent vraiment
+        if(oldLower&&oldLower!==lower) db.collection('usernames').doc(oldLower).delete().catch(e=>console.error(e)); }   // l'ancien pseudo redevient libre
+      return true; }
+    catch(e){ console.error(e); this._saveErr=(e&&e.code)||'error'; return false; } },
+  // Réglages de confidentialité : appliqués tout de suite en ligne (pseudos en jeu masqués = retirés du profil public)
+  async savePrivacy(){ if(!this.live||!this.uid()||!S.me) return; const uid=this.uid();
+    try{ if(!S.privacy.tags) await this.db.collection('private').doc(uid).set({tags:S.me.tags||{}},{mergeFields:['tags']});   // copie privée d'abord
+      await this.db.collection('profiles').doc(uid).update({privacy:S.privacy,discordPublic:S.privacy.discord,tags:S.privacy.tags?(S.me.tags||{}):{},online:!!S.privacy.online,lastSeen:S.privacy.online?Date.now():0}); }
+    catch(e){ console.error(e); toast("Réglage non enregistré en ligne. Vérifie ta connexion et réessaie."); } },
   // Contacts privés : lisibles uniquement par la personne et ses mates (règles Firestore)
   async saveContacts(me){ if(!this.live||!this.uid()||!me) return false;
     try{ await this.db.collection('contacts').doc(this.uid()).set({ discord:S.privacy.discord?String(me.discord||'').slice(0,40):'', whatsapp:me.dob&&ageGroup(me)==='adult'?String(me.whatsapp||''):'', ...Object.fromEntries(SOCIALS.map(([k])=>[k, cleanHandle((me.socials||{})[k])])), updatedAt:Date.now() }); return true; }
@@ -4080,28 +4150,44 @@ const DB = {
       await b.commit();
       if(!this._lastNotifTo||this._lastNotifTo[id]==null||Date.now()-this._lastNotifTo[id]>60000){ (this._lastNotifTo=this._lastNotifTo||{})[id]=Date.now(); await this.saveNotif(id,{type:'message',from:'me',text:`${S.me.name} : ${m.text.slice(0,80)}`}); }
     }catch(e){ console.error(e); toast(String(e&&e.code).includes('permission')?'Doucement : attends une seconde entre deux messages.':"Le message n'est pas parti, réessaie."); } },
-  listenChat(id,cb){ if(!this.live) return; if(this._chatUnsub) this._chatUnsub(); this._chatUnsub=this.db.collection('chats').doc(this.pairId(id)).collection('messages').orderBy('at').limit(200).onSnapshot(snap=>{ S.chats[id]=[]; snap.forEach(d=>{ const m=d.data(); S.chats[id].push({from:this.fromUid(m.from),text:m.text,at:m.at}); }); save(); cb(); }); },
+  listenChat(id,cb){ if(!this.live) return; this.stopChat();   // les 200 derniers messages (et plus les 200 premiers)
+    this._chatUnsub=this.db.collection('chats').doc(this.pairId(id)).collection('messages').orderBy('at').limitToLast(200).onSnapshot(snap=>{ S.chats[id]=[]; snap.forEach(d=>{ const m=d.data(); S.chats[id].push({from:this.fromUid(m.from),text:m.text,at:m.at}); }); save(); cb(); },e=>console.error(e)); },
+  stopChat(){ if(this._chatUnsub){ try{ this._chatUnsub(); }catch(e){} this._chatUnsub=null; } },
+  // Notifications lues : enregistré sur le compte, pour ne pas les revoir « non lues » sur un autre appareil
+  markRead(ids){ if(!this.live||!this.uid()) return; const col=this.db.collection('notifications').doc(this.uid()).collection('items'); [...new Set(ids)].slice(0,40).forEach(id=>col.doc(id).update({read:true}).catch(()=>{})); },
   async saveSquad(s){ if(!this.live) return; try{ await this.db.collection('squads').doc(s.id).set({...s,owner:this.uid(),members:[this.uid()]}); }catch(e){ console.error(e); } },
   async deleteSquad(id){ if(!this.live) return; try{ await this.db.collection('squads').doc(id).delete(); }catch(e){ console.error(e); } },
   async joinSquad(id,on){ if(!this.live) return; try{ const F=firebase.firestore.FieldValue; await this.db.collection('squads').doc(id).update({members:on?F.arrayUnion(this.uid()):F.arrayRemove(this.uid())}); }catch(e){ console.error(e); } },
   async saveNotif(toId,n){ if(!this.live) return; try{ await this.db.collection('notifications').doc(this.toUid(toId)).collection('items').add({...n,from:this.toUid(n.from),at:Date.now(),read:false}); }catch(e){ console.error(e); } },
-  async rate(id,v){ if(!this.live) return; try{ await this.db.collection('ratings').doc(`${this.uid()}_${id}`).set({by:this.uid(),target:id,value:v,at:Date.now()}); const F=firebase.firestore.FieldValue; if(v>0) await this.db.collection('profiles').doc(id).update({rejoue:F.increment(1)}); }catch(e){ console.error(e); } },
-  async setPresence(on){ if(!this.live||!this.uid()||!S.me) return; try{ await this.db.collection('profiles').doc(this.uid()).update({online:on&&S.privacy.online,lastSeen:Date.now()}); }catch(e){} },
+  // « Rejouerait avec lui » : le +1 n'est compté qu'une fois par joueur (champ counted, vérifié aussi par les règles Firestore)
+  async rate(id,v){ if(!this.live) return; const db=this.db, uid=this.uid(), ref=db.collection('ratings').doc(`${uid}_${id}`), counted=!!(S.rated&&S.rated[id]);
+    const data={by:uid,target:id,value:v,at:Date.now(),counted:counted||v>0};
+    try{ const b=db.batch(); b.set(ref,data); if(v>0&&!counted) b.update(db.collection('profiles').doc(id),{rejoue:firebase.firestore.FieldValue.increment(1)}); await b.commit();
+      if(v>0){ (S.rated=S.rated||{})[id]=true; save(); } }
+    catch(e){ console.error(e); try{ await ref.set({...data,counted}); }catch(e2){ console.error(e2); } } },   // le compteur n'a pas pu bouger : on garde au moins la note privée
+  async setPresence(on){ if(!this.live||!this.uid()||!S.me) return; this._lastPres=Date.now();
+    try{ await this.db.collection('profiles').doc(this.uid()).update({online:!!(on&&S.privacy.online),lastSeen:S.privacy.online?Date.now():0}); }catch(e){} },   // statut masqué : aucune heure d'activité n'est publiée
   saveSkin(id){ try{ if(S.auth){ S.skinByUser=S.skinByUser||{}; S.skinByUser[S.auth.uid]=id; save(); } }catch(e){}
     if(!this.live||!this.uid()||!S.me) return; clearTimeout(this._skinT);
     this._skinT=setTimeout(()=>{ this.db.collection('profiles').doc(this.uid()).update({skin:id}).catch(e=>console.error(e)); },600); },
   async setDispo(d){ if(!this.live||!this.uid()) return; try{ await this.db.collection('profiles').doc(this.uid()).update({dispo:d||null}); }catch(e){ console.error(e); toast('Statut non enregistré en ligne'); } },
   async refreshPlayers(){ if(!this.live||!this.uid()||!S.me||!S.me.dob) return false; if(this._refreshing||(this._lastPlayers&&Date.now()-this._lastPlayers<180000)) return false; this._lastPlayers=Date.now(); this._refreshing=true;
     try{ const uid=this.uid(), g=ageGroup(S.me); const ps=await this.db.collection('profiles').where('ageGroup','==',g).where('hidden','==',false).limit(300).get();
-      const fresh=[]; ps.forEach(d=>{ if(d.id!==uid) fresh.push(normP({...d.data(),id:d.id,age:undefined})); }); const keep=PLAYERS.filter(p=>p._reported&&!fresh.some(f=>f.id===p.id)); PLAYERS.length=0; fresh.concat(keep).forEach(p=>PLAYERS.push(p)); return true; }catch(e){ console.error(e); return false; } finally{ this._refreshing=false; } },
-  async applyReferral(){ if(!this.live||!this.uid()||!S.me) return; const code=(localStorage.getItem('coopo_ref')||'').toLowerCase(); if(!code||code===S.me.name.toLowerCase()) return;
-    try{ const un=await this.db.collection('usernames').doc(code).get(); if(!un.exists||un.data().uid===this.uid()){ localStorage.removeItem('coopo_ref'); return; }
+      const fresh=[]; ps.forEach(d=>{ if(d.id!==uid) fresh.push(normP({...d.data(),id:d.id,age:undefined})); }); const keep=PLAYERS.filter(p=>(p._reported||p._extra)&&!fresh.some(f=>f.id===p.id)); PLAYERS.length=0; fresh.concat(keep).forEach(p=>PLAYERS.push(p)); return true; }catch(e){ console.error(e); return false; } finally{ this._refreshing=false; } },
+  // Parrainage : validé une seule fois, quand le filleul a un profil ET une adresse e-mail vérifiée (les comptes Google le sont d'office).
+  // Tant que l'e-mail n'est pas vérifié, le code est gardé et retesté au prochain chargement.
+  async applyReferral(){ if(!this.live||!this.uid()||!S.me) return; let code=''; try{ code=(localStorage.getItem('coopo_ref')||'').toLowerCase(); }catch(e){} if(!code) return;
+    const drop=()=>{ this._refWait=false; try{ localStorage.removeItem('coopo_ref'); }catch(e){} };
+    if(code===S.me.name.toLowerCase()||(S.rewards&&S.rewards.referred)){ drop(); return; }
+    try{ const u=firebase.auth().currentUser;
+      if(u&&!u.emailVerified){ await u.reload().catch(()=>{}); if(!u.emailVerified){ this._refWait=true; return; } await u.getIdToken(true).catch(()=>{}); }
+      const un=await this.db.collection('usernames').doc(code).get(); if(!un.exists||un.data().uid===this.uid()){ drop(); return; }
       const by=un.data().uid, db=this.db, b=db.batch();
       b.set(db.collection('referrals').doc(this.uid()),{by,byName:code,at:Date.now()});
       b.set(db.collection('rewards').doc(by),{referrals:firebase.firestore.FieldValue.increment(1)},{merge:true});
       b.set(db.collection('rewards').doc(this.uid()),{referred:true},{merge:true});
-      await b.commit(); localStorage.removeItem('coopo_ref'); S.rewards={...(S.rewards||{}),referred:true}; save(); toast(`Parrainage validé : le thème ${SKINS[REF_REWARD.one].label} est à toi !`); }
-    catch(e){ console.error(e); localStorage.removeItem('coopo_ref'); } },
+      await b.commit(); drop(); S.rewards={...(S.rewards||{}),referred:true}; save(); toast(`Parrainage validé : le thème ${SKINS[REF_REWARD.one].label} est à toi !`); }
+    catch(e){ console.error(e); drop(); } },
   async loadPurchases(){ if(!this.live||!this.uid()) return; try{ const d=await this.db.collection('purchases').doc(this.uid()).get(); const x=d.exists?d.data():{}; S.owned={pack:!!x.pack,themes:Array.isArray(x.themes)?x.themes:[]}; const r=await this.db.collection('rewards').doc(this.uid()).get(); S.rewards=r.exists?r.data():{}; save(); }catch(e){ console.error(e); } },
   async loadReports(){ if(!this.live) return; const db=this.db;
     try{ const rs=await db.collection('reports').orderBy('at','desc').limit(300).get();
@@ -4113,13 +4199,18 @@ const DB = {
     }catch(e){ console.error(e); toast('Signalements indisponibles'); } },
   async closeReports(target){ if(!this.live) return; try{ const b=this.db.batch(); S.reports.filter(r=>r.id===target&&r.rid&&r.status!=='done').forEach(r=>b.update(this.db.collection('reports').doc(r.rid),{status:'done'})); await b.commit(); }catch(e){ console.error(e); } },
   async sendContact(c){ if(!this.live) throw new Error('offline'); await this.db.collection('contact').add({message:c.message,email:c.email||'',uid:this.uid()||'',topic:this.uid()?'general':'connexion',at:Date.now()}); },
-  async deleteAccountData(){ if(!this.live||!this.uid()) return; const uid=this.uid(), db=this.db;
-    try{ const bl=await db.collection('blocks').doc(uid).collection('list').get(); const nt=await db.collection('notifications').doc(uid).collection('items').get();
+  // Efface les données du compte. Renvoie false si l'effacement a échoué (le compte n'est alors pas supprimé, pour ne pas laisser de profil orphelin).
+  async deleteAccountData(){ if(!this.live||!this.uid()) return true; const uid=this.uid(), db=this.db, F=firebase.firestore.FieldValue, quiet=p=>p.catch(e=>console.error(e));
+    try{ // d'abord ce qui peut manquer sans gravité : mes groupes, les groupes rejoints, mes annonces
+      await Promise.all([ ...(S.squads||[]).map(s=>quiet(db.collection('squads').doc(s.id).delete())),
+        ...(S.joined||[]).map(id=>quiet(db.collection('squads').doc(id).update({members:F.arrayRemove(uid)}))),
+        ...ANNONCES.filter(a=>a.by===uid).map(a=>quiet(db.collection('boards').doc(a.ageGroup).collection('annonces').doc(a.id).delete())) ]);
+      const bl=await db.collection('blocks').doc(uid).collection('list').get(); const nt=await db.collection('notifications').doc(uid).collection('items').get();
       const rq=await db.collection('requests').where('participants','array-contains',uid).get();
-      const b=db.batch(); bl.forEach(d=>b.delete(d.ref)); nt.forEach(d=>b.delete(d.ref)); rq.forEach(d=>b.delete(d.ref));
+      const b=db.batch(); bl.forEach(x=>b.delete(x.ref)); nt.forEach(x=>b.delete(x.ref)); rq.forEach(x=>b.delete(x.ref));
       if(S.me&&S.me.name) b.delete(db.collection('usernames').doc(S.me.name.toLowerCase()));
-      b.delete(db.collection('profiles').doc(uid)); b.delete(db.collection('private').doc(uid)); b.delete(db.collection('contacts').doc(uid)); await b.commit();
-    }catch(e){ console.error(e); } },
+      b.delete(db.collection('profiles').doc(uid)); b.delete(db.collection('private').doc(uid)); b.delete(db.collection('contacts').doc(uid)); await b.commit(); return true;
+    }catch(e){ console.error(e); return false; } },
   async adminHide(id,hidden){ if(!this.live) return; try{ await this.db.collection('profiles').doc(id).update({hidden}); }catch(e){ console.error(e); } },
   async adminBan(id,banned){ if(!this.live) return; try{ await this.db.collection('profiles').doc(id).update({banned,hidden:banned}); }catch(e){ console.error(e); } },
 };
@@ -4138,7 +4229,8 @@ if(AUTH_LIVE){
   S.reports=(S.reports||[]).filter(r=>!isDemo(r.id));
   S.joined=[]; save();
 }
-addEventListener('beforeunload',()=>{ try{ DB.setPresence(false); }catch(e){} });   // une seule fois
+addEventListener('pagehide',()=>{ try{ DB.setPresence(false); }catch(e){} });   // fermeture ou changement de page (plus fiable sur téléphone que beforeunload)
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden && DB.live && S.me && Date.now()-(DB._lastPres||0)>60000) DB.setPresence(true); });   // retour sur l'onglet
 // compte déjà connecté : on affiche tout de suite les joueurs et le statut de la dernière visite, puis on rafraîchit
 try{ const c=JSON.parse(localStorage.getItem('coopo_cache')||'null'); if(AUTH_LIVE && c && S.auth && c.uid===S.auth.uid){ if(Array.isArray(c.players)){ PLAYERS.length=0; c.players.forEach(p=>PLAYERS.push(p)); } if(c.admin && !ADMINS.includes(c.uid)) ADMINS.push(c.uid); } }catch(e){}
 applySkin(S.skinWanted||S.skin||'defaut');
