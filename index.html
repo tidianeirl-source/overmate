@@ -49,7 +49,7 @@
   padding-bottom:env(safe-area-inset-bottom,0px);
 }
 html{ background:var(--frame-bg); scroll-padding-top:calc(env(safe-area-inset-top,0px) + 90px); }
-*,*::before,*::after{ box-sizing:inherit; }
+*,*::before,*::after{ box-sizing:border-box; }   /* pas « inherit » : le contenu d'un bloc repliable (details) n'hérite pas et débordait */
 body{ margin:0; background:var(--frame-bg); color:var(--tx); font:500 15px/1.6 var(--fb); -webkit-font-smoothing:antialiased; }
 img{ max-width:100%; }
 a{ color:inherit; }
@@ -306,7 +306,7 @@ body.is-home .top{ display:none; }
 /* ---------- Formulaires ---------- */
 .form{ display:grid; grid-template-columns:minmax(0,1fr); gap:18px; }
 .panel{ background:var(--s1); border-radius:var(--rc); padding:24px; display:grid; grid-template-columns:minmax(0,1fr); gap:18px; }
-.field{ display:grid; gap:6px; }
+.field{ display:grid; grid-template-columns:minmax(0,1fr); gap:6px; }
 .field label,.lbl{ font-weight:700; font-size:14px; color:var(--tx); }
 .hint{ font-size:13px; color:var(--mu); }
 .two{ display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start; }
@@ -336,8 +336,7 @@ input:focus,select:focus,textarea:focus{ outline:none; border-color:var(--pk); b
 @media (max-width:860px){ .form-actions{ bottom:calc(64px + env(safe-area-inset-bottom,0px)); } }
 
 /* ---------- Recherche ---------- */
-.filters{ display:grid; grid-template-columns:repeat(6,1fr); gap:12px; background:var(--s1); border-radius:var(--rc); padding:18px; margin-bottom:20px; align-items:end; }
-.filters .field:first-child{ grid-column:span 2; }
+.filters{ display:grid; grid-template-columns:2fr 1.4fr auto; gap:12px; background:var(--s1); border-radius:var(--rc); padding:18px; margin-bottom:20px; align-items:end; }
 .range-row{ display:flex; align-items:center; gap:10px; }
 .range-row output{ font:400 16px var(--fd); color:var(--pk2,var(--pk)); min-width:52px; }
 input[type=range]{ width:100%; accent-color:var(--pk); }
@@ -378,8 +377,6 @@ dialog h3{ margin-bottom:10px; font:400 22px var(--fd); color:var(--pk); }
 
 /* ---------- Responsive ---------- */
 @media (max-width:980px){
-  .filters{ grid-template-columns:1fr 1fr; } .filters .field:first-child{ grid-column:1 / -1; }
-  
   .float-match{ top:auto; bottom:150px; right:20px; scale:.85; transform-origin:bottom right; }
 }
 @media (max-width:760px){
@@ -1247,6 +1244,7 @@ html[data-skin="lofi"] h2{ animation:none; }
 </style>
 <style id="coopo-rev">
 /* ==== Révision : lisibilité, téléphone, navigation ==== */
+[hidden]{ display:none !important; }   /* un élément masqué le reste, même si une autre règle lui donne un affichage (le bouton Installer restait visible dans l'appli installée) */
 /* Couleurs de score en version « texte » : la même teinte, rapprochée de la couleur du texte du thème (plus sombre sur fond clair, plus claire sur fond sombre) */
 :root{ --hi-tx:color-mix(in srgb,var(--hi) 55%,var(--tx)); --mid-tx:color-mix(in srgb,var(--mid) 45%,var(--tx)); --warm-tx:color-mix(in srgb,var(--warm) 45%,var(--tx)); --lo-tx:color-mix(in srgb,var(--lo) 70%,var(--tx)); --mu-tx:color-mix(in srgb,var(--mu) 60%,var(--tx)); }
 /* texte secondaire posé sur une surface teintée : un cran plus contrasté */
@@ -1265,6 +1263,7 @@ html[data-skin="lofi"] h2{ animation:none; }
   .chat-contacts .btn{ flex:none; }
   /* onglets de la Communauté : les trois tiennent sur l'écran */
   .board-tabs .chip{ flex:1 1 auto; justify-content:center; padding-left:10px; padding-right:10px; }
+  @media (max-width:340px){ .board-tabs .chip{ font-size:13px; padding-left:7px; padding-right:7px; } .board-tabs .cnt{ margin-left:4px; } }
   /* meilleur match : le pseudo n'est plus coupé au milieu */
   .top-match .ring-lg{ --s:76px; } .top-match .ring-lg::before{ inset:7px; } .top-match .ring-lg::after{ display:none; }
   .top-match .mc-head .av{ width:52px !important; height:52px !important; font-size:19px !important; }
@@ -1316,6 +1315,16 @@ html[data-skin="lofi"] h2{ animation:none; }
 .menu-list a::after{ content:'›'; color:var(--mu); font-size:20px; }
 .discord-link{ gap:8px; justify-self:start; }
 .contacts-fold > summary{ margin-top:0; }
+/* Recherche : l'essentiel d'abord, le reste sous « Plus de filtres » */
+.f-check{ display:flex; align-items:center; gap:8px; min-height:46px; font-weight:600; font-size:14px; color:var(--tx); white-space:nowrap; cursor:pointer; }
+.f-check input{ width:20px; height:20px; accent-color:var(--pk); flex:none; }
+.f-more{ grid-column:1 / -1; }
+.f-more > summary{ cursor:pointer; color:var(--pk2,var(--pk)); font-weight:700; font-size:14px; min-height:40px; display:inline-flex; align-items:center; }
+.f-more-body{ display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:12px; margin-top:8px; align-items:end; }
+.f-more-body .f-wide{ grid-column:1 / -1; max-width:420px; }
+.count .linklike{ margin-left:8px; font-weight:600; }
+@media (max-width:1000px){ .f-more-body{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@media (max-width:860px){ .filters{ grid-template-columns:minmax(0,1fr) minmax(0,1fr); } .filters > .field:first-child{ grid-column:1 / -1; } .f-more-body{ grid-template-columns:minmax(0,1fr) minmax(0,1fr); } .f-check{ white-space:normal; line-height:1.25; } }
 /* Changement de thème : fondu de toute la page */
 html.skin-vt::view-transition-old(root), html.skin-vt::view-transition-new(root){ animation-duration:.34s; animation-timing-function:cubic-bezier(.23,1,.32,1); }
 /* Barre d'aperçu d'un thème */
@@ -1923,7 +1932,7 @@ function viewMatches(){
   let r=ranked(); if(S.sort==='online') r=[...r].sort((a,b)=>(isOnline(b.p)-isOnline(a.p))||(b.c.pct-a.c.pct));
   app.innerHTML=`<div class="wrap page">
     <div class="page-head"><div><h2>Mes matchs</h2><p>${r.length?`${r.length} joueur${r.length>1?"s":""} classé${r.length>1?"s":""} du plus compatible au moins compatible.`:"Aucun joueur de ta tranche d'âge n'est encore inscrit."}</p></div>
-      <div class="chips"><button type="button" class="chip" data-sort="compat" aria-pressed="${S.sort!=='online'}">Compatibilité</button><button type="button" class="chip" data-sort="online" aria-pressed="${S.sort==='online'}">En ligne d'abord</button><a class="btn btn-ghost btn-sm" href="#/recherche">Filtrer</a></div></div>
+      <div class="chips"><button type="button" class="chip" data-sort="compat" aria-pressed="${S.sort!=='online'}">Compatibilité</button><button type="button" class="chip" data-sort="online" aria-pressed="${S.sort==='online'}">En ligne d'abord</button><a class="btn btn-ghost btn-sm" href="#/recherche"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">${ICONS.recherche}</svg>Rechercher</a></div></div>
     ${onlineNow.length?`<h3 style="margin-bottom:10px"><span class="online"></span> En ligne maintenant</h3><div class="online-strip">${onlineNow.slice(0,10).map(({p,c})=>`<a class="online-card" href="#/joueur/${p.id}">${avatar(p,56)}<b>${esc(p.name)}${modBadge(p)}</b><span style="color:${tierTx(c.pct)}">${c.pct} %</span></a>`).join('')}</div>`:''}
     ${mates.length?`<h3 style="margin-bottom:10px">Mes mates</h3><div class="mates-strip">${mates.map(p=>`<a class="mate-pill" href="#/joueur/${p.id}">${avatar(p,28)}${esc(p.name)}${modBadge(p)}</a>`).join('')}</div>`:''}
     ${r.length?'':`<div class="empty"><h3>Coopô vient d'ouvrir</h3><p class="muted">Les premiers joueurs arrivent. Partage le site à tes amis : dès qu'un joueur compatible s'inscrit, il apparaît ici.</p><button class="btn btn-ac" type="button" id="ref-share">Inviter mes amis</button></div>`}
@@ -1938,40 +1947,58 @@ function viewMatches(){
 }
 
 /* ----- Recherche ----- */
-const F={q:'',game:'',platform:'',hour:'',style:'',min:0,shown:24};   // shown : nombre de cartes affichées (pagination)
+const F={q:'',game:'',level:'',platform:'',hour:'',style:'',lang:'',country:'',online:false,min:0,shown:24};   // shown : nombre de cartes affichées (pagination)
+const F_MORE=['level','platform','hour','style','lang','country'];   // filtres rangés sous « Plus de filtres »
+const filtersOn = () => ['q','game',...F_MORE].filter(k=>F[k]).length + (F.online?1:0) + (F.min>0?1:0);
+function resetFilters(){ Object.assign(F,{q:'',game:'',level:'',platform:'',hour:'',style:'',lang:'',country:'',online:false,min:0,shown:24}); }
 function viewSearch(){
   const opt=(arr,sel)=>arr.map(([v,l])=>`<option value="${esc(v)}" ${sel===v?'selected':''}>${esc(l)}</option>`).join('');
+  const sel=(id,k,label,all,arr)=>`<div class="field"><label for="${id}">${label}</label><select id="${id}" data-f="${k}"><option value="">${all}</option>${opt(arr,F[k])}</select></div>`;
+  const games=[...new Set([...GAMES,...visible().flatMap(p=>p.games),...(F.game?[F.game]:[])])];   // la liste + les jeux ajoutés par les joueurs
+  const nMore=F_MORE.filter(k=>F[k]).length;
   app.innerHTML=`<div class="wrap page">
-    <div class="page-head"><div><h2>Recherche</h2><p>Filtre les joueurs selon tes critères.</p></div></div>
+    <div class="page-head"><div><h2>Recherche</h2><p>Trouve un joueur par son pseudo ou selon tes critères.</p></div><a class="btn btn-sm" href="#/matchs">Mes matchs</a></div>
     <div class="filters" id="filters">
-      <div class="field"><label for="s-q">Nom d'utilisateur</label><input id="s-q" type="search" data-f="q" value="${esc(F.q)}" placeholder="Rechercher un joueur"></div>
-      <div class="field"><label for="s-g">Jeu</label><select id="s-g" data-f="game"><option value="">Tous</option>${opt(GAMES.map(g=>[g,g]),F.game)}</select></div>
-      <div class="field"><label for="s-p">Plateforme</label><select id="s-p" data-f="platform"><option value="">Toutes</option>${opt(PLATFORMS,F.platform)}</select></div>
-      <div class="field"><label for="s-h">Horaire</label><select id="s-h" data-f="hour"><option value="">Tous</option>${opt(HOURS,F.hour)}</select></div>
-      <div class="field"><label for="s-s">Style</label><select id="s-s" data-f="style"><option value="">Tous</option>${opt(STYLES.slice(0,2),F.style)}</select></div>
-      ${S.me?`<div class="field" style="grid-column:1 / -1"><label for="s-m">Compatibilité minimum</label><div class="range-row"><input id="s-m" type="range" min="0" max="100" step="5" data-f="min" value="${F.min}"><output id="s-mo">${F.min} %</output></div></div>`:''}
+      <div class="field"><label for="s-q">Pseudo</label><input id="s-q" type="search" data-f="q" value="${esc(F.q)}" placeholder="Rechercher un joueur" autocomplete="off"></div>
+      ${sel('s-g','game','Jeu','Tous',games.map(g=>[g,g]))}
+      <label class="f-check"><input type="checkbox" id="s-on" data-f="online" ${F.online?'checked':''}> En ligne ou dispo</label>
+      <details class="f-more"${nMore||innerWidth>860?' open':''}><summary>Plus de filtres${nMore?` (${nMore})`:''}</summary><div class="f-more-body">
+        ${sel('s-l','level','Niveau','Tous',RANKS)}
+        ${sel('s-p','platform','Plateforme','Toutes',PLATFORMS)}
+        ${sel('s-h','hour','Horaire','Tous',HOURS)}
+        ${sel('s-s','style','Style','Tous',STYLES.slice(0,2))}
+        ${sel('s-la','lang','Langue','Toutes',LANGS)}
+        ${sel('s-c','country','Pays','Tous',COUNTRIES)}
+        ${S.me?`<div class="field f-wide"><label for="s-m">Compatibilité minimum</label><div class="range-row"><input id="s-m" type="range" min="0" max="100" step="5" data-f="min" value="${F.min}"><output id="s-mo">${F.min} %</output></div></div>`:''}
+      </div></details>
     </div>
-    <p class="count" id="count" aria-live="polite"></p><div class="grid" id="results"></div></div>`;
+    <p class="count" aria-live="polite"><span id="count"></span> <button type="button" class="linklike" id="s-reset" hidden>Effacer les filtres</button></p><div class="grid" id="results"></div></div>`;
   let tq; // debounce : on attend que le joueur arrête de taper (250 ms) avant de relancer la recherche
   document.getElementById('filters').addEventListener('input',e=>{ const k=e.target.dataset.f; if(!k) return;
-    F[k]= k==='min' ? +e.target.value : e.target.value; if(k==='min') document.getElementById('s-mo').textContent=F.min+' %';
+    F[k]= k==='min' ? +e.target.value : k==='online' ? e.target.checked : e.target.value; if(k==='min') document.getElementById('s-mo').textContent=F.min+' %';
     clearTimeout(tq); if(k==='q'||k==='min') tq=setTimeout(()=>{ F.shown=24; renderResults(); },250); else { F.shown=24; renderResults(); } });
+  document.getElementById('s-reset').onclick=()=>{ resetFilters(); viewSearch(); };
   renderResults();
 }
 function renderResults(){
+  const lvl=(p,g)=>{ const l=rankLevel(g,(p.ranks||{})[g]); return l==null?null:Math.round(l); };   // rang du jeu ramené sur 5 niveaux
   let rows = S.me ? ranked() : visible().map(p=>({p,c:null}));
   rows = rows.filter(({p,c})=>(!F.q||p.name.toLowerCase().includes(F.q.toLowerCase())) && (!F.game||p.games.includes(F.game))
+    && (!F.level||(F.game?lvl(p,F.game)===+F.level:p.games.some(g=>lvl(p,g)===+F.level)))
     && (!F.platform||p.platforms.includes(F.platform)) && (!F.hour||p.hours.includes(F.hour))
-    && (!F.style||p.style===F.style||p.style==='both') && (!c||c.pct>=F.min));
+    && (!F.style||p.style===F.style||p.style==='both')
+    && (!F.lang||(p.langs&&p.langs.length?p.langs:['fr']).includes(F.lang)) && (!F.country||p.country===F.country)
+    && (!F.online||isOnline(p)||dispoActive(p)) && (!c||c.pct>=F.min));
   document.getElementById('count').textContent = `${rows.length} joueur${rows.length>1?'s':''} trouvé${rows.length>1?'s':''}`;
+  document.getElementById('s-reset').hidden = !filtersOn();
   // Pagination : on n'affiche que les 24 premiers joueurs, puis 24 de plus à chaque clic
   document.getElementById('results').innerHTML = rows.length ? rows.slice(0,F.shown).map((m,i)=>matchCard(m,false,Math.min(i,10))).join('')
       + (rows.length>F.shown?`<div style="grid-column:1/-1;text-align:center;margin-top:8px"><button class="btn" type="button" id="more-results">Voir plus de joueurs (${rows.length-F.shown})</button></div>`:'')
-    : `<div class="empty" style="grid-column:1/-1"><h3>Aucun joueur ne correspond</h3><p class="muted">Retire un filtre ou baisse la compatibilité minimum.</p></div>`;
+    : `<div class="empty" style="grid-column:1/-1"><h3>Aucun mate trouvé</h3><p class="muted">${filtersOn()?'Essaie d\'élargir tes filtres : retires-en un, ou baisse la compatibilité minimum.':'Aucun joueur de ta tranche d\'âge n\'est encore inscrit. Invite tes amis !'}</p>${filtersOn()?'<button class="btn btn-ac" type="button" id="s-reset2">Effacer les filtres</button>':'<button class="btn btn-ac" type="button" data-ref-share>Inviter mes amis</button>'}</div>`;
   const more=document.getElementById('more-results'); if(more) more.onclick=()=>{ F.shown+=24; renderResults(); };
+  const r2=document.getElementById('s-reset2'); if(r2) r2.onclick=()=>{ resetFilters(); viewSearch(); };
   animateAfterRender(document.getElementById('results'));
 }
-
 /* ----- Profil public d'un joueur ----- */
 function viewPlayer(id){
   const self = id==='me';
