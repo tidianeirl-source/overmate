@@ -31,7 +31,7 @@
   --frame:#E9779E;            /* fond rose autour du cadre */
   --bg:#FFFFFF;               /* intérieur du cadre */
   --s1:#FFF4F8; --s2:#FCE3ED; --line:#F5C6D7;
-  --tx:#4A2238; --mu:#97637C;
+  --tx:#4A2238; --mu:#8A5670;
   --pk:#D4307B;               /* rose principal (titres, boutons) */
   --pk2:#B8346F;              /* rose texte lisible */
   --ac:#D9478A; --ac-ink:#FFFFFF;
@@ -201,7 +201,7 @@ body.is-home .top{ display:none; }
   .tabbar{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); position:fixed; left:0; right:0; bottom:0; z-index:30;
     background:var(--bg); border-top:1.5px solid var(--line); padding-bottom:env(safe-area-inset-bottom,0px); border-radius:22px 22px 0 0; }
   .tabbar a{ display:flex; flex-direction:column; align-items:center; gap:2px; padding:8px 0 9px; text-decoration:none; color:var(--mu); font-size:11px; font-weight:700; text-transform:var(--case); letter-spacing:0; position:relative; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
-  .tabbar a[aria-current="page"]{ color:var(--pk); }
+  .tabbar a[aria-current="page"]{ color:var(--pk2,var(--pk)); }
   .tabbar svg{ width:21px; height:21px; flex:none; }
   .frame{ padding-bottom:86px; }
 }
@@ -347,7 +347,7 @@ input:focus,select:focus,textarea:focus{ outline:none; border-color:var(--pk); b
 .filters{ display:grid; grid-template-columns:repeat(6,1fr); gap:12px; background:var(--s1); border-radius:var(--rc); padding:18px; margin-bottom:20px; align-items:end; }
 .filters .field:first-child{ grid-column:span 2; }
 .range-row{ display:flex; align-items:center; gap:10px; }
-.range-row output{ font:400 16px var(--fd); color:var(--pk); min-width:52px; }
+.range-row output{ font:400 16px var(--fd); color:var(--pk2,var(--pk)); min-width:52px; }
 input[type=range]{ width:100%; accent-color:var(--pk); }
 .count{ color:var(--pk2); margin-bottom:14px; font-size:14px; font-weight:600; }
 
@@ -409,7 +409,7 @@ dialog h3{ margin-bottom:10px; font:400 22px var(--fd); color:var(--pk); }
    THÈMES — chaque thème redéfinit les variables
    ========================================================= */
 html.skin-anim, html.skin-anim body, html.skin-anim *, html.skin-anim *::before, html.skin-anim *::after{
-  transition:background-color .5s ease, color .5s ease, border-color .5s ease, box-shadow .5s ease, fill .5s ease !important; }
+  transition:background-color .3s ease, color .3s ease, border-color .3s ease, box-shadow .3s ease, fill .3s ease !important; }
 
 /* --- Manga --- */
 html[data-skin="manga"]{
@@ -595,7 +595,7 @@ html[data-skin="samurai"] h1, html[data-skin="samurai"] h2{ letter-spacing:.03em
 html[data-skin="samurai"] .hero-title strong .w,
 html[data-skin="samurai"] .pp-head h1{
   color:transparent; -webkit-text-stroke:0;
-  background:linear-gradient(#C41E3A 45%,rgba(196,30,58,0) 95%),radial-gradient(circle,#C41E3A 1.3px,transparent 1.7px) 0 0/4px 4px;
+  background:linear-gradient(#C41E3A 72%,rgba(196,30,58,.35) 100%),radial-gradient(circle,#C41E3A 1.3px,transparent 1.7px) 0 0/4px 4px;
   -webkit-background-clip:text; background-clip:text; }
 html[data-skin="samurai"] .hero-title small{ color:var(--tx); font-weight:600; text-transform:uppercase; letter-spacing:.12em; font-size:clamp(13px,1.4vw,17px); }
 html[data-skin="samurai"] .hero-title strong{ letter-spacing:.01em; }
@@ -1045,7 +1045,7 @@ html[data-skin="manga"] :is(.page-head h2,.home-grid h2,.bl h2){ animation:manga
 @keyframes mangaPop{ from{ transform:scale(.6) rotate(-6deg); opacity:0; } }
 html[data-skin="lofi"] h2{ animation:lofiGlow 4s ease-in-out infinite; }
 @keyframes lofiGlow{ 50%{ text-shadow:0 0 20px rgba(255,179,124,.6); } }
-html[data-skin="esth"] h2{ background:linear-gradient(90deg,#8A6CF0,#FF8FC4,#5FCFAE,#8A6CF0) 0 0/300% 100%; -webkit-background-clip:text; background-clip:text; color:transparent; animation:shimmer 6s linear infinite; }
+html[data-skin="esth"] h2{ background:linear-gradient(90deg,#6F4FE0,#D94F96,#2E9E80,#6F4FE0) 0 0/300% 100%; -webkit-background-clip:text; background-clip:text; color:transparent; animation:shimmer 6s linear infinite; }
 @keyframes shimmer{ to{ background-position:300% 0; } }
 html[data-skin="sombre-v1"] h2{ text-shadow:0 0 14px rgba(255,77,141,.65); animation:neon 5s steps(1) infinite; }
 @keyframes neon{ 0%,18%,22%,60%,63%,100%{ opacity:1; } 20%,61.5%{ opacity:.4; } }
@@ -1351,7 +1351,7 @@ html:is([data-skin="defaut"],[data-skin="sombre"]) .showcase{ margin-top:-14px !
 html[data-skin="lofi"]{
   --frame:#1F86C2; --frame-bg:#1F86C2;
   --bg:#FBF7EA; --s1:#FFFFFF; --s2:#EEF6FB; --line:#D6E6F0; --tx:#17324A; --mu:#56708A;
-  --pk:#1E7FC0; --pk2:#155E92; --on-pk:#FFFFFF; --field:#FFFFFF; --glass:rgba(255,255,255,.9); --glass-solid:#FFFFFF;
+  --pk:#1B74B0; --pk2:#155E92; --on-pk:#FFFFFF; --field:#FFFFFF; --glass:rgba(255,255,255,.9); --glass-solid:#FFFFFF;
   --hi:#3E9B2E; --mid:#F2B829; --warm:#E8862A; --lo:#E2574C;
   --fd:'Zen Maru Gothic',sans-serif; --fdw:700; --fb:'Nunito','Segoe UI',sans-serif; --case:none;
   --art-bg:#1F86C2; --art-tint:none;
@@ -1373,7 +1373,10 @@ html[data-skin="lofi"] h2{ animation:none; }
 <style id="coopo-rev">
 /* ==== Révision : lisibilité, téléphone, navigation ==== */
 /* Couleurs de score en version « texte » : la même teinte, rapprochée de la couleur du texte du thème (plus sombre sur fond clair, plus claire sur fond sombre) */
-:root{ --hi-tx:color-mix(in srgb,var(--hi) 55%,var(--tx)); --mid-tx:color-mix(in srgb,var(--mid) 55%,var(--tx)); --warm-tx:color-mix(in srgb,var(--warm) 55%,var(--tx)); --lo-tx:color-mix(in srgb,var(--lo) 70%,var(--tx)); }
+:root{ --hi-tx:color-mix(in srgb,var(--hi) 55%,var(--tx)); --mid-tx:color-mix(in srgb,var(--mid) 45%,var(--tx)); --warm-tx:color-mix(in srgb,var(--warm) 45%,var(--tx)); --lo-tx:color-mix(in srgb,var(--lo) 70%,var(--tx)); --mu-tx:color-mix(in srgb,var(--mu) 60%,var(--tx)); }
+/* texte secondaire posé sur une surface teintée : un cran plus contrasté */
+.to-banner .muted, .top-match .facts dt{ color:var(--mu-tx); }
+.to-banner .sq-game{ background:var(--s1); }
 /* Pastille de messages non lus sur l'onglet Messages */
 .navpill a{ position:relative; }
 .tb-badge{ display:inline-grid; place-items:center; min-width:18px; height:18px; padding:0 5px; border-radius:999px; background:var(--lo); color:#fff; font:700 11px/1 var(--fb); margin-left:6px; vertical-align:2px; }
@@ -1438,6 +1441,14 @@ html[data-skin="lofi"] h2{ animation:none; }
 .menu-list a::after{ content:'›'; color:var(--mu); font-size:20px; }
 .discord-link{ gap:8px; justify-self:start; }
 .contacts-fold > summary{ margin-top:0; }
+/* Changement de thème : fondu de toute la page */
+html.skin-vt::view-transition-old(root), html.skin-vt::view-transition-new(root){ animation-duration:.34s; animation-timing-function:cubic-bezier(.23,1,.32,1); }
+/* Barre d'aperçu d'un thème */
+#pv-bar{ position:fixed; z-index:60; left:50%; top:calc(env(safe-area-inset-top,0px) + 10px); transform:translateX(-50%); width:max-content; max-width:calc(100vw - 20px); display:flex; align-items:center; gap:8px; padding:8px 8px 8px 16px; border-radius:999px; background:var(--tx); color:var(--bg); box-shadow:0 14px 34px -14px rgba(0,0,0,.55); font-size:14px; }
+#pv-bar[hidden]{ display:none; }
+#pv-bar span{ display:grid; line-height:1.2; min-width:0; } #pv-bar b{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } #pv-bar small{ opacity:.75; font-size:12px; font-variant-numeric:tabular-nums; }
+#pv-bar .btn{ min-height:36px; flex:none; animation:none; }
+#pv-bar .btn:not(.btn-ac){ background:transparent; color:var(--bg); box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--bg) 45%,transparent); }
 /* Mode léger : plus d'animations décoratives */
 html.lite #fx, html.lite .orbs, html.lite #wipe, html.lite .fxp{ display:none !important; }
 html.lite *, html.lite *::before, html.lite *::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; animation-delay:0s !important; }
@@ -2817,12 +2828,18 @@ function canUseSkin(id){
   return ownsAll() || !!(S.owned&&(S.owned.themes||[]).includes(id));
 }
 const LOCK_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
-let _preview=null;
+// Aperçu d'un thème payant avant achat : 20 secondes, avec une barre pour le débloquer ou quitter
+let _preview=null, _prevTick=null;
 function previewSkin(id){
-  const back=S.skinWanted||S.skin||'defaut'; clearTimeout(_preview);
-  applySkin(id,true,{preview:true}); route(); toast(`Aperçu du thème ${SKINS[id].label} pendant 20 secondes`);
-  _preview=setTimeout(()=>{ _preview=null; applySkin(back,true); route(); toast('Fin de l\'aperçu'); },20000);
+  const back=_preview?_preview.back:(S.skinWanted||S.skin||'defaut'); endPreview(true);
+  _preview={back,id}; applySkin(id,true,{preview:true,then:()=>route()});
+  let bar=document.getElementById('pv-bar'); if(!bar){ bar=document.createElement('div'); bar.id='pv-bar'; bar.setAttribute('role','status'); document.body.appendChild(bar); }
+  let left=20; bar.innerHTML=`<span><b>${esc(SKINS[id].label)}</b><small>aperçu · ${left} s</small></span><button class="btn btn-sm btn-ac" type="button" data-pv-buy="${id}">Débloquer</button><button class="btn btn-sm" type="button" data-pv-end>Quitter</button>`; bar.hidden=false;
+  _prevTick=setInterval(()=>{ left--; if(left<=0){ endPreview(); toast('Fin de l\'aperçu'); } else { const s=bar.querySelector('small'); if(s) s.textContent=`aperçu · ${left} s`; } },1000);
 }
+function endPreview(silent){ if(!_preview) return; const back=_preview.back; _preview=null; clearInterval(_prevTick); const bar=document.getElementById('pv-bar'); if(bar) bar.hidden=true;
+  if(!silent) applySkin(back,true,{then:()=>route()}); }
+document.addEventListener('click',e=>{ const b=e.target.closest('[data-pv-buy]'); if(b){ buyModal(b.dataset.pvBuy); return; } if(e.target.closest('[data-pv-end]')) endPreview(); });
 function buyModal(id){
   const t=SKINS[id], live=DB.live&&DB.fns, signed=!!S.auth, hasProfile=!!(S.me&&S.me.dob), minor=hasProfile&&ageGroup(S.me)==='minor';
   let cur=curCode();
@@ -2845,6 +2862,7 @@ function buyModal(id){
     ${body}
     <div class="dlg-actions"><button class="btn btn-ghost" type="button" id="buy-try">Essayer 20 secondes</button><button class="btn" data-close>Fermer</button></div>`, d=>{
     d.querySelector('#buy-try').onclick=()=>{ d.close(); previewSkin(id); };
+    if(_preview&&_preview.id===id) d.querySelector('#buy-try').hidden=true;   // déjà en aperçu
     const opts=SHOP.payments?d.querySelector('#buy-opts'):null;
     const draw=()=>{ if(!opts) return; const e=eco(cur);
       opts.innerHTML=`<button type="button" class="buy-opt" data-buy="theme:${id}"><b>Ce thème${t.premium?' <em class="prem">Premium</em>':''}</b><span>${esc(t.label)}</span><strong>${money(skinPrice(id,cur),cur)}</strong></button>
@@ -3059,16 +3077,21 @@ const _fontsLoaded=new Set();
 function loadSkinFonts(id){ const list=(SKIN_FONTS[id]||[]).filter(f=>FONT_SPECS[f]&&!_fontsLoaded.has(f)); if(!list.length) return;
   list.forEach(f=>_fontsLoaded.add(f)); const l=document.createElement('link'); l.rel='stylesheet';
   l.href='https://fonts.googleapis.com/css2?'+list.map(f=>'family='+FONT_SPECS[f]).join('&')+'&display=swap'; document.head.appendChild(l); }
-function applySkin(id, anim, opts={}){ setTimeout(updateFavicon,0);
+// Changement de thème en fondu : View Transitions quand le navigateur les gère (un seul fondu de toute la page, léger), sinon une courte transition des couleurs
+function withSkinFade(fn){ const r=document.documentElement;
+  if(reduced()) return fn();
+  if(document.startViewTransition){ try{ r.classList.add('skin-vt'); const vt=document.startViewTransition(()=>{ fn(); }); vt.finished.catch(()=>{}).then(()=>r.classList.remove('skin-vt')); return; }catch(e){ r.classList.remove('skin-vt'); } }
+  r.classList.add('skin-anim'); setTimeout(()=>r.classList.remove('skin-anim'),380); fn(); }
+// opts.preview : aperçu (le choix du joueur n'est pas modifié) · opts.then : à faire une fois le thème en place (réafficher la page…)
+function applySkin(id, anim, opts={}){
   if(!SKINS[id]) id='defaut';
-  if(!opts.preview){ S.skinWanted=id; if(_preview){ clearTimeout(_preview); _preview=null; } }
+  if(!opts.preview){ S.skinWanted=id; if(_preview) endPreview(true); }
   if(!opts.preview && !canUseSkin(id)) id='defaut';
   loadSkinFonts(id);
   const r=document.documentElement;
-  if(anim && !matchMedia('(prefers-reduced-motion: reduce)').matches){ r.classList.add('skin-anim'); setTimeout(()=>r.classList.remove('skin-anim'),650); }
-  r.dataset.skin=id; S.skin=id; if(!opts.preview) S.skinOk=id; save();
-  setTimeout(()=>{ const m=document.querySelector('meta[name="theme-color"]'); if(m) m.content=getComputedStyle(r).getPropertyValue('--bg').trim()||'#0D0F1E'; },0);
-  buildFx();
+  const core=()=>{ r.dataset.skin=id; S.skin=id; if(!opts.preview) S.skinOk=id; save(); buildFx(); if(opts.then) opts.then();
+    const m=document.querySelector('meta[name="theme-color"]'); if(m) m.content=getComputedStyle(r).getPropertyValue('--bg').trim()||'#0D0F1E'; updateFavicon(); };
+  if(anim && id!==r.dataset.skin) withSkinFade(core); else core();
 }
 function skinPicker(){
   modal(`<h3>Choisis ton thème</h3><p class="muted">Le site change instantanément. Tu peux revenir ici quand tu veux.</p>${skinGrid()}<div class="dlg-actions"><button class="btn" data-close>Fermer</button></div>`);
@@ -3079,10 +3102,10 @@ document.addEventListener('click',e=>{
   const b=e.target.closest('[data-skin-pick]'); if(!b) return;
   const id=b.dataset.skinPick;
   if(!canUseSkin(id)){ buyModal(id); return; }
-  if(id===S.skin && S.skinWanted===id) return;
-  applySkin(id,true); DB.saveSkin(id);
+  if(id===S.skin && S.skinWanted===id && !_preview) return;
+  const inApp=!!b.closest('#app'), y=window.scrollY;
+  applySkin(id,true,{then:()=>{ if(!inApp){ route(); window.scrollTo(0,y); } }}); DB.saveSkin(id);
   document.querySelectorAll('[data-skin-pick]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.skinPick===id));
-  const y=window.scrollY; if(!b.closest('#app')) { route(); window.scrollTo(0,y); }
   toast(`Thème ${SKINS[id].label} activé`);
 });
 
