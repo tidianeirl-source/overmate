@@ -1970,8 +1970,6 @@ function viewMatches(){
     ${r.length>shown?'<div style="text-align:center;margin-top:24px"><button class="btn" id="more">Voir plus de joueurs</button></div>':''}
   </div>`;
   document.getElementById('more')?.addEventListener('click',()=>{ shown+=9; viewMatches(); animateAfterRender(); });
-  document.getElementById('share-site')?.addEventListener('click',async()=>{ const url=location.origin+location.pathname, data={title:'Coopô',text:'Viens trouver ton mate de jeu sur Coopô',url};
-    try{ if(navigator.share) await navigator.share(data); else { await navigator.clipboard.writeText(url); toast('Lien copié'); } }catch(e){} });
   app.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{ S.sort=b.dataset.sort; save(); viewMatches(); animateAfterRender(); });
   onboarding();
 }
@@ -2624,8 +2622,8 @@ const SKINS = {
 // enabled  : true -> les thèmes payants sont verrouillés (false -> tout est gratuit)
 // payments : false -> le bouton d'achat affiche « Bientôt disponible ». Passe à true une fois CinetPay et les fonctions prêts.
 // api : laisse vide pour Firebase (formule Blaze) ; ou l'adresse d'un serveur Vercel, par exemple 'https://coopo-paiement.vercel.app/api'
-const SHOP = { enabled:true, payments:(()=>{try{if(/[?&]testpay=1/.test(location.search))localStorage.setItem('coopo_testpay','1');return localStorage.getItem('coopo_testpay')==='1';}catch(e){return false;}})(), api:'https://coopo-paiement.vercel.app/api', region:'europe-west1', currencies:['XOF'] };   // currencies : devises encaissables (même liste que dans api/_lib.js)
-// Prix par devise : à garder identiques à PRICES dans functions/index.js
+const SHOP = { enabled:true, payments:(()=>{try{if(/[?&]testpay=1/.test(location.search))localStorage.setItem('coopo_testpay','1');return localStorage.getItem('coopo_testpay')==='1';}catch(e){return false;}})(), api:'https://coopo-paiement.vercel.app/api', region:'europe-west1', currencies:['XOF'] };   // currencies : devises encaissables (même liste que DEVISES dans lib/catalogue.js du dépôt coopo-paiement)
+// Prix par devise : à garder identiques à PRIX dans lib/catalogue.js (dépôt coopo-paiement)
 const CURRENCIES = {
   XOF:{ label:'F CFA (BCEAO)', unit:'F CFA', theme:1500,  premium:3000,  pack:7500,  countries:['CI','SN','ML','BF','BJ','TG','NE'] },
   XAF:{ label:'F CFA (BEAC)',  unit:'F CFA', theme:1500,  premium:3000,  pack:7500,  countries:['CM','GA','CG'] },
@@ -2783,7 +2781,12 @@ document.addEventListener('click',e=>{ const g=e.target.closest('[data-pulse-gam
 const REF_REWARD={ one:'soft', all:3 };   // 1 filleul : thème Soft pour les deux · 3 filleuls : tous les thèmes
 const refLink = () => S.me ? `${location.origin}${location.pathname}?ref=${encodeURIComponent(S.me.name.toLowerCase())}` : '';
 async function shareRef(){ const url=refLink(); const data={title:'Coopô',text:`Rejoins-moi sur Coopô pour trouver des mates de jeu : avec mon lien, on gagne tous les deux un thème.`,url};
-  try{ if(navigator.share) await navigator.share(data); else { await navigator.clipboard.writeText(url); toast('Lien de parrainage copié'); } }catch(e){} }
+  shareOrCopy(data,'Lien de parrainage copié'); }
+// Partage du téléphone si disponible, sinon copie ; en dernier recours, une fenêtre montre le lien à copier
+async function shareOrCopy(data,okMsg){
+  if(navigator.share){ try{ await navigator.share(data); return; }catch(e){ if(e&&e.name==='AbortError') return; } }   // partage annulé par le joueur : on n'insiste pas
+  try{ await navigator.clipboard.writeText(data.url); toast(okMsg); }
+  catch(e){ modal(`<h3>Ton lien</h3><p class="muted">Appuie longuement sur le lien pour le copier.</p><input type="text" readonly value="${esc(data.url)}" onfocus="this.select()"><div class="dlg-actions"><button class="btn" data-close>Fermer</button></div>`); } }
 function refSection(){
   if(!S.me) return '';
   const rw=S.rewards||{}, n=rw.referrals||0;
@@ -3634,9 +3637,7 @@ function rate(id,v){ if(S.ratings[id]===v) return; S.ratings[id]=v; save(); DB.r
 function shareLink(name){ return location.href.split('#')[0]+'#/@'+encodeURIComponent(name); }
 async function shareProfile(){
   const url=shareLink(S.me.name);
-  if(navigator.share){ try{ await navigator.share({title:'Mon profil Coopô',text:`Deviens mon mate sur Coopô : ${S.me.name}`,url}); return; }catch(e){} }
-  try{ await navigator.clipboard.writeText(url); toast('Lien de ton profil copié'); }
-  catch(e){ modal(`<h3>Ton lien</h3><input type="text" readonly value="${esc(url)}" onfocus="this.select()"><div class="dlg-actions"><button class="btn" data-close>Fermer</button></div>`); }
+  shareOrCopy({title:'Mon profil Coopô',text:`Deviens mon mate sur Coopô : ${S.me.name}`,url},'Lien de ton profil copié');
 }
 
 /* ---- Aide, CGU, confidentialité ---- */
