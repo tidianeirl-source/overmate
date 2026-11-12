@@ -1527,7 +1527,7 @@ function chips(group,options,selected,single=false){
     `<button type="button" class="chip" data-chip="${group}" data-val="${esc(v)}" ${single?'data-single="1"':''} aria-pressed="${[].concat(selected).includes(v)}">${esc(l)}</button>`).join('')}</div>`;
 }
 const toastEl=document.getElementById('toast'); let tt;
-function toast(msg){ toastEl.textContent=msg; toastEl.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>toastEl.classList.remove('show'),2400); }
+function toast(msg,ms=2400){ toastEl.textContent=msg; toastEl.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>toastEl.classList.remove('show'),ms); }
 const dlg=document.getElementById('dlg');
 function modal(html, onOpen){ dlg.innerHTML=html; dlg.showModal(); onOpen&&onOpen(dlg); }
 dlg.addEventListener('click',e=>{ if(e.target===dlg || e.target.closest('[data-close]')) dlg.close(); });
@@ -1907,10 +1907,12 @@ function publicMe(){ return {...S.me, online:S.privacy.online, lastSeen:Date.now
 /* ----- Mes matchs ----- */
 let _lastRefresh=0;
 function refreshAfterData(){
-  if(Date.now()-_lastRefresh<800) return; _lastRefresh=Date.now();
+  // Un écran de chargement (squelette) est affiché : on le remplace toujours par la vraie page, quelle que soit la page
+  const waiting=!!document.querySelector('#app [aria-busy="true"]');
+  if(!waiting && Date.now()-_lastRefresh<800) return; _lastRefresh=Date.now();
   const a=document.activeElement, typing=a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&a.value;
   const h=location.hash||'#/accueil';
-  if(!typing && (/^#\/(accueil|matchs|groupes|messages|moderation|joueur|recherche|parametres)?(\/|$)/.test(h) || (h.startsWith('#/profil') && document.querySelector('.loading-box')))) { const y=scrollY; route(); scrollTo(0,y); }
+  if(waiting || (!typing && /^#\/(accueil|matchs|groupes|messages|moderation|joueur|recherche|parametres)?(\/|$)/.test(h))) { const y=scrollY; route(); scrollTo(0,y); }
 }
 // Profil venu de Firestore : on complète les champs manquants pour qu'aucune page ne plante
 function normP(p){ p=p||{}; ['games','hours','days','platforms','langs'].forEach(k=>{ if(!Array.isArray(p[k])) p[k]=[]; }); ['tags','ranks','roles'].forEach(k=>{ if(!p[k]||typeof p[k]!=='object') p[k]={}; });
@@ -1927,6 +1929,7 @@ let shown=9;
 function viewMatches(){
   if(dataPending()) return loadingView('Mes matchs');
   if(!S.me) return needProfile('Mes matchs');
+  if(DB.live&&DB._loaded) DB.refreshPlayers().then(ch=>{ if(ch&&location.hash==='#/matchs') refreshAfterData(); }).catch(()=>{});
   if(!S.me.dob){ app.innerHTML=`<div class="wrap page"><div class="page-head"><h2>Mes matchs</h2></div><div class="empty"><h3>Ajoute ta date de naissance</h3><p class="muted">Elle sert à te proposer des joueurs de ta tranche d'âge. Elle n'est jamais affichée.</p><a class="btn btn-ac" href="#/profil">Compléter mon profil</a></div></div>`; return; }
   const vis=visible(), mates=matesList(), onlineNow=ranked().filter(({p})=>isOnline(p));
   let r=ranked(); if(S.sort==='online') r=[...r].sort((a,b)=>(isOnline(b.p)-isOnline(a.p))||(b.c.pct-a.c.pct));
@@ -1979,6 +1982,7 @@ function viewSearch(){
     clearTimeout(tq); if(k==='q'||k==='min') tq=setTimeout(()=>{ F.shown=24; renderResults(); },250); else { F.shown=24; renderResults(); } });
   document.getElementById('s-reset').onclick=()=>{ resetFilters(); viewSearch(); };
   renderResults();
+  if(DB.live&&S.me&&DB._loaded) DB.refreshPlayers().then(ch=>{ if(ch&&location.hash==='#/recherche'&&document.getElementById('results')) renderResults(); }).catch(()=>{});
 }
 function renderResults(){
   const lvl=(p,g)=>{ const l=rankLevel(g,(p.ranks||{})[g]); return l==null?null:Math.round(l); };   // rang du jeu ramené sur 5 niveaux
@@ -2153,7 +2157,7 @@ function viewSettings(){
   document.getElementById('wreset')?.addEventListener('click',()=>{ S.weights=null; save(); toast('Valeurs par défaut rétablies'); viewSettings(); });
   document.getElementById('del').onclick=()=>modal(`<h3>Supprimer ton compte ?</h3><p class="muted">Cette action est définitive.</p>
     <div class="dlg-actions"><button class="btn btn-ghost" data-close>Annuler</button><button class="btn btn-danger" id="dok">Supprimer définitivement</button></div>`,
-    d=>d.querySelector('#dok').onclick=async()=>{ const b=d.querySelector('#dok'); if(b.disabled) return; b.disabled=true; if(S.auth && !(await deleteGoogleAccount())){ b.disabled=false; return; } try{ localStorage.removeItem(KEY); localStorage.removeItem('coopo_cache'); }catch(e){} const sk=S.skin; S=fresh(); S.skin=sk; save(); d.close(); toast('Compte supprimé'); location.hash='#/accueil'; });
+    d=>d.querySelector('#dok').onclick=async()=>{ const b=d.querySelector('#dok'); if(b.disabled) return; b.disabled=true; if(S.auth && !(await deleteGoogleAccount())){ b.disabled=false; return; } try{ localStorage.removeItem(KEY); localStorage.removeItem('coopo_cache'); localStorage.removeItem('coopo_known'); }catch(e){} const sk=S.skin; S=fresh(); S.skin=sk; save(); d.close(); toast('Compte supprimé'); location.hash='#/accueil'; });
 }
 /* =========================================================
    THÈMES — illustrations de l'accueil + sélecteur
@@ -2958,18 +2962,23 @@ function renderGoogleButtons(root=document){
 // Nom d'utilisateur proposé à partir du nom Google
 const suggestName = n => (n||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9_.-]/g,'').slice(0,CONFIG.maxUsername);
 
+let SIGNUP=null;   // inscription en cours : le pseudo et la date de naissance déjà saisis ne sont pas redemandés
 function onSignedIn(u){
   try{ localStorage.setItem('coopo_known','1'); }catch(e){}
+  if(SIGNUP){ if(!u.name) u={...u,name:SIGNUP.name}; S.dobs[u.uid]=SIGNUP.dob; }
+  else if(!u.name && S.auth && S.auth.uid===u.uid && S.auth.name) u={...u,name:S.auth.name};   // ne jamais remplacer un nom connu par un nom vide
   const isNewSession = !S.auth || S.auth.uid!==u.uid;
   S.auth = { provider:'google', ...u };
   { const sk=S.skinByUser&&S.skinByUser[u.uid]; if(sk&&SKINS[sk]&&sk!==S.skinWanted){ S.skinWanted=sk; applySkin(sk); } }
   S.me = S.profiles[u.uid] || null;
   save();
+  if(isNewSession) DB._loaded=false;   // nouveau compte sur cet appareil : rien n'est chargé tant que ses données ne sont pas arrivées
   if(DB.live && (isNewSession || (!DB._loaded && !DB._loading))) DB.loadAll();
   if(isNewSession){
     toast(`Connecté en tant que ${u.name || u.email}`);
     let back=''; try{ back=sessionStorage.getItem('coopo_after_login')||''; sessionStorage.removeItem('coopo_after_login'); }catch(e){}
-    const target = S.me ? (back||'#/accueil') : '#/profil';
+    // En ligne, on ne sait pas encore si le profil existe : on va à l'accueil (écran de chargement), et route() envoie vers la création du profil s'il n'y en a pas
+    const target = (S.me || DB.live) ? (back||'#/accueil') : '#/profil';
     if(location.hash===target) route(); else location.hash=target;
   } else route();
 }
@@ -3041,7 +3050,7 @@ function viewAuth(mode){
       <div class="or"><span>ou</span></div>
       <form id="af" class="auth-fields" novalidate>
         ${su?`<div class="field"><label for="a-name">Nom d'utilisateur</label><input id="a-name" type="text" autocomplete="username" maxlength="${CONFIG.maxUsername}" placeholder="ex. KoffiNight"><small class="ferr" data-for="name"></small></div>`:''}
-        <div class="field"><label for="a-mail">E-mail</label><input id="a-mail" type="email" autocomplete="email" placeholder="ex. koffi@gmail.com"><small class="ferr" data-for="mail"></small></div>
+        <div class="field"><label for="a-mail">E-mail</label><input id="a-mail" type="email" autocomplete="email" placeholder="ton adresse e-mail"><small class="ferr" data-for="mail"></small></div>
         <div class="field"><label for="a-pw">Mot de passe</label>
           <div class="pw-wrap"><input id="a-pw" type="password" autocomplete="${su?'new-password':'current-password'}" placeholder="${su?'Choisis un mot de passe':'Ton mot de passe'}">
             <button type="button" class="pw-eye" aria-label="Afficher le mot de passe" aria-pressed="false">${EYE}</button></div>
@@ -3090,7 +3099,7 @@ async function doSignup(){
   if(age===null) e.dob='Indique ta date de naissance.';
   else if(age<CONFIG.minAge) e.dob=`Tu dois avoir au moins ${CONFIG.minAge} ans pour utiliser Coopô.`;
   if(showErrs(e)) return;
-  busy(true);
+  busy(true); SIGNUP={name,dob};
   try{
     if(AUTH_LIVE){
       const cred=await firebase.auth().createUserWithEmailAndPassword(mail,pw);
@@ -3103,8 +3112,8 @@ async function doSignup(){
       const uid='local-'+mail; S.accounts[mail]={uid,name}; S.dobs[uid]=dob; save();
       onSignedIn({ uid, name, email:mail, photo:'', provider:'password' });
     }
-  }catch(err){ console.error(err); showErrs(authErr(err)); }
-  finally{ busy(false); }
+  }catch(err){ if(!/^auth\//.test(String(err&&err.code))) console.error(err); showErrs(authErr(err)); }
+  finally{ SIGNUP=null; busy(false); }
 }
 async function doLogin(){
   const mail=aval('a-mail').toLowerCase(), pw=document.getElementById('a-pw').value, e={};
@@ -3116,7 +3125,7 @@ async function doLogin(){
     if(AUTH_LIVE) await firebase.auth().signInWithEmailAndPassword(mail,pw);
     else { const acc=S.accounts[mail]; if(!acc){ showErrs({mail:'Aucun compte avec cet e-mail.'}); return; }
       onSignedIn({ uid:acc.uid, name:acc.name, email:mail, photo:'', provider:'password' }); }
-  }catch(err){ console.error(err); showErrs(authErr(err)); }
+  }catch(err){ if(!/^auth\//.test(String(err&&err.code))) console.error(err); showErrs(authErr(err)); }
   finally{ busy(false); }
 }
 async function forgotPw(){
@@ -3210,6 +3219,7 @@ function answerRequest(id,accept){
   const q=reqWith(id); if(!q) return; const p=PLAYERS.find(x=>x.id===id);
   if(accept){ q.status='accepted'; DB.saveRequest(q); toast(`${p?p.name:'Ce joueur'} est maintenant ton mate`); if(p) DB.saveNotif(id,{type:'accepted',from:'me',text:`${S.me.name} a accepté ta demande de mate`}); }
   else { S.requests=S.requests.filter(r=>r!==q); DB.deleteRequest(q); toast('Demande refusée'); }
+  { const seen=S.notifs.filter(n=>!n.read&&n.type==='request'&&n.from===id); seen.forEach(n=>n.read=true); DB.markRead(seen.map(n=>n.id)); }   // la notification de cette demande est réglée
   save();
 }
 function removeRequest(id){ const q=reqWith(id); if(!q) return; S.requests=S.requests.filter(r=>r!==q); save(); DB.deleteRequest(q); }
@@ -3226,7 +3236,9 @@ function notify(n){
   S.notifs.unshift({id:'n'+Date.now()+Math.random().toString(36).slice(2,6),at:Date.now(),read:false,...n}); S.notifs=S.notifs.slice(0,60); save();
   renderNotifBadge(); if(n.toast!==false) toast(n.text);
 }
-const unreadCount = () => S.notifs.filter(n=>!n.read).length + pendingReceived().length;
+const pendFrom = () => new Set(pendingReceived().map(r=>r.from));
+const dupReq = (n,pf) => n.type==='request' && pf.has(n.from);   // notification qui répète une demande encore en attente
+const unreadCount = () => { const pf=pendFrom(); return S.notifs.filter(n=>!n.read&&!dupReq(n,pf)).length + pf.size; };
 const BELL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>';
 function renderNotifBadge(){ const n=unreadCount(); try{ if('setAppBadge' in navigator){ n?navigator.setAppBadge(n):navigator.clearAppBadge(); } }catch(e){} document.querySelectorAll('.notif-btn').forEach(b=>{ b.innerHTML=BELL+(n?`<span class="badge">${n>9?'9+':n}</span>`:''); b.classList.toggle('has',n>0); });
   const um=Object.values(S.unread||{}).reduce((a,b)=>a+(+b||0),0);   // messages non lus : pastille sur l'onglet Messages
@@ -3234,12 +3246,12 @@ function renderNotifBadge(){ const n=unreadCount(); try{ if('setAppBadge' in nav
 const ago = t => { const m=Math.round((Date.now()-t)/60000); return m<1?'à l\'instant':m<60?`il y a ${m} min`:m<1440?`il y a ${Math.round(m/60)} h`:`il y a ${Math.round(m/1440)} j`; };
 function notifLink(n){ return n.type==='message'?'#/messages/'+n.from : n.type==='squad'?'#/groupes/groupes' : n.type==='annonce'?'#/groupes/annonces' : n.from?'#/joueur/'+n.from : '#/matchs'; }
 function notifCenter(){
-  const pend=pendingReceived();
+  const pend=pendingReceived(), pf=pendFrom(), rows=S.notifs.filter(n=>!dupReq(n,pf));
   modal(`<h3>Notifications</h3>
     ${pend.length?`<div class="notif-group"><b>Demandes de mate</b>${pend.map(r=>{ const p=PLAYERS.find(x=>x.id===r.from); if(!p) return ''; return `<div class="nrow">${avatar(p,40)}<div><b>${esc(p.name)}${modBadge(p)}</b><span class="muted">veut devenir ton mate · ${ago(r.at)}</span></div><div class="nact"><button class="btn btn-sm btn-ac" data-acc="${p.id}">Accepter</button><button class="btn btn-sm btn-ghost" data-dec="${p.id}">Refuser</button></div></div>`; }).join('')}</div>`:''}
-    <div class="notif-list">${S.notifs.length?S.notifs.slice(0,25).map(n=>{ const p=n.from&&n.from!=='me'?PLAYERS.find(x=>x.id===n.from):null;
+    <div class="notif-list">${rows.length?rows.slice(0,25).map(n=>{ const p=n.from&&n.from!=='me'?PLAYERS.find(x=>x.id===n.from):null;
       return `<a class="nrow${n.read?'':' unread'}" href="${esc(notifLink(n))}" data-nid="${esc(n.id)}">${p?avatar(p,40):'<span class="av" style="width:40px;height:40px;--h:265">✦</span>'}<div><span>${esc(n.text)}</span><span class="muted">${ago(n.at)}</span></div></a>`; }).join('')
-      :'<p class="muted" style="padding:14px 0">Rien de nouveau pour le moment.</p>'}</div>
+      :pend.length?'':'<p class="muted" style="padding:14px 0">Rien de nouveau pour le moment.</p>'}</div>
     <div class="dlg-actions"><button class="linkbtn" id="nread">Tout marquer comme lu</button><button class="btn" data-close>Fermer</button></div>`,
     d=>{ d.querySelectorAll('[data-acc]').forEach(b=>b.onclick=()=>{ answerRequest(b.dataset.acc,true); d.close(); route(); });
       d.querySelectorAll('[data-dec]').forEach(b=>b.onclick=()=>{ answerRequest(b.dataset.dec,false); d.close(); renderNotifBadge(); });
@@ -3249,13 +3261,17 @@ function notifCenter(){
 document.addEventListener('click',e=>{ if(e.target.closest('.notif-btn')) notifCenter(); });
 
 /* ---- Messages privés (entre mates uniquement) ---- */
+// Dernier message connu d'une conversation : le dernier message chargé ou, s'il est plus récent, celui annoncé par une notification
+function lastMsg(id){ const m=(S.chats[id]||[]).slice(-1)[0]||null, n=S.notifs.filter(x=>x.type==='message'&&x.from===id).sort((a,b)=>(b.at||0)-(a.at||0))[0];
+  if(n&&(!m||(n.at||0)>(m.at||0))){ const t=String(n.text||''), i=t.indexOf(' : '); return {from:id,text:i>=0?t.slice(i+3):t,at:n.at||0}; }
+  return m; }
 function viewMessages(id){
   if(dataPending()) return loadingView('Messages');
   if(!S.me) return needProfile('Messages');
   if(id) return viewChat(id);
-  const mates=matesList().sort((a,b)=>{ const la=(S.chats[a.id]||[]).slice(-1)[0], lb=(S.chats[b.id]||[]).slice(-1)[0]; return (lb?lb.at:0)-(la?la.at:0); });
+  const mates=matesList().sort((a,b)=>{ const la=lastMsg(a.id), lb=lastMsg(b.id); return (lb?lb.at:0)-(la?la.at:0); });
   app.innerHTML=`<div class="wrap page" style="max-width:720px"><div class="page-head"><div><h2>Messages</h2><p>Discute avec tes mates. Les messages sont réservés aux mates acceptés.</p></div></div>
-    ${mates.length?`<div class="chat-list">${mates.map(p=>{ const msgs=S.chats[p.id]||[], last=msgs.slice(-1)[0], u=S.unread[p.id]||0;
+    ${mates.length?`<div class="chat-list">${mates.map(p=>{ const last=lastMsg(p.id), u=S.unread[p.id]||0;
       return `<a class="chat-row${u?' unread':''}" href="#/messages/${p.id}">${avatar(p,52)}<div><b>${esc(p.name)}${modBadge(p)}${isOnline(p)?' <span class="online"></span>':''}</b><span class="muted">${last?esc((last.from==='me'?'Toi : ':'')+last.text):'Dis bonjour 👋'}</span></div>${u?`<span class="badge static">${u}</span>`:last?`<small class="muted">${ago(last.at)}</small>`:''}</a>`; }).join('')}</div>`
     :`<div class="empty"><h3>Pas encore de mates</h3><p class="muted">Envoie une demande à un joueur compatible. Dès qu'il accepte, vous pouvez discuter ici.</p><a class="btn btn-ac" href="#/matchs">Voir mes matchs</a></div>`}</div>`;
 }
@@ -3449,7 +3465,7 @@ function tournoiCard(t){
   const canJoin = t.ageGroup===myGroupNow();
   const mem=players.map(id=>id===me?S.me:PLAYERS.find(p=>p.id===id)).filter(Boolean);
   return `<article class="mcard tournoi${t.status==='done'?' done':''}" style="--c:var(--pk)">
-    <div class="sq-top"><span class="sq-game">${esc(t.game)}</span><span class="sq-slots ${full||!open?'full':''}">${players.length}/${t.max} · ${status}</span></div>
+    <div class="sq-top"><span class="sq-game">${esc(t.game)}</span><span class="sq-slots ${full||!open?'full':''}">${players.length}/${+t.max||0} · ${status}</span></div>
     <h3>${esc(t.title)}</h3>
     <dl class="facts"><div><dt>Quand</dt><dd>${esc(fmtDay(t.date))}</dd></div>${t.format?`<div><dt>Format</dt><dd>${esc(t.format)}</dd></div>`:''}${t.prize?`<div><dt>À gagner</dt><dd>${esc(t.prize)}</dd></div>`:''}${isAdmin()?`<div><dt>Pour</dt><dd>${t.ageGroup==='minor'?'15-17 ans':'Adultes'}</dd></div>`:''}</dl>
     ${t.desc?`<p class="muted">${esc(t.desc)}</p>`:''}
@@ -3520,7 +3536,7 @@ function tournoiList(id){
   const t=tournoisAll().find(x=>x.id===id); if(!t) return;
   const e=t.entries||{}, rows=(t.players||[]).map(u=>{ const p=u===myId()?S.me:PLAYERS.find(x=>x.id===u); return {u,name:(e[u]&&e[u].name)||(p&&p.name)||'',ig:(e[u]&&e[u].ig)||(p&&p.tags&&p.tags[t.game])||''}; });
   const txt=rows.map((r,i)=>`${i+1}. ${r.name||'Joueur'}${r.ig?` · ${t.game} : ${r.ig}`:''}`).join('\n');
-  modal(`<h3>Inscrits · ${esc(t.title)}</h3><p class="muted">${rows.length} / ${t.max} joueurs</p>
+  modal(`<h3>Inscrits · ${esc(t.title)}</h3><p class="muted">${rows.length} / ${+t.max||0} joueurs</p>
     ${rows.length?`<ol class="to-list">${rows.map(r=>`<li><b>${esc(r.name||'Joueur')}</b>${r.ig?`<span class="muted">${esc(t.game)} : ${esc(r.ig)}</span>`:'<span class="muted">pseudo en jeu non renseigné</span>'}</li>`).join('')}</ol>`:'<p class="muted">Personne pour l\'instant.</p>'}
     <div class="dlg-actions">${rows.length?'<button class="btn btn-ghost" id="tcopy">Copier la liste</button>':''}<button class="btn" data-close>Fermer</button></div>`, d=>{
     d.querySelector('#tcopy')?.addEventListener('click',async()=>{ try{ await navigator.clipboard.writeText(txt); toast('Liste copiée'); }catch(err){} }); });
@@ -3538,7 +3554,7 @@ function boardsTeaser(){
   const an=annoncesAll().filter(a=>!isMine(a)).slice(0,3), t=tournoisAll().find(x=>x.status==='open'&&x.date>Date.now()&&x.ageGroup===myGroupNow());
   if(!an.length&&!t) return `<section class="panel reveal board-teaser"><div class="dispo-head"><h3>Annonces</h3></div><p class="muted">Tu cherches des joueurs pour une partie précise ? Publie une annonce, par exemple « Je cherche 2 joueurs ${esc(S.me.games[0]||'Free Fire')} ce soir ».</p><div><a class="btn btn-sm btn-ac" href="#/groupes/annonces">Publier une annonce</a></div></section>`;
   return `<section class="panel reveal board-teaser">
-    ${t?`<a class="to-banner" href="#/groupes/tournois"><span class="sq-game">Tournoi</span><b>${esc(t.title)}</b><span class="muted">${esc(t.game)} · ${esc(fmtDay(t.date))} · ${(t.players||[]).length}/${t.max} inscrits</span></a>`:''}
+    ${t?`<a class="to-banner" href="#/groupes/tournois"><span class="sq-game">Tournoi</span><b>${esc(t.title)}</b><span class="muted">${esc(t.game)} · ${esc(fmtDay(t.date))} · ${(t.players||[]).length}/${+t.max||0} inscrits</span></a>`:''}
     ${an.length?`<div class="dispo-head"><h3>Ils cherchent des joueurs</h3><a class="linkbtn" href="#/groupes/annonces">Tout voir</a></div>
       <div class="an-mini">${an.map(a=>{ const who=PLAYERS.find(p=>p.id===a.by); return `<a class="an-row" href="#/groupes/annonces">${who?avatar(who,36):''}<div><b>${esc(who?who.name:(a.byName||'Joueur'))}</b><span>${esc(a.game)} · cherche ${+a.need||1}${a.rank?` · ${esc(a.rank)}`:''}</span></div><span class="an-when">${(WHEN.find(w=>w[0]===a.when)||[,''])[1]}</span></a>`; }).join('')}</div>`:''}
   </section>`;
@@ -3772,7 +3788,7 @@ function viewAdmin(){
       :'<div class="empty"><h3>Aucun signalement</h3><p class="muted">Tout est calme.</p></div>'}</div>`;
   app.querySelectorAll('[data-hide]').forEach(b=>b.onclick=()=>{ const id=b.dataset.hide; S.hidden=S.hidden.includes(id)?S.hidden.filter(x=>x!==id):[...S.hidden,id]; save(); DB.adminHide(id,S.hidden.includes(id)); viewAdmin(); });
   app.querySelectorAll('[data-ban]').forEach(b=>b.onclick=()=>modal(`<h3>Bannir ce compte ?</h3><p class="muted">Le profil disparaît pour tout le monde et le compte ne peut plus se connecter.</p><div class="dlg-actions"><button class="btn btn-ghost" data-close>Annuler</button><button class="btn btn-danger" id="bk">Bannir</button></div>`,
-    d=>d.querySelector('#bk').onclick=()=>{ const id=b.dataset.ban; S.banned.push(id); S.reports.forEach(r=>{ if(r.id===id) r.status='done'; }); save(); DB.adminBan(id,true); DB.closeReports(id); d.close(); viewAdmin(); }));
+    d=>d.querySelector('#bk').onclick=()=>{ const id=b.dataset.ban; S.banned.push(id); DB.closeReports(id); S.reports.forEach(r=>{ if(r.id===id) r.status='done'; }); save(); DB.adminBan(id,true); d.close(); viewAdmin(); }));
   app.querySelectorAll('[data-unban]').forEach(b=>b.onclick=()=>{ S.banned=S.banned.filter(x=>x!==b.dataset.unban); save(); DB.adminBan(b.dataset.unban,false); viewAdmin(); });
   app.querySelectorAll('[data-chat-by]').forEach(b=>b.onclick=async()=>{ const box=b.nextElementSibling; box.textContent='Chargement…'; const l=await DB.loadReportedChat(b.dataset.chatBy,b.dataset.chatTarget);
     box.innerHTML = l===null ? '<p class="muted">Conversation non accessible.</p>' : l.length ? l.map(m=>`<p class="${m.fromTarget?'by-target':'by-rep'}"><b>${m.fromTarget?'Joueur signalé':'Signaleur'} :</b> ${esc(m.text)}</p>`).join('') : '<p class="muted">Aucun message.</p>'; });
@@ -3826,7 +3842,7 @@ const DB = {
         if(pd.privacy&&typeof pd.privacy==='object') ['discord','tags','online'].forEach(k=>{ if(typeof pd.privacy[k]==='boolean') S.privacy[k]=pd.privacy[k]; });   // confidentialité : les réglages du compte, sur tous les appareils
         { const sk=pd.skin; if(sk&&SKINS[sk]) S.skinWanted=sk; } S.profiles[uid]=S.me; }
       if(priv.exists&&priv.data().dob) S.dobs[uid]=priv.data().dob;
-      if(prof.exists&&prof.data().banned){ toast('Ce compte a été suspendu.'); await signOut(); return; }
+      if(prof.exists&&prof.data().banned){ await signOut(); toast('Ce compte a été suspendu par la modération.',7000); return; }
       if(!prof.exists){ this._loaded=true; this._loading=false; this._noProfile=true; save(); refreshAfterData(); return; }
       { // contacts privés (Discord / WhatsApp) ; un ancien Discord public est déplacé ici
         const ct=await db.collection('contacts').doc(uid).get().catch(()=>null), c=ct&&ct.exists?ct.data():null;
@@ -3857,8 +3873,9 @@ const DB = {
       const lerr=e=>console.error(e);   // une écoute refusée ou coupée ne doit jamais bloquer la page
       this._unsub.push(db.collection('notifications').doc(uid).collection('items').orderBy('at','desc').limit(40).onSnapshot(snap=>{
         snap.docChanges().forEach(ch=>{ const n=ch.doc.data(); if(!n) return; const ex=S.notifs.find(x=>x.id===ch.doc.id);
-          if(ch.type==='added'&&!ex){ const from=this.fromUid(n.from); S.notifs.push({...n,id:ch.doc.id,from});
-            if(!n.read&&n.type==='message'&&location.hash!=='#/messages/'+from) S.unread[from]=(S.unread[from]||0)+1;   // message non lu : pastille sur la conversation
+          if(ch.type==='added'&&!ex){ const from=this.fromUid(n.from), open=n.type==='message'&&location.hash==='#/messages/'+from;
+            S.notifs.push({...n,id:ch.doc.id,from,read:!!n.read||open}); if(open&&!n.read) this.markRead([ch.doc.id]);   // conversation ouverte : lu tout de suite
+            if(!n.read&&n.type==='message'&&!open) S.unread[from]=(S.unread[from]||0)+1;   // message non lu : pastille sur la conversation
             if(this._notifReady&&!n.read) deviceNotify(n); }
           else if(ch.type==='modified'&&ex&&n.read) ex.read=true; });   // lu sur un autre appareil
         this._notifReady=true;
@@ -3887,7 +3904,7 @@ const DB = {
   async nameTaken(name){ if(!this.live||!this.uid()) return false; try{ const x=await this.db.collection('usernames').doc(String(name).toLowerCase()).get(); return x.exists&&x.data().uid!==this.uid(); }catch(e){ console.error(e); return false; } },
   // Enregistre le profil en ligne. Renvoie true si c'est fait ; sinon false, et _saveErr dit pourquoi ('name' = pseudo déjà pris).
   async saveProfile(me){ if(!this.live) return true; const uid=this.uid(), db=this.db; const {dob,id,age,...pub}=me; const lower=me.name.toLowerCase(); this._saveErr='';
-    try{ const ref=db.collection('profiles').doc(uid); const cur=await ref.get().catch(()=>null); const isNew=!(cur&&cur.exists), oldLower=cur&&cur.exists?String(cur.data().nameLower||''):'';
+    try{ const ref=db.collection('profiles').doc(uid); const cur=await ref.get().catch(()=>null); const isNew=!(cur&&cur.exists), oldLower=cur&&cur.exists?String(cur.data().nameLower||cur.data().name||'').toLowerCase():'';
       try{ await db.collection('usernames').doc(lower).set({uid}); }   // en premier : si le pseudo appartient à un autre compte, rien d'autre n'est écrit
       catch(e){ if(String(e&&e.code).includes('permission')){ this._saveErr='name'; return false; } throw e; }
       await db.collection('private').doc(uid).set({dob,tags:me.tags||{},updatedAt:Date.now()},{mergeFields:['dob','tags','updatedAt']});
@@ -4007,7 +4024,9 @@ const DB = {
     try{ // d'abord ce qui peut manquer sans gravité : mes groupes, les groupes rejoints, mes annonces
       await Promise.all([ ...(S.squads||[]).map(s=>quiet(db.collection('squads').doc(s.id).delete())),
         ...(S.joined||[]).map(id=>quiet(db.collection('squads').doc(id).update({members:F.arrayRemove(uid)}))),
-        ...ANNONCES.filter(a=>a.by===uid).map(a=>quiet(db.collection('boards').doc(a.ageGroup).collection('annonces').doc(a.id).delete())) ]);
+        ...ANNONCES.filter(a=>a.by===uid).map(a=>quiet(db.collection('boards').doc(a.ageGroup).collection('annonces').doc(a.id).delete())),
+        ...ANNONCES.filter(a=>a.by!==uid&&(a.replies||[]).includes(uid)).map(a=>quiet(db.collection('boards').doc(a.ageGroup).collection('annonces').doc(a.id).update({replies:F.arrayRemove(uid)}))),
+        ...TOURNOIS.filter(t=>(t.players||[]).includes(uid)).map(t=>{ const u={players:F.arrayRemove(uid)}; u['entries.'+uid]=F.delete(); return quiet(db.collection('boards').doc(t.ageGroup).collection('tournois').doc(t.id).update(u)); }) ]);
       const bl=await db.collection('blocks').doc(uid).collection('list').get(); const nt=await db.collection('notifications').doc(uid).collection('items').get();
       const rq=await db.collection('requests').where('participants','array-contains',uid).get();
       const b=db.batch(); bl.forEach(x=>b.delete(x.ref)); nt.forEach(x=>b.delete(x.ref)); rq.forEach(x=>b.delete(x.ref));
