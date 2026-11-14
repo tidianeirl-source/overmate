@@ -1710,7 +1710,9 @@ html[data-skin="ocean"] body .page-head h2{ padding-bottom:12px; background:url(
 dialog > h3{ color:var(--pk2,var(--pk)); }
 /* fenêtres : les champs respirent, et les boutons du bas restent visibles même quand la fenêtre est plus haute que l'écran (petits téléphones) */
 dialog .field + .field, dialog p + .field{ margin-top:14px; }
-dialog > .dlg-actions:last-child{ position:sticky; bottom:0; margin:20px -26px -26px; padding:12px 26px 22px; background:var(--bg); box-shadow:0 -12px 14px -8px var(--bg); }
+/* la barre touche le bas de la fenêtre : la marge du bas passe de la fenêtre à la barre (sinon le contenu se voyait dessous pendant le défilement) */
+dialog:has(> .dlg-actions:last-child){ padding-bottom:0; }
+dialog:has(> .dlg-actions:last-child) > .dlg-actions:last-child{ position:sticky; bottom:0; margin:20px -26px 0; padding:12px 26px 26px; background:var(--bg); box-shadow:0 -12px 14px -8px var(--bg); }
 /* thèmes pas encore en vente : les prix restent lisibles (bordure en pointillés au lieu d'un bloc grisé) */
 .buy-soon .buy-opt{ opacity:1; border-style:dashed; background:none; }
 .buy-soon .buy-opt strong{ color:var(--mu); }
