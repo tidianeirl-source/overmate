@@ -1421,7 +1421,7 @@ h1,h2,h3,.btn{ text-wrap:balance; }
 .toast.show{ transform:translateY(0); }
 /* ---- En-tête : translucide, le fond du thème passe dessous ---- */
 .top{ background:none; border-radius:0; }
-.top::before{ content:''; position:absolute; z-index:-1; inset:-14px -100vw -12px; background:var(--bg);
+.top::before{ content:''; position:fixed; z-index:-1; top:0; left:0; right:0; height:calc(var(--top-h,76px) + env(safe-area-inset-top,0px)); background:var(--bg);   /* fond de l'en-tête quand la page a défilé : fixé en haut de l'écran, d'un bord à l'autre, sans rien faire déborder */
   -webkit-mask-image:linear-gradient(#000 calc(100% - 16px),transparent); mask-image:linear-gradient(#000 calc(100% - 16px),transparent); }
 @supports ((-webkit-backdrop-filter:blur(2px)) or (backdrop-filter:blur(2px))) and (color:color-mix(in srgb,red 50%,blue)){
   html:not(.lite) .top::before{ background:color-mix(in srgb,var(--bg) 78%,transparent); -webkit-backdrop-filter:saturate(1.4) blur(14px); backdrop-filter:saturate(1.4) blur(14px); }
@@ -1629,7 +1629,8 @@ a.nudge{ background:var(--s1); border-style:solid; border-color:var(--hair); box
 /* bouton principal posé sur le décor : couleur qui ressort sur le monde (blanc quand le monde a la couleur du thème) */
 :is(.dispo-sec,.page-head,.wl-cta,.install-foot,.chat-form,.form-actions) > .btn-ac, .wrap.page > .btn-ac{ --b:var(--cta-b); --t:var(--cta-t); }
 /* ---- En-tête : fond seulement quand la page a défilé (au repos, le dessin reste entier) ---- */
-.top::before{ background:rgba(var(--w-top),.86); opacity:0; transition:opacity .25s ease; }
+.top::before{ background:rgba(var(--w-top),.86); opacity:0; transition:opacity .25s ease; pointer-events:none; }
+@media (min-width:861px){ .top{ --top-h:84px; } }
 html.scrolled .top::before{ opacity:1; }
 @supports ((-webkit-backdrop-filter:blur(2px)) or (backdrop-filter:blur(2px))){ html:not(.lite) .top::before{ background:rgba(var(--w-top),.42); -webkit-backdrop-filter:saturate(1.3) blur(14px); backdrop-filter:saturate(1.3) blur(14px); } }
 .form-actions{ background:linear-gradient(transparent,rgba(var(--scrim2),.92) 40%); }
@@ -1707,6 +1708,9 @@ html[data-skin="ocean"] body .page-head h2{ padding-bottom:12px; background:url(
 .pp-dispo em{ color:rgba(255,255,255,.88); }
 .pp-meta .mod-tag{ background:#fff; color:rgb(var(--w-top)); text-shadow:none; }
 dialog > h3{ color:var(--pk2,var(--pk)); }
+/* fenêtres : les champs respirent, et les boutons du bas restent visibles même quand la fenêtre est plus haute que l'écran (petits téléphones) */
+dialog .field + .field, dialog p + .field{ margin-top:14px; }
+dialog > .dlg-actions:last-child{ position:sticky; bottom:0; margin:20px -26px -26px; padding:12px 26px 22px; background:var(--bg); box-shadow:0 -12px 14px -8px var(--bg); }
 /* thèmes pas encore en vente : les prix restent lisibles (bordure en pointillés au lieu d'un bloc grisé) */
 .buy-soon .buy-opt{ opacity:1; border-style:dashed; background:none; }
 .buy-soon .buy-opt strong{ color:var(--mu); }
@@ -3206,7 +3210,7 @@ function dispoModal(){
   modal(`<h3>Je suis dispo maintenant</h3><p class="muted">Dis à quel jeu tu joues et pendant combien de temps : les joueurs compatibles te verront en tête de liste.</p>
     <div class="field"><label for="dp-game">Jeu</label><select id="dp-game">${games.map(g=>`<option value="${esc(g)}">${esc(g)}</option>`).join('')}</select></div>
     <div class="field"><label>Pendant</label><div class="dp-durs">${DISPO_DUR.map(([v,l],i)=>`<button type="button" class="chip-btn${i===1?' on':''}" data-dur="${v}">${l}</button>`).join('')}</div></div>
-    <div class="field"><label for="dp-note">Un mot (facultatif)</label><input id="dp-note" maxlength="60" placeholder="Ranked, vocal ok, chill…"></div>
+    <div class="field"><label for="dp-note">Un mot (facultatif)</label><input id="dp-note" type="text" maxlength="60" placeholder="Ranked, vocal ok, chill…"></div>
     <div class="dlg-actions"><button class="btn btn-ghost" data-close>Annuler</button><button class="btn btn-ac" id="dp-go">Je suis dispo</button></div>`, d=>{
     let dur=2; d.querySelectorAll('[data-dur]').forEach(b=>b.onclick=()=>{ d.querySelectorAll('[data-dur]').forEach(x=>x.classList.remove('on')); b.classList.add('on'); dur=+b.dataset.dur; });
     d.querySelector('#dp-go').onclick=async()=>{ const dispo={game:d.querySelector('#dp-game').value,note:d.querySelector('#dp-note').value.trim().slice(0,60),since:Date.now(),until:Date.now()+dur*3600*1000};
