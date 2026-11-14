@@ -1465,25 +1465,16 @@ h1,h2,h3,.btn{ text-wrap:balance; }
 
 /* ---- Accueil : bandeau court avec le dessin du thème ---- */
 .mh{ position:relative; isolation:isolate; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; gap:18px; min-height:232px; margin:-14px -14px 0; padding:14px 18px 20px; color:#fff; background:var(--art-bg,var(--pk)); border-radius:0 0 28px 28px; }
-.mh-art{ position:absolute; inset:0; z-index:-1; }
-.mh{ --scrim:10,6,36; --sk:.6; }   /* --sk : force du voile (dessins déjà sombres : léger ; dessins clairs : plein) */
-html:is([data-skin="samurai"],[data-skin="soft"],[data-skin="lofi"],[data-skin="esth"],[data-skin="menthe"]) .mh{ --sk:1; }
+.mh{ --scrim:10,6,36; }   /* couleur du halo sous le bonjour */
 html[data-skin="samurai"] .mh{ --scrim:46,8,16; } html[data-skin="soft"] .mh{ --scrim:104,20,60; } html[data-skin="lofi"] .mh{ --scrim:8,44,84; } html[data-skin="esth"] .mh{ --scrim:52,26,104; }
 html[data-skin="awale"] .mh{ --scrim:30,16,6; } html[data-skin="ocean"] .mh{ --scrim:4,28,68; } html[data-skin="menthe"] .mh{ --scrim:4,56,42; } html[data-skin="prunier"] .mh{ --scrim:44,6,34; }
-.mh-art::after{ content:''; position:absolute; inset:0; background:radial-gradient(ellipse var(--mh-rx,92%) 112% at 0 100%,rgba(var(--scrim),.72) 0,rgba(var(--scrim),.56) 45%,rgba(var(--scrim),0) 100%),
-  linear-gradient(180deg,rgba(var(--scrim),calc(.42*var(--sk))) 0,rgba(var(--scrim),calc(.18*var(--sk))) 26%,rgba(var(--scrim),calc(.62*var(--sk))) 55%,rgba(var(--scrim),calc(.86*var(--sk))) 100%); }   /* voile à la couleur du thème : le texte blanc reste lisible sur n'importe quel dessin */
-.mh-top{ display:flex; align-items:center; gap:12px; }
-.mh-top .navpill{ display:none; }
-.mh-right{ margin-left:auto; display:flex; gap:10px; }
-.mh .logo{ box-shadow:0 4px 18px rgba(0,0,0,.28); }
 .mh :focus-visible{ outline-color:#fff; }
-.mh .notif-btn,.mh .skin-btn{ background:rgba(10,8,30,.45); border-color:rgba(255,255,255,.24); color:#fff; box-shadow:none; -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); }
 .mh-hello{ margin:0; font-weight:600; font-size:15px; color:#fff; text-shadow:0 0 2px rgba(var(--scrim),.9),0 1px 10px rgba(var(--scrim),.85),0 0 22px rgba(var(--scrim),.7); }
 .mh-body h1{ margin:2px 0 0; font:var(--fdw) clamp(30px,8vw,48px)/1.04 var(--fd); color:#fff; text-transform:var(--case); letter-spacing:-.01em; text-shadow:0 0 3px rgba(var(--scrim),.85),0 2px 16px rgba(var(--scrim),.8),0 0 34px rgba(var(--scrim),.6); overflow-wrap:anywhere; }
 .mh-body h1.long{ font-size:clamp(21px,6.2vw,40px); }   /* pseudo long : plus petit, pour rester sur une ligne */
 .mh-online{ display:inline-flex; align-items:center; margin:12px 0 0; padding:6px 13px 6px 11px; border-radius:999px; background:rgba(8,6,26,.55); border:1px solid rgba(255,255,255,.18); font-size:13px; font-weight:600; color:#fff; }
 .home .home-top{ padding-top:16px; gap:14px; }
-@media (min-width:861px){ .mh{ --mh-rx:560px; margin:0; min-height:300px; padding:18px 26px 28px; border-radius:var(--rf); } .mh-top .navpill{ display:flex; } .home .home-top{ padding-top:22px; } }
+@media (min-width:861px){ .home .home-top{ padding-top:22px; } }
 /* sections de l'accueil : le titre est posé sur la page, le contenu dans une seule carte */
 .home-sec{ display:grid; gap:10px; min-width:0; margin-top:6px; }
 .home-sec > .dispo-head{ margin:0; padding:0 2px; min-height:32px; }
@@ -1589,7 +1580,7 @@ a.nudge > div{ flex:1; min-width:0; } a.nudge b{ display:block; } a.nudge span:n
    et s'assombrit à mesure qu'on descend dans la page. Quand on fait défiler, le dessin remonte plus lentement que la page (profondeur).
    --scrim : couleur du monde en haut de page (R,V,B) · --scrim2 : couleur en bas de page · --w-top : voile sombre sous l'en-tête et le titre · --w-h : hauteur du dessin */
 html{ --scrim:39,28,120; --scrim2:21,15,63; --w-top:21,15,63; --w-v:.26; --w-sh:.74; --w-h:clamp(300px,54vh,460px);
-  --w-halo:0 0 2px rgba(var(--w-top),.95),0 1px 6px rgba(var(--w-top),.9),0 0 20px rgba(var(--w-top),.7);
+  --w-halo:0 0 2px rgba(var(--w-top),.95),0 1px 5px rgba(var(--w-top),.88),0 0 14px rgba(var(--w-top),.4);
   --cta-b:#D4FF3F; --cta-t:#16131F; }
 html[data-skin="sombre"]{ --scrim:17,13,44; --scrim2:6,5,12; --w-top:6,5,12; }
 html[data-skin="samurai"]{ --scrim:150,20,40; --scrim2:92,10,24; --w-top:58,10,18; --w-v:.42; --w-sh:.8; --cta-b:#F4ECE1; --cta-t:#9A152D; }
@@ -1599,7 +1590,7 @@ html[data-skin="esth"]{ --scrim:94,74,200; --scrim2:60,42,144; --w-top:58,36,120
 html[data-skin="awale"]{ --scrim:36,22,13; --scrim2:22,13,8; --w-top:22,13,8; --cta-b:var(--pk); --cta-t:var(--on-pk); }
 html[data-skin="ocean"]{ --scrim:11,62,138; --scrim2:5,24,66; --w-top:6,40,96; --cta-b:#FFFFFF; --cta-t:#1858A8; }
 html[data-skin="menthe"]{ --scrim:14,108,80; --scrim2:8,72,54; --w-top:8,64,50; --w-v:.56; --w-sh:.8; --cta-b:#FFFFFF; --cta-t:#0E6E54; }
-html[data-skin="prunier"]{ --scrim:112,8,28; --scrim2:60,3,14; --w-top:70,4,18; --cta-b:#FFFFFF; --cta-t:#9E0C22; }
+html[data-skin="prunier"]{ --scrim:112,8,28; --scrim2:60,3,14; --w-top:70,4,18; --w-v:.46; --w-sh:.86; --cta-b:#FFFFFF; --cta-t:#9E0C22; }   /* le dessin est une photo de fleurs claires : voile plus dense */
 @media (min-width:861px){ html{ --w-h:clamp(380px,64vh,640px); } }
 /* la couleur du monde court sur toute la hauteur de la page : on « descend » dans le thème */
 html[data-skin]{ min-height:100%; background:rgb(var(--scrim2)) linear-gradient(180deg,rgb(var(--scrim)) 0,rgb(var(--scrim)) 320px,rgb(var(--scrim2)) 100%) no-repeat; }
@@ -1619,7 +1610,6 @@ html.world-live.scrolled #world :is(.bloom,.cscene) *{ animation-play-state:paus
 .w-cam::after{ content:''; position:absolute; inset:0; background:
   radial-gradient(ellipse 96% 46% at max(0px,calc(50% - 600px)) 40%,rgba(var(--w-top),var(--w-sh)) 0,rgba(var(--w-top),calc(var(--w-sh) * .72)) 48%,rgba(var(--w-top),0) 100%),
   linear-gradient(180deg,rgba(var(--w-top),calc(var(--w-v) + .1)) 0,rgba(var(--w-top),var(--w-v)) 30%,rgba(var(--scrim),calc(var(--w-v) + .16)) 62%,rgba(var(--scrim),.72) 100%); }
-.w-scrim{ display:none; }
 html body .frame{ z-index:1; background:none; }
 .orbs{ display:none; }
 
@@ -1720,6 +1710,14 @@ dialog > h3{ color:var(--pk2,var(--pk)); }
 /* thèmes pas encore en vente : les prix restent lisibles (bordure en pointillés au lieu d'un bloc grisé) */
 .buy-soon .buy-opt{ opacity:1; border-style:dashed; background:none; }
 .buy-soon .buy-opt strong{ color:var(--mu); }
+/* ---- Ordinateur : menu du haut, infos de connexion et panneau des pages Connexion / Inscription ---- */
+.navpill{ background:var(--s1); border:1px solid var(--hair); box-shadow:var(--e1); }
+.navpill a{ color:var(--pk2,var(--pk)); }
+.top-right{ padding:5px 14px; border-radius:18px; background:rgba(var(--w-top),.5); border:1px solid rgba(255,255,255,.2); }
+html[data-skin] body .top-right, html[data-skin] body .top-right :is(small,a){ text-shadow:none; }
+.top-right:empty{ display:none; }
+.auth-intro p{ color:#fff; text-shadow:0 0 2px rgba(10,11,14,.95),0 1px 8px rgba(10,11,14,.9),0 0 18px rgba(10,11,14,.8); }
+.auth-steps li:not(.on){ background:rgba(10,11,14,.56); border:1px solid rgba(255,255,255,.16); color:#fff; }
 </style>
 <script>
 /* Avant le premier affichage : le logo et la couleur de la barre du navigateur, pour que l'écran d'ouverture soit complet tout de suite */
@@ -1739,7 +1737,7 @@ try{ document.documentElement.style.setProperty('--logo','url("'+LOGO_MASK+'")')
   <p class="sp-tip" id="sp-tip"></p>
 </div>
 <script>/* garde-fou : si le site ne démarre pas, l'écran d'ouverture se retire quand même au bout de 12 secondes */setTimeout(function(){var s=document.getElementById('splash');if(s)s.classList.add('out');document.documentElement.classList.remove('splash-on');},12000);</script>
-<div id="world" aria-hidden="true"><div class="w-cam"><div class="w-art" id="w-art"></div></div><div class="w-scrim"></div></div>
+<div id="world" aria-hidden="true"><div class="w-cam"><div class="w-art" id="w-art"></div></div></div>
 
 <div class="frame">
 <div class="orbs" aria-hidden="true"></div>
