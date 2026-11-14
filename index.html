@@ -735,7 +735,7 @@ input.invalid{ border-color:var(--lo) !important; animation:shake .35s; }
 .chat-form{ display:flex; gap:8px; margin-top:12px; }
 .squad h3{ margin:0; } .sq-top{ display:flex; justify-content:space-between; align-items:center; gap:10px; }
 .sq-game{ font:700 13px var(--fb); color:var(--pk2,var(--pk)); background:color-mix(in srgb,var(--pk) 12%,transparent); padding:4px 12px; border-radius:var(--rp); }
-.sq-slots{ font-size:13px; font-weight:700; color:var(--hi); } .sq-slots.full{ color:var(--mu); }
+.sq-slots{ font-size:13px; font-weight:700; color:var(--hi-tx); } .sq-slots.full{ color:var(--mu); }
 .sq-mem{ display:flex; } .sq-mem .av{ border-radius:50%; box-shadow:0 0 0 2px var(--bg); margin-right:-6px; font-size:11px; }
 .sq-act{ display:flex; justify-content:flex-end; }
 .online-strip{ display:flex; gap:10px; overflow:auto; padding:4px 2px 14px; margin-bottom:14px; scrollbar-width:thin; }
@@ -1359,6 +1359,246 @@ html.skin-vt::view-transition-old(root), html.skin-vt::view-transition-new(root)
 html.lite #fx, html.lite .orbs, html.lite #wipe, html.lite .fxp{ display:none !important; }
 html.lite *, html.lite *::before, html.lite *::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; animation-delay:0s !important; }
 </style>
+<style id="coopo-polish">
+/* ==== Finitions (novembre 2026) : profondeur des cartes, fond propre à chaque thème, barre d'onglets, accueil compact, page Profil ==== */
+:root{   /* valeurs simples d'abord : les navigateurs plus anciens gardent un filet et une ombre */
+  --hair:var(--line);
+  --e1:0 1px 2px rgba(20,16,40,.06), 0 8px 22px -14px rgba(20,16,40,.3);
+  --e2:0 2px 6px rgba(20,16,40,.08), 0 20px 42px -20px rgba(20,16,40,.38);
+}
+@supports (color:color-mix(in srgb,red 50%,blue)){ :root{
+  --hair:color-mix(in srgb,var(--line) 78%,transparent);   /* filet fin autour des cartes */
+  --e1:0 1px 2px color-mix(in srgb,var(--tx) 6%,transparent), 0 8px 22px -14px color-mix(in srgb,var(--pk) 45%,transparent);    /* carte posée : ombre à la couleur du thème */
+  --e2:0 2px 6px color-mix(in srgb,var(--tx) 8%,transparent), 0 20px 42px -20px color-mix(in srgb,var(--pk) 58%,transparent);   /* carte soulevée */
+} }
+/* Thèmes clairs : même logique partout — page légèrement teintée, cartes blanches */
+html[data-skin="soft"]{ --bg:#FFF5F9; --s1:#FFFFFF; --s2:#FCE3ED; --field:#FFFFFF; --glass-solid:#FFFFFF; --mu:#7C4B64; --pk2:#A92B64; }
+html[data-skin="ocean"]{ --bg:#F1F7FF; --s1:#FFFFFF; --s2:#DDEBFF; --field:#FFFFFF; --glass:rgba(255,255,255,.9); --glass-solid:#FFFFFF; --mu:#435E7D; }
+html[data-skin="menthe"]{ --bg:#F0FAF6; --s1:#FFFFFF; --s2:#D9F3E9; --field:#FFFFFF; --glass:rgba(255,255,255,.9); --glass-solid:#FFFFFF; --mu:#3A6354; }
+/* texte secondaire un peu plus foncé là où la marge de contraste était mince : il reste lisible sur le fond décoré */
+html[data-skin="lofi"]{ --mu:#46607A; }
+html[data-skin="esth"]{ --mu:#5F5889; }
+/* Thèmes sombres : pas d'ombre colorée (invisible sur fond sombre) mais un liseré de lumière en haut des cartes */
+html:is([data-skin="sombre"],[data-skin="awale"]){
+  --e1:inset 0 1px 0 rgba(255,255,255,.06), 0 14px 30px -18px rgba(0,0,0,.75);
+  --e2:inset 0 1px 0 rgba(255,255,255,.09), 0 22px 44px -18px rgba(0,0,0,.85), 0 0 0 1px rgba(120,86,255,.35);
+}
+html[data-skin="awale"]{ --e1:inset 0 1px 0 rgba(242,196,109,.20), 0 14px 30px -18px rgba(0,0,0,.75); --e2:inset 0 1px 0 rgba(242,196,109,.26), 0 22px 44px -18px rgba(0,0,0,.85), 0 0 0 1px rgba(226,162,59,.34); }
+
+/* ---- Fond de page propre à chaque thème (discret, en haut de page seulement) ---- */
+html body .frame{ background-repeat:no-repeat; }
+html[data-skin="defaut"] body .frame{ background-image:radial-gradient(70% 300px at 100% 0,rgba(106,75,255,.16),transparent 70%),radial-gradient(60% 260px at 0 0,rgba(190,235,60,.15),transparent 70%); }
+html[data-skin="sombre"] body .frame{ background-image:radial-gradient(80% 340px at 100% 0,rgba(120,86,255,.28),transparent 70%),radial-gradient(60% 260px at 0 0,rgba(212,255,63,.07),transparent 70%); }
+html[data-skin="soft"] body .frame{ background-image:radial-gradient(75% 320px at 0 0,rgba(233,119,158,.22),transparent 70%),radial-gradient(60% 260px at 100% 0,rgba(255,190,120,.18),transparent 70%); }
+html[data-skin="menthe"] body .frame{ background-image:radial-gradient(75% 320px at 0 0,rgba(47,174,135,.22),transparent 70%),radial-gradient(60% 240px at 100% 0,rgba(190,240,120,.20),transparent 70%); }
+html[data-skin="lofi"] body .frame{ background-image:radial-gradient(120px 44px at 80% 74px,rgba(255,255,255,.95),transparent 72%),radial-gradient(86px 34px at 66% 98px,rgba(255,255,255,.85),transparent 72%),radial-gradient(70px 28px at 16% 132px,rgba(255,255,255,.8),transparent 72%),linear-gradient(180deg,rgba(31,134,194,.2),rgba(31,134,194,.07) 190px,transparent 390px); }
+html[data-skin="prunier"] body .frame{ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='230' height='150' viewBox='0 0 230 150'><path d='M230 18C186 26 150 44 118 78S70 132 30 146' fill='none' stroke='%237A2A33' stroke-opacity='.22' stroke-width='3' stroke-linecap='round'/><path d='M150 46c-12-10-30-12-44-6' fill='none' stroke='%237A2A33' stroke-opacity='.2' stroke-width='2' stroke-linecap='round'/><g fill='%23F2B8C2' fill-opacity='.75'><g transform='translate(176 30)'><circle r='7' cy='-9'/><circle r='7' cx='8.6' cy='-2.8'/><circle r='7' cx='5.3' cy='7.3'/><circle r='7' cx='-5.3' cy='7.3'/><circle r='7' cx='-8.6' cy='-2.8'/></g><g transform='translate(118 74) scale(.8)'><circle r='7' cy='-9'/><circle r='7' cx='8.6' cy='-2.8'/><circle r='7' cx='5.3' cy='7.3'/><circle r='7' cx='-5.3' cy='7.3'/><circle r='7' cx='-8.6' cy='-2.8'/></g><g transform='translate(104 38) scale(.62)'><circle r='7' cy='-9'/><circle r='7' cx='8.6' cy='-2.8'/><circle r='7' cx='5.3' cy='7.3'/><circle r='7' cx='-5.3' cy='7.3'/><circle r='7' cx='-8.6' cy='-2.8'/></g><g transform='translate(62 122) scale(.7)'><circle r='7' cy='-9'/><circle r='7' cx='8.6' cy='-2.8'/><circle r='7' cx='5.3' cy='7.3'/><circle r='7' cx='-5.3' cy='7.3'/><circle r='7' cx='-8.6' cy='-2.8'/></g></g><g fill='%23C8102E' fill-opacity='.55'><circle cx='176' cy='30' r='2.6'/><circle cx='118' cy='74' r='2.2'/><circle cx='104' cy='38' r='1.8'/><circle cx='62' cy='122' r='2'/></g></svg>"),radial-gradient(80% 320px at 100% 0,rgba(200,16,46,.13),transparent 70%); background-size:176px auto,100% 100%; background-position:right -14px top 2px,0 0; }
+/* motifs répétés : une première couche les efface en douceur vers le bas */
+html[data-skin="samurai"] body .frame{ background-image:linear-gradient(180deg,transparent,var(--bg) 250px,var(--bg)),url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='30' viewBox='0 0 60 30'><g fill='none' stroke='%23C41E3A' stroke-opacity='.2' stroke-width='1.2'><circle cx='30' cy='30' r='28'/><circle cx='30' cy='30' r='19'/><circle cx='30' cy='30' r='10'/><circle cx='0' cy='15' r='28'/><circle cx='0' cy='15' r='19'/><circle cx='0' cy='15' r='10'/><circle cx='60' cy='15' r='28'/><circle cx='60' cy='15' r='19'/><circle cx='60' cy='15' r='10'/></g></svg>"); background-repeat:no-repeat,repeat; background-size:100% 100%,60px 30px; }
+html[data-skin="awale"] body .frame{ background-image:linear-gradient(180deg,transparent,var(--bg) 300px,var(--bg)),radial-gradient(rgba(247,233,212,.17) 1.3px,transparent 1.8px),radial-gradient(80% 300px at 100% 0,rgba(226,162,59,.24),transparent 70%); background-repeat:no-repeat,repeat,no-repeat; background-size:100% 100%,20px 20px,100% 100%; }
+html[data-skin="ocean"] body .frame{ background-image:linear-gradient(180deg,transparent,var(--bg) 230px,var(--bg)),url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='22' viewBox='0 0 80 22'><path d='M0 11c10-9 30-9 40 0s30 9 40 0' fill='none' stroke='%231F6FD1' stroke-opacity='.2' stroke-width='1.6'/></svg>"),linear-gradient(180deg,rgba(47,127,216,.22),rgba(47,127,216,.06)); background-repeat:no-repeat,repeat,no-repeat; background-size:100% 100%,80px 22px,100% 100%; }
+html[data-skin="esth"] body .frame{ background-image:linear-gradient(180deg,transparent,var(--bg) 340px,var(--bg)),linear-gradient(115deg,rgba(201,184,255,.42),rgba(255,194,223,.4) 45%,rgba(191,240,224,.4) 80%,rgba(201,184,255,.4)); background-size:100% 100%,100% 100%; }
+
+/* Prunier : pas de branche derrière l'en-tête d'une conversation (elle passerait sous le pseudo) */
+html[data-skin="prunier"] body .frame:has(.chat-page){ background-image:radial-gradient(80% 320px at 100% 0,rgba(200,16,46,.13),transparent 70%); background-size:100% 100%; background-position:0 0; }
+/* ---- Cartes : blanches (ou plus claires que la page), filet fin, ombre douce de la couleur du thème ---- */
+.mcard{ background:var(--s1); border:1px solid var(--hair); box-shadow:var(--e1); }
+.panel,.chat-row,.online-card,.filters,.pp-side{ border:1px solid var(--hair); box-shadow:var(--e1); }
+.chat-box{ border:1px solid var(--hair); }
+.top-match{ background:var(--s1); border-color:color-mix(in srgb,var(--pk) 45%,var(--line)); box-shadow:var(--e2); }
+@media (hover:hover){ .mcard:hover{ transform:translateY(-2px); box-shadow:var(--e2); border-color:color-mix(in srgb,var(--pk) 40%,var(--line)); } }
+.mcard:active,.chat-row:active,.online-card:active,.menu-row:active,.todo-item:active{ transform:scale(.985); }
+.dispo-card,.an-row,.mate-pill,.google-note,.skin,.chip,.pulse-chip{ border-width:1px; }
+.empty{ border:1px dashed color-mix(in srgb,var(--pk) 32%,var(--line)); }
+html[data-skin="samurai"] :is(.menu,.list-card,.dz,.chat-row,.online-card,.search-entry){ box-shadow:5px 5px 0 rgba(196,30,58,.14); }   /* Samouraï garde son ombre d'estampe */
+html[data-skin="esth"] :is(.mcard,.panel,.menu,.list-card,.dz){ border-color:transparent; background:linear-gradient(var(--s1),var(--s1)) padding-box,linear-gradient(120deg,#C9B8FF,#FFC2DF,#BFF0E0,#C9B8FF) border-box; }
+
+/* ---- Boutons, puces, champs ---- */
+.btn{ transition:transform .12s ease, box-shadow .2s ease, filter .2s ease; }
+.btn:active{ transform:scale(.97); }
+.btn-ac{ background-image:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.13)); box-shadow:inset 0 1px 0 rgba(255,255,255,.22), 0 10px 22px -12px color-mix(in srgb,var(--pk) 85%,transparent), 0 0 0 0 color-mix(in srgb,var(--pk) 18%,transparent); animation:none; }
+/* un seul bouton « respire » par écran : l'action principale (dispo, création de compte, demande de mate) — plus tous les boutons à la fois */
+.dispo-cta,.wl-cta .btn-ac,#mate{ animation:breathe2 3s ease-in-out infinite; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .dispo-cta{ box-shadow:inset 0 1px 0 rgba(255,255,255,.4), 0 10px 30px -12px rgba(160,210,30,.55), 0 0 0 0 rgba(190,235,60,.28); animation-name:breatheLime; }
+@keyframes breatheLime{ 50%{ box-shadow:inset 0 1px 0 rgba(255,255,255,.4), 0 10px 30px -12px rgba(160,210,30,.55), 0 0 0 7px rgba(190,235,60,.28); } }
+@keyframes breathe2{ 50%{ box-shadow:inset 0 1px 0 rgba(255,255,255,.22), 0 10px 22px -12px color-mix(in srgb,var(--pk) 85%,transparent), 0 0 0 6px color-mix(in srgb,var(--pk) 18%,transparent); } }
+.chip{ background:var(--s1); }
+.chip[aria-pressed="true"]{ background:var(--pk); box-shadow:0 8px 16px -10px color-mix(in srgb,var(--pk) 85%,transparent); }
+:is(a,button,summary,.chip):focus-visible{ outline:2px solid var(--pk); outline-offset:2px; }
+::selection{ background:color-mix(in srgb,var(--pk) 28%,transparent); color:var(--tx); }
+html{ caret-color:var(--pk); scrollbar-color:color-mix(in srgb,var(--pk) 45%,var(--line)) transparent; }
+h1,h2,h3,.btn{ text-wrap:balance; }
+.pp-side .btn{ padding-inline:14px; }
+[data-install-box] .hint + .btn{ margin-top:12px; }
+.ring span,.cnt,.tb-badge,.badge,.count,.todo-item b{ font-variant-numeric:tabular-nums; }
+
+/* message court en bas d'écran : il prend la largeur de son texte (il n'est plus coincé dans une demi-largeur) */
+.toast{ left:16px; right:16px; width:fit-content; max-width:calc(100% - 32px); margin-inline:auto; text-align:center; transform:translateY(20px); box-shadow:0 12px 28px -12px rgba(0,0,0,.5); }
+.toast.show{ transform:translateY(0); }
+/* ---- En-tête : translucide, le fond du thème passe dessous ---- */
+.top{ background:none; border-radius:0; }
+.top::before{ content:''; position:absolute; z-index:-1; inset:-14px -100vw -12px; background:var(--bg);
+  -webkit-mask-image:linear-gradient(#000 calc(100% - 16px),transparent); mask-image:linear-gradient(#000 calc(100% - 16px),transparent); }
+@supports ((-webkit-backdrop-filter:blur(2px)) or (backdrop-filter:blur(2px))) and (color:color-mix(in srgb,red 50%,blue)){
+  html:not(.lite) .top::before{ background:color-mix(in srgb,var(--bg) 78%,transparent); -webkit-backdrop-filter:saturate(1.4) blur(14px); backdrop-filter:saturate(1.4) blur(14px); }
+  @media (max-width:860px){ html:not(.lite) .tabbar{ background:color-mix(in srgb,var(--s1) 90%,transparent); -webkit-backdrop-filter:saturate(1.5) blur(16px); backdrop-filter:saturate(1.5) blur(16px); } }
+}
+.notif-btn,.skin-btn{ border-width:1px; border-color:var(--hair); background:var(--s1); box-shadow:var(--e1); }
+.page-head{ margin-bottom:18px; }
+.page-head p{ color:var(--mu); max-width:60ch; }
+.back{ display:inline-flex; align-items:center; gap:4px; min-height:40px; margin:-6px 0 6px -8px; padding:0 14px 0 8px; border-radius:999px; color:var(--mu); font-weight:600; font-size:14px; text-decoration:none; }
+.back:hover{ background:var(--s2); color:var(--tx); }
+.chat-head .back{ margin:0 0 0 -8px; flex:none; }
+.chat-form input,.range-row > input[type="text"]{ flex:1 1 0; min-width:0; } .chat-form .btn,.range-row > .btn{ flex:none; }   /* le champ rétrécit, pas le bouton */
+.chat-who{ flex:none; max-width:100%; } .chat-who > div{ display:grid; min-width:0; line-height:1.25; } .chat-who b{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .chat-who span{ white-space:nowrap; }
+.chat-contacts{ flex:1 1 0; min-width:0; justify-content:flex-end; }
+@media (max-width:860px){ .chat-who{ flex:1 1 0; min-width:0; } .chat-contacts{ flex:1 1 100%; justify-content:flex-start; } }
+
+/* ---- Barre d'onglets du bas : flottante, l'onglet actif dans une pastille ---- */
+@media (max-width:860px){
+  .tabbar{ left:10px; right:10px; bottom:calc(8px + env(safe-area-inset-bottom,0px)); padding:6px; border:1px solid var(--hair); border-radius:26px;
+    background:var(--s1); box-shadow:0 16px 36px -16px rgba(12,10,28,.5), 0 2px 6px rgba(12,10,28,.08); }
+  .tabbar a{ padding:4px 0 3px; gap:2px; border-radius:20px; font-size:11px; font-weight:600; color:var(--mu); -webkit-tap-highlight-color:transparent; }
+  .tabbar .tb-ico{ display:grid; place-items:center; width:56px; max-width:100%; height:30px; border-radius:999px; transition:background .2s ease, color .2s ease, transform .12s ease; }
+  .tabbar svg{ width:23px; height:23px; }
+  .tabbar a[aria-current="page"]{ color:var(--tx); font-weight:700; }
+  .tabbar a[aria-current="page"] .tb-ico{ background:var(--pk); color:var(--on-pk); box-shadow:0 8px 16px -8px color-mix(in srgb,var(--pk) 85%,transparent); }
+  .tabbar a:active .tb-ico{ transform:scale(.9); }
+  .tabbar .tb-badge{ top:1px; left:calc(50% + 9px); box-shadow:0 0 0 2px var(--s1); }
+  html[data-skin="samurai"] .tabbar a{ font-size:10px; letter-spacing:.02em; }
+  @media (max-width:340px){ .tabbar{ left:6px; right:6px; padding:6px 3px; } .tabbar a{ font-size:10.5px; } html[data-skin="samurai"] .tabbar a{ font-size:9.5px; letter-spacing:0; } }   /* petits écrans : les 5 mots tiennent en entier */
+  .facts div{ grid-template-columns:116px 1fr; }
+  .frame{ padding-bottom:104px; }
+  .toast{ bottom:calc(98px + env(safe-area-inset-bottom,0px)); }
+  body:has(.chat-page) .toast{ bottom:calc(152px + env(safe-area-inset-bottom,0px)); }   /* conversation : le message ne cache pas le champ d'écriture */
+  body:is(.logged-out,.no-profile) .toast{ bottom:calc(24px + env(safe-area-inset-bottom,0px)); }   /* pas de barre d'onglets sur ces écrans */
+  .form-actions{ bottom:calc(82px + env(safe-area-inset-bottom,0px)); }
+  .page{ padding-top:16px; }
+  .chat-page{ min-height:0; padding-bottom:0; height:calc(100vh - 164px); height:calc(100svh - 164px - env(safe-area-inset-bottom,0px)); }
+  .chat-box{ flex:1 1 0; min-height:0; max-height:none; }
+  @media (max-height:560px){ .chat-page{ height:auto; } .chat-box{ flex:none; height:300px; } }
+}
+
+/* ---- Accueil : bandeau court avec le dessin du thème ---- */
+.mh{ position:relative; isolation:isolate; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; gap:18px; min-height:232px; margin:-14px -14px 0; padding:14px 18px 20px; color:#fff; background:var(--art-bg,var(--pk)); border-radius:0 0 28px 28px; }
+.mh-art{ position:absolute; inset:0; z-index:-1; }
+.mh{ --scrim:10,6,36; --sk:.6; }   /* --sk : force du voile (dessins déjà sombres : léger ; dessins clairs : plein) */
+html:is([data-skin="samurai"],[data-skin="soft"],[data-skin="lofi"],[data-skin="esth"],[data-skin="menthe"]) .mh{ --sk:1; }
+html[data-skin="samurai"] .mh{ --scrim:46,8,16; } html[data-skin="soft"] .mh{ --scrim:104,20,60; } html[data-skin="lofi"] .mh{ --scrim:8,44,84; } html[data-skin="esth"] .mh{ --scrim:52,26,104; }
+html[data-skin="awale"] .mh{ --scrim:30,16,6; } html[data-skin="ocean"] .mh{ --scrim:4,28,68; } html[data-skin="menthe"] .mh{ --scrim:4,56,42; } html[data-skin="prunier"] .mh{ --scrim:44,6,34; }
+.mh-art::after{ content:''; position:absolute; inset:0; background:radial-gradient(ellipse var(--mh-rx,92%) 112% at 0 100%,rgba(var(--scrim),.72) 0,rgba(var(--scrim),.56) 45%,rgba(var(--scrim),0) 100%),
+  linear-gradient(180deg,rgba(var(--scrim),calc(.42*var(--sk))) 0,rgba(var(--scrim),calc(.18*var(--sk))) 26%,rgba(var(--scrim),calc(.62*var(--sk))) 55%,rgba(var(--scrim),calc(.86*var(--sk))) 100%); }   /* voile à la couleur du thème : le texte blanc reste lisible sur n'importe quel dessin */
+.mh-top{ display:flex; align-items:center; gap:12px; }
+.mh-top .navpill{ display:none; }
+.mh-right{ margin-left:auto; display:flex; gap:10px; }
+.mh .logo{ box-shadow:0 4px 18px rgba(0,0,0,.28); }
+.mh :focus-visible{ outline-color:#fff; }
+.mh .notif-btn,.mh .skin-btn{ background:rgba(10,8,30,.45); border-color:rgba(255,255,255,.24); color:#fff; box-shadow:none; -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); }
+.mh-hello{ margin:0; font-weight:600; font-size:15px; color:#fff; text-shadow:0 0 2px rgba(var(--scrim),.9),0 1px 10px rgba(var(--scrim),.85),0 0 22px rgba(var(--scrim),.7); }
+.mh-body h1{ margin:2px 0 0; font:var(--fdw) clamp(30px,8vw,48px)/1.04 var(--fd); color:#fff; text-transform:var(--case); letter-spacing:-.01em; text-shadow:0 0 3px rgba(var(--scrim),.85),0 2px 16px rgba(var(--scrim),.8),0 0 34px rgba(var(--scrim),.6); overflow-wrap:anywhere; }
+.mh-body h1.long{ font-size:clamp(21px,6.2vw,40px); }   /* pseudo long : plus petit, pour rester sur une ligne */
+.mh-online{ display:inline-flex; align-items:center; margin:12px 0 0; padding:6px 13px 6px 11px; border-radius:999px; background:rgba(8,6,26,.55); border:1px solid rgba(255,255,255,.18); font-size:13px; font-weight:600; color:#fff; }
+.home .home-top{ padding-top:16px; gap:14px; }
+@media (min-width:861px){ .mh{ --mh-rx:560px; margin:0; min-height:300px; padding:18px 26px 28px; border-radius:var(--rf); } .mh-top .navpill{ display:flex; } .home .home-top{ padding-top:22px; } }
+/* sections de l'accueil : le titre est posé sur la page, le contenu dans une seule carte */
+.home-sec{ display:grid; gap:10px; min-width:0; margin-top:6px; }
+.home-sec > .dispo-head{ margin:0; padding:0 2px; min-height:32px; }
+.home-sec .linkbtn{ color:var(--pk2,var(--pk)); font-weight:600; font-size:14px; text-decoration:none; padding:6px 2px 6px 8px; }
+.dispo-sec .dispo-cta{ width:100%; justify-content:center; min-height:52px; font-size:16px; }
+.dispo-sec .dispo-empty{ margin:0; }
+.dz-row{ display:flex; gap:10px; overflow-x:auto; scroll-snap-type:x proximity; scrollbar-width:none; margin:0 -22px; padding:4px 22px 14px; scroll-padding-inline:22px; }
+.dz-row::-webkit-scrollbar{ display:none; }
+.dz{ flex:none; width:136px; display:grid; align-content:space-between; justify-items:center; gap:10px; padding:16px 10px 10px; border-radius:var(--rc); background:var(--s1); border:1px solid var(--hair); box-shadow:var(--e1); scroll-snap-align:start; text-align:center; }
+.dz-who{ display:grid; justify-items:center; gap:1px; width:100%; min-width:0; text-decoration:none; color:inherit; }
+.dz-who .av{ margin-bottom:8px; border-radius:50% !important; box-shadow:0 0 0 2px var(--s1), 0 0 0 4px var(--hi); }   /* anneau « en direct » */
+.dz-who b{ max-width:100%; font-size:14px; color:var(--tx); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.dz-who span{ max-width:100%; font-size:13px; color:var(--mu); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.dz.same .dz-who span{ color:var(--hi-tx); font-weight:600; }
+.dz-who small{ font-size:12px; color:var(--mu); }
+.dz .btn{ width:100%; min-height:38px; padding-inline:8px; }
+.dz .dc-sent{ display:grid; place-items:center; min-height:38px; }
+.list-card{ display:grid; background:var(--s1); border:1px solid var(--hair); border-radius:var(--rc); box-shadow:var(--e1); overflow:hidden; }
+.list-card.pad{ gap:12px; padding:16px; }
+.list-card.rows{ margin:0; gap:0; }
+.list-card .row{ grid-template-columns:auto minmax(0,1fr) auto; gap:12px; padding:10px 14px; border-bottom:0; border-top:1px solid var(--hair); }
+.list-card > :first-child{ border-top:0; }
+.list-card .row .av{ border-radius:50%; }
+.list-card .row b{ font-size:15px; }
+.list-card .row p{ color:var(--mu); font-size:13px; white-space:normal; overflow:visible; }
+.lc-row{ display:flex; align-items:center; gap:12px; min-height:64px; padding:10px 14px; border-top:1px solid var(--hair); color:var(--tx); text-decoration:none; }
+.lc-row .av{ flex:none; border-radius:50%; }
+.lc-txt{ flex:1; min-width:0; display:grid; gap:1px; }
+.lc-txt b{ font-size:15px; overflow-wrap:anywhere; }
+.lc-txt small{ font-size:13px; color:var(--mu); }
+.lc-txt em{ font-style:normal; font-weight:700; color:var(--pk2,var(--pk)); }
+@media (hover:hover){ .list-card :is(.row,.lc-row):hover{ background:color-mix(in srgb,var(--pk) 6%,transparent); transform:none; } }
+@media (min-width:861px){
+  .home .home-top{ grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); column-gap:28px; align-items:start; }
+  .home-top > :is(.todo,.dispo-sec){ grid-column:1 / -1; }
+  .todo{ grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); }
+  .dispo-sec .dispo-cta{ width:auto; justify-self:start; padding-inline:28px; }
+  .dz-row{ margin:0; padding:4px 2px 14px; scroll-padding-inline:2px; }
+}
+@media (min-width:901px){ .pp{ grid-template-rows:auto 1fr; } }   /* ordinateur : plus de vide entre le nom du joueur et ses jeux */
+/* fiche joueur : rappel « dispo maintenant » */
+.pp-dispo{ flex:1 1 100%; display:flex; align-items:flex-start; gap:2px; margin:0; padding:10px 14px; border-radius:var(--ri); background:color-mix(in srgb,var(--hi) 12%,transparent); border:1px solid color-mix(in srgb,var(--hi) 40%,transparent); font-size:14px; color:var(--tx); }
+.pp-dispo .dot-live{ flex:none; margin-top:5px; }
+.pp-dispo em{ display:block; font-style:normal; color:var(--mu); }
+/* fenêtre d'un thème : le vrai dessin du thème en aperçu, son nom posé dessus, ses trois couleurs dans le coin */
+.buy-art{ position:relative; overflow:hidden; height:150px; margin:0 0 14px; border-radius:16px; background:var(--a); box-shadow:inset 0 0 0 1px rgba(0,0,0,.08), var(--e1); }
+@supports (aspect-ratio:1){ .buy-art{ height:auto; aspect-ratio:16 / 9; } }
+.buy-art-img{ position:absolute; inset:0; }
+.buy-art-img::after{ content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(10,8,24,.1) 0,rgba(10,8,24,.12) 32%,rgba(10,8,24,.86) 100%); }
+.buy-art-txt{ position:absolute; left:14px; right:14px; bottom:12px; }
+.buy-art-txt h3{ margin:0 0 2px; color:#fff; font:var(--fdw) 22px/1.15 var(--fd); text-transform:var(--case); text-shadow:0 1px 10px rgba(10,8,24,.7); }
+.buy-art-txt p{ margin:0; color:#fff; font-size:14px; line-height:1.35; text-shadow:0 1px 8px rgba(10,8,24,.8); }
+.buy-pal{ position:absolute; right:10px; top:10px; display:flex; gap:6px; padding:6px 8px; border-radius:999px; background:rgba(12,10,24,.55); }
+.buy-pal i{ width:14px; height:14px; border-radius:50%; background:var(--a); box-shadow:0 0 0 1.5px rgba(255,255,255,.85); }
+.buy-pal i:nth-child(2){ background:var(--b); } .buy-pal i:nth-child(3){ background:var(--c2); }
+.nw{ white-space:nowrap; font-style:normal; } .buy-opt strong{ white-space:nowrap; }
+/* à traiter : demandes de mate et messages non lus */
+.todo{ display:grid; gap:8px; }
+.todo-item{ display:flex; align-items:center; gap:12px; width:100%; min-height:54px; padding:10px 14px 10px 12px; border:1px solid color-mix(in srgb,var(--pk) 35%,var(--line)); border-radius:var(--rc); background:color-mix(in srgb,var(--pk) 9%,var(--s1)); color:var(--tx); font:600 15px var(--fb); text-align:left; text-decoration:none; cursor:pointer; }
+.todo-item b{ flex:none; display:grid; place-items:center; min-width:28px; height:28px; padding:0 8px; border-radius:999px; background:var(--pk); color:var(--on-pk); font:700 14px var(--fb); }
+.todo-item span{ flex:1; min-width:0; }
+.todo-item svg{ flex:none; color:var(--mu); }
+
+/* ---- Matchs : entrée de recherche, tri, rappel de profil ---- */
+.search-entry{ display:flex; align-items:center; gap:10px; min-height:50px; padding:0 16px; margin-bottom:14px; border:1px solid var(--line); border-radius:999px; background:var(--field); color:var(--mu); text-decoration:none; font-weight:500; box-shadow:var(--e1); }
+.search-entry svg{ flex:none; color:var(--pk2,var(--pk)); }
+.search-entry span{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sort-row{ align-items:center; margin-bottom:18px; }
+.sort-row .chip{ flex:0 1 auto; min-width:0; padding-inline:13px; }
+.sort-row .chip[aria-pressed="true"]::before{ content:none; }   /* la puce pleine suffit : pas de coche */
+@media (max-width:480px){ .sort-row .sort-lbl{ flex:1 1 100%; margin:0 0 -2px; } .sort-row .chip{ flex:1 1 0; padding-inline:8px; line-height:1.15; } }   /* téléphone : « Trier par » au-dessus, deux puces de même largeur (tient avec toutes les polices des thèmes) */
+.sort-lbl{ flex:none; white-space:nowrap; font-size:13px; font-weight:600; color:var(--mu); margin-right:2px; }
+a.nudge{ padding:12px 14px; margin-bottom:14px; border:1px dashed color-mix(in srgb,var(--pk) 40%,var(--line)); border-radius:var(--rc); background:color-mix(in srgb,var(--pk) 6%,transparent); }
+a.nudge > div{ flex:1; min-width:0; } a.nudge b{ display:block; } a.nudge span:not(.nudge-go){ font-size:13px; color:var(--mu); }
+.nudge-go{ flex:none; display:grid; place-items:center; width:32px; height:32px; border-radius:50%; background:var(--pk); color:var(--on-pk) !important; }
+/* ---- Recherche : jeux du moment (une ligne qui défile) ---- */
+.pulse{ margin-bottom:16px; } .pulse > b{ font-size:13px; font-weight:600; color:var(--mu); }
+.pulse-list{ flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; padding:2px 0 4px; } .pulse-list::-webkit-scrollbar{ display:none; }
+.pulse-chip{ flex:none; cursor:pointer; font-family:inherit; background:var(--s1); min-height:38px; }
+.pulse-chip.on{ background:var(--pk); border-color:var(--pk); color:var(--on-pk); } .pulse-chip.on i{ color:inherit; opacity:.9; }
+
+/* ---- Page Profil : carte « moi » et menu ---- */
+.me-card{ gap:16px; }
+.me-id{ display:flex; align-items:center; gap:14px; min-width:0; }
+.me-who{ display:grid; gap:2px; min-width:0; }
+.me-name{ font:var(--fdw) 22px/1.15 var(--fd); color:var(--tx); text-transform:var(--case); overflow-wrap:anywhere; }
+.me-who .muted{ font-size:14px; }
+.me-stats{ font-size:13px; font-weight:600; color:var(--pk2,var(--pk)); }
+.me-actions{ display:flex; gap:10px; flex-wrap:wrap; } .me-actions .btn{ flex:1 1 auto; }
+.menu{ display:grid; margin-top:16px; background:var(--s1); border:1px solid var(--hair); border-radius:var(--rc); box-shadow:var(--e1); overflow:hidden; }
+.menu-row{ display:flex; align-items:center; gap:14px; width:100%; min-height:64px; padding:10px 14px; border:0; border-top:1px solid var(--hair); background:none; color:var(--tx); font:inherit; text-align:left; text-decoration:none; cursor:pointer; }
+.menu-row:first-child{ border-top:0; }
+@media (hover:hover){ .menu-row:hover{ background:color-mix(in srgb,var(--pk) 6%,transparent); } }
+.menu-ico{ flex:none; display:grid; place-items:center; width:40px; height:40px; border-radius:12px; background:color-mix(in srgb,var(--pk) 12%,transparent); color:var(--pk2,var(--pk)); }
+.menu-ico svg{ width:22px; height:22px; }
+.menu-txt{ flex:1; min-width:0; display:grid; } .menu-txt b{ font-weight:700; } .menu-txt small{ font-size:13px; color:var(--mu); }
+.menu-go{ flex:none; color:var(--mu); }
+.menu-out{ display:block; width:100%; min-height:48px; margin-top:16px; border:1px solid var(--hair); border-radius:var(--rc); background:none; color:var(--lo-tx); font:700 15px var(--fb); cursor:pointer; }
+</style>
 </head>
 <body>
 
@@ -1586,19 +1826,20 @@ function updateFavicon(){ const draw=()=>{ try{ const cs=getComputedStyle(docume
   _favImg.complete ? draw() : _favImg.onload=draw; }
 // 5 onglets seulement : la recherche se range dans Matchs, les réglages dans Profil
 const NAV=[['accueil','Accueil'],['matchs','Matchs'],['groupes','Communauté'],['messages','Messages'],['profil','Profil']];
-const NAV_PARENT={recherche:'matchs',parametres:'profil'};   // page secondaire → onglet allumé
+const NAV_PARENT={recherche:'matchs',parametres:'profil',aide:'profil',contact:'profil',app:'profil',cgu:'profil',confidentialite:'profil',cookies:'profil',remboursement:'profil',moderation:'profil'};   // page secondaire → onglet allumé
 const TAB_LBL={groupes:'Commu'};
 function renderNav(active){
+  const navItems = isAdmin() ? [...NAV,['moderation','Modération']] : NAV;
+  const top = navItems.some(([r])=>r===active) ? active : (NAV_PARENT[active]||active);   // menu du haut (ordinateur) : « Modération » y a son propre onglet
   active=NAV_PARENT[active]||active;
   const cur = r => r===active ? 'aria-current="page"' : '';
-  const navItems = isAdmin() ? [...NAV,['moderation','Modération']] : NAV;
-  document.querySelectorAll('.navpill').forEach(n=>n.innerHTML = navItems.map(([r,l])=>`<a href="#/${r}" data-nav="${r}" ${cur(r)}>${l}</a>`).join(''));
+  document.querySelectorAll('.navpill').forEach(n=>n.innerHTML = navItems.map(([r,l])=>`<a href="#/${r}" data-nav="${r}" ${r===top?'aria-current="page"':''}>${l}</a>`).join(''));
   document.querySelectorAll('.logo').forEach(l=>l.innerHTML=LOGO);
   document.querySelectorAll('.skin-btn').forEach(b=>b.innerHTML=PALETTE_ICON);
   const online=visible().filter(p=>isOnline(p)).length;
   const liveTxt = online ? `${online} joueur${online>1?'s':''} en ligne` : (S.auth ? 'Bienvenue sur Coopô' : 'Nouveau : rejoins les premiers');
   document.querySelectorAll('.top-right').forEach(t=>t.innerHTML=`<span class="live">${liveTxt}</span><small>${S.auth?'connecté : '+esc(S.me?.name||S.auth.name):S.me?'profil : '+esc(S.me.name):'<a href="#/connexion">se connecter</a>'}</small>`);
-  document.getElementById('tabbar').innerHTML = NAV.map(([r,l])=>`<a href="#/${r}" data-nav="${r}" ${cur(r)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[r]}</svg><span>${TAB_LBL[r]||l}</span></a>`).join('');
+  document.getElementById('tabbar').innerHTML = NAV.map(([r,l])=>`<a href="#/${r}" data-nav="${r}" ${cur(r)}><i class="tb-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[r]}</svg></i><span>${TAB_LBL[r]||l}</span></a>`).join('');
   renderNotifBadge();
 }
 const app=document.getElementById('app');
@@ -1690,41 +1931,76 @@ function bloomSVG(){
 function viewHome(){
   if(DB.live&&S.me&&DB._loaded){ DB.refreshPlayers().then(changed=>{ if(changed&&(location.hash==='#/accueil'||location.hash===''||location.hash==='#/')) refreshAfterData(); }).catch(()=>{}); }
   const featured = S.me ? ranked().slice(0,3) : [];
-  const cta = S.me ? `<a class="btn btn-ac" href="#/matchs">Voir mes matchs</a>` : `<a class="btn btn-ac btn-lg" href="#/inscription">Créer mon compte</a><a class="linkbtn" href="#/connexion">J'ai déjà un compte</a>`;
-  app.innerHTML = `<div>
-  ${(S.skin==='defaut'||S.skin==='sombre') ? showcaseHTML() : `
-  <section class="hero2">
-    <div class="art">${(SKINS[S.skin]||SKINS.defaut).art()}
-      <div class="float-match" aria-label="Exemple : 83 % de compatibilité">
-        <div class="duo">${avatar({name:'Toi',avatar:{hue:330}},48)}${avatar({name:'Mate',avatar:{hue:200}},48)}</div>
-        ${ring(83)}<span class="lbl">toi × ton futur mate</span></div>
-      <div class="hero-title"><small>matchmaking entre joueurs</small><strong>${'Coopô'.split('').map((c,i)=>`<span class="w${c==='ô'?' brand-o':''}" style="--d:${i}">${c}</span>`).join('')}</strong></div>
-    </div>
-    <div class="tab tl"><a class="logo" href="#/accueil" aria-label="Coopô, accueil"></a><nav class="navpill" aria-label="Navigation principale"></nav><button class="notif-btn" type="button" aria-label="Notifications"></button>${skinBtn()}</div>
-    <div class="tab tr"><div class="top-right"></div></div>
-    <div class="tab bl">
-      <h2>trouve ton prochain <span class="hl">mate</span></h2>
-      <p>Des joueurs qui jouent aux mêmes jeux, aux mêmes heures, avec le même style que toi.</p>
-      <div class="hero-cta">${cta}</div>
-      ${S.me?'':'<p class="trust">Gratuit · dès 15 ans · profils modérés</p>'}
-    </div>
-  </section>`}
-  <div class="marq${(S.skin==='defaut'||S.skin==='sombre')?' hide':''}" aria-hidden="true"><div class="marq-track"><span>trouve ton mate</span><b>✺</b><span>mêmes jeux</span><b>✺</b><span>mêmes horaires</span><b>✺</b><span>même style</span><b>✺</b><span>joue ensemble</span><b>✺</b><span>trouve ton mate</span><b>✺</b><span>mêmes jeux</span><b>✺</b><span>mêmes horaires</span><b>✺</b><span>même style</span><b>✺</b><span>joue ensemble</span><b>✺</b></div></div>
-  <div class="wrap home-top" style="padding-top:26px">${dispoSection()}${bestMatchesHTML(featured)}${boardsTeaser()}${gamesPulse()}${profileNudge()}</div></div>`;
+  // Accueil allégé : un bandeau court, ce qu'il y a à traiter, qui est dispo, les meilleurs matchs, un mot de la communauté. Le reste vit dans son onglet.
+  app.innerHTML = `<div class="home">${homeBannerHTML()}
+  <div class="wrap home-top">${todoStrip()}${dispoSection()}${bestMatchesHTML(featured)}${boardsTeaser()}</div></div>`;
+}
+// Bandeau d'accueil : le dessin du thème en fond, un bonjour, le nombre de joueurs en ligne
+function homeBannerHTML(){
+  const online=visible().filter(p=>isOnline(p)).length, coopo=(S.skin==='defaut'||S.skin==='sombre');
+  const h=new Date().getHours(), hello = h<5?'Bonsoir':h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir';
+  return `<section class="mh" id="showcase">
+    <div class="mh-art" aria-hidden="true">${coopo?coopoSceneHTML():(SKINS[S.skin]||SKINS.defaut).art()}</div>
+    <div class="mh-top"><a class="logo" href="#/accueil" aria-label="Coopô, accueil"></a><nav class="navpill" aria-label="Navigation principale"></nav><div class="mh-right"><button class="notif-btn" type="button" aria-label="Notifications"></button>${skinBtn()}</div></div>
+    <div class="mh-body"><p class="mh-hello">${hello},</p><h1${S.me&&S.me.name.length>12?' class="long"':''}>${esc(S.me?S.me.name:'bienvenue')}</h1>
+      <p class="mh-online">${online?`<i class="dot-live"></i>${online} joueur${online>1?'s':''} en ligne`:'Invite tes amis pour jouer ensemble'}</p></div>
+  </section>`;
+}
+// Ce qui attend une réponse : demandes de mate reçues et messages non lus (rien ne s'affiche s'il n'y a rien)
+function todoStrip(){
+  const pend=pendingReceived().length, unread=Object.values(S.unread||{}).reduce((a,b)=>a+(+b||0),0);
+  if(!pend&&!unread) return '';
+  const go='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+  return `<div class="todo">${pend?`<button class="todo-item" type="button" data-notif-open><b>${pend}</b><span>demande${pend>1?'s':''} de mate à traiter</span>${go}</button>`:''}${unread?`<a class="todo-item" href="#/messages"><b>${unread}</b><span>message${unread>1?'s':''} non lu${unread>1?'s':''}</span>${go}</a>`:''}</div>`;
 }
 // Accueil : les 3 joueurs les plus compatibles, juste sous « Dispo maintenant »
 function bestMatchesHTML(featured){
   if(!S.me) return '';
-  return `<section class="panel reveal best"><div class="dispo-head"><h3>Meilleurs matchs</h3>${featured.length?'<a class="linkbtn" href="#/matchs">Tout voir</a>':''}</div>
-    ${featured.length?`<div class="rows">${featured.map(({p,c})=>`<a class="row" href="#/joueur/${p.id}">${avatar(p,52)}<div><b>${esc(p.name)}${modBadge(p)}</b><p>${esc(p.games.slice(0,3).join(', '))}</p></div>${ring(c.pct,'ring-sm')}</a>`).join('')}</div>`
-      :`<p class="muted">Aucun joueur compatible pour l'instant : Coopô vient d'ouvrir. Invite tes amis, chaque inscrit peut devenir ton mate.</p><div><button class="btn btn-sm btn-ac" type="button" data-ref-share>Inviter mes amis</button></div>`}</section>`;
+  return `<section class="home-sec reveal best"><div class="dispo-head"><h3>Meilleurs matchs</h3>${featured.length?'<a class="linkbtn" href="#/matchs">Tout voir</a>':''}</div>
+    ${featured.length?`<div class="list-card rows">${featured.map(({p,c})=>`<a class="row" href="#/joueur/${p.id}">${avatar(p,48)}<div><b>${esc(p.name)}${modBadge(p)}</b><p>${esc(p.games.slice(0,2).join(', '))}${p.games.length>2?` +${p.games.length-2}`:''}</p></div>${ring(c.pct,'ring-sm')}</a>`).join('')}</div>`
+      :`<div class="list-card pad"><p class="muted">Aucun joueur compatible pour l'instant : Coopô vient d'ouvrir. Invite tes amis, chaque inscrit peut devenir ton mate.</p><div><button class="btn btn-sm btn-ac" type="button" data-ref-share>Inviter mes amis</button></div></div>`}</section>`;
 }
 /* ----- Mon profil (création / modification) ----- */
 let draft;
-function viewProfile(){
+// Icônes des lignes du menu Profil (même trait que les icônes de navigation)
+const MENU_ICO={
+  gift:'<path d="M4 11h16v9H4zM3 7h18v4H3zM12 7v13"/><path d="M12 7c-1-3.5-5-3.5-5-.8C7 8 9.5 7 12 7zm0 0c1-3.5 5-3.5 5-.8C17 8 14.5 7 12 7z"/>',
+  share:'<circle cx="6" cy="12" r="2.5"/><circle cx="17" cy="6" r="2.5"/><circle cx="17" cy="18" r="2.5"/><path d="M8.2 10.9l6.6-3.7M8.2 13.1l6.6 3.7"/>',
+  help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.2c-.7.4-1.1.9-1.1 1.8M12 17h.01"/>',
+  shield:'<path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6z"/>',
+  palette:'<path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.9 1.4-2l-.3-.8c-.4-1.1.4-2.2 1.6-2.2H17a4 4 0 0 0 4-4c0-5-4-9-9-9z"/><circle cx="7.5" cy="11.5" r="1"/><circle cx="10.5" cy="7.5" r="1"/><circle cx="15" cy="7.5" r="1"/>',
+};
+const menuRow = (ico,title,sub,href,attr='') => { const inner=`<i class="menu-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ico}</svg></i><span class="menu-txt"><b>${title}</b><small>${sub}</small></span><svg class="menu-go" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>`;
+  return href ? `<a class="menu-row" href="${href}" ${attr}>${inner}</a>` : `<button class="menu-row" type="button" ${attr}>${inner}</button>`; };
+// Page Profil : qui je suis, puis tout ce qui concerne mon compte, une ligne par chose à faire
+function viewProfileHub(){
+  const me=publicMe(), mates=matesList().length, rj=+S.me.rejoue||0, games=(S.me.games||[]).slice(0,3);
+  app.innerHTML=`<div class="wrap page" style="max-width:760px">
+    <div class="page-head"><div><h2>Profil</h2></div></div>
+    <section class="panel me-card">
+      <div class="me-id">${avatar(me,72)}<div class="me-who"><b class="me-name">${esc(S.me.name)}${modBadge(me)}</b>${games.length?`<span class="muted">${esc(games.join(' · '))}</span>`:''}
+        <span class="me-stats">${mates} mate${mates>1?'s':''}${rj?` · ${rj} ${rj>1?'rejoueraient':'rejouerait'} avec toi`:''}</span></div></div>
+      <div class="me-actions"><a class="btn btn-ac" href="#/profil/modifier">Modifier mon profil</a><button class="btn btn-ghost" type="button" data-preview-profile>Voir mon profil public</button></div>
+    </section>
+    <nav class="menu" aria-label="Mon compte">
+      ${menuRow(ICONS.parametres,'Réglages','Confidentialité et compte','#/parametres')}
+      ${menuRow(MENU_ICO.palette,'Thèmes',`Thème actuel : ${esc((SKINS[S.skin]||SKINS.defaut).label)}`,'#/parametres/themes')}
+      ${menuRow(MENU_ICO.gift,'Inviter des amis','Un thème offert à vous deux','','data-ref-share')}
+      ${menuRow(MENU_ICO.share,'Partager mon profil','Envoie ton lien à tes amis','','data-share-profile')}
+      ${menuRow(MENU_ICO.help,'Aide','Questions et contact','#/aide')}
+      ${isAdmin()?menuRow(MENU_ICO.shield,'Modération','Signalements à traiter','#/moderation'):''}
+    </nav>
+    ${S.auth?'<button class="menu-out" type="button" data-signout>Se déconnecter</button>':''}
+  </div>`;
+}
+function previewProfile(){ modal(`<h3>Ton profil public</h3><p class="muted">Ce que les autres joueurs voient.</p><div style="margin-top:16px">${matchCard({p:publicMe(),c:null})}</div>
+    <p class="hint" style="margin-top:12px">Discord : ${S.privacy.discord?'visible':'masqué'} · Pseudos en jeu : ${S.privacy.tags?'visibles':'masqués'}</p><div class="dlg-actions"><button class="btn" data-close>Fermer</button></div>`); }
+document.addEventListener('click',e=>{ if(e.target.closest('[data-preview-profile]')) previewProfile(); if(e.target.closest('[data-share-profile]')) shareProfile(); });
+function viewProfile(tab){
   if(!S.auth && !S.me){ location.hash='#/inscription'; return; }
   if(!S.me && dataPending()) return loadingView('Mon profil');   // compte existant en cours de chargement : ne pas afficher l'inscription
   if(!S.me) return viewOnboard();
+  if(tab!=='modifier' && profileComplete()) return viewProfileHub();   // profil complet : la page menu ; le formulaire s'ouvre avec « Modifier mon profil »
   const isNew=!S.me;
   draft = JSON.parse(JSON.stringify(S.me || { name:S.auth?suggestName(S.auth.name):'', avatar:{hue:[265,330,10,45,150,200][Math.floor(Math.random()*6)]}, discord:'', whatsapp:'', games:[], tags:{}, ranks:{}, roles:{}, hours:[], days:[], style:'', goal:'both', voice:'parfois', platforms:[], country:'', langs:['fr'] }));
   // profil incomplet (ancienne version, données partielles) : on complète les champs manquants au lieu de planter
@@ -1734,10 +2010,10 @@ function viewProfile(){
   draft.ranks=draft.ranks||{}; draft.langs=draft.langs||['fr'];
   if(!draft.dob) draft.dob=knownDob();
   const hues=[265,330,10,45,150,200];
-  app.innerHTML = `<div class="wrap page">
-  <div class="page-head"><div><h2>${isNew?'Créer mon profil':'Mon profil'}</h2>
+  app.innerHTML = `<div class="wrap page">${profileComplete()?backLink('#/profil','Profil'):''}
+  <div class="page-head"><div><h2>${isNew?'Créer mon profil':profileComplete()?'Modifier mon profil':'Complète ton profil'}</h2>
     <p>${isNew?'Étape 2 sur 3 · Ajoute tes jeux et tes habitudes pour découvrir tes matchs. Ton profil est nécessaire pour accéder à Coopô.':'Tes modifications mettent à jour tes pourcentages de compatibilité.'}</p>${isNew&&S.auth?`<p class="muted" style="font-size:13px">Connecté : ${esc(S.auth.email||S.auth.name||'')} · <button class="linklike" type="button" data-signout>Se déconnecter</button></p>`:''}</div>
-    ${isNew?'':'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" type="button" id="preview">Voir mon profil public</button><button class="btn btn-sm" type="button" id="share">Partager mon profil</button><a class="btn btn-sm" href="#/parametres">Paramètres</a></div>'}</div>
+    ${isNew?'':'<button class="btn btn-ghost btn-sm" type="button" data-preview-profile>Aperçu</button>'}</div>
   ${isNew&&!S.auth?`<section class="panel login" style="margin-bottom:18px"><h3>Gagne du temps</h3><p class="muted">Crée ton compte en un clic : ton nom et ta photo sont préremplis.</p><div class="gbtn"></div><div class="or"><span>ou remplis le formulaire avec un mot de passe</span></div></section>`:''}
   <form class="form" id="pf" novalidate>
     <section class="panel"><h3>Compte</h3>
@@ -1798,11 +2074,8 @@ function viewProfile(){
     bar.style.setProperty('--w',s*25+'%'); bar.style.setProperty('--sc',['var(--lo)','var(--lo)','var(--warm)','var(--mid)','var(--hi)'][s]); });
   document.getElementById('f-av')?.addEventListener('change',e=>loadAvatar(e.target.files[0]));
   document.getElementById('f-country').addEventListener('change',e=>{ draft.country=e.target.value; });
-  document.getElementById('share')?.addEventListener('click',shareProfile);
   document.getElementById('add-game').addEventListener('click',addOtherGame);
   document.getElementById('f-other').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); addOtherGame(); }});
-  document.getElementById('preview')?.addEventListener('click',()=>modal(`<h3>Ton profil public</h3><p class="muted">Ce que les autres joueurs voient.</p><div style="margin-top:16px">${matchCard({p:publicMe(),c:null})}</div>
-    <p class="hint" style="margin-top:12px">Discord : ${S.privacy.discord?'visible':'masqué'} · Pseudos en jeu : ${S.privacy.tags?'visibles':'masqués'}</p><div class="dlg-actions"><button class="btn" data-close>Fermer</button></div>`));
   f.addEventListener('submit',submitProfile);
 }
 
@@ -1917,7 +2190,7 @@ async function submitProfile(e){
   Object.keys(draft.ranks).forEach(g=>{ if(!draft.games.includes(g)) delete draft.ranks[g]; });
   Object.keys(draft.roles||{}).forEach(g=>{ if(!draft.games.includes(g)) delete draft.roles[g]; });
   if(!draft.langs.length) draft.langs=['fr'];
-  const prevMe=S.me, sLabel=sbtn?sbtn.textContent:'';
+  const prevMe=S.me, sLabel=sbtn?sbtn.textContent:'', wasComplete=profileComplete();
   S.me={...draft,id:'me'}; if(S.auth) S.profiles[S.auth.uid]=S.me; if(isNew) S.onboard=true; save();
   if(sbtn){ sbtn.disabled=true; sbtn.textContent='Enregistrement…'; }
   if(!(await DB.saveProfile(S.me))){   // échec : on revient à l'ancien profil, sans faire croire que c'est enregistré
@@ -1926,7 +2199,7 @@ async function submitProfile(e){
     fe.scrollIntoView({block:'center'}); return; }
   demoScheduleIncoming();
   toast(isNew?'Profil créé':'Modifications enregistrées');
-  let next='#/matchs'; if(isNew){ try{ next=sessionStorage.getItem('coopo_after_profile')||sessionStorage.getItem('coopo_after_login')||'#/matchs'; sessionStorage.removeItem('coopo_after_profile'); sessionStorage.removeItem('coopo_after_login'); }catch(e){} }
+  let next=wasComplete?'#/profil':'#/matchs'; if(isNew){ try{ next=sessionStorage.getItem('coopo_after_profile')||sessionStorage.getItem('coopo_after_login')||'#/matchs'; sessionStorage.removeItem('coopo_after_profile'); sessionStorage.removeItem('coopo_after_login'); }catch(e){} }
   location.hash=next;
 }
 function publicMe(){ return {...S.me, online:S.privacy.online, lastSeen:Date.now()}; }
@@ -1961,8 +2234,10 @@ function viewMatches(){
   const vis=visible(), mates=matesList(), onlineNow=ranked().filter(({p})=>isOnline(p));
   let r=ranked(); if(S.sort==='online') r=[...r].sort((a,b)=>(isOnline(b.p)-isOnline(a.p))||(b.c.pct-a.c.pct));
   app.innerHTML=`<div class="wrap page">
-    <div class="page-head"><div><h2>Mes matchs</h2><p>${r.length?`${r.length} joueur${r.length>1?"s":""} classé${r.length>1?"s":""} du plus compatible au moins compatible.`:"Aucun joueur de ta tranche d'âge n'est encore inscrit."}</p></div>
-      <div class="chips"><button type="button" class="chip" data-sort="compat" aria-pressed="${S.sort!=='online'}">Compatibilité</button><button type="button" class="chip" data-sort="online" aria-pressed="${S.sort==='online'}">En ligne d'abord</button><a class="btn btn-ghost btn-sm" href="#/recherche"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">${ICONS.recherche}</svg>Rechercher</a></div></div>
+    <div class="page-head"><div><h2>Mes matchs</h2><p>${r.length?`${r.length} joueur${r.length>1?"s":""}, du plus compatible au moins compatible.`:"Aucun joueur de ta tranche d'âge n'est encore inscrit."}</p></div></div>
+    <a class="search-entry" href="#/recherche"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">${ICONS.recherche}</svg><span>Chercher un joueur, un jeu…</span></a>
+    ${profileNudge()}
+    ${r.length>1?`<div class="chips sort-row" role="group" aria-label="Trier"><span class="sort-lbl">Trier par</span><button type="button" class="chip" data-sort="compat" aria-pressed="${S.sort!=='online'}">Compatibilité</button><button type="button" class="chip" data-sort="online" aria-pressed="${S.sort==='online'}">En ligne d'abord</button></div>`:''}
     ${onlineNow.length?`<h3 style="margin-bottom:10px"><span class="online"></span> En ligne maintenant</h3><div class="online-strip">${onlineNow.slice(0,10).map(({p,c})=>`<a class="online-card" href="#/joueur/${p.id}">${avatar(p,56)}<b>${esc(p.name)}${modBadge(p)}</b><span style="color:${tierTx(c.pct)}">${c.pct} %</span></a>`).join('')}</div>`:''}
     ${mates.length?`<h3 style="margin-bottom:10px">Mes mates</h3><div class="mates-strip">${mates.map(p=>`<a class="mate-pill" href="#/joueur/${p.id}">${avatar(p,28)}${esc(p.name)}${modBadge(p)}</a>`).join('')}</div>`:''}
     ${r.length?'':`<div class="empty"><h3>Coopô vient d'ouvrir</h3><p class="muted">Les premiers joueurs arrivent. Partage le site à tes amis : dès qu'un joueur compatible s'inscrit, il apparaît ici.</p><button class="btn btn-ac" type="button" id="ref-share">Inviter mes amis</button></div>`}
@@ -1985,7 +2260,9 @@ function viewSearch(){
   const games=[...new Set([...GAMES,...visible().flatMap(p=>p.games),...(F.game?[F.game]:[])])];   // la liste + les jeux ajoutés par les joueurs
   const nMore=F_MORE.filter(k=>F[k]).length;
   app.innerHTML=`<div class="wrap page">
-    <div class="page-head"><div><h2>Recherche</h2><p>Trouve un joueur par son pseudo ou selon tes critères.</p></div><a class="btn btn-sm" href="#/matchs">Mes matchs</a></div>
+    ${backLink('#/matchs','Mes matchs')}
+    <div class="page-head"><div><h2>Recherche</h2><p>Trouve un joueur par son pseudo ou selon tes critères.</p></div></div>
+    ${gamesPulse()}
     <div class="filters" id="filters">
       <div class="field"><label for="s-q">Pseudo</label><input id="s-q" type="search" data-f="q" value="${esc(F.q)}" placeholder="Rechercher un joueur" autocomplete="off"></div>
       ${sel('s-g','game','Jeu','Tous',games.map(g=>[g,g]))}
@@ -2036,14 +2313,14 @@ function viewPlayer(id){
   const c=S.me&&!self?compat(S.me,p):null, q=self?null:reqWith(id), mate=!!q&&q.status==='accepted';
   const shared = g => S.me&&!self&&S.me.games.includes(g);
   const showTags = self ? S.privacy.tags : !(p.privacy && p.privacy.tags===false);
-  const mateBtn = self ? `<a class="btn btn-ac" href="#/profil">Modifier mon profil</a>` : !S.me ? `<a class="btn btn-ac" href="#/inscription">Crée ton compte pour le contacter</a>`
+  const mateBtn = self ? `<a class="btn btn-ac" href="#/profil/modifier">Modifier mon profil</a>` : !S.me ? `<a class="btn btn-ac" href="#/inscription">Crée ton compte pour le contacter</a>`
     : !q ? `<button class="btn btn-ac" id="mate">Envoyer une demande de mate</button>`
     : q.status==='pending' && q.from==='me' ? `<p class="hint">Demande envoyée · en attente</p><button class="btn btn-ghost btn-sm" id="cancel">Annuler la demande</button>`
     : q.status==='pending' ? `<p class="hint">${esc(p.name)} veut devenir ton mate</p><div class="nact"><button class="btn btn-ac" id="accept">Accepter</button><button class="btn btn-ghost" id="decline">Refuser</button></div>`
     : `<p class="mates-ok">✓ Vous êtes mates</p><a class="btn btn-ac" href="#/messages/${p.id}">Envoyer un message</a>`;
-  app.innerHTML=`<div class="wrap page"><a class="linkbtn" href="#/matchs" data-back style="display:inline-block;margin-bottom:16px">Retour</a>
+  app.innerHTML=`<div class="wrap page"><a class="back" href="#/matchs" data-back><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Retour</a>
   <div class="pp">
-    <div class="pp-head">${avatar(p,88)}<div><h1>${esc(p.name)}${modBadge(p)}</h1><div class="pp-meta">${isMod(p)?`<span class="mod-tag">${MOD_SVG}Modérateur</span>`:''}${isOnline(p)?'<span class="online">En ligne</span>':`<span class="muted" style="font-size:13px">${seenTxt(p)}</span>`}${p.country?`<span class="muted">· ${esc(L(COUNTRIES,p.country))}</span>`:''}${(p.langs||[]).length?`<span class="muted">· ${p.langs.map(x=>L(LANGS,x)).join(', ')}</span>`:''}${p.rejoue?`<span class="rejoue" title="Nombre de mates qui rejoueraient avec ce joueur">👍 ${+p.rejoue||0} ${(+p.rejoue||0)>1?'rejoueraient':'rejouerait'} avec lui</span>`:''}</div></div></div>
+    <div class="pp-head">${avatar(p,88)}<div><h1>${esc(p.name)}${modBadge(p)}</h1><div class="pp-meta">${isMod(p)?`<span class="mod-tag">${MOD_SVG}Modérateur</span>`:''}${isOnline(p)?'<span class="online">En ligne</span>':`<span class="muted" style="font-size:13px">${seenTxt(p)}</span>`}${p.country?`<span class="muted">· ${esc(L(COUNTRIES,p.country))}</span>`:''}${(p.langs||[]).length?`<span class="muted">· ${p.langs.map(x=>L(LANGS,x)).join(', ')}</span>`:''}${p.rejoue?`<span class="rejoue" title="Nombre de mates qui rejoueraient avec ce joueur">👍 ${+p.rejoue||0} ${(+p.rejoue||0)>1?'rejoueraient':'rejouerait'} avec lui</span>`:''}</div></div>${!self&&dispoActive(p)?`<p class="pp-dispo"><i class="dot-live"></i><span><b>Dispo maintenant</b> pour ${esc(p.dispo.game)}, jusqu'à ${fmtUntil(p.dispo.until)}${p.dispo.note?`<em>${esc(p.dispo.note)}</em>`:''}</span></p>`:''}</div>
     <div class="pp-main">
     <section class="panel"><h3>Jeux</h3><div class="tags">${p.games.map(g=>`<div class="gametag${shared(g)?' shared':''}"><span>${esc(g)}${p.ranks&&p.ranks[g]?` <small class="rank">${esc(rankLabel(g,p.ranks[g]))}</small>`:''}${p.roles&&p.roles[g]?` <small class="rank role">${esc(p.roles[g])}</small>`:''}</span><em>${showTags&&p.tags[g]?esc(p.tags[g]):(shared(g)?'En commun':'')}</em></div>`).join('')}</div></section>
     <section class="panel"><h3>Habitudes de jeu</h3><dl class="facts">
@@ -2149,12 +2426,14 @@ const discordOK = () => /^https:\/\/(discord\.gg|discord\.com\/invite)\/[A-Za-z0
 const DISCORD_ICO='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>';
 const discordBtn = (cls='btn btn-sm') => discordOK() ? `<a class="${cls} discord-link" href="${esc(DISCORD_INVITE)}" target="_blank" rel="noopener noreferrer">${DISCORD_ICO}Rejoindre le Discord COOPO</a>` : '';
 if(discordOK()){ const ft=document.querySelector('.foot'); if(ft) ft.insertAdjacentHTML('afterbegin',`<a href="${esc(DISCORD_INVITE)}" target="_blank" rel="noopener noreferrer">Discord</a>`); }
+const backAuto = () => `<a class="back" href="${S.me?'#/profil':'#/bienvenue'}" data-back><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Retour</a>`;
+const backLink = (href,label) => `<a class="back" href="${href}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>${label}</a>`;
 const fold = (title,body,open=false,id='') => `<details class="panel fold"${id?` id="${id}"`:''}${open?' open':''}><summary><h3>${title}</h3></summary><div class="fold-body">${body}</div></details>`;
 function viewSettings(tab){
-  if(!S.me) return needProfile('Paramètres');
+  if(!S.me) return needProfile('Réglages');
   const blocked=PLAYERS.filter(p=>S.blocked.includes(p.id)), w=S.weights||CONFIG.weights;
   const tg=(k,t,h)=>`<div class="toggle"><div><label for="pv-${k}" class="lbl">${t}</label><p class="hint">${h}</p></div><input class="switch" type="checkbox" id="pv-${k}" data-pv="${k}" ${S.privacy[k]?'checked':''}></div>`;
-  app.innerHTML=`<div class="wrap page" style="max-width:760px"><div class="page-head"><div><h2>Paramètres</h2></div><a class="btn btn-sm" href="#/profil">Mon profil</a></div><div class="form">${emailVerifyPanel()}
+  app.innerHTML=`<div class="wrap page" style="max-width:760px">${backLink('#/profil','Profil')}<div class="page-head"><div><h2>Réglages</h2><p>Thème, confidentialité, notifications et compte.</p></div></div><div class="form">${emailVerifyPanel()}
     ${fold(`Thème · <span data-skin-now>${esc((SKINS[S.skin]||SKINS.defaut).label)}</span>`, `${skinGrid()}${AUTH_LIVE&&PAID_SKINS.some(x=>!canUseSkin(x))&&(SHOP.currencies||Object.keys(CURRENCIES)).length>1?`<div class="field" style="margin-top:12px;max-width:320px"><label for="set-cur">Devise des prix</label><select id="set-cur">${Object.entries(CURRENCIES).filter(([k])=>curOK(k)).map(([k,v])=>`<option value="${k}" ${k===curCode()?'selected':''}>${v.label} (${k})</option>`).join('')}</select></div>`:''}`, tab==='themes', 'set-theme')}
     <section class="panel"><h3>Affichage</h3><div>
       <div class="toggle"><div><label for="set-lite" class="lbl">Mode léger</label><p class="hint">Moins d'animations : plus fluide sur les petits téléphones, et la batterie tient mieux.</p></div><input class="switch" type="checkbox" id="set-lite" ${liteOn()?'checked':''}></div></div></section>
@@ -2474,25 +2753,6 @@ function coopoSceneHTML(){
   </svg>
 </div>`;
 }
-function showcaseHTML(){
-  const online=visible().filter(p=>isOnline(p)).length;
-  return `<section class="showcase" id="showcase">${coopoSceneHTML()}
-    <div class="sc-top"><a class="logo" href="#/accueil" aria-label="Coopô, accueil"></a><span class="sc-brand">Coop<b class="brand-o">ô</b></span><nav class="navpill" aria-label="Navigation principale"></nav>
-      <div class="sc-right"><button class="notif-btn" type="button" aria-label="Notifications"></button>${skinBtn()}</div></div>
-    <div class="sc-body">
-      <div class="sc-text">
-        <h1>Trouve ton<br>prochain mate</h1>
-        <p>Des joueurs qui jouent aux mêmes jeux, aux mêmes heures, avec le même style que toi.</p>
-        <div class="hero-cta">${S.me ? `<a class="btn btn-ac btn-lg" href="#/matchs">Voir mes matchs</a>`
-          : `<a class="btn btn-ac btn-lg" href="#/inscription">Créer mon compte</a><a class="linkbtn" href="#/connexion">J'ai déjà un compte</a>`}</div>
-        ${S.me?'':'<p class="trust">Gratuit · dès 15 ans · profils modérés</p>'}
-      </div>
-      <div class="sc-side">
-        <div class="sc-stat">${online?`<b>${online}</b><span>joueur${online>1?"s":""} en ligne maintenant</span>`:`<b>Nouveau</b><span>Sois parmi les premiers inscrits</span>`}</div>
-      </div>
-    </div>
-  </section>`;
-}
 // léger effet de profondeur de la scène au défilement
 (function(){
   let ticking=false;
@@ -2607,16 +2867,16 @@ function mintSVG(){
 }
 
 const SKINS = {
-  defaut:{label:'Coopô',   desc:'Le thème officiel : clair, violet et citron',     sw:['#F6F5FB','#FFFFFF','#6A4BFF'], art:shapesSVG},
+  defaut:{label:'Coopô',   desc:'Officiel : clair, violet et citron',     sw:['#F6F5FB','#FFFFFF','#6A4BFF'], art:shapesSVG},
   samurai:{label:'Samouraï',  desc:'Rouge, crème et vagues japonaises', sw:['#C41E3A','#F4ECE1','#17110F'], art:samuraiSVG},
   soft:  {label:'Soft',       desc:'Rose pastel et fleurs',            sw:['#E9779E','#FFFFFF','#D9478A'], art:()=>bloomSVG()},
-  lofi:  {label:'Lo-fi',      desc:'Ciel d\'été, grands nuages et herbes au vent', sw:['#1F86C2','#FFFFFF','#6CBF3A'], art:lofiSVG},
+  lofi:  {label:'Lo-fi',      desc:'Ciel d\'été, nuages et herbes au vent', sw:['#1F86C2','#FFFFFF','#6CBF3A'], art:lofiSVG},
   esth:  {label:'Esthétique', desc:'Pastels et soleil rétro',          sw:['#C9B8FF','#FCFAFF','#8A6CF0'], art:esthSVG},
-  awale: {label:'Awalé',      desc:'Plateau en bois, graines et motifs bogolan', sw:['#1E120A','#3A2618','#E2A23B'], art:awaleSVG},
+  awale: {label:'Awalé',      desc:'Plateau en bois, graines et bogolan', sw:['#1E120A','#3A2618','#E2A23B'], art:awaleSVG},
   sombre:{label:'Sombre',     desc:'La version nuit du thème officiel',             sw:['#0C0A14','#16131F','#D4FF3F'], art:shapesSVG},
   ocean: {label:'Océan',      desc:'Fond marin, poissons et bulles',             sw:['#2F7FD8','#FFFFFF','#1F6FD1'], art:oceanSVG},
   menthe:{label:'Menthe',     desc:'Collines, brume et papillons',             sw:['#2FAE87','#FFFFFF','#128A6A'], art:mintSVG},
-  prunier:{label:'Prunier',    desc:'Fleurs de prunier blanches sur rouge profond', sw:['#C8102E','#FFFFFF','#2A1210'], art:prunierSVG},
+  prunier:{label:'Prunier',    desc:'Fleurs de prunier sur rouge profond', sw:['#C8102E','#FFFFFF','#2A1210'], art:prunierSVG},
 };
 /* ---- Boutique de thèmes (prix identiques à functions/index.js) ---- */
 // enabled  : true -> les thèmes payants sont verrouillés (false -> tout est gratuit)
@@ -2680,8 +2940,8 @@ function buyModal(id){
       ${minor?`<label class="buy-consent"><input type="checkbox" id="buy-parent"> Un parent ou tuteur est d'accord avec cet achat.</label>`:''}
       <p class="muted buy-note">Paiement sécurisé par CinetPay : Orange Money, MTN, Moov, Wave ou carte bancaire. Lié à ton compte, remboursable 14 jours : <a href="#/remboursement" data-close>politique de remboursement</a>.</p>
       <p class="ferr" id="buy-err" role="alert"></p>`;
-  modal(`<h3>Thème ${esc(t.label)}</h3><p class="muted">${esc(t.desc)}</p>
-    <div class="buy-sw sw" style="--a:${t.sw[0]};--b:${t.sw[1]};--c2:${t.sw[2]}"><i></i></div>
+  modal(`<div class="buy-art" style="--a:${t.sw[0]};--b:${t.sw[1]};--c2:${t.sw[2]}"><div class="buy-art-img" aria-hidden="true">${typeof t.art==='function'?t.art():''}</div><span class="buy-pal" aria-hidden="true"><i></i><i></i><i></i></span>
+      <div class="buy-art-txt"><h3>Thème ${esc(t.label)}</h3><p>${esc(t.desc)}</p></div></div>
     ${body}
     <div class="dlg-actions"><button class="btn btn-ghost" type="button" id="buy-try">Essayer 20 secondes</button><button class="btn" data-close>Fermer</button></div>`, d=>{
     d.querySelector('#buy-try').onclick=()=>{ d.close(); previewSkin(id); };
@@ -2689,7 +2949,7 @@ function buyModal(id){
     const opts=SHOP.payments?d.querySelector('#buy-opts'):null;
     const draw=()=>{ if(!opts) return; const e=eco(cur);
       opts.innerHTML=`<button type="button" class="buy-opt" data-buy="theme:${id}"><b>Ce thème${t.premium?' <em class="prem">Premium</em>':''}</b><span>${esc(t.label)}</span><strong>${money(skinPrice(id,cur),cur)}</strong></button>
-        <button type="button" class="buy-opt best" data-buy="pack"><b>Tous les thèmes</b><span>${PAID_SKINS.length} thèmes, et les prochains${e>0?` · ${money(e,cur)} d'économie`:''}</span><strong>${money(price('pack',cur),cur)}</strong></button>`;
+        <button type="button" class="buy-opt best" data-buy="pack"><b>Tous les thèmes</b><span>${PAID_SKINS.length} thèmes, et les prochains${e>0?` · <i class="nw">${money(e,cur)}</i> d'économie`:''}</span><strong>${money(price('pack',cur),cur)}</strong></button>`;
       bind(); };
     const sel=d.querySelector('#buy-cur'); if(sel) sel.onchange=()=>{ cur=sel.value; S.currency=cur; save(); draw(); };
     function bind(){ d.querySelectorAll('[data-buy]').forEach(b=>b.onclick=async()=>{
@@ -2724,18 +2984,18 @@ function dispoModal(){
 async function dispoStop(){ if(!S.me) return; S.me.dispo=null; save(); toast("Tu n'es plus affiché comme dispo"); await DB.setDispo(null); route(); }
 function dispoCard(p){
   const q=reqWith(p.id), mate=!!q&&q.status==='accepted', same=S.me&&S.me.games.includes(p.dispo.game);
-  const act = mate?`<a class="btn btn-sm" href="#/messages/${p.id}">Écrire</a>` : q?`<span class="muted dc-sent">Envoyée</span>` : `<button class="btn btn-sm btn-ac" data-dispo-mate="${p.id}">Duo ?</button>`;
-  const pct=S.me?compat(S.me,p).pct:null;
-  return `<div class="dispo-card${same?' same':''}"><a href="#/joueur/${p.id}" class="dc-who">${avatar(p,44)}<div><b>${esc(p.name)}${modBadge(p)}${pct!=null?`<i class="dc-compat">${pct} %</i>`:''}</b><span>${esc(p.dispo.game)} · jusqu'à ${fmtUntil(p.dispo.until)}</span>${p.dispo.note?`<em>${esc(p.dispo.note)}</em>`:''}</div></a><div class="dc-act">${act}</div></div>`;
+  const act = mate?`<a class="btn btn-sm" href="#/messages/${p.id}">Écrire</a>` : q?`<span class="muted dc-sent">Demande envoyée</span>` : `<button class="btn btn-sm btn-ac" data-dispo-mate="${p.id}">Duo ?</button>`;
+  return `<div class="dz${same?' same':''}"><a href="#/joueur/${p.id}" class="dz-who">${avatar(p,52)}<b>${esc(p.name)}${modBadge(p)}</b><span>${esc(p.dispo.game)}</span><small>jusqu'à ${fmtUntil(p.dispo.until)}</small></a>${act}</div>`;
 }
+// Accueil : qui est dispo tout de suite. Une seule ligne de petites cartes qui défile sur le côté (le détail est sur la fiche du joueur).
 function dispoSection(){
   const list=dispoList(), mine=dispoActive(S.me);
   const head = mine ? `<div class="dispo-me"><span class="dot-live"></span><b>Tu es dispo pour ${esc(S.me.dispo.game)}</b><span class="muted">jusqu'à ${fmtUntil(S.me.dispo.until)}</span><button class="btn btn-sm btn-ghost" id="dispo-stop">Je ne suis plus dispo</button></div>`
     : S.me ? `<button class="btn btn-ac dispo-cta" id="dispo-go"><span class="dot-live"></span>Je suis dispo maintenant</button>`
     : `<p class="muted">Connecte-toi pour dire que tu es dispo et voir qui joue en ce moment.</p>`;
-  const body = !S.me ? '' : list.length ? `<div class="dispo-list">${list.slice(0,3).map(dispoCard).join('')}</div>${list.length>3?`<details class="more-fold"><summary>Voir les ${list.length-3} autres joueurs dispo</summary><div class="dispo-list">${list.slice(3,15).map(dispoCard).join('')}</div></details>`:''}`
+  const body = !S.me ? '' : list.length ? `<div class="dz-row">${list.slice(0,15).map(dispoCard).join('')}</div>`
     : `<p class="muted dispo-empty">Personne n'est dispo pour l'instant. ${mine?'Tu es en tête de liste : les prochains joueurs te verront en premier.':'Sois le premier : les joueurs compatibles te verront tout de suite.'}</p>`;
-  return `<section class="panel dispo-panel reveal" id="dispo"><div class="dispo-head"><h3>Dispo maintenant</h3>${S.me&&list.length?`<span class="pill-live">${list.length} joueur${list.length>1?'s':''}</span>`:''}</div>${head}${body}</section>`;
+  return `<section class="home-sec dispo-sec reveal" id="dispo"><div class="dispo-head"><h3>Dispo maintenant</h3>${S.me&&list.length?`<span class="pill-live">${list.length} joueur${list.length>1?'s':''}</span>`:''}</div>${head}${body}</section>`;
 }
 document.addEventListener('click',e=>{
   if(e.target.closest('#dispo-go')) dispoModal();
@@ -2765,16 +3025,17 @@ function profileNudge(){
   if(!S.me) return '';
   const miss=[]; if(!S.me.discord) miss.push('ton Discord'); if(!(S.me.days||[]).length) miss.push('tes jours'); if(!Object.keys(S.me.tags||{}).length) miss.push('tes pseudos en jeu');
   if(!miss.length) return '';
-  return `<a class="panel nudge" href="#/profil"><span class="nudge-ico" aria-hidden="true">✨</span><div><b>Complète ton profil</b><span>Ajoute ${miss.join(', ')} : tes matchs seront plus précis.</span></div><span class="nudge-go" aria-hidden="true">›</span></a>`;
+  return `<a class="nudge" href="#/profil/modifier"><div><b>Complète ton profil</b><span>Ajoute ${miss.join(', ')} : tes matchs seront plus précis.</span></div><span class="nudge-go" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span></a>`;
 }
 function gamesPulse(){
   if(!S.me) return '';
-  const all=[...visible(), S.me]; if(all.length<5) return `<div class="panel pulse"><b>Coopô vient d'ouvrir</b><span>Les premiers joueurs arrivent. Lance un <a href="#/groupes">groupe pour ce soir</a> ou <button class="linklike" type="button" id="ref-share">invite tes amis</button> : chaque inscrit peut devenir ton mate.</span></div>`;
+  const all=[...visible(), S.me]; if(all.length<5) return '';
   const cnt={}; all.forEach(p=>(p.games||[]).forEach(g=>cnt[g]=(cnt[g]||0)+1));
   const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,6);
-  return `<div class="panel pulse"><b>Les jeux du moment sur Coopô</b><div class="pulse-list">${top.map(([g,n])=>`<a href="#/recherche" class="pulse-chip${S.me.games.includes(g)?' mine':''}" data-pulse-game="${esc(g)}">${esc(g)} <i>${n} joueur${n>1?'s':''}</i></a>`).join('')}</div></div>`;
+  return `<div class="pulse"><b>Jeux du moment</b><div class="pulse-list">${top.map(([g,n])=>`<button type="button" class="pulse-chip${F.game===g?' on':''}" data-pulse-game="${esc(g)}" aria-pressed="${F.game===g}">${esc(g)} <i>${n}</i></button>`).join('')}</div></div>`;
 }
-document.addEventListener('click',e=>{ const g=e.target.closest('[data-pulse-game]'); if(g&&typeof F!=='undefined'){ F.game=g.dataset.pulseGame; } });
+// Un jeu du moment = un filtre : un appui l'applique, un second l'enlève
+document.addEventListener('click',e=>{ const g=e.target.closest('[data-pulse-game]'); if(!g) return; F.game = F.game===g.dataset.pulseGame ? '' : g.dataset.pulseGame; F.shown=24; viewSearch(); });
 
 /* ================= Parrainage ================= */
 (function captureRef(){ try{ const u=new URL(location.href); const r=u.searchParams.get('ref'); if(r){ localStorage.setItem('coopo_ref',r.toLowerCase().slice(0,20)); u.searchParams.delete('ref'); history.replaceState(null,'',u.pathname+(u.search||'')+u.hash); } }catch(e){} })();
@@ -2863,7 +3124,7 @@ function installHTML(){
   return `<p class="hint">Ajoute Coopô à ton écran d'accueil : elle s'ouvre comme une vraie application, en plein écran.</p><button class="btn btn-ac" type="button" data-install-go>Installer l'application</button>`;
 }
 function viewApp(){
-  app.innerHTML=`<div class="wrap page legal"><div class="page-head"><div><h2>L'application Coopô</h2><p>Installe Coopô sur ton téléphone : une icône sur ton écran d'accueil, l'ouverture en plein écran, sans passer par le navigateur.</p></div></div>
+  app.innerHTML=`<div class="wrap page legal">${backAuto()}<div class="page-head"><div><h2>L'application Coopô</h2><p>Installe Coopô sur ton téléphone : une icône sur ton écran d'accueil, l'ouverture en plein écran, sans passer par le navigateur.</p></div></div>
     <section class="panel" data-install-box>${installHTML()}</section></div>`;
 }
 function refreshInstallUI(){ document.querySelectorAll('[data-install-box]').forEach(b=>b.innerHTML=installHTML()); document.querySelectorAll('[data-install-foot]').forEach(b=>b.hidden=isStandalone()); }
@@ -3323,7 +3584,7 @@ function notifCenter(){
       d.querySelectorAll('[data-nid]').forEach(a=>a.addEventListener('click',()=>{ const n=S.notifs.find(x=>x.id===a.dataset.nid); if(n&&!n.read){ n.read=true; DB.markRead([n.id]); } save(); d.close(); renderNotifBadge(); }));
       d.querySelector('#nread').onclick=()=>{ DB.markRead(S.notifs.filter(n=>!n.read).map(n=>n.id)); S.notifs.forEach(n=>n.read=true); save(); renderNotifBadge(); d.close(); }; });
 }
-document.addEventListener('click',e=>{ if(e.target.closest('.notif-btn')) notifCenter(); });
+document.addEventListener('click',e=>{ if(e.target.closest('.notif-btn,[data-notif-open]')) notifCenter(); });
 
 /* ---- Messages privés (entre mates uniquement) ---- */
 // Dernier message connu d'une conversation : le dernier message chargé ou, s'il est plus récent, celui annoncé par une notification
@@ -3344,11 +3605,13 @@ function viewChat(id){
   const p=visible().find(x=>x.id===id);
   if(!p||!isMate(id)){ app.innerHTML=`<div class="wrap page"><div class="empty"><h3>Vous n'êtes pas encore mates</h3><p class="muted">Les messages s'ouvrent une fois la demande de mate acceptée.</p><a class="btn" href="#/messages">Retour aux messages</a></div></div>`; return; }
   S.unread[id]=0; { const seen=S.notifs.filter(n=>!n.read&&n.type==='message'&&n.from===id); seen.forEach(n=>n.read=true); DB.markRead(seen.map(n=>n.id)); } save(); renderNotifBadge();
-  app.innerHTML=`<div class="wrap page chat-page"><div class="chat-head"><a class="linkbtn" href="#/messages">← Messages</a><a class="chat-who" href="#/joueur/${p.id}">${avatar(p,44)}<div><b>${esc(p.name)}${modBadge(p)}</b>${isOnline(p)?'<span class="online">En ligne</span>':'<span class="muted" style="font-size:12px">Hors ligne</span>'}</div></a><div class="chat-contacts" id="chat-contacts"></div></div>
+  app.innerHTML=`<div class="wrap page chat-page"><div class="chat-head">${backLink('#/messages','Messages')}<a class="chat-who" href="#/joueur/${p.id}">${avatar(p,44)}<div><b>${esc(p.name)}${modBadge(p)}</b>${isOnline(p)?'<span class="online">En ligne</span>':'<span class="muted" style="font-size:12px">Hors ligne</span>'}</div></a><div class="chat-contacts" id="chat-contacts"></div></div>
     <div class="chat-box" id="chatbox"></div>
     <form class="chat-form" id="chatform"><input type="text" id="chatin" placeholder="Écris un message…" maxlength="500" autocomplete="off"><button class="btn btn-ac" type="submit">Envoyer</button></form></div>`;
   fillContacts(p,'chat-contacts',true);
   renderChat(id);
+  // la zone de messages change de hauteur (contacts chargés, clavier, rotation) : on reste calé sur le dernier message
+  try{ const cb=document.getElementById('chatbox'); if(cb&&'ResizeObserver' in window) new ResizeObserver(()=>{ cb.scrollTop=cb.scrollHeight; }).observe(cb); }catch(e){}
   document.getElementById('chatform').addEventListener('submit',e=>{ e.preventDefault(); const i=document.getElementById('chatin'), t=i.value.trim(); if(!t) return;
     if(S.me&&ageGroup(S.me)==='minor'&&hasPhone(t)){ toast('Pour ta sécurité, les numéros de téléphone ne peuvent pas être envoyés ici.'); return; }   // 15-17 ans : pas de numéro dans le chat
     i.value='';
@@ -3621,13 +3884,14 @@ document.addEventListener('click',e=>{
 /* ---- Aperçu sur l'accueil ---- */
 function boardsTeaser(){
   if(!S.me) return '';
-  const an=annoncesAll().filter(a=>!isMine(a)).slice(0,3), t=tournoisAll().find(x=>x.status==='open'&&x.date>Date.now()&&x.ageGroup===myGroupNow());
-  if(!an.length&&!t) return `<section class="panel reveal board-teaser"><div class="dispo-head"><h3>Annonces</h3></div><p class="muted">Tu cherches des joueurs pour une partie précise ? Publie une annonce, par exemple « Je cherche 2 joueurs ${esc(S.me.games[0]||'Free Fire')} ce soir ».</p><div><a class="btn btn-sm btn-ac" href="#/groupes/annonces">Publier une annonce</a></div></section>`;
-  return `<section class="panel reveal board-teaser">
-    ${t?`<a class="to-banner" href="#/groupes/tournois"><span class="sq-game">Tournoi</span><b>${esc(t.title)}</b><span class="muted">${esc(t.game)} · ${esc(fmtDay(t.date))} · ${(t.players||[]).length}/${+t.max||0} inscrits</span></a>`:''}
-    ${an.length?`<div class="dispo-head"><h3>Ils cherchent des joueurs</h3><a class="linkbtn" href="#/groupes/annonces">Tout voir</a></div>
-      <div class="an-mini">${an.map(a=>{ const who=PLAYERS.find(p=>p.id===a.by); return `<a class="an-row" href="#/groupes/annonces">${who?avatar(who,36):''}<div><b>${esc(who?who.name:(a.byName||'Joueur'))}</b><span>${esc(a.game)} · cherche ${+a.need||1}${a.rank?` · ${esc(a.rank)}`:''}</span></div><span class="an-when">${(WHEN.find(w=>w[0]===a.when)||[,''])[1]}</span></a>`; }).join('')}</div>`:''}
-  </section>`;
+  const t=tournoisAll().find(x=>x.status==='open'&&x.date>Date.now()&&x.ageGroup===myGroupNow()), an=annoncesAll().filter(a=>!isMine(a)).slice(0,t?2:3);
+  const head=`<div class="dispo-head"><h3>Communauté</h3><a class="linkbtn" href="#/groupes">Tout voir</a></div>`;
+  const go='<svg class="menu-go" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+  if(!an.length&&!t) return `<section class="home-sec reveal board-teaser">${head}<div class="list-card pad"><p class="muted">Tu cherches des joueurs pour une partie précise ? Publie une annonce, par exemple « Je cherche 2 joueurs ${esc(S.me.games[0]||'Free Fire')} ce soir ».</p><div><a class="btn btn-sm btn-ac" href="#/groupes/annonces">Publier une annonce</a></div></div></section>`;
+  return `<section class="home-sec reveal board-teaser">${head}<div class="list-card">
+    ${t?`<a class="lc-row" href="#/groupes/tournois"><i class="menu-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 14v4M8.5 20h7"/></svg></i><span class="lc-txt"><b>${esc(t.title)}</b><small><em>Tournoi</em> · ${esc(fmtDay(t.date))} · ${(t.players||[]).length}/${+t.max||0} inscrits</small></span>${go}</a>`:''}
+    ${an.map(a=>{ const who=PLAYERS.find(p=>p.id===a.by), n=+a.need||1, when=(WHEN.find(w=>w[0]===a.when)||[,''])[1]; return `<a class="lc-row" href="#/groupes/annonces">${who?avatar(who,40):`<i class="menu-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS.profil}</svg></i>`}<span class="lc-txt"><b>${esc(who?who.name:(a.byName||'Joueur'))}</b><small>${when?`<em>${when}</em> · `:''}${esc(a.game)} · cherche ${n} joueur${n>1?'s':''}${a.rank?` · ${esc(a.rank)}`:''}</small></span>${go}</a>`; }).join('')}
+  </div></section>`;
 }
 
 /* ---- « Tu rejouerais avec lui ? » ---- */
@@ -3649,8 +3913,8 @@ function viewHelp(){
     ['À quoi servent les annonces ?','À trouver vite des joueurs pour une partie précise : « Je cherche 2 joueurs Free Fire ce soir ». Clique sur « Je suis partant » : l\'auteur est prévenu et reçoit une demande de mate. Les annonces disparaissent toutes seules après la partie.'],
     ['Comment participer à un tournoi ?','Dans Communauté › Tournois, clique sur « S\'inscrire ». Ton pseudo en jeu est transmis à l\'organisateur pour qu\'il puisse t\'inviter.'],
     ['Que faire face à un comportement toxique ?','Utilise Signaler sur son profil : l\'équipe de modération examine chaque signalement. Tu peux aussi le bloquer immédiatement.'],
-    ['Comment supprimer mon compte ?','Dans Paramètres, tout en bas. Tes données sont effacées définitivement.']];
-  app.innerHTML=`<div class="wrap page" style="max-width:800px"><div class="page-head"><div><h2>Aide</h2><p>Comment ça marche, et les questions fréquentes.</p></div></div>
+    ['Comment supprimer mon compte ?','Dans Profil, puis Réglages, tout en bas. Tes données sont effacées définitivement.']];
+  app.innerHTML=`<div class="wrap page" style="max-width:800px">${backAuto()}<div class="page-head"><div><h2>Aide</h2><p>Comment ça marche, et les questions fréquentes.</p></div></div>
     <section class="panel"><h3>Comment ça marche</h3><ol class="steps">
       <li><b>Crée ton compte</b><span>Avec Google ou un e-mail. Il faut avoir au moins ${CONFIG.minAge} ans.</span></li>
       <li><b>Renseigne ton profil</b><span>Jeux, rang, horaires, jours, style, plateforme, langue.</span></li>
@@ -3661,7 +3925,7 @@ function viewHelp(){
 }
 function viewLegal(kind){
   const cgu=kind==='cgu';
-  app.innerHTML=`<div class="wrap page legal"><div class="page-head"><div><h2>${cgu?"Conditions générales d'utilisation":'Politique de confidentialité'}</h2><p>Dernière mise à jour : novembre 2026</p></div></div>
+  app.innerHTML=`<div class="wrap page legal">${backAuto()}<div class="page-head"><div><h2>${cgu?"Conditions générales d'utilisation":'Politique de confidentialité'}</h2><p>Dernière mise à jour : novembre 2026</p></div></div>
     ${cgu?`
     <h3>1. Objet</h3><p>Coopô est un service de mise en relation entre joueurs de jeux vidéo, édité depuis la Côte d'Ivoire par Konate Tidiane. En créant un compte, tu acceptes les présentes conditions.</p>
     <h3>2. Âge minimum</h3><p>Le service est réservé aux personnes âgées d'au moins ${CONFIG.minAge} ans. Les utilisateurs de ${CONFIG.minAge} à ${CONFIG.adultAge-1} ans ne sont mis en relation qu'avec des utilisateurs de la même tranche d'âge. Toute fausse déclaration d'âge entraîne la suppression du compte.</p>
@@ -3786,7 +4050,7 @@ function viewWelcome(){
 
 /* ---- Politique de cookies ---- */
 function viewCookies(){
-  app.innerHTML=`<div class="wrap page legal"><div class="page-head"><div><h2>Politique de cookies</h2><p>Dernière mise à jour : novembre 2026</p></div></div>
+  app.innerHTML=`<div class="wrap page legal">${backAuto()}<div class="page-head"><div><h2>Politique de cookies</h2><p>Dernière mise à jour : novembre 2026</p></div></div>
     <h3>En bref</h3><p>Coopô n'utilise <b>aucun cookie publicitaire ni outil de mesure d'audience</b>. Nous utilisons seulement ce qui est indispensable au fonctionnement du site. C'est pourquoi aucun bandeau de consentement ne s'affiche : ce type de stockage n'en nécessite pas.</p>
     <h3>Ce que le site enregistre dans ton navigateur</h3>
     <p><b>Stockage local du site</b> : ta session, le thème choisi, ta devise, tes préférences d'affichage et un brouillon de ton profil. Ces données restent sur ton appareil et servent uniquement au fonctionnement de Coopô.</p>
@@ -3802,7 +4066,7 @@ function viewCookies(){
 
 /* ---- Politique de remboursement ---- */
 function viewRefund(){
-  app.innerHTML=`<div class="wrap page legal"><div class="page-head"><div><h2>Politique de remboursement</h2><p>Dernière mise à jour : octobre 2026</p></div></div>
+  app.innerHTML=`<div class="wrap page legal">${backAuto()}<div class="page-head"><div><h2>Politique de remboursement</h2><p>Dernière mise à jour : octobre 2026</p></div></div>
     <h3>Ce qui est vendu</h3><p>Coopô vend des thèmes visuels, à l'unité ou en pack. Ce sont des contenus numériques, débloqués sur ton compte dès que le paiement est confirmé. Ils changent seulement l'apparence du site et ne donnent aucun avantage pour trouver des mates.</p>
     <h3>Satisfait ou remboursé pendant 14 jours</h3><p>Tu peux demander le remboursement d'un achat dans les <b>14 jours</b> qui suivent le paiement, même si tu as simplement changé d'avis. Le thème remboursé est alors retiré de ton compte.</p>
     <h3>Remboursement intégral à tout moment</h3>
@@ -3816,7 +4080,7 @@ function viewRefund(){
 
 /* ---- Nous écrire (formulaire enregistré dans Firebase, aucun contact affiché) ---- */
 function viewContact(){
-  app.innerHTML=`<div class="wrap page legal"><div class="page-head"><div><h2>Nous écrire</h2><p>${S.auth?'Une question, un problème de compte, une demande sur tes données ? Écris-nous ici, la modération te répondra.':'Tu n\'arrives pas à te connecter ? Explique-nous le problème (600 caractères max). Pour toute autre demande, connecte-toi d\'abord.'}</p></div></div>
+  app.innerHTML=`<div class="wrap page legal">${backAuto()}<div class="page-head"><div><h2>Nous écrire</h2><p>${S.auth?'Une question, un problème de compte, une demande sur tes données ? Écris-nous ici, la modération te répondra.':'Tu n\'arrives pas à te connecter ? Explique-nous le problème (600 caractères max). Pour toute autre demande, connecte-toi d\'abord.'}</p></div></div>
     <form class="panel" id="ct-form" novalidate style="display:grid;gap:14px;max-width:620px">
       <div class="field"><label for="ct-mail">Ton e-mail pour la réponse</label><input id="ct-mail" type="email" maxlength="120" autocomplete="email" value="${esc(S.auth?.email||'')}"></div>
       <div class="field"><label for="ct-msg">Ton message</label><textarea id="ct-msg" rows="6" maxlength="${S.auth?2000:600}" required></textarea><small class="ferr" id="ct-err"></small></div>
