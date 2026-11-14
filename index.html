@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://accounts.google.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://accounts.google.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.googleapis.com https://www.gstatic.com https://accounts.google.com https://coopo-paiement.vercel.app; frame-src https://accounts.google.com https://*.firebaseapp.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#0D0F1E">
+<meta name="theme-color" content="#150F3F">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1183,7 +1183,7 @@ html:not([data-skin="defaut"]) .hero2 .art{ animation:none !important; clip-path
   html:not([data-skin="defaut"]) body .hero2 .float-match{ top:96px; bottom:auto; }
 }
 </style>
-<script>/* thème de la dernière visite, appliqué avant l'affichage */try{var _s=JSON.parse(localStorage.getItem('matematch.v1')||'null');var _k=_s&&(_s.skinOk||_s.skin);if(_k)document.documentElement.setAttribute('data-skin',_k);}catch(e){}</script>
+<script>/* thème de la dernière visite, appliqué avant l'affichage */try{var _s=JSON.parse(localStorage.getItem('matematch.v1')||'null');var _k=_s&&(_s.skinOk||_s.skin);if(_k)document.documentElement.setAttribute('data-skin',_k);}catch(e){}document.documentElement.classList.add('splash-on');</script>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js">
@@ -1604,7 +1604,8 @@ html[data-skin="prunier"]{ --scrim:112,8,28; --scrim2:60,3,14; --w-top:70,4,18; 
 /* la couleur du monde court sur toute la hauteur de la page : on « descend » dans le thème */
 html[data-skin]{ min-height:100%; background:rgb(var(--scrim2)) linear-gradient(180deg,rgb(var(--scrim)) 0,rgb(var(--scrim)) 320px,rgb(var(--scrim2)) 100%) no-repeat; }
 html[data-skin] body{ background:none; animation:none; }
-#world{ position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+#world{ position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; }   /* mode léger : le dessin défile avec la page, sans calcul */
+html.world-par #world{ position:fixed; }   /* mode normal : il reste en place et la « caméra » le fait défiler plus lentement que la page (voir worldScroll) */
 .w-cam{ position:absolute; left:0; right:0; top:0; height:var(--w-h); transform-origin:50% 0; will-change:transform;
   -webkit-mask-image:linear-gradient(#000 0,#000 52%,transparent 100%); mask-image:linear-gradient(#000 0,#000 52%,transparent 100%); }
 .w-art{ position:absolute; inset:0; background:var(--art-bg,none); opacity:0; transition:opacity .7s ease; }
@@ -1643,20 +1644,21 @@ html.scrolled .top::before{ opacity:1; }
 @supports ((-webkit-backdrop-filter:blur(2px)) or (backdrop-filter:blur(2px))){ html:not(.lite) .top::before{ background:rgba(var(--w-top),.42); -webkit-backdrop-filter:saturate(1.3) blur(14px); backdrop-filter:saturate(1.3) blur(14px); } }
 .form-actions{ background:linear-gradient(transparent,rgba(var(--scrim2),.92) 40%); }
 /* ---- Accueil : le bonjour est posé directement sur le décor ---- */
-.mh{ background:none; overflow:visible; border-radius:0; min-height:214px; }
-.mh .notif-btn,.mh .skin-btn{ background:rgba(var(--w-top),.5); }
+.mh{ background:none; overflow:visible; border-radius:0; width:min(1140px,100% - 16px); margin:0 auto; padding:0 0 4px; min-height:clamp(132px,27vh,250px); justify-content:flex-end; }
+body.is-home .top{ display:flex; }   /* l'accueil garde l'en-tête de toutes les pages : le logo et la cloche ne bougent plus d'un onglet à l'autre */
+body.is-home .top-right{ visibility:hidden; }   /* le nombre de joueurs en ligne est déjà sous le bonjour (la place est gardée : la cloche reste à droite) */
 html[data-skin="samurai"] body .frame::before{ display:none; }
 html.lite .top::before{ background:rgb(var(--w-top)); }
 /* ---- Le sol du monde : un décor discret tout en bas de chaque page (on y arrive en descendant) ---- */
-#ground{ position:absolute; left:0; right:0; bottom:0; height:clamp(220px,36vh,340px); z-index:0; pointer-events:none; overflow:hidden;
+html{ --g-h:clamp(220px,36vh,340px); --g-clear:calc(var(--g-h) * .36); }   /* --g-clear : hauteur de la partie détaillée du sol, que les liens du bas de page ne recouvrent pas */
+#ground{ position:absolute; left:0; right:0; bottom:0; height:var(--g-h); z-index:0; pointer-events:none; overflow:hidden;
   -webkit-mask-image:linear-gradient(transparent 0,#000 42%); mask-image:linear-gradient(transparent 0,#000 42%); }
 #ground svg{ position:absolute; inset:0; width:100%; height:100%; display:block; }
 /* Bas de page : la place de la barre d'onglets est réservée dans TOUS les thèmes (dans Coopô et Sombre, la fin des pages passait sous la barre) */
-html[data-skin] body .frame{ padding-bottom:56px; }
-html[data-skin] body:is(.logged-out,.no-profile) .frame{ padding-bottom:40px; }
+html[data-skin] body .frame{ padding-bottom:max(56px,var(--g-clear)); }
 @media (max-width:860px){
   html[data-skin] body .frame{ padding-bottom:calc(128px + env(safe-area-inset-bottom,0px)); }
-  html[data-skin] body:is(.logged-out,.no-profile) .frame{ padding-bottom:calc(40px + env(safe-area-inset-bottom,0px)); }
+  html[data-skin] body:is(.logged-out,.no-profile) .frame{ padding-bottom:calc(max(40px,var(--g-clear)) + env(safe-area-inset-bottom,0px)); }
 }
 #fx{ z-index:0; }   /* pétales, bulles, étincelles : dans le décor, derrière les cartes */
 .toast{ border:1px solid rgba(255,255,255,.16); }
@@ -1664,7 +1666,13 @@ dialog::backdrop{ background:rgba(10,8,24,.62); }
 html[data-skin="samurai"] body .page-head h2::after{ background:#F4ECE1; opacity:.5; }
 /* ==== Écran d'ouverture : affiché le temps que Coopô retrouve ton compte et tes matchs (plus de page qui saute à l'arrivée) ==== */
 #splash{ position:fixed; inset:0; z-index:10050; display:grid; place-items:center; padding:24px; color:#fff; text-align:center;
-  background:rgb(var(--scrim2)) radial-gradient(circle at 50% 44%,rgba(255,255,255,.13),rgba(255,255,255,0) 46%),linear-gradient(180deg,rgb(var(--scrim)),rgb(var(--scrim2))); transition:opacity .45s ease, visibility 0s linear .45s; }
+  background:radial-gradient(ellipse 135% 66% at 50% 46%,rgba(var(--w-top),.86) 0,rgba(var(--w-top),.66) 46%,rgba(var(--w-top),.12) 100%); transition:opacity .45s ease, visibility 0s linear .45s; }
+/* tant que l'écran d'ouverture est là, l'appli se prépare derrière sans être visible : plus de page qui change sous les yeux */
+html.splash-on body > :is(.frame,.tabbar,#pv-bar,#toast){ opacity:0 !important; }
+body > :is(.frame,.tabbar){ transition:opacity .5s ease; }
+/* arrivée dans le monde : le dessin recule doucement à sa place quand l'écran d'ouverture se retire */
+html.world-in .w-art{ animation:worldIn 1.2s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes worldIn{ from{ scale:1.1; } to{ scale:1; } }
 #splash.out{ opacity:0; visibility:hidden; pointer-events:none; }
 .sp-in{ display:grid; justify-items:center; gap:12px; transition:transform .45s ease; }
 #splash.out .sp-in{ transform:scale(1.1); }
@@ -1674,14 +1682,15 @@ html[data-skin="samurai"] body .page-head h2::after{ background:#F4ECE1; opacity
 .sp-ring + .sp-ring{ animation-delay:1.2s; }
 @keyframes spRing{ from{ transform:scale(.7); opacity:.85; } to{ transform:scale(1.75); opacity:0; } }
 .sp-name{ font:700 32px/1 'Outfit',system-ui,sans-serif; letter-spacing:.01em; }
-.sp-msg{ margin:0; min-height:1.6em; font-size:14px; color:rgba(255,255,255,.9); }
+.sp-msg{ margin:0; min-height:1.6em; font-size:14px; color:#fff; }
 .sp-bar{ width:132px; height:4px; border-radius:99px; background:rgba(255,255,255,.22); overflow:hidden; }
 .sp-bar i{ display:block; width:42%; height:100%; border-radius:99px; background:#fff; animation:spBar 1.25s ease-in-out infinite; }
 @keyframes spBar{ from{ transform:translateX(-110%); } to{ transform:translateX(250%); } }
 html.lite #splash .sp-bar i{ animation-duration:1.25s !important; animation-iteration-count:infinite !important; }   /* la barre reste animée en mode léger : c'est une information, pas un décor */
 html.lite #splash .sp-ring{ display:none; }
 @media (prefers-reduced-motion:reduce){ .sp-ring{ display:none; } .sp-bar i{ width:100%; opacity:.7; } }
-.sp-tip{ position:absolute; left:0; right:0; bottom:calc(30px + env(safe-area-inset-bottom,0px)); margin:0 auto; padding:0 24px; max-width:440px; font-size:13px; line-height:1.5; color:rgba(255,255,255,.82); text-wrap:balance; }
+.sp-tip{ position:absolute; left:0; right:0; bottom:calc(30px + env(safe-area-inset-bottom,0px)); margin:0 auto; padding:0 24px; max-width:440px; font-size:13px; line-height:1.5; color:#fff; text-shadow:0 1px 8px rgba(var(--w-top),.9); text-wrap:balance; }
+.sp-name,.sp-msg{ text-shadow:0 1px 10px rgba(var(--w-top),.9); }
 /* ---- Boutons de l'en-tête : verre sombre, comme sur l'accueil ---- */
 .top .notif-btn,.top .skin-btn{ background:rgba(var(--w-top),.5); border-color:rgba(255,255,255,.24); color:#fff; box-shadow:none; }
 @supports ((-webkit-backdrop-filter:blur(2px)) or (backdrop-filter:blur(2px))){ html:not(.lite) .top :is(.notif-btn,.skin-btn){ -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); } }
@@ -1702,6 +1711,15 @@ html:is([data-skin="defaut"],[data-skin="sombre"]) .page-head h2::after{ color:#
 html[data-skin="menthe"] .page-head h2::after{ color:#F3EDA8; text-shadow:none; }
 html[data-skin="ocean"] body .page-head h2{ padding-bottom:12px; background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='8'><path d='M0 4 Q10 0 20 4 T40 4' fill='none' stroke='%239FD8FF' stroke-width='2.5'/></svg>") 0 100%/40px 8px repeat-x; animation:waveX 2s linear infinite; }
 .wrap.page > h3 .online::before{ box-shadow:0 0 0 2px rgba(255,255,255,.9); }
+/* ---- Blocs qui étaient teintés et transparents : sur le décor, ils deviennent une vraie surface ou un verre sombre ---- */
+.dispo-me{ background:var(--s1); border:1px solid var(--hair); box-shadow:var(--e1); margin-bottom:0; }
+.pp-dispo{ background:rgba(var(--w-top),.62); border-color:rgba(255,255,255,.22); color:#fff; }
+.pp-dispo em{ color:rgba(255,255,255,.88); }
+.pp-meta .mod-tag{ background:#fff; color:rgb(var(--w-top)); text-shadow:none; }
+dialog > h3{ color:var(--pk2,var(--pk)); }
+/* thèmes pas encore en vente : les prix restent lisibles (bordure en pointillés au lieu d'un bloc grisé) */
+.buy-soon .buy-opt{ opacity:1; border-style:dashed; background:none; }
+.buy-soon .buy-opt strong{ color:var(--mu); }
 </style>
 <script>
 /* Avant le premier affichage : le logo et la couleur de la barre du navigateur, pour que l'écran d'ouverture soit complet tout de suite */
@@ -1720,7 +1738,7 @@ try{ document.documentElement.style.setProperty('--logo','url("'+LOGO_MASK+'")')
   </div>
   <p class="sp-tip" id="sp-tip"></p>
 </div>
-<script>/* garde-fou : si le site ne démarre pas, l'écran d'ouverture se retire quand même au bout de 12 secondes */setTimeout(function(){var s=document.getElementById('splash');if(s)s.classList.add('out');},12000);</script>
+<script>/* garde-fou : si le site ne démarre pas, l'écran d'ouverture se retire quand même au bout de 12 secondes */setTimeout(function(){var s=document.getElementById('splash');if(s)s.classList.add('out');document.documentElement.classList.remove('splash-on');},12000);</script>
 <div id="world" aria-hidden="true"><div class="w-cam"><div class="w-art" id="w-art"></div></div><div class="w-scrim"></div></div>
 
 <div class="frame">
@@ -2064,7 +2082,6 @@ function homeBannerHTML(){
   const online=visible().filter(p=>isOnline(p)).length;
   const h=new Date().getHours(), hello = h<5?'Bonsoir':h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir';
   return `<section class="mh" id="showcase">
-    <div class="mh-top"><a class="logo" href="#/accueil" aria-label="Coopô, accueil"></a><nav class="navpill" aria-label="Navigation principale"></nav><div class="mh-right"><button class="notif-btn" type="button" aria-label="Notifications"></button>${skinBtn()}</div></div>
     <div class="mh-body"><p class="mh-hello">${hello},</p><h1${S.me&&S.me.name.length>12?' class="long"':''}>${esc(S.me?S.me.name:'bienvenue')}</h1>
       <p class="mh-online">${online?`<i class="dot-live"></i>${online} joueur${online>1?'s':''} en ligne`:'Invite tes amis pour jouer ensemble'}</p></div>
   </section>`;
@@ -2922,8 +2939,8 @@ function groundSVG(id,W){
     s+=hill(176,16,'rgba(140,210,90,.13)')+hill(220,14,'rgba(110,190,70,.2)')+hill(262,10,'rgba(70,150,50,.34)')+blades(cnt(120),H,22,70,'rgba(120,205,80,.4)')+blades(cnt(60),H,14,46,dk(.22));
     for(let i=0;i<cnt(26);i++){ const x=R()*W, y=232+R()*78; s+=`<circle cx="${n0(x)}" cy="${n0(y)}" r="${(2.6+R()*2.4).toFixed(1)}" fill="${['#FFFFFF','#FFE07A','#FFC6DB'][i%3]}" opacity=".8"/><circle cx="${n0(x)}" cy="${n0(y)}" r="1.2" fill="#F0A93B"/>`; }
   } else if(id==='esth'){
-    const hy=214, sx=W*.78; s+=`<defs><linearGradient id="gSun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE9A8"/><stop offset="1" stop-color="#FF9FCB"/></linearGradient><clipPath id="gSunC"><rect x="0" y="0" width="${W}" height="${hy}"/></clipPath></defs>
-      <circle cx="${n0(sx)}" cy="${hy}" r="56" fill="url(#gSun)" opacity=".85" clip-path="url(#gSunC)"/><rect x="0" y="${hy}" width="${W}" height="${H-hy}" fill="${dk(.18)}"/><path d="M0 ${hy}H${W}" stroke="${lt(.6)}" stroke-width="2"/>`;
+    const hy=252, sx=W*.78; s+=`<defs><linearGradient id="gSun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE9A8"/><stop offset="1" stop-color="#FF9FCB"/></linearGradient><clipPath id="gSunC"><rect x="0" y="0" width="${W}" height="${hy}"/></clipPath></defs>
+      <circle cx="${n0(sx)}" cy="${hy}" r="42" fill="url(#gSun)" opacity=".85" clip-path="url(#gSunC)"/><rect x="0" y="${hy}" width="${W}" height="${H-hy}" fill="${dk(.18)}"/><path d="M0 ${hy}H${W}" stroke="${lt(.6)}" stroke-width="2"/>`;
     let g=''; for(let k=1;k<=7;k++){ const y=hy+Math.pow(k/7,1.8)*(H-hy); g+=`M0 ${n0(y)}H${W}`; } for(let i=-18;i<=18;i++) g+=`M${n0(W/2)} ${hy}L${n0(W/2+i*130)} ${H}`;
     s+=`<path d="${g}" stroke="${lt(.34)}" stroke-width="1.4" fill="none"/>`;
   } else if(id==='awale'){
@@ -2942,8 +2959,8 @@ function groundSVG(id,W){
     for(let i=0;i<cnt(16);i++) s+=leaf(R()*W, 205+R()*100, .6+R()*.8, R()*360);
   } else if(id==='prunier'){
     const fl=(x,y,k)=>{ let p=''; for(let i=0;i<5;i++) p+=`<ellipse cx="0" cy="-11" rx="8.5" ry="11" transform="rotate(${i*72})" fill="#FBE8EA" opacity=".88"/>`; return `<g transform="translate(${n0(x)} ${n0(y)}) scale(${k})">${p}<circle r="4.5" fill="#B81F2F"/></g>`; };
-    s+=`<g transform="translate(${W} 0)"><path d="M10 318C-70 300-130 262-176 212M-70 300C-88 272-84 248-70 226M-130 262C-160 262-184 276-202 298" fill="none" stroke="#2A0C0A" stroke-opacity=".8" stroke-width="7" stroke-linecap="round"/>${fl(-176,212,1.1)}${fl(-70,226,.9)}${fl(-202,298,.8)}${fl(-118,282,.7)}</g>
-      <path d="M-10 318C50 304 96 280 132 244M96 280C108 262 108 244 102 230" fill="none" stroke="#2A0C0A" stroke-opacity=".7" stroke-width="6" stroke-linecap="round"/>`+fl(132,244,1)+fl(102,230,.8)+fl(60,300,.7);
+    s+=`<g transform="translate(0 26)"><g transform="translate(${W} 0)"><path d="M10 318C-70 300-130 262-176 212M-70 300C-88 272-84 248-70 226M-130 262C-160 262-184 276-202 298" fill="none" stroke="#2A0C0A" stroke-opacity=".8" stroke-width="7" stroke-linecap="round"/>${fl(-176,212,1.1)}${fl(-70,226,.9)}${fl(-202,298,.8)}${fl(-118,282,.7)}</g>
+      <path d="M-10 318C50 304 96 280 132 244M96 280C108 262 108 244 102 230" fill="none" stroke="#2A0C0A" stroke-opacity=".7" stroke-width="6" stroke-linecap="round"/>`+fl(132,244,1)+fl(102,230,.8)+fl(60,300,.7)+`</g>`;
     for(let i=0;i<cnt(22);i++){ const x=R()*W, y=215+R()*100; s+=`<ellipse cx="${n0(x)}" cy="${n0(y)}" rx="6" ry="3.4" transform="rotate(${n0(R()*180)} ${n0(x)} ${n0(y)})" fill="#F8DCE3" opacity="${(.3+R()*.4).toFixed(2)}"/>`; }
   }
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMax slice" aria-hidden="true">${s}</svg>`;
@@ -2957,18 +2974,21 @@ function buildWorld(){
   buildGround(); worldLive(); worldScroll(true);
   document.documentElement.classList.add('world-on');
 }
-{ let wt=0; addEventListener('resize',()=>{ cancelAnimationFrame(wt); wt=requestAnimationFrame(()=>{ frameWorld(); buildGround(); }); }); }
+{ let wt=0; addEventListener('resize',()=>{ cancelAnimationFrame(wt); wt=requestAnimationFrame(()=>{ frameWorld(); buildGround(); worldScroll(true); }); }); }
 // Quand on fait défiler la page, la « caméra » monte dans le décor et avance un peu (coupé en mode léger).
 // Thèmes Coopô et Sombre : le dessin est fait de plusieurs plans, chacun bouge à sa vitesse (le ciel presque pas, l'herbe du premier plan plus vite).
 const WORLD_LAYERS={ 'cs-sky':[.22,0], 'cs-far':[.15,0], 'cs-mid':[.08,0], 'cs-near':[.03,0], 'cs-front':[-.1,.0004] };
-let _wLast=-1, _wTick=false;
+let _wLast=-1, _wTick=false, _wH=0, _wLayers=null;
 function worldScroll(force){
   _wTick=false; const w=document.getElementById('world'); if(!w) return;
-  const y=window.scrollY; document.documentElement.classList.toggle('scrolled', y>10);
-  const sy=reduced()?0:Math.min(Math.max(y,0),600); if(sy===_wLast&&!force) return; _wLast=sy;
-  const cam=w.firstElementChild; if(cam) cam.style.transform=sy?`translate3d(0,${(-sy*.3).toFixed(1)}px,0) scale(${(1+sy*.00028).toFixed(4)})`:'';
-  w.querySelectorAll('.cs-l').forEach(l=>{ const k=WORLD_LAYERS[[...l.classList].find(c=>WORLD_LAYERS[c])]; if(!k) return;
-    l.style.transform=sy?`translate3d(0,${(sy*k[0]).toFixed(1)}px,0)`+(k[1]?` scale(${(1+sy*k[1]).toFixed(4)})`:''):''; });
+  const r=document.documentElement, y=window.scrollY; r.classList.toggle('scrolled', y>10);
+  const par=!reduced(); if(r.classList.contains('world-par')!==par) r.classList.toggle('world-par',par);
+  const cam=w.firstElementChild; if(force||!_wH){ _wH=(cam&&cam.offsetHeight)||400; _wLayers=[...w.querySelectorAll('.cs-l')].map(l=>[l,WORLD_LAYERS[[...l.classList].find(c=>WORLD_LAYERS[c])]]).filter(x=>x[1]); }
+  // la caméra descend deux fois moins vite que la page, jusqu'à ce que le dessin soit sorti de l'écran : ensuite on est « dans » le monde
+  const sy=par?Math.min(Math.max(y,0),_wH*2.4):0; if(sy===_wLast&&!force) return; _wLast=sy;
+  const z=Math.min(sy,600);
+  if(cam) cam.style.transform=sy?`translate3d(0,${(-sy*.5).toFixed(1)}px,0) scale(${(1+z*.00028).toFixed(4)})`:'';
+  _wLayers.forEach(([l,k])=>{ l.style.transform=z?`translate3d(0,${(z*k[0]).toFixed(1)}px,0)`+(k[1]?` scale(${(1+z*k[1]).toFixed(4)})`:''):''; });
 }
 window.addEventListener('scroll',()=>{ if(!_wTick){ _wTick=true; requestAnimationFrame(()=>worldScroll()); } },{passive:true});
 // Appareil puissant (ordinateur, iPhone, Android avec beaucoup de mémoire) : le dessin lui-même est animé en haut de page
@@ -3508,11 +3528,18 @@ function splashShow(msg){
   SPLASH.t0=performance.now(); SPLASH.on=true; SPLASH.gaveUp=false; SPLASH.min=S.auth?900:600;
   const tip=document.getElementById('sp-tip'); if(tip) tip.textContent = S.auth ? SPLASH_TIPS[Math.random()*SPLASH_TIPS.length|0] : 'Trouve des joueurs avec qui jouer ce soir.';
   splashMsg(msg||(S.auth?'Connexion à ton compte…':'Chargement…'));
-  el.classList.remove('out'); el.removeAttribute('aria-hidden');
+  el.classList.remove('out'); el.removeAttribute('aria-hidden'); document.documentElement.classList.add('splash-on');
   clearTimeout(SPLASH.t1); SPLASH.t1=setTimeout(()=>{ SPLASH.gaveUp=true; splashSync(); },SPLASH.max);
   splashSync();
 }
-function splashHide(){ if(!SPLASH.on) return; SPLASH.on=false; clearTimeout(SPLASH.t1); clearTimeout(SPLASH.t2); const el=SPLASH.el; if(el){ el.classList.add('out'); el.setAttribute('aria-hidden','true'); } }
+function splashHide(){
+  if(!SPLASH.on) return; SPLASH.on=false; clearTimeout(SPLASH.t1); clearTimeout(SPLASH.t2);
+  const el=SPLASH.el, r=document.documentElement; if(el){ el.classList.add('out'); el.setAttribute('aria-hidden','true'); }
+  r.classList.remove('splash-on');   // l'appli apparaît par-dessus le décor
+  if(!reduced()){ try{ // petite mise en scène d'arrivée : le dessin se pose, la page rejoue son animation d'entrée
+    r.classList.add('world-in'); setTimeout(()=>r.classList.remove('world-in'),1300);
+    const pg=app.firstElementChild; if(pg&&window.scrollY<4){ pg.classList.remove('page-in'); void pg.offsetWidth; pg.classList.add('page-in'); } }catch(e){} }
+}
 function splashSync(){
   if(!SPLASH.on) return; const waited=performance.now()-SPLASH.t0;
   if(SPLASH.gaveUp || (!splashPending() && (SPLASH.fonts || waited>1800))){
