@@ -1183,7 +1183,7 @@ html:not([data-skin="defaut"]) .hero2 .art{ animation:none !important; clip-path
   html:not([data-skin="defaut"]) body .hero2 .float-match{ top:96px; bottom:auto; }
 }
 </style>
-<script>/* thème de la dernière visite, appliqué avant l'affichage */try{var _s=JSON.parse(localStorage.getItem('matematch.v1')||'null');var _k=_s&&(_s.skinOk||_s.skin);if(_k)document.documentElement.setAttribute('data-skin',_k);}catch(e){}document.documentElement.classList.add('splash-on');</script>
+<script>/* thème de la dernière visite, appliqué avant l'affichage ; mode léger et écran d'ouverture court (déjà vu dans cette session) décidés dès le premier affichage */try{var _s=JSON.parse(localStorage.getItem('matematch.v1')||'null');var _k=_s&&(_s.skinOk||_s.skin);if(_k)document.documentElement.setAttribute('data-skin',_k);}catch(e){}(function(r){r.classList.add('splash-on');try{var n=navigator,l=(typeof _s!=='undefined'&&_s&&typeof _s.lite==='boolean')?_s.lite:!!((n.deviceMemory&&n.deviceMemory<=2)||(n.hardwareConcurrency&&n.hardwareConcurrency<=2)||(n.connection&&n.connection.saveData));if(l)r.classList.add('lite');if(sessionStorage.getItem('coopo_splash'))r.classList.add('sp-quick');}catch(e){}})(document.documentElement);</script>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js">
@@ -1655,33 +1655,166 @@ html[data-skin] body .frame{ padding-bottom:max(56px,var(--g-clear)); }
 .toast{ border:1px solid rgba(255,255,255,.16); }
 dialog::backdrop{ background:rgba(10,8,24,.62); }
 html[data-skin="samurai"] body .page-head h2::after{ background:#F4ECE1; opacity:.5; }
-/* ==== Écran d'ouverture : affiché le temps que Coopô retrouve ton compte et tes matchs (plus de page qui saute à l'arrivée) ==== */
-#splash{ position:fixed; inset:0; z-index:10050; display:grid; place-items:center; padding:24px; color:#fff; text-align:center;
-  background:radial-gradient(ellipse 135% 66% at 50% 46%,rgba(var(--w-top),.86) 0,rgba(var(--w-top),.66) 46%,rgba(var(--w-top),.12) 100%); transition:opacity .45s ease, visibility 0s linear .45s; }
+/* ==== Écran d'ouverture : le poisson Coopô arrive en tourbillon (comme sa queue en spirale), se pose le temps que Coopô retrouve ton compte et tes matchs, puis file vers le haut et ouvre la page ==== */
+/* couleurs de la traînée et des poussières de lumière : claires sur le voile sombre, propres à chaque thème */
+html{ --sp-a:212,255,63; --sp-b:156,134,255; --land:.84s; }
+html[data-skin="sombre"]{ --sp-a:212,255,63; --sp-b:185,166,255; }
+html[data-skin="samurai"]{ --sp-a:244,236,225; --sp-b:255,104,124; }
+html[data-skin="soft"]{ --sp-a:255,214,232; --sp-b:255,134,190; }
+html[data-skin="lofi"]{ --sp-a:255,218,110; --sp-b:126,204,255; }
+html[data-skin="esth"]{ --sp-a:255,214,242; --sp-b:184,164,255; }
+html[data-skin="awale"]{ --sp-a:242,196,109; --sp-b:232,128,66; }
+html[data-skin="ocean"]{ --sp-a:150,236,255; --sp-b:84,170,255; }
+html[data-skin="menthe"]{ --sp-a:196,255,226; --sp-b:84,222,168; }
+html[data-skin="prunier"]{ --sp-a:255,200,212; --sp-b:255,104,130; }
+html.sp-quick{ --land:.36s; }   /* déjà vu dans cette session (page rechargée) : le poisson apparaît directement à sa place */
+#splash{ --fs:120px; position:fixed; inset:0; z-index:10050; overflow:hidden; color:#fff; text-align:center; }
+@media (min-width:861px){ #splash{ --fs:150px; } }
+#splash.out{ visibility:hidden; pointer-events:none; transition:visibility 0s linear .75s; }
+#splash.gone{ display:none; }   /* une fois parti, plus rien ne tourne en arrière-plan */
 /* tant que l'écran d'ouverture est là, l'appli se prépare derrière sans être visible : plus de page qui change sous les yeux */
 html.splash-on body > :is(.frame,.tabbar,#pv-bar,#toast){ opacity:0 !important; }
 body > :is(.frame,.tabbar){ transition:opacity .5s ease; }
 /* arrivée dans le monde : le dessin recule doucement à sa place quand l'écran d'ouverture se retire */
 html.world-in .w-art{ animation:worldIn 1.2s cubic-bezier(.2,.7,.2,1) both; }
 @keyframes worldIn{ from{ scale:1.1; } to{ scale:1; } }
-#splash.out{ opacity:0; visibility:hidden; pointer-events:none; }
-.sp-in{ display:grid; justify-items:center; gap:12px; transition:transform .45s ease; }
-#splash.out .sp-in{ transform:scale(1.1); }
-.sp-logo{ position:relative; width:116px; height:116px; display:grid; place-items:center; margin-bottom:4px; }
-.sp-mark{ width:88px; height:88px; background:#fff; -webkit-mask:var(--logo) center/contain no-repeat; mask:var(--logo) center/contain no-repeat; }
-.sp-ring{ position:absolute; inset:0; border-radius:50%; border:2px solid rgba(255,255,255,.55); opacity:0; animation:spRing 2.4s ease-out infinite; }
-.sp-ring + .sp-ring{ animation-delay:1.2s; }
-@keyframes spRing{ from{ transform:scale(.7); opacity:.85; } to{ transform:scale(1.75); opacity:0; } }
-.sp-name{ font:700 32px/1 'Outfit',system-ui,sans-serif; letter-spacing:.01em; }
-.sp-msg{ margin:0; min-height:1.6em; font-size:14px; color:#fff; }
-.sp-bar{ width:132px; height:4px; border-radius:99px; background:rgba(255,255,255,.22); overflow:hidden; }
-.sp-bar i{ display:block; width:42%; height:100%; border-radius:99px; background:#fff; animation:spBar 1.25s ease-in-out infinite; }
-@keyframes spBar{ from{ transform:translateX(-110%); } to{ transform:translateX(250%); } }
-html.lite #splash .sp-bar i{ animation-duration:1.25s !important; animation-iteration-count:infinite !important; }   /* la barre reste animée en mode léger : c'est une information, pas un décor */
-html.lite #splash .sp-ring{ display:none; }
-@media (prefers-reduced-motion:reduce){ .sp-ring{ display:none; } .sp-bar i{ width:100%; opacity:.7; } }
-.sp-tip{ position:absolute; left:0; right:0; bottom:calc(30px + env(safe-area-inset-bottom,0px)); margin:0 auto; padding:0 24px; max-width:440px; font-size:13px; line-height:1.5; color:#fff; text-shadow:0 1px 8px rgba(var(--w-top),.9); text-wrap:balance; }
+.sp-veil{ position:absolute; inset:0; background:radial-gradient(ellipse 135% 66% at 50% 44%,rgba(var(--w-top),.86) 0,rgba(var(--w-top),.66) 46%,rgba(var(--w-top),.12) 100%); transition:opacity .5s ease .12s; }
+#splash.out .sp-veil{ opacity:0; }
+/* poussières de lumière qui montent lentement : la profondeur du monde */
+.sp-motes{ position:absolute; inset:0; transition:opacity .4s ease; }
+#splash.out .sp-motes{ opacity:0; }
+.sp-motes i{ position:absolute; bottom:-30px; left:var(--x); width:var(--s); height:var(--s); border-radius:50%; background:radial-gradient(closest-side,rgba(var(--sp-a),.9),rgba(var(--sp-a),0)); opacity:0; animation:spMote var(--d) linear var(--t) infinite; }
+.sp-motes i:nth-child(even){ background:radial-gradient(closest-side,rgba(var(--sp-b),.85),rgba(var(--sp-b),0)); animation-name:spMote2; }
+@keyframes spMote{ 0%{ transform:translate3d(0,0,0); opacity:0; } 12%{ opacity:.75; } 80%{ opacity:.55; } 100%{ transform:translate3d(28px,calc(-100vh - 60px),0); opacity:0; } }
+@keyframes spMote2{ 0%{ transform:translate3d(0,0,0); opacity:0; } 12%{ opacity:.65; } 80%{ opacity:.45; } 100%{ transform:translate3d(-34px,calc(-100vh - 60px),0); opacity:0; } }
+/* la scène du poisson : l'unité de la trajectoire (em) suit la taille de l'écran */
+.sp-stage{ position:absolute; left:50%; top:40%; width:var(--fs); height:var(--fs); margin:calc(var(--fs) / -2) 0 0 calc(var(--fs) / -2); font-size:94px; font-size:min(26vw,24vh); }
+.sp-fish,.sp-bob,.sp-body,.sp-squash,.sp-echo,.sp-art,.sp-art b{ position:absolute; top:0; left:0; width:100%; height:100%; }
+.sp-art{ display:block; transform:rotate(58deg); }   /* le poisson du logo regarde vers le haut-droite (-58°) : on le tourne pour que « devant » suive la trajectoire */
+.sp-art b{ display:block; background:#fff; -webkit-mask:var(--logo) center/contain no-repeat; mask:var(--logo) center/contain no-repeat; }
+.sp-img,.sp-echo b{ clip-path:polygon(0 0,40% 0,40% 29.5%,60% 29.5%,60% 0,100% 0,100% 100%,0 100%); }   /* le poisson sans sa vapeur */
+.sp-steam{ clip-path:inset(0 40% 70.5% 40%); transform-origin:50% 29.5%; animation:spSteamIn .5s ease-out calc(var(--land) + .08s) both, spSteam 1.9s ease-in-out calc(var(--land) + .58s) infinite; }   /* la vapeur du logo, seule */
+.sp-fish .sp-art{ filter:drop-shadow(0 0 12px rgba(var(--sp-a),.45)); }
+.sp-body{ transform:rotate(-58deg); animation:spTravel .78s linear .06s both; }
+html.sp-quick .sp-body{ animation:spPop .36s cubic-bezier(.2,.9,.3,1.2) both; }
+html.sp-quick .sp-echo{ display:none; }
+.sp-squash{ animation:spLand .5s cubic-bezier(.3,1.4,.5,1) calc(var(--land) - .04s) both; }
+.sp-bob{ animation:spBob 2.4s ease-in-out calc(var(--land) + .45s) infinite; }
+.sp-echo{ opacity:0; animation:spTravelE .78s linear calc(.06s + var(--k) * 58ms) both; }
+.sp-echo .sp-art{ transform:rotate(58deg) scale(var(--e)); }
+.sp-echo b{ background:rgb(var(--c)); opacity:var(--o); }
+/* halo et ondes à l'atterrissage */
+.sp-glow{ position:absolute; left:50%; top:50%; width:0; height:0; transition:opacity .3s ease; }
+#splash.out .sp-glow{ opacity:0; }
+.sp-halo{ position:absolute; left:-150px; top:-150px; width:300px; height:300px; border-radius:50%; background:radial-gradient(closest-side,rgba(var(--sp-a),.26),rgba(var(--sp-a),.08) 55%,rgba(var(--sp-a),0)); animation:spHaloIn .7s ease-out var(--land) both, spHalo 3s ease-in-out calc(var(--land) + .7s) infinite; }
+.sp-rip{ position:absolute; left:-75px; top:30px; width:150px; height:44px; border-radius:50%; border:1.5px solid rgba(var(--sp-a),.42); opacity:0; animation:spRip 2.6s cubic-bezier(.15,.6,.3,1) var(--land) infinite; }
+.sp-rip + .sp-rip{ animation-delay:calc(var(--land) + 1.3s); }
+/* départ : le poisson recule un instant puis file vers le haut-droite, sa traînée derrière lui ; le voile se lève */
+#splash.out .sp-fish{ animation:spDash .48s both; }
+#splash.out .sp-bob{ animation-play-state:paused; }
+#splash.out .sp-echo{ animation:spDashE .4s cubic-bezier(.3,0,.8,.6) calc(.07s + var(--k) * 30ms) both; }
+/* le nom, le message, l'astuce */
+.sp-txt{ position:absolute; inset:0; pointer-events:none; transition:opacity .25s ease, transform .3s ease; }
+#splash.out .sp-txt{ opacity:0; transform:translateY(10px); }
+.sp-in{ position:absolute; left:0; right:0; top:calc(40% + var(--fs) / 2 + 14px); display:grid; justify-items:center; gap:8px; padding:0 24px; }
+.sp-name{ display:block; font:700 34px/1 'Outfit',system-ui,sans-serif; letter-spacing:.01em; white-space:nowrap; }
+.sp-name i{ display:inline-block; font-style:normal; animation:spLetter .55s cubic-bezier(.2,.9,.3,1.25) calc(var(--land) - .12s + var(--i,0) * 55ms) both; }
+.sp-name i:nth-child(2){ --i:1; } .sp-name i:nth-child(3){ --i:2; } .sp-name i:nth-child(4){ --i:3; } .sp-name i:nth-child(5){ --i:4; }
+.sp-msg{ margin:0; min-height:1.6em; font-size:14px; color:#fff; animation:spFade .45s ease calc(var(--land) + .12s) both; }
+.sp-tip{ position:absolute; left:0; right:0; bottom:calc(30px + env(safe-area-inset-bottom,0px)); margin:0 auto; padding:0 24px; max-width:440px; font-size:13px; line-height:1.5; color:#fff; text-shadow:0 1px 8px rgba(var(--w-top),.9); text-wrap:balance; animation:spFade .5s ease calc(var(--land) + .35s) both; }
+@media (max-height:480px){ .sp-tip{ display:none; } }
 .sp-name,.sp-msg{ text-shadow:0 1px 10px rgba(var(--w-top),.9); }
+@keyframes spFade{ from{ opacity:0; } }
+@keyframes spLetter{ from{ opacity:0; transform:translateY(14px) scale(.85); } to{ opacity:1; transform:none; } }
+@keyframes spPop{ from{ transform:translate(0,.3em) rotate(-58deg) scale(.4,.4); opacity:0; } to{ transform:translate(0,0) rotate(-58deg) scale(1,1); opacity:1; } }
+@keyframes spLand{ 0%{ transform:scale(1,1); } 28%{ transform:scale(.84,1.12); } 60%{ transform:scale(1.07,.95); } 100%{ transform:scale(1,1); } }
+@keyframes spBob{ 0%,100%{ transform:translate(0,0) rotate(0deg); } 50%{ transform:translate(0,-7px) rotate(-3deg); } }
+@keyframes spSteamIn{ from{ opacity:0; transform:translateY(6%) scaleY(.3); } to{ opacity:1; transform:none; } }
+@keyframes spSteam{ 0%,100%{ transform:none; opacity:1; } 50%{ transform:translateY(-3%) skewX(-6deg) scaleY(1.06); opacity:.7; } }
+@keyframes spHaloIn{ from{ transform:scale(.3); opacity:0; } to{ transform:scale(1); opacity:1; } }
+@keyframes spHalo{ 0%,100%{ transform:scale(1); opacity:1; } 50%{ transform:scale(1.08); opacity:.7; } }
+@keyframes spRip{ 0%{ transform:scale(.3); opacity:.9; } 70%{ opacity:.15; } 100%{ transform:scale(2.1); opacity:0; } }
+@keyframes spDash{
+  0%{ transform:translate(0,0) rotate(-58deg) scale(1,1) rotate(58deg); animation-timing-function:cubic-bezier(.3,0,.5,1); }
+  15%{ transform:translate(-8px,12px) rotate(-58deg) scale(.84,1.1) rotate(58deg); animation-timing-function:cubic-bezier(.3,0,.8,.6); }
+  50%{ opacity:1; }
+  100%{ transform:translate(46vh,-75vh) rotate(-58deg) scale(1.75,.7) rotate(58deg); opacity:0; } }
+@keyframes spDashE{ 0%{ transform:translate(0,0) rotate(-58deg) scale(1,1); opacity:0; } 12%{ opacity:1; } 100%{ transform:translate(46vh,-75vh) rotate(-58deg) scale(2.4,.5); opacity:0; } }
+/* trajectoire en spirale (calculée : monte à droite, passe en haut, redescend à gauche, s'enroule vers le centre) */
+@keyframes spTravel{
+0%{transform:translate(1.050em,2.050em) rotate(283.2deg) scale(0.480,0.365);opacity:0.00}
+3.57%{transform:translate(1.180em,1.592em) rotate(287.2deg) scale(0.540,0.413);opacity:0.45}
+7.14%{transform:translate(1.309em,1.146em) rotate(283.8deg) scale(0.586,0.452);opacity:0.89}
+10.71%{transform:translate(1.378em,0.700em) rotate(272.5deg) scale(0.627,0.486)}
+14.29%{transform:translate(1.362em,0.262em) rotate(264.7deg) scale(0.664,0.519)}
+17.86%{transform:translate(1.300em,-0.161em) rotate(258.2deg) scale(0.699,0.549)}
+21.43%{transform:translate(1.184em,-0.558em) rotate(248.4deg) scale(0.731,0.578)}
+25%{transform:translate(0.984em,-0.905em) rotate(229.8deg) scale(0.761,0.606)}
+28.57%{transform:translate(0.694em,-1.163em) rotate(214.5deg) scale(0.789,0.632)}
+32.14%{transform:translate(0.362em,-1.340em) rotate(201.3deg) scale(0.815,0.658)}
+35.71%{transform:translate(0.008em,-1.421em) rotate(182.1deg) scale(0.839,0.682)}
+39.29%{transform:translate(-0.338em,-1.371em) rotate(163.7deg) scale(0.862,0.705)}
+42.86%{transform:translate(-0.651em,-1.242em) rotate(152.0deg) scale(0.883,0.728)}
+46.43%{transform:translate(-0.920em,-1.060em) rotate(138.6deg) scale(0.903,0.749)}
+50%{transform:translate(-1.113em,-0.816em) rotate(119.0deg) scale(0.922,0.770)}
+53.57%{transform:translate(-1.230em,-0.540em) rotate(107.5deg) scale(0.939,0.790)}
+57.14%{transform:translate(-1.293em,-0.261em) rotate(98.0deg) scale(0.954,0.809)}
+60.71%{transform:translate(-1.303em,0.011em) rotate(84.7deg) scale(0.969,0.828)}
+64.29%{transform:translate(-1.237em,0.262em) rotate(67.3deg) scale(0.982,0.845)}
+67.86%{transform:translate(-1.118em,0.476em) rotate(54.1deg) scale(0.994,0.862)}
+71.43%{transform:translate(-0.954em,0.640em) rotate(32.9deg) scale(1.004,0.878)}
+75%{transform:translate(-0.746em,0.700em) rotate(2.8deg) scale(1.014,0.893)}
+78.57%{transform:translate(-0.543em,0.681em) rotate(-12.7deg) scale(1.022,0.908)}
+82.14%{transform:translate(-0.365em,0.615em) rotate(-29.4deg) scale(1.029,0.922)}
+85.71%{transform:translate(-0.239em,0.495em) rotate(-55.5deg) scale(1.034,0.935)}
+89.29%{transform:translate(-0.160em,0.354em) rotate(-64.7deg) scale(1.039,0.947)}
+92.86%{transform:translate(-0.102em,0.220em) rotate(-67.3deg) scale(1.042,0.958)}
+96.43%{transform:translate(-0.051em,0.101em) rotate(-65.9deg) scale(1.043,0.969)}
+100%{transform:translate(0.000em,0.000em) rotate(-58.0deg) scale(1.000,1.000)}
+}
+@keyframes spTravelE{
+0%{transform:translate(1.050em,2.050em) rotate(283.2deg) scale(0.660,0.311);opacity:0.00}
+3.57%{transform:translate(1.180em,1.592em) rotate(287.2deg) scale(0.738,0.354);opacity:0.45}
+7.14%{transform:translate(1.309em,1.146em) rotate(283.8deg) scale(0.797,0.387);opacity:0.89}
+10.71%{transform:translate(1.378em,0.700em) rotate(272.5deg) scale(0.847,0.418);opacity:1.00}
+14.29%{transform:translate(1.362em,0.262em) rotate(264.7deg) scale(0.892,0.447);opacity:1.00}
+17.86%{transform:translate(1.300em,-0.161em) rotate(258.2deg) scale(0.933,0.475);opacity:1.00}
+21.43%{transform:translate(1.184em,-0.558em) rotate(248.4deg) scale(0.969,0.502);opacity:1.00}
+25%{transform:translate(0.984em,-0.905em) rotate(229.8deg) scale(1.002,0.528);opacity:1.00}
+28.57%{transform:translate(0.694em,-1.163em) rotate(214.5deg) scale(1.032,0.553);opacity:1.00}
+32.14%{transform:translate(0.362em,-1.340em) rotate(201.3deg) scale(1.059,0.577);opacity:1.00}
+35.71%{transform:translate(0.008em,-1.421em) rotate(182.1deg) scale(1.083,0.600);opacity:1.00}
+39.29%{transform:translate(-0.338em,-1.371em) rotate(163.7deg) scale(1.105,0.623);opacity:1.00}
+42.86%{transform:translate(-0.651em,-1.242em) rotate(152.0deg) scale(1.124,0.645);opacity:1.00}
+46.43%{transform:translate(-0.920em,-1.060em) rotate(138.6deg) scale(1.141,0.667);opacity:1.00}
+50%{transform:translate(-1.113em,-0.816em) rotate(119.0deg) scale(1.155,0.688);opacity:1.00}
+53.57%{transform:translate(-1.230em,-0.540em) rotate(107.5deg) scale(1.168,0.709);opacity:1.00}
+57.14%{transform:translate(-1.293em,-0.261em) rotate(98.0deg) scale(1.178,0.729);opacity:1.00}
+60.71%{transform:translate(-1.303em,0.011em) rotate(84.7deg) scale(1.186,0.748);opacity:1.00}
+64.29%{transform:translate(-1.237em,0.262em) rotate(67.3deg) scale(1.192,0.767);opacity:1.00}
+67.86%{transform:translate(-1.118em,0.476em) rotate(54.1deg) scale(1.196,0.786);opacity:1.00}
+71.43%{transform:translate(-0.954em,0.640em) rotate(32.9deg) scale(1.198,0.804);opacity:0.99}
+75%{transform:translate(-0.746em,0.700em) rotate(2.8deg) scale(1.198,0.822);opacity:0.79}
+78.57%{transform:translate(-0.543em,0.681em) rotate(-12.7deg) scale(1.196,0.839);opacity:0.60}
+82.14%{transform:translate(-0.365em,0.615em) rotate(-29.4deg) scale(1.192,0.856);opacity:0.43}
+85.71%{transform:translate(-0.239em,0.495em) rotate(-55.5deg) scale(1.187,0.873);opacity:0.27}
+89.29%{transform:translate(-0.160em,0.354em) rotate(-64.7deg) scale(1.179,0.889);opacity:0.12}
+92.86%{transform:translate(-0.102em,0.220em) rotate(-67.3deg) scale(1.169,0.905);opacity:0.00}
+96.43%{transform:translate(-0.051em,0.101em) rotate(-65.9deg) scale(1.156,0.920);opacity:0.00}
+100%{transform:translate(0.000em,0.000em) rotate(-58.0deg) scale(1.000,1.000);opacity:0.00}
+}
+/* mode léger (petits téléphones) : le poisson est tout de suite à sa place et se balance doucement, rien d'autre ne bouge */
+html.lite .sp-echo, html.lite .sp-motes, html.lite .sp-rip{ display:none; }
+html.lite .sp-fish .sp-art{ filter:none; }
+html.lite #splash .sp-bob{ animation:spBob 2.4s ease-in-out infinite !important; }
+html.lite #splash.out{ opacity:0; transition:opacity .35s ease, visibility 0s linear .35s; }
+html.lite #splash.out .sp-fish{ animation:none !important; }
+/* « réduire les animations » : rien ne bouge, l'écran s'efface simplement */
+@media (prefers-reduced-motion:reduce){
+  #splash *, html.lite #splash .sp-bob{ animation:none !important; }
+  .sp-echo, .sp-motes, .sp-rip{ display:none; }
+  #splash.out{ opacity:0; transition:opacity .35s ease, visibility 0s linear .35s; }
+}
 /* ---- Boutons de l'en-tête : verre sombre, comme sur l'accueil ---- */
 .top .notif-btn,.top .skin-btn{ background:rgba(var(--w-top),.5); border-color:rgba(255,255,255,.24); color:#fff; box-shadow:none; }
 @supports ((-webkit-backdrop-filter:blur(2px)) or (backdrop-filter:blur(2px))){ html:not(.lite) .top :is(.notif-btn,.skin-btn){ -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); } }
@@ -1734,15 +1867,29 @@ try{ document.documentElement.style.setProperty('--logo','url("'+LOGO_MASK+'")')
 </head>
 <body>
 <div id="splash" role="status" aria-live="polite">
-  <div class="sp-in">
-    <div class="sp-logo" aria-hidden="true"><i class="sp-ring"></i><i class="sp-ring"></i><i class="sp-mark"></i></div>
-    <b class="sp-name">Coopô</b>
-    <p class="sp-msg" id="sp-msg">Chargement…</p>
-    <div class="sp-bar" aria-hidden="true"><i></i></div>
+  <div class="sp-veil"></div>
+  <div class="sp-motes" aria-hidden="true"><i style="--x:6%;--s:8px;--d:11s;--t:-1s"></i><i style="--x:16%;--s:16px;--d:8.5s;--t:-6s"></i><i style="--x:27%;--s:6px;--d:13s;--t:-4s"></i><i style="--x:39%;--s:12px;--d:9.5s;--t:-8s"></i><i style="--x:52%;--s:7px;--d:12s;--t:-6s"></i><i style="--x:63%;--s:18px;--d:8s;--t:-3s"></i><i style="--x:74%;--s:9px;--d:11s;--t:-8s"></i><i style="--x:85%;--s:14px;--d:9s;--t:-2s"></i><i style="--x:94%;--s:6px;--d:13.5s;--t:-5s"></i></div>
+  <div class="sp-stage" aria-hidden="true">
+    <div class="sp-glow"><i class="sp-halo"></i><i class="sp-rip"></i><i class="sp-rip"></i></div>
+    <div class="sp-echo" style="--k:5;--e:.69;--o:.18;--c:var(--sp-b)"><i class="sp-art"><b></b></i></div>
+    <div class="sp-echo" style="--k:4;--e:.74;--o:.25;--c:var(--sp-b)"><i class="sp-art"><b></b></i></div>
+    <div class="sp-echo" style="--k:3;--e:.8;--o:.33;--c:var(--sp-b)"><i class="sp-art"><b></b></i></div>
+    <div class="sp-echo" style="--k:2;--e:.86;--o:.43;--c:var(--sp-a)"><i class="sp-art"><b></b></i></div>
+    <div class="sp-echo" style="--k:1;--e:.93;--o:.56;--c:var(--sp-a)"><i class="sp-art"><b></b></i></div>
+    <div class="sp-fish"><div class="sp-bob"><div class="sp-body"><div class="sp-squash"><i class="sp-art"><b class="sp-img"></b><b class="sp-steam"></b></i></div></div></div></div>
   </div>
-  <p class="sp-tip" id="sp-tip"></p>
+  <div class="sp-txt">
+    <div class="sp-in"><b class="sp-name" aria-hidden="true"><i>C</i><i>o</i><i>o</i><i>p</i><i>ô</i></b><p class="sp-msg" id="sp-msg">Chargement…</p></div>
+    <p class="sp-tip" id="sp-tip"></p>
+  </div>
 </div>
-<script>/* garde-fou : si le site ne démarre pas, l'écran d'ouverture se retire quand même au bout de 12 secondes */setTimeout(function(){var s=document.getElementById('splash');if(s)s.classList.add('out');document.documentElement.classList.remove('splash-on');},12000);</script>
+<script>/* écran d'ouverture : la page ne s'ouvre qu'une fois le poisson posé (fin de sa trajectoire). Garde-fou : si le site ne démarre pas, l'écran se retire quand même au bout de 12 secondes */
+(function(){var d=document,r=d.documentElement,s=d.getElementById('splash'),b=s&&s.querySelector('.sp-body'),t=0;
+function land(){clearTimeout(t);if(window.SPLASH_LANDED)return;window.SPLASH_LANDED=true;try{if(typeof splashSync==='function')splashSync();}catch(e){}}
+window.splashArm=function(){window.SPLASH_LANDED=false;clearTimeout(t);var still=r.classList.contains('lite')||!!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);t=setTimeout(land,still?0:(r.classList.contains('sp-quick')?800:1500));};
+if(b)b.addEventListener('animationend',function(e){if(e.target===b){clearTimeout(t);t=setTimeout(land,180);}});
+window.splashArm();
+setTimeout(function(){try{if(SPLASH.armed)return;}catch(e){}if(!s)return;s.classList.add('out');r.classList.remove('splash-on');setTimeout(function(){s.classList.add('gone');},900);},12000);})();</script>
 <div id="world" aria-hidden="true"><div class="w-cam"><div class="w-art" id="w-art"></div></div></div>
 
 <div class="frame">
@@ -3521,24 +3668,29 @@ const suggestName = n => (n||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
 
 /* ---- Écran d'ouverture ----
    Il reste affiché tant que Coopô ne sait pas si tu es connecté, puis tant que les données de ton compte ne sont pas arrivées.
+   Le poisson se pose d'abord (fin de sa trajectoire), puis il file et la page s'ouvre.
    Il se retire tout seul : au minimum après un court instant (pas de clignotement), au maximum après 9 secondes (connexion très lente : le site s'affiche et continue de charger). */
-const SPLASH={ el:document.getElementById('splash'), t0:performance.now(), min:600, max:9000, on:true, gaveUp:false, fonts:false, t1:0, t2:0 };
+const SPLASH={ el:document.getElementById('splash'), t0:performance.now(), min:600, max:9000, on:true, armed:false, gaveUp:false, fonts:false, t1:0, t2:0, t3:0 };
 let AUTH_SETTLED=false;   // Firebase a dit si une session existe ou non
 const SPLASH_TIPS=['Astuce : active « Je suis dispo maintenant » pour apparaître en tête de liste.','Astuce : plus ton profil est complet, plus tes matchs sont précis.','Astuce : invite un ami, vous gagnez tous les deux un thème.','Astuce : publie une annonce pour trouver des joueurs ce soir.','Bon à savoir : tes contacts ne sont visibles que par tes mates.','Astuce : installe Coopô sur ton écran d\'accueil, elle s\'ouvre comme une appli.'];
 const splashPending = () => AUTH_LIVE && !NET_FAIL && !!S.auth && (!AUTH_SETTLED || (DB.live && !DB._loaded));
 function splashMsg(t){ const m=document.getElementById('sp-msg'); if(m&&m.textContent!==t) m.textContent=t; }
 function splashShow(msg){
   const el=SPLASH.el; if(!el) return;
-  SPLASH.t0=performance.now(); SPLASH.on=true; SPLASH.gaveUp=false; SPLASH.min=S.auth?900:600;
+  const again = !SPLASH.on || el.classList.contains('out');   // l'écran était parti (connexion pendant la visite) : le poisson refait son entrée
+  SPLASH.t0=performance.now(); SPLASH.on=true; SPLASH.armed=true; SPLASH.gaveUp=false; SPLASH.min=S.auth?900:600;
   const tip=document.getElementById('sp-tip'); if(tip) tip.textContent = S.auth ? SPLASH_TIPS[Math.random()*SPLASH_TIPS.length|0] : 'Trouve des joueurs avec qui jouer ce soir.';
   splashMsg(msg||(S.auth?'Connexion à ton compte…':'Chargement…'));
-  el.classList.remove('out'); el.removeAttribute('aria-hidden'); document.documentElement.classList.add('splash-on');
+  if(again){ clearTimeout(SPLASH.t3); el.classList.add('gone'); void el.offsetWidth; el.classList.remove('gone','out'); try{ window.splashArm&&window.splashArm(); }catch(e){} }
+  el.removeAttribute('aria-hidden'); document.documentElement.classList.add('splash-on');
   clearTimeout(SPLASH.t1); SPLASH.t1=setTimeout(()=>{ SPLASH.gaveUp=true; splashSync(); },SPLASH.max);
   splashSync();
 }
 function splashHide(){
   if(!SPLASH.on) return; SPLASH.on=false; clearTimeout(SPLASH.t1); clearTimeout(SPLASH.t2);
-  const el=SPLASH.el, r=document.documentElement; if(el){ el.classList.add('out'); el.setAttribute('aria-hidden','true'); }
+  const el=SPLASH.el, r=document.documentElement;
+  if(el){ el.classList.add('out'); el.setAttribute('aria-hidden','true'); clearTimeout(SPLASH.t3); SPLASH.t3=setTimeout(()=>{ if(!SPLASH.on) el.classList.add('gone'); },900); }   // une fois le poisson parti, plus rien ne tourne
+  try{ sessionStorage.setItem('coopo_splash','1'); }catch(e){}   // page rechargée dans la même visite : entrée courte
   r.classList.remove('splash-on');   // l'appli apparaît par-dessus le décor
   if(!reduced()){ try{ // petite mise en scène d'arrivée : le dessin se pose, la page rejoue son animation d'entrée
     r.classList.add('world-in'); setTimeout(()=>r.classList.remove('world-in'),1300);
@@ -3547,7 +3699,8 @@ function splashHide(){
 function splashSync(){
   if(!SPLASH.on) return; const waited=performance.now()-SPLASH.t0;
   if(SPLASH.gaveUp || (!splashPending() && (SPLASH.fonts || waited>1800))){
-    if(waited>=SPLASH.min) splashHide(); else { clearTimeout(SPLASH.t2); SPLASH.t2=setTimeout(splashSync,SPLASH.min-waited+20); }
+    const landed = SPLASH.gaveUp || window.SPLASH_LANDED!==false;   // le poisson doit être posé (le petit script de l'écran rappelle splashSync à ce moment-là)
+    if(waited>=SPLASH.min && landed) splashHide(); else { clearTimeout(SPLASH.t2); SPLASH.t2=setTimeout(splashSync,Math.max(120,SPLASH.min-waited+20)); }
   } else if(splashPending()){ splashMsg(waited>5000?'La connexion est lente, encore un instant…':AUTH_SETTLED?'On prépare tes matchs…':'Connexion à ton compte…'); if(waited<=5000){ clearTimeout(SPLASH.t2); SPLASH.t2=setTimeout(splashSync,5050-waited); } }
   else { clearTimeout(SPLASH.t2); SPLASH.t2=setTimeout(splashSync,200); }   // on attend les polices (au plus 1,8 s)
 }
