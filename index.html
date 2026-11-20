@@ -718,6 +718,22 @@ input.invalid{ border-color:var(--lo) !important; animation:shake .35s; }
 .bubble.me{ align-self:flex-end; background:var(--pk); color:var(--on-pk); border-color:var(--pk); border-radius:18px 18px 4px 18px; }
 .bubble small{ font-size:11px; opacity:.85; } .bubble.me small{ opacity:1; } .bubble span{ overflow-wrap:anywhere; }
 .chat-form{ display:flex; gap:8px; margin-top:12px; }
+/* Messages vocaux : bouton micro, barre d'enregistrement, lecteur dans la bulle */
+.mic-btn{ flex:none; width:46px; min-width:46px; padding:0; display:grid; place-items:center; } .mic-btn svg{ width:20px; height:20px; }
+.chat-form.rec > :not(.rec-bar){ display:none; }
+.rec-bar{ flex:1 1 0; min-width:0; display:flex; align-items:center; gap:8px; padding:4px 4px 4px 14px; border:1.5px solid var(--line); border-radius:14px; background:var(--field); }
+.rec-bar b{ flex:1 1 0; min-width:0; font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rec-dot{ flex:none; width:10px; height:10px; border-radius:50%; background:#E5484D; animation:recblink 1s steps(2,start) infinite; }
+@keyframes recblink{ to{ visibility:hidden; } }
+@media (prefers-reduced-motion:reduce){ .rec-dot{ animation:none; } }
+.voice-play{ display:flex; align-items:center; gap:10px; min-height:40px; min-width:150px; padding:2px 0; border:0; background:none; color:inherit; font:inherit; cursor:pointer; text-align:left; }
+.voice-play .v-ico{ flex:none; width:34px; height:34px; border-radius:50%; display:grid; place-items:center; background:currentColor; } .voice-play .v-ico svg{ width:14px; height:14px; }
+.bubble .voice-play .v-ico svg{ fill:var(--field); } .bubble.me .voice-play .v-ico svg{ fill:var(--pk); }
+.voice-play .v-bar{ flex:1 1 0; min-width:60px; height:4px; border-radius:2px; background:color-mix(in srgb,currentColor 28%,transparent); overflow:hidden; }
+.voice-play .v-bar i{ display:block; height:100%; width:0; background:currentColor; }
+.voice-play .v-time{ flex:none; font-size:12px; font-variant-numeric:tabular-nums; }
+.voice-play .i-pause{ display:none; } .voice-play.on .i-pause{ display:block; } .voice-play.on .i-play{ display:none; }
+.voice-play:focus-visible{ outline:2px solid currentColor; outline-offset:3px; border-radius:8px; }
 .squad h3{ margin:0; } .sq-top{ display:flex; justify-content:space-between; align-items:center; gap:10px; }
 .sq-game{ font:700 13px var(--fb); color:var(--pk2,var(--pk)); background:color-mix(in srgb,var(--pk) 12%,transparent); padding:4px 12px; border-radius:var(--rp); }
 .sq-slots{ font-size:13px; font-weight:700; color:var(--hi-tx); } .sq-slots.full{ color:var(--mu); }
@@ -4192,8 +4208,12 @@ function viewChat(id){
   app.innerHTML=`<div class="wrap page chat-page"><div class="chat-head">${backLink('#/messages','Messages')}<a class="chat-who" href="#/joueur/${p.id}">${avatar(p,44)}<div><b>${np(p)}${modBadge(p)}</b>${isOnline(p)?'<span class="online">En ligne</span>':'<span class="muted" style="font-size:12px">Hors ligne</span>'}</div></a></div>
     <p class="flame-hint" id="flame-hint"></p>
     <div class="chat-box" id="chatbox"></div>
-    <form class="chat-form" id="chatform"><input type="text" id="chatin" placeholder="Écris un message…" maxlength="500" autocomplete="off"><button class="btn btn-ac" type="submit">Envoyer</button></form></div>`;
+    <form class="chat-form" id="chatform"><input type="text" id="chatin" placeholder="Écris un message…" maxlength="500" autocomplete="off">${micBtn()}<button class="btn btn-ac" type="submit">Envoyer</button></form></div>`;
   renderChat(id);
+  // Message vocal : enregistré puis envoyé comme un message (30 secondes maximum)
+  document.getElementById('micbtn')?.addEventListener('click',()=>recordVoice(v=>{ const vid=newId();
+    VOICES[vid]=v.data; const m={from:'me',text:VOICE_TEXT,at:Date.now(),voice:{id:vid,dur:v.dur}}; (S.chats[id]||(S.chats[id]=[])).push(m); save();
+    DB.sendMessage(id,m).then(()=>{ if(location.hash==='#/messages/'+id) renderChat(id); }); renderChat(id); }));
   // la zone de messages change de hauteur (contacts chargés, clavier, rotation) : on reste calé sur le dernier message
   try{ const cb=document.getElementById('chatbox'); if(cb&&'ResizeObserver' in window) new ResizeObserver(()=>{ cb.scrollTop=cb.scrollHeight; }).observe(cb); }catch(e){}
   document.getElementById('chatform').addEventListener('submit',e=>{ e.preventDefault(); const i=document.getElementById('chatin'), t=i.value.trim(); if(!t) return;
@@ -4204,6 +4224,61 @@ function viewChat(id){
       if(location.hash==='#/messages/'+id){ save(); renderChat(id); } else { S.unread[id]=(S.unread[id]||0)+1; notify({type:'message',from:id,text:`${p.name} : ${r.text}`}); } }, 2000+Math.random()*3000); });
   DB.listenChat(id,()=>{ if(location.hash==='#/messages/'+id) renderChat(id); });
 }
+/* ---- Messages vocaux ----
+   Le son est enregistré par le téléphone (30 secondes maximum), puis rangé à part du message :
+   chats/{paire}/voices/{id} ou groups/{groupe}/voices/{id} = { from, data, dur, at }.
+   Le message lui-même ne garde que { id, dur } : le son n'est téléchargé que si on appuie sur lecture (ça économise la connexion). */
+const VOICE_MAX=30, VOICE_TEXT='🎤 Message vocal', VOICE_RE=/^data:audio\/(webm|ogg|mp4|mpeg|aac|x-m4a)[;,]/, VOICE_LIMIT=680000;
+const VOICES={};   // sons déjà chargés ou tout juste enregistrés (gardés en mémoire seulement)
+const newId = () => { let s=''; const a='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'; for(let i=0;i<20;i++) s+=a[Math.random()*a.length|0]; return s; };
+const canVoice = () => !!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&window.MediaRecorder);
+const MIC_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
+const micBtn = () => canVoice() ? `<button class="btn mic-btn" type="button" id="micbtn" aria-label="Enregistrer un message vocal" title="Message vocal">${MIC_SVG}</button>` : '';
+const vTime = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+const voiceBubble = (v,kind,owner) => `<button type="button" class="voice-play${VPLAY&&VPLAY.id===v.id&&!VPLAY.audio.paused?' on':''}" data-voice="${esc(v.id)}" data-vk="${kind}" data-vo="${esc(owner)}" data-dur="${+v.dur||0}" aria-label="Écouter le message vocal (${vTime(+v.dur||0)})"><span class="v-ico"><svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg><svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg></span><span class="v-bar"><i></i></span><span class="v-time">${vTime(+v.dur||0)}</span></button>`;
+let REC=null;   // enregistrement en cours
+function stopRec(send){ const r=REC; if(!r) return; REC=null; clearInterval(r.tick); r.send=send; try{ if(r.mr.state!=='inactive') r.mr.stop(); else r.finish(); }catch(e){ r.finish(); } }
+async function recordVoice(onDone){
+  if(REC) return; const form=document.getElementById('chatform'); if(!form) return;
+  let stream; try{ stream=await navigator.mediaDevices.getUserMedia({audio:true}); }
+  catch(e){ toast(e&&e.name==='NotAllowedError'?'Autorise le micro dans ton navigateur pour envoyer un message vocal.':"Le micro n'est pas disponible sur cet appareil.",4000); return; }
+  if(!document.body.contains(form)){ stream.getTracks().forEach(t=>t.stop()); return; }   // le joueur a quitté la conversation entre-temps
+  const type=['audio/webm;codecs=opus','audio/mp4','audio/ogg;codecs=opus','audio/webm'].find(t=>{ try{ return MediaRecorder.isTypeSupported(t); }catch(e){ return false; } });
+  let mr; try{ mr=new MediaRecorder(stream,type?{mimeType:type,audioBitsPerSecond:24000}:{audioBitsPerSecond:24000}); }catch(e){ try{ mr=new MediaRecorder(stream); }catch(x){ stream.getTracks().forEach(t=>t.stop()); toast("L'enregistrement n'est pas possible sur cet appareil."); return; } }
+  const chunks=[], t0=Date.now(), bar=document.createElement('div'); bar.className='rec-bar';
+  bar.innerHTML=`<i class="rec-dot" aria-hidden="true"></i><b aria-live="off">0:00 / ${vTime(VOICE_MAX)}</b><button class="btn btn-sm btn-ghost" type="button" data-rec="0">Annuler</button><button class="btn btn-sm btn-ac" type="button" data-rec="1">Envoyer</button>`;
+  form.classList.add('rec'); form.appendChild(bar);
+  const r=REC={mr,send:false,tick:0};
+  r.finish=()=>{ stream.getTracks().forEach(t=>t.stop()); bar.remove(); form.classList.remove('rec');
+    if(!r.send) return; const dur=Math.min(VOICE_MAX,Math.max(1,Math.round((r.t1-t0)/1000)));
+    if(r.t1-t0<700||!chunks.length){ toast('Message trop court.'); return; }
+    const fr=new FileReader(); fr.onerror=()=>toast("Le message vocal n'a pas pu être préparé.");
+    fr.onload=()=>{ const data=String(fr.result||''); if(!VOICE_RE.test(data)){ toast("Ce format de son n'est pas pris en charge."); return; }
+      if(data.length>VOICE_LIMIT){ toast('Message vocal trop lourd : fais-le un peu plus court.'); return; } onDone({data,dur}); };
+    fr.readAsDataURL(new Blob(chunks,{type:(mr.mimeType||type||'audio/webm').split(';')[0]})); };
+  mr.ondataavailable=e=>{ if(e.data&&e.data.size) chunks.push(e.data); };
+  mr.onstop=()=>{ r.t1=r.t1||Date.now(); r.finish(); }; mr.onerror=()=>{ r.send=false; r.t1=Date.now(); if(REC===r){ REC=null; clearInterval(r.tick); } r.finish(); };
+  bar.querySelector('[data-rec="0"]').onclick=()=>{ r.t1=Date.now(); stopRec(false); };
+  bar.querySelector('[data-rec="1"]').onclick=()=>{ r.t1=Date.now(); stopRec(true); };
+  r.tick=setInterval(()=>{ const s=(Date.now()-t0)/1000; const b=bar.querySelector('b'); if(b) b.textContent=`${vTime(s)} / ${vTime(VOICE_MAX)}`;
+    if(s>=VOICE_MAX){ r.t1=Date.now(); stopRec(true); } else if(!document.body.contains(form)){ r.t1=Date.now(); stopRec(false); } },250);
+  try{ mr.start(); }catch(e){ r.t1=Date.now(); stopRec(false); toast("L'enregistrement n'a pas pu démarrer."); }
+}
+window.addEventListener('hashchange',()=>{ if(REC){ REC.t1=Date.now(); stopRec(false); } if(VPLAY){ try{ VPLAY.audio.pause(); }catch(e){} VPLAY=null; } });
+// Lecture : le son est téléchargé au premier appui, puis gardé en mémoire
+let VPLAY=null;
+const vBtn = id => document.querySelector(`.voice-play[data-voice="${CSS.escape(id)}"]`);
+document.addEventListener('click',async e=>{ const b=e.target.closest('.voice-play'); if(!b) return; const id=b.dataset.voice;
+  if(VPLAY&&VPLAY.id===id){ if(VPLAY.audio.paused){ VPLAY.audio.play().catch(()=>{}); } else VPLAY.audio.pause(); return; }
+  if(VPLAY){ try{ VPLAY.audio.pause(); }catch(x){} const o=vBtn(VPLAY.id); if(o){ o.classList.remove('on'); o.querySelector('.v-bar i').style.width='0'; } VPLAY=null; }
+  if(b.dataset.busy) return; b.dataset.busy='1'; const data=await DB.loadVoice(b.dataset.vk,b.dataset.vo,id); delete b.dataset.busy; { const nb=vBtn(id); if(nb) delete nb.dataset.busy; }
+  if(!data||!VOICE_RE.test(data)){ toast("Ce message vocal n'est plus disponible."); return; }
+  const audio=new Audio(data), me={id,audio}; VPLAY=me; const dur=+b.dataset.dur||0;
+  const sync=()=>{ const x=vBtn(id); if(!x) return; x.classList.toggle('on',VPLAY===me&&!audio.paused); const d=isFinite(audio.duration)&&audio.duration>0?audio.duration:dur; x.querySelector('.v-bar i').style.width=(d?Math.min(100,audio.currentTime/d*100):0)+'%'; };
+  audio.ontimeupdate=audio.onplay=audio.onpause=sync;
+  audio.onended=()=>{ if(VPLAY===me) VPLAY=null; const x=vBtn(id); if(x){ x.classList.remove('on'); x.querySelector('.v-bar i').style.width='0'; } };
+  audio.onerror=()=>{ if(VPLAY===me) VPLAY=null; sync(); toast('Ce téléphone ne peut pas lire ce message vocal.'); };
+  audio.play().catch(()=>{}); });
 // Premiers messages proposés dans une conversation vide : un appui remplit le champ, le joueur peut le modifier avant d'envoyer
 const QUICK_MSGS=['Salut ! On joue ce soir ?','Tu joues à quelle heure d\'habitude ?','Une partie ce week-end ?'];
 document.addEventListener('click',e=>{ const q=e.target.closest('[data-quick]'); if(!q) return; const i=document.getElementById('chatin'); if(i){ i.value=q.dataset.quick; i.focus(); } });
@@ -4214,7 +4289,7 @@ const msgWarn = m => m.from==='me' ? '' : hasPhone(m.text) ? '<em class="bubble-
   : hasLink(m.text) ? '<em class="bubble-warn">Prudence avec les liens : ne saisis jamais ton mot de passe sur un site inconnu.</em>' : '';
 function renderChat(id){
   const box=document.getElementById('chatbox'); if(!box) return; const msgs=S.chats[id]||[];
-  box.innerHTML = msgs.length ? msgs.map(m=>`<div class="bubble ${m.from==='me'?'me':''}"><span>${esc(m.text)}</span>${msgWarn(m)}<small>${ago(m.at)}</small></div>`).join('')
+  box.innerHTML = msgs.length ? msgs.map(m=>`<div class="bubble ${m.from==='me'?'me':''}">${m.voice?voiceBubble(m.voice,'c',id):`<span>${esc(m.text)}</span>${msgWarn(m)}`}<small>${ago(m.at)}</small></div>`).join('')
     : `<div class="chat-empty"><p class="muted">Première partie ensemble ? Propose un créneau 🎮</p><div class="chips">${QUICK_MSGS.map(t=>`<button type="button" class="chip" data-quick="${esc(t)}">${esc(t)}</button>`).join('')}</div></div>`;
   box.scrollTop=box.scrollHeight;
   { const p=PLAYERS.find(x=>x.id===id), fh=document.getElementById('flame-hint'); if(fh) fh.innerHTML=flameHint(id,p?p.name:'Ton mate'); }
@@ -4371,8 +4446,9 @@ function viewGroup(id){
   (S.gseen=S.gseen||{})[id]=Date.now(); save();
   app.innerHTML=`<div class="wrap page chat-page"><div class="chat-head">${backLink('#/groupes/groupes','Groupes')}<button class="chat-who g-who" type="button" id="ginfo">${gAvatar(g,44)}<div><b>${esc(g.name)}</b><span class="muted" style="font-size:12px">${g.members.length} membre${g.members.length>1?'s':''} · infos</span></div></button></div>
     <div class="chat-box" id="chatbox"><p class="muted" style="margin:auto">Chargement des messages…</p></div>
-    <form class="chat-form" id="chatform"><input type="text" id="chatin" placeholder="Écris au groupe…" maxlength="500" autocomplete="off"><button class="btn btn-ac" type="submit">Envoyer</button></form></div>`;
+    <form class="chat-form" id="chatform"><input type="text" id="chatin" placeholder="Écris au groupe…" maxlength="500" autocomplete="off">${micBtn()}<button class="btn btn-ac" type="submit">Envoyer</button></form></div>`;
   document.getElementById('ginfo').onclick=()=>groupInfo(id);
+  document.getElementById('micbtn')?.addEventListener('click',()=>recordVoice(v=>{ const vid=newId(); VOICES[vid]=v.data; DB.sendGroupMessage(id,VOICE_TEXT,{id:vid,dur:v.dur}); }));
   try{ const cb=document.getElementById('chatbox'); if(cb&&'ResizeObserver' in window) new ResizeObserver(()=>{ cb.scrollTop=cb.scrollHeight; }).observe(cb); }catch(e){}
   document.getElementById('chatform').addEventListener('submit',e=>{ e.preventDefault(); const i=document.getElementById('chatin'), t=i.value.trim(); if(!t) return;
     if(myGroupNow()==='minor'&&hasPhone(t)){ toast('Pour ta sécurité, les numéros de téléphone ne peuvent pas être envoyés ici.'); return; }
@@ -4384,7 +4460,7 @@ let GMSGS={};   // messages du groupe ouvert
 function renderGroupChat(id){ const box=document.getElementById('chatbox'), g=gById(id); if(!box||!g) return; const me=myId(), msgs=(GMSGS[id]||[]).filter(m=>!S.blocked.includes(m.from)), canDel=gCanMod(g);
   box.innerHTML = msgs.length ? msgs.map((m,k)=>{ const mine=m.from===me, p=gPlayer(m.from), same=k>0&&msgs[k-1].from===m.from&&m.at-msgs[k-1].at<5*60e3, role=gRole(g,m.from);
       return `<div class="gmsg${mine?' me':''}${same?' same':''}">${mine?'':(same?'<i class="g-gap"></i>':(p?`<a href="#/joueur/${esc(m.from)}">${avatar(p,32)}</a>`:'<span class="av" style="width:32px;height:32px;--h:220">?</span>'))}<div>${same||mine?'':`<small class="g-from">${p?np(p):'Ancien membre'}${ROLE_TAG[role]||''}</small>`}
-        <div class="bubble ${mine?'me':''}"><span>${esc(m.text)}</span>${mine?'':msgWarn({from:m.from,text:m.text})}<small>${ago(m.at)}${(canDel||mine)&&m.id?` · <button type="button" class="g-del" data-gdel="${esc(m.id)}">Supprimer</button>`:''}</small></div></div></div>`; }).join('')
+        <div class="bubble ${mine?'me':''}">${m.voice?voiceBubble(m.voice,'g',id):`<span>${esc(m.text)}</span>${mine?'':msgWarn({from:m.from,text:m.text})}`}<small>${ago(m.at)}${(canDel||mine)&&m.id?` · <button type="button" class="g-del" data-gdel="${esc(m.id)}">Supprimer</button>`:''}</small></div></div></div>`; }).join('')
     : `<div class="chat-empty"><p class="muted">Le groupe est tout neuf. Lance la discussion 👋</p></div>`;
   box.scrollTop=box.scrollHeight;
   box.querySelectorAll('[data-gdel]').forEach(b=>b.onclick=()=>DB.deleteGroupMessage(id,b.dataset.gdel)); }
@@ -4686,7 +4762,7 @@ function viewLegal(kind){
     :`
     <h3>1. Données collectées</h3><p>Pour créer ton compte : e-mail, pseudo, date de naissance, et, si tu utilises Google, ton nom et ta photo Google. Pour ton profil : jeux, pseudos et rangs en jeu, horaires, jours, style, plateformes, pays, langues. Coopô ne te demande aucun numéro de téléphone ni pseudo d'un autre réseau ; ceux qui avaient été enregistrés avant ont été effacés. Pour la communauté : tes annonces et tes inscriptions aux tournois. Pour le fonctionnement : demandes de mate, messages, signalements, blocages, notifications, ton statut « en ligne » et l'heure de ta dernière visite, ton avis « tu rejouerais avec lui ? » sur un joueur, et, si tu es venu par un lien de parrainage, le pseudo de ton parrain. Si tu nous écris par le formulaire de contact : ton message et l'e-mail que tu indiques.</p>
     <h3>2. Ce qui est visible</h3><p>Les autres utilisateurs voient uniquement ton pseudo, ton avatar, tes jeux et tes habitudes de jeu. Ton statut « en ligne » et le moment de ta dernière visite sont visibles si tu ne les as pas désactivés dans les paramètres. Tes avis sur les autres joueurs ne leur sont pas montrés. Ton e-mail, ta date de naissance et ton âge exact ne sont jamais affichés. Ton e-mail reste uniquement dans le service de connexion (Firebase Authentication) : il n'est pas recopié dans la base de données du site. Tes messages privés ne sont lisibles que par toi et ton mate ; si tu signales une conversation, les derniers messages sont joints au signalement et la modération peut consulter cette conversation, uniquement pour traiter le signalement.</p>
-    <h3>3. Utilisation</h3><p>Les données servent à calculer les compatibilités, à faire fonctionner les demandes de mate, les messages et les groupes, à séparer les tranches d'âge et à assurer la modération. Aucune donnée n'est vendue. Aucune publicité ciblée. Messages privés : seuls toi et ton mate les lisez ; la modération n'y accède que si l'un de vous signale la conversation. Groupes : les messages sont lus par les membres du groupe, et la modération de Coopô peut les consulter et les supprimer pour protéger les joueurs. Flammes : Coopô enregistre seulement les jours où vous vous êtes écrit, pas le contenu.</p>
+    <h3>3. Utilisation</h3><p>Les données servent à calculer les compatibilités, à faire fonctionner les demandes de mate, les messages et les groupes, à séparer les tranches d'âge et à assurer la modération. Aucune donnée n'est vendue. Aucune publicité ciblée. Messages privés, écrits ou vocaux : seuls toi et ton mate les lisez ou les écoutez ; la modération n'y accède que si l'un de vous signale la conversation. Groupes : les messages sont lus par les membres du groupe, et la modération de Coopô peut les consulter et les supprimer pour protéger les joueurs. Flammes : Coopô enregistre seulement les jours où vous vous êtes écrit, pas le contenu.</p>
     <h3>4. Hébergement</h3><p>Les données sont stockées sur Firebase, un service de Google Cloud. Elles sont protégées par des règles d'accès : ton e-mail et ta date de naissance ne sont lisibles que par toi et par la modération.</p>
     <h3>5. Conservation</h3><p>Les données sont conservées tant que le compte existe, puis supprimées. Les messages que tu as envoyés restent visibles par les mates qui les ont reçus. Les signalements peuvent être conservés anonymisés pour la sécurité du service.</p>
     <h3>6. Tes droits</h3><p>Tu peux consulter, modifier et supprimer tes données depuis ton compte, ou en nous écrivant via le formulaire <a href="#/contact">Nous écrire</a>. Les utilisateurs mineurs peuvent exercer ces droits avec un parent ou tuteur. En Côte d'Ivoire, tu peux aussi saisir l'ARTCI, l'autorité chargée de la protection des données personnelles.</p>
@@ -5071,7 +5147,8 @@ const DB = {
     return { members:[me,id].sort(), last, both, count }; },
   async sendMessage(id,m){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; const db=this.db;
     try{ const F=firebase.firestore.FieldValue, pair=this.pairId(id);
-      const mk=st=>{ const b=db.batch(), mref=db.collection('chats').doc(pair).collection('messages').doc(); b.set(mref,{from:this.uid(),text:m.text,at:m.at});
+      const mk=st=>{ const b=db.batch(), mref=db.collection('chats').doc(pair).collection('messages').doc(); b.set(mref,m.voice?{from:this.uid(),text:m.text,at:m.at,voice:m.voice}:{from:this.uid(),text:m.text,at:m.at});
+        if(m.voice) b.set(db.collection('chats').doc(pair).collection('voices').doc(m.voice.id),{from:this.uid(),data:VOICES[m.voice.id]||'',dur:m.voice.dur,at:m.at});   // le son part dans le même envoi que le message
         if(st) st.msg=mref.id;   // la flamme cite le message envoyé dans le même lot : sans vrai message, les règles la refusent
         b.set(db.collection('limits').doc(this.uid()),{lastMsg:F.serverTimestamp()},{merge:true});   // 1 message par seconde maximum
         if(st) b.set(db.collection('streaks').doc(pair),st); return b; };
@@ -5085,7 +5162,12 @@ const DB = {
       if(!this._lastNotifTo||this._lastNotifTo[id]==null||Date.now()-this._lastNotifTo[id]>60000){ (this._lastNotifTo=this._lastNotifTo||{})[id]=Date.now(); await this.saveNotif(id,{type:'message',from:'me',text:`${S.me.name} : ${m.text.slice(0,80)}`}); }
     }catch(e){ console.error(e); toast(String(e&&e.code).includes('permission')?'Doucement : attends une seconde entre deux messages.':"Le message n'est pas parti, réessaie."); } },
   listenChat(id,cb){ if(!this.live) return; this.stopChat();   // les 200 derniers messages (et plus les 200 premiers)
-    this._chatUnsub=this.db.collection('chats').doc(this.pairId(id)).collection('messages').orderBy('at').limitToLast(200).onSnapshot(snap=>{ S.chats[id]=[]; snap.forEach(d=>{ const m=d.data(); S.chats[id].push({from:this.fromUid(m.from),text:m.text,at:m.at}); }); save(); cb(); },e=>console.error(e)); },
+    this._chatUnsub=this.db.collection('chats').doc(this.pairId(id)).collection('messages').orderBy('at').limitToLast(200).onSnapshot(snap=>{ S.chats[id]=[]; snap.forEach(d=>{ const m=d.data(); S.chats[id].push(m.voice&&m.voice.id?{from:this.fromUid(m.from),text:m.text,at:m.at,voice:{id:String(m.voice.id),dur:+m.voice.dur||0}}:{from:this.fromUid(m.from),text:m.text,at:m.at}); }); save(); cb(); },e=>console.error(e)); },
+  // Son d'un message vocal : en mémoire s'il a déjà été écouté, sinon téléchargé (kind : 'c' conversation privée, 'g' groupe)
+  async loadVoice(kind,owner,vid){ if(VOICES[vid]) return VOICES[vid]; if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return null;
+    try{ const base=kind==='g'?this.db.collection('groups').doc(owner):this.db.collection('chats').doc(this.pairId(owner)); const d=await base.collection('voices').doc(vid).get();
+      if(!d.exists) return null; const data=String(d.data().data||''); if(Object.keys(VOICES).length>40) Object.keys(VOICES).slice(0,20).forEach(k=>{ if(!VPLAY||VPLAY.id!==k) delete VOICES[k]; }); VOICES[vid]=data; return data; }
+    catch(e){ console.error(e); return null; } },
   stopChat(){ if(this._chatUnsub){ try{ this._chatUnsub(); }catch(e){} this._chatUnsub=null; } },
   // Notifications lues : enregistré sur le compte, pour ne pas les revoir « non lues » sur un autre appareil
   markRead(ids){ if(!this.live&&AUTH_LIVE){ if(ids.length) this.ready().then(ok=>{ if(ok) this.markRead(ids); }); return; } if(!this.live||!this.uid()) return; const col=this.db.collection('notifications').doc(this.uid()).collection('items'); [...new Set(ids)].slice(0,40).forEach(id=>col.doc(id).update({read:true}).catch(()=>{})); },
@@ -5120,17 +5202,20 @@ const DB = {
     return ids.length; },
   async deleteGroup(id){ this.stopGroup(); if(AUTH_LIVE){ if(!this.live&&!(await this.ready())) return false; const ref=this.db.collection('groups').doc(id);
       try{ for(let k=0;k<6;k++){ const q=await ref.collection('messages').limit(300).get(); if(q.empty) break; const b=this.db.batch(); q.forEach(x=>b.delete(x.ref)); await b.commit(); }   // les messages d'abord, puis le groupe
+        try{ for(let k=0;k<30;k++){ const q=await ref.collection('voices').limit(8).get(); if(q.empty) break; const b=this.db.batch(); q.forEach(x=>b.delete(x.ref)); await b.commit(); } }catch(e){ console.error(e); }   // les sons des messages vocaux
         await ref.delete(); }catch(e){ console.error(e); toast("Le groupe n'a pas pu être supprimé."); return false; } }
     GROUPS=GROUPS.filter(g=>g.id!==id); delete GMSGS[id]; return true; },
-  async sendGroupMessage(id,text){ const m={from:myId(),text,at:Date.now()};
+  async sendGroupMessage(id,text,voice){ const m={from:myId(),text,at:Date.now()}; if(voice) m.voice=voice;
     if(!AUTH_LIVE){ (GMSGS[id]=GMSGS[id]||[]).push({...m,id:'l'+m.at}); renderGroupChat(id); return; }
     if(!this.live&&!(await this.ready())) return; const db=this.db, F=firebase.firestore.FieldValue, ref=db.collection('groups').doc(id);
-    try{ const b=db.batch(); b.set(ref.collection('messages').doc(),m); b.set(db.collection('limits').doc(this.uid()),{lastMsg:F.serverTimestamp()},{merge:true}); await b.commit();
+    try{ const b=db.batch(); b.set(ref.collection('messages').doc(),m); if(voice) b.set(ref.collection('voices').doc(voice.id),{from:m.from,data:VOICES[voice.id]||'',dur:voice.dur,at:m.at});
+      b.set(db.collection('limits').doc(this.uid()),{lastMsg:F.serverTimestamp()},{merge:true}); await b.commit();
       const g=gById(id); if(g&&Date.now()-tsMs(g.lastAt)>5*60e3){ g.lastAt=Date.now(); ref.update({lastAt:F.serverTimestamp()}).catch(e=>console.error(e)); }   // « nouveaux messages » pour les autres membres, au plus une écriture toutes les 5 minutes
     }catch(e){ console.error(e); toast(String(e&&e.code).includes('permission')?"Message refusé : attends une seconde, ou tu n'es plus membre de ce groupe.":"Le message n'est pas parti, réessaie."); } },
-  deleteGroupMessage(id,mid){ if(!this.live) { GMSGS[id]=(GMSGS[id]||[]).filter(m=>m.id!==mid); renderGroupChat(id); return; } this.db.collection('groups').doc(id).collection('messages').doc(mid).delete().catch(e=>{ console.error(e); toast("Le message n'a pas pu être supprimé."); }); },
+  deleteGroupMessage(id,mid){ if(!this.live) { GMSGS[id]=(GMSGS[id]||[]).filter(m=>m.id!==mid); renderGroupChat(id); return; } const gm=(GMSGS[id]||[]).find(m=>m.id===mid); if(gm&&gm.voice) this.db.collection('groups').doc(id).collection('voices').doc(gm.voice.id).delete().catch(e=>console.error(e));   // le son part avec le message
+    this.db.collection('groups').doc(id).collection('messages').doc(mid).delete().catch(e=>{ console.error(e); toast("Le message n'a pas pu être supprimé."); }); },
   listenGroup(id,cb){ this.stopGroup(); if(!this.live){ cb(); return; }   // les 100 derniers messages, en temps réel
-    this._groupUnsub=this.db.collection('groups').doc(id).collection('messages').orderBy('at').limitToLast(100).onSnapshot(snap=>{ GMSGS[id]=[]; snap.forEach(x=>{ const m=x.data(); GMSGS[id].push({id:x.id,from:m.from,text:m.text,at:m.at}); }); cb(); },
+    this._groupUnsub=this.db.collection('groups').doc(id).collection('messages').orderBy('at').limitToLast(100).onSnapshot(snap=>{ GMSGS[id]=[]; snap.forEach(x=>{ const m=x.data(); GMSGS[id].push(m.voice&&m.voice.id?{id:x.id,from:m.from,text:m.text,at:m.at,voice:{id:String(m.voice.id),dur:+m.voice.dur||0}}:{id:x.id,from:m.from,text:m.text,at:m.at}); }); cb(); },
       e=>{ console.error(e); this.stopGroup(); this.loadGroups(true).then(()=>{ if(location.hash==='#/groupe/'+id) route(); }); }); },   // plus le droit de lire (retiré du groupe, groupe supprimé) : on recharge la liste
   stopGroup(){ if(this._groupUnsub){ try{ this._groupUnsub(); }catch(e){} this._groupUnsub=null; } },
   async saveNotif(toId,n){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ await this.db.collection('notifications').doc(this.toUid(toId)).collection('items').add({...n,from:this.toUid(n.from),at:Date.now(),read:false}); }catch(e){ console.error(e); } },
