@@ -402,21 +402,6 @@ dialog h3{ margin-bottom:10px; font:400 22px var(--fd); color:var(--pk); }
 html.skin-anim, html.skin-anim body, html.skin-anim *, html.skin-anim *::before, html.skin-anim *::after{
   transition:background-color .3s ease, color .3s ease, border-color .3s ease, box-shadow .3s ease, fill .3s ease !important; }
 
-html[data-skin="awale"]{
-  --frame:#1E120A;
-  --frame-bg:radial-gradient(rgba(247,233,212,.07) 1.4px,transparent 1.9px) 0 0/22px 22px,
-    repeating-linear-gradient(135deg,transparent 0 30px,rgba(226,162,59,.05) 30px 33px),#1E120A;
-  --bg:#2A1A10; --s1:#36231A; --s2:#432C1F; --line:#5E4130; --tx:#F7E9D4; --mu:#C9AE8C;
-  --pk:#E2A23B; --pk2:#F2C46D; --on-pk:#2A1A10; --field:#21140C; --glass:rgba(42,26,16,.88); --glass-solid:#2A1A10;
-  --hi:#7FB85A; --mid:#E2A23B; --warm:#D9622B; --lo:#D9483B;
-  --fd:'Syne','Trebuchet MS',sans-serif; --fdw:800; --fb:'DM Sans','Segoe UI',sans-serif; --case:none;
-  --rf:30px; --rc:22px; --ri:14px;
-  --art-bg:#24160D; --art-tint:linear-gradient(200deg,transparent 50%,rgba(20,10,4,.6));
-  --title:#F7E9D4; --title-shadow:0 2px 30px rgba(226,162,59,.45); --title-stroke:0 transparent;
-  color-scheme:dark;
-}
-html[data-skin="awale"] h2{ letter-spacing:-.02em; }
-html[data-skin="awale"] .mcard:hover{ box-shadow:0 18px 40px -18px rgba(226,162,59,.55); }
 html[data-skin="lofi"]{
   --frame:#16112A; --frame-bg:#16112A;
   --bg:#251E3B; --s1:#2E2649; --s2:#3B3159; --line:#4D4170; --tx:#F6E7D7; --mu:#BBA9C9;
@@ -1183,16 +1168,10 @@ html:not([data-skin="defaut"]) .hero2 .art{ animation:none !important; clip-path
   html:not([data-skin="defaut"]) body .hero2 .float-match{ top:96px; bottom:auto; }
 }
 </style>
-<script>/* thème de la dernière visite, appliqué avant l'affichage ; mode léger et écran d'ouverture court (déjà vu dans cette session) décidés dès le premier affichage */try{var _s=JSON.parse(localStorage.getItem('matematch.v1')||'null');var _k=_s&&(_s.skinOk||_s.skin);if(_k)document.documentElement.setAttribute('data-skin',_k);}catch(e){}(function(r){r.classList.add('splash-on');try{var n=navigator,l=(typeof _s!=='undefined'&&_s&&typeof _s.lite==='boolean')?_s.lite:!!((n.deviceMemory&&n.deviceMemory<=2)||(n.hardwareConcurrency&&n.hardwareConcurrency<=2)||(n.connection&&n.connection.saveData));if(l)r.classList.add('lite');if(sessionStorage.getItem('coopo_splash'))r.classList.add('sp-quick');}catch(e){}})(document.documentElement);</script>
+<script>/* thème de la dernière visite, appliqué avant l'affichage ; mode léger et écran d'ouverture court (déjà vu dans cette session) décidés dès le premier affichage */try{var _s=JSON.parse(localStorage.getItem('matematch.v1')||'null');var _k=_s&&_s.auth&&(_s.skinOk||_s.skin);if(_k&&_k!=='awale')document.documentElement.setAttribute('data-skin',_k);}catch(e){}(function(r){r.classList.add('splash-on');try{var n=navigator,l=(typeof _s!=='undefined'&&_s&&typeof _s.lite==='boolean')?_s.lite:!!((n.deviceMemory&&n.deviceMemory<=2)||(n.hardwareConcurrency&&n.hardwareConcurrency<=2)||(n.connection&&n.connection.saveData));if(l)r.classList.add('lite');if(sessionStorage.getItem('coopo_splash'))r.classList.add('sp-quick');}catch(e){}})(document.documentElement);</script>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js">
-<style id="coopo-socials">
-.so-head{ margin-top:6px; }
-.so-grid{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px 16px; }
-@media (max-width:760px){ .so-grid{ grid-template-columns:1fr 1fr; } }
-.btn-so{ white-space:nowrap; max-width:100%; overflow:hidden; text-overflow:ellipsis; }
-</style>
 <style id="coopo-prunier">
 /* --- Prunier : fleurs blanches sur rouge profond --- */
 html[data-skin="prunier"]{
@@ -1379,11 +1358,10 @@ html[data-skin="menthe"]{ --bg:#F0FAF6; --s1:#FFFFFF; --s2:#D9F3E9; --field:#FFF
 html[data-skin="lofi"]{ --mu:#46607A; }
 html[data-skin="esth"]{ --mu:#5F5889; }
 /* Thèmes sombres : pas d'ombre colorée (invisible sur fond sombre) mais un liseré de lumière en haut des cartes */
-html:is([data-skin="sombre"],[data-skin="awale"]){
+html[data-skin="sombre"]{
   --e1:inset 0 1px 0 rgba(255,255,255,.06), 0 14px 30px -18px rgba(0,0,0,.75);
   --e2:inset 0 1px 0 rgba(255,255,255,.09), 0 22px 44px -18px rgba(0,0,0,.85), 0 0 0 1px rgba(120,86,255,.35);
 }
-html[data-skin="awale"]{ --e1:inset 0 1px 0 rgba(242,196,109,.20), 0 14px 30px -18px rgba(0,0,0,.75); --e2:inset 0 1px 0 rgba(242,196,109,.26), 0 22px 44px -18px rgba(0,0,0,.85), 0 0 0 1px rgba(226,162,59,.34); }
 
 /* ---- Cartes : blanches (ou plus claires que la page), filet fin, ombre douce de la couleur du thème ---- */
 .mcard{ background:var(--s1); border:1px solid var(--hair); box-shadow:var(--e1); }
@@ -1467,7 +1445,7 @@ h1,h2,h3,.btn{ text-wrap:balance; }
 .mh{ position:relative; isolation:isolate; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; gap:18px; min-height:232px; margin:-14px -14px 0; padding:14px 18px 20px; color:#fff; background:var(--art-bg,var(--pk)); border-radius:0 0 28px 28px; }
 .mh{ --scrim:10,6,36; }   /* couleur du halo sous le bonjour */
 html[data-skin="samurai"] .mh{ --scrim:46,8,16; } html[data-skin="soft"] .mh{ --scrim:104,20,60; } html[data-skin="lofi"] .mh{ --scrim:8,44,84; } html[data-skin="esth"] .mh{ --scrim:52,26,104; }
-html[data-skin="awale"] .mh{ --scrim:30,16,6; } html[data-skin="ocean"] .mh{ --scrim:4,28,68; } html[data-skin="menthe"] .mh{ --scrim:4,56,42; } html[data-skin="prunier"] .mh{ --scrim:44,6,34; }
+html[data-skin="ocean"] .mh{ --scrim:4,28,68; } html[data-skin="menthe"] .mh{ --scrim:4,56,42; } html[data-skin="prunier"] .mh{ --scrim:44,6,34; }
 .mh :focus-visible{ outline-color:#fff; }
 .mh-hello{ margin:0; font-weight:600; font-size:15px; color:#fff; text-shadow:0 0 2px rgba(var(--scrim),.9),0 1px 10px rgba(var(--scrim),.85),0 0 22px rgba(var(--scrim),.7); }
 .mh-body h1{ margin:2px 0 0; font:var(--fdw) clamp(30px,8vw,48px)/1.04 var(--fd); color:#fff; text-transform:var(--case); letter-spacing:-.01em; text-shadow:0 0 3px rgba(var(--scrim),.85),0 2px 16px rgba(var(--scrim),.8),0 0 34px rgba(var(--scrim),.6); overflow-wrap:anywhere; }
@@ -1587,7 +1565,6 @@ html[data-skin="samurai"]{ --scrim:150,20,40; --scrim2:92,10,24; --w-top:58,10,1
 html[data-skin="soft"]{ --scrim:170,54,106; --scrim2:112,30,70; --w-top:92,22,56; --w-v:.5; --w-sh:.8; --cta-b:#FFFFFF; --cta-t:#A92B64; }
 html[data-skin="lofi"]{ --scrim:38,110,46; --scrim2:20,70,34; --w-top:12,58,104; --w-v:.5; --w-sh:.8; --cta-b:#FFFFFF; --cta-t:#155E92; }
 html[data-skin="esth"]{ --scrim:94,74,200; --scrim2:60,42,144; --w-top:58,36,120; --w-v:.5; --w-sh:.8; --cta-b:#FFFFFF; --cta-t:#5A3EC8; }
-html[data-skin="awale"]{ --scrim:36,22,13; --scrim2:22,13,8; --w-top:22,13,8; --cta-b:var(--pk); --cta-t:var(--on-pk); }
 html[data-skin="ocean"]{ --scrim:11,62,138; --scrim2:5,24,66; --w-top:6,40,96; --cta-b:#FFFFFF; --cta-t:#1858A8; }
 html[data-skin="menthe"]{ --scrim:14,108,80; --scrim2:8,72,54; --w-top:8,64,50; --w-v:.56; --w-sh:.8; --cta-b:#FFFFFF; --cta-t:#0E6E54; }
 html[data-skin="prunier"]{ --scrim:112,8,28; --scrim2:60,3,14; --w-top:70,4,18; --w-v:.46; --w-sh:.86; --cta-b:#FFFFFF; --cta-t:#9E0C22; }   /* le dessin est une photo de fleurs claires : voile plus dense */
@@ -1663,7 +1640,6 @@ html[data-skin="samurai"]{ --sp-a:244,236,225; --sp-b:255,104,124; }
 html[data-skin="soft"]{ --sp-a:255,214,232; --sp-b:255,134,190; }
 html[data-skin="lofi"]{ --sp-a:255,218,110; --sp-b:126,204,255; }
 html[data-skin="esth"]{ --sp-a:255,214,242; --sp-b:184,164,255; }
-html[data-skin="awale"]{ --sp-a:242,196,109; --sp-b:232,128,66; }
 html[data-skin="ocean"]{ --sp-a:150,236,255; --sp-b:84,170,255; }
 html[data-skin="menthe"]{ --sp-a:196,255,226; --sp-b:84,222,168; }
 html[data-skin="prunier"]{ --sp-a:255,200,212; --sp-b:255,104,130; }
@@ -2066,7 +2042,7 @@ const tierTx = p => p>=80?'var(--hi-tx)':p>=60?'var(--mid-tx)':p>=40?'var(--warm
    ========================================================= */
 const KEY='matematch.v1';
 const fresh = () => ({ skin:'defaut', auth:null, profiles:{}, accounts:{}, dobs:{}, requests:[], notifs:[], chats:{}, squads:[], joined:[], ratings:{}, unread:{}, hidden:[], banned:[], sort:'compat', me:null, mates:[], blocked:[], reports:[], weights:null,
-  privacy:{ discord:true, tags:true, online:true } });
+  privacy:{ tags:true, online:true } });
 let S = (()=>{ try{ const r=localStorage.getItem(KEY); return r ? {...fresh(),...JSON.parse(r)} : fresh(); }catch(e){ return fresh(); } })();
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
 const BOOT_SKIN = S.skinOk || S.skin; // dernier thème choisi et affiché (pas un simple aperçu)
@@ -2303,7 +2279,7 @@ function viewProfileHub(){
   </div>`;
 }
 function previewProfile(){ modal(`<h3>Ton profil public</h3><p class="muted">Ce que les autres joueurs voient.</p><div style="margin-top:16px">${matchCard({p:publicMe(),c:null})}</div>
-    <p class="hint" style="margin-top:12px">Discord : ${S.privacy.discord?'visible':'masqué'} · Pseudos en jeu : ${S.privacy.tags?'visibles':'masqués'}</p><div class="dlg-actions"><button class="btn" data-close>Fermer</button></div>`); }
+    <p class="hint" style="margin-top:12px">Pseudos en jeu : ${S.privacy.tags?'visibles':'masqués'}</p><div class="dlg-actions"><button class="btn" data-close>Fermer</button></div>`); }
 document.addEventListener('click',e=>{ if(e.target.closest('[data-preview-profile]')) previewProfile(); if(e.target.closest('[data-share-profile]')) shareProfile(); });
 function viewProfile(tab){
   if(!S.auth && !S.me){ location.hash='#/inscription'; return; }
@@ -2311,9 +2287,9 @@ function viewProfile(tab){
   if(!S.me) return viewOnboard();
   if(tab!=='modifier' && profileComplete()) return viewProfileHub();   // profil complet : la page menu ; le formulaire s'ouvre avec « Modifier mon profil »
   const isNew=!S.me;
-  draft = JSON.parse(JSON.stringify(S.me || { name:S.auth?suggestName(S.auth.name):'', avatar:{hue:[265,330,10,45,150,200][Math.floor(Math.random()*6)]}, discord:'', whatsapp:'', games:[], tags:{}, ranks:{}, roles:{}, hours:[], days:[], style:'', goal:'both', voice:'parfois', platforms:[], country:'', langs:['fr'] }));
+  draft = JSON.parse(JSON.stringify(S.me || { name:S.auth?suggestName(S.auth.name):'', avatar:{hue:[265,330,10,45,150,200][Math.floor(Math.random()*6)]}, games:[], tags:{}, ranks:{}, roles:{}, hours:[], days:[], style:'', goal:'both', voice:'parfois', platforms:[], country:'', langs:['fr'] }));
   // profil incomplet (ancienne version, données partielles) : on complète les champs manquants au lieu de planter
-  draft={ name:'', avatar:{hue:265}, discord:'', whatsapp:'', games:[], tags:{}, ranks:{}, roles:{}, hours:[], days:[], style:'', goal:'both', voice:'parfois', platforms:[], country:'', langs:['fr'], ...draft };
+  draft={ name:'', avatar:{hue:265}, games:[], tags:{}, ranks:{}, roles:{}, hours:[], days:[], style:'', goal:'both', voice:'parfois', platforms:[], country:'', langs:['fr'], ...draft };
   if(!draft.avatar||typeof draft.avatar!=='object') draft.avatar={hue:265};
   ['games','hours','days','platforms','langs'].forEach(k=>{ if(!Array.isArray(draft[k])) draft[k]=[]; }); ['tags','ranks','roles'].forEach(k=>{ if(!draft[k]||typeof draft[k]!=='object') draft[k]={}; });
   draft.ranks=draft.ranks||{}; draft.langs=draft.langs||['fr'];
@@ -2330,16 +2306,6 @@ function viewProfile(tab){
         <div class="field"><label for="f-name">Nom d'utilisateur</label><input id="f-name" type="text" autocomplete="username" maxlength="${CONFIG.maxUsername}" value="${esc(draft.name)}"><span class="hint">${CONFIG.minUsername} à ${CONFIG.maxUsername} caractères : lettres, chiffres, _ . -</span></div>
         ${dobField()}
       </div>
-      <details class="ob-more contacts-fold"><summary>Contacts et réseaux (pour tes mates)${(n=>n?` · ${n} renseigné${n>1?'s':''}`:'')((draft.discord?1:0)+(draft.whatsapp?1:0)+Object.keys(draft.socials||{}).length)}</summary>
-      <div class="two">
-        <div class="field"><label for="f-discord">Pseudo Discord</label><input id="f-discord" type="text" maxlength="40" value="${esc(draft.discord)}" placeholder="ex. koffi.night"><span class="hint">Visible uniquement par tes mates.</span></div>
-        ${ageGroup(draft)==='minor'
-          ? `<div class="field"><span class="lbl">WhatsApp</span><p class="hint">Pour ta sécurité, le numéro WhatsApp n'est pas proposé avant 18 ans. Utilise Discord ou les messages de Coopô.</p></div>`
-          : `<div class="field"><label for="f-wa">Numéro WhatsApp (facultatif)</label><input id="f-wa" type="text" inputmode="tel" autocomplete="tel" maxlength="22" value="${esc(draft.whatsapp||'')}" placeholder="ex. +225 07 00 00 00 00"><span class="hint">Visible uniquement par tes mates, pour vous écrire en un clic.</span></div>`}
-      </div>
-<div class="field so-head"><span class="lbl">Réseaux sociaux</span><span class="hint">Ton pseudo (sans le @) ou le lien de ton profil.</span></div>
-<div class="so-grid">${SOCIALS.map(([k,l,ph])=>`<div class="field"><label for="f-so-${k}">${l}</label><input id="f-so-${k}" type="text" maxlength="120" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc((draft.socials||{})[k]||'')}" placeholder="${ph}"></div>`).join('')}</div>
-      </details>
       ${S.auth ? '' : `<div class="two">
         <div class="field"><label for="f-pw">${isNew?'Mot de passe':'Nouveau mot de passe (facultatif)'}</label><input id="f-pw" type="password" autocomplete="new-password">
           <div class="strength"><i id="pw-bar" style="--w:0%"></i></div><span class="hint" id="pw-hint">Au moins ${CONFIG.minPassword} caractères, avec une lettre et un chiffre.</span></div>
@@ -2366,7 +2332,7 @@ function viewProfile(tab){
       <div class="field"><span class="lbl">Communication</span>${chips('voice',VOICE,draft.voice,true)}</div>
       <div class="field"><span class="lbl">Plateformes</span>${chips('platforms',PLATFORMS,draft.platforms)}</div>
       <div class="two"><div class="field"><label for="f-country">Pays</label><select id="f-country"><option value="">Choisir…</option>${COUNTRIES.map(([v,l])=>`<option value="${v}" ${draft.country===v?'selected':''}>${esc(l)}</option>`).join('')}</select></div>
-        <div class="field"><span class="lbl">Langues parlées en jeu</span>${chips('langs',LANGS,draft.langs||['fr'])}</div></div>
+        ${langField()}</div>
     </section>
     <p class="err" id="ferr" role="alert"></p>
     <div class="form-actions"><button class="btn btn-ac btn-lg" type="submit">${isNew?'Créer mon profil':'Enregistrer les modifications'}</button></div>
@@ -2433,7 +2399,9 @@ function toggleChip(c){
   c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop');
   const g=c.dataset.chip, v=c.dataset.val;
   if(c.dataset.single){ draft[g]=v; c.parentElement.querySelectorAll('.chip').forEach(b=>b.setAttribute('aria-pressed',b===c)); return; }
-  const on = c.getAttribute('aria-pressed')!=='true'; c.setAttribute('aria-pressed',on);
+  const on = c.getAttribute('aria-pressed')!=='true';
+  if(on && g==='langs' && draft.langs.length>=LANG_MAX){ toast(`${LANG_MAX} langues au maximum`); return; }
+  c.setAttribute('aria-pressed',on);
   draft[g] = on ? [...draft[g],v] : draft[g].filter(x=>x!==v);
   if(g==='games') renderTags();
 }
@@ -2471,9 +2439,7 @@ function loadAvatar(file){
 async function submitProfile(e){
   e.preventDefault(); const sbtn=e.target.querySelector('button[type=submit]'); if(sbtn&&sbtn.disabled) return;
   const isNew=!S.me, pw=document.getElementById('f-pw')?.value||'', pw2=document.getElementById('f-pw2')?.value||'';
-  draft.name=draft.name.trim(); draft.discord=document.getElementById('f-discord').value.trim().slice(0,40);
-  draft.whatsapp=(document.getElementById('f-wa')?.value||'').trim();
-    draft.socials={}; SOCIALS.forEach(([k])=>{ const v=cleanHandle(document.getElementById('f-so-'+k)?.value); if(v) draft.socials[k]=v; });
+  draft.name=draft.name.trim(); delete draft.discord; delete draft.whatsapp; delete draft.socials;   // Coopô ne garde plus aucun pseudo d'autres réseaux
   const errs=[];
   if(!new RegExp(`^[A-Za-z0-9_.-]{${CONFIG.minUsername},${CONFIG.maxUsername}}$`).test(draft.name)) errs.push("Choisis un nom d'utilisateur de 3 à 20 caractères (lettres, chiffres, _ . -).");
   if(PLAYERS.some(p=>p.name.toLowerCase()===draft.name.toLowerCase())) errs.push("Ce nom d'utilisateur est déjà pris.");
@@ -2487,18 +2453,15 @@ async function submitProfile(e){
   if(!draft.hours.length) errs.push('Indique au moins un horaire de jeu.');
   if(!draft.style) errs.push('Choisis ton style de jeu.');
   if(!draft.platforms.length) errs.push('Sélectionne au moins une plateforme.');
-  if(age!==null && age<CONFIG.adultAge) draft.whatsapp='';
-  if(draft.whatsapp){ let d=draft.whatsapp.replace(/[\s().-]/g,''); if(d.startsWith('00')) d='+'+d.slice(2);
-    if(!/^\+\d{8,15}$/.test(d)) errs.push("Numéro WhatsApp : commence par l'indicatif du pays, par exemple +225 07 00 00 00 00.");
-    else draft.whatsapp=d; }
   const fe=document.getElementById('ferr');
   if(!errs.length && (!S.me || draft.name.toLowerCase()!==String(S.me.name||'').toLowerCase())){ if(sbtn) sbtn.disabled=true; const taken=await DB.nameTaken(draft.name); if(sbtn) sbtn.disabled=false; if(taken) errs.push("Ce nom d'utilisateur est déjà pris."); }
-  if(errs.length){ fe.innerHTML=errs.map(esc).join('<br>'); if(errs.some(x=>x.startsWith('Numéro WhatsApp'))){ const cf=document.querySelector('.contacts-fold'); if(cf) cf.open=true; } fe.scrollIntoView({block:'center'}); return; }
+  if(errs.length){ fe.innerHTML=errs.map(esc).join('<br>'); fe.scrollIntoView({block:'center'}); return; }
   // Le mot de passe n'est jamais stocké ici. En production : l'envoyer en HTTPS au serveur, qui le hache (argon2 / bcrypt).
   Object.keys(draft.tags).forEach(g=>{ if(!draft.games.includes(g)) delete draft.tags[g]; });
   Object.keys(draft.ranks).forEach(g=>{ if(!draft.games.includes(g)) delete draft.ranks[g]; });
   Object.keys(draft.roles||{}).forEach(g=>{ if(!draft.games.includes(g)) delete draft.roles[g]; });
   if(!draft.langs.length) draft.langs=['fr'];
+  S.langAsk=false;
   const prevMe=S.me, sLabel=sbtn?sbtn.textContent:'', wasComplete=profileComplete();
   S.me={...draft,id:'me'}; if(S.auth) S.profiles[S.auth.uid]=S.me; if(isNew) S.onboard=true; save();
   if(sbtn){ sbtn.disabled=true; sbtn.textContent='Enregistrement…'; }
@@ -2526,7 +2489,9 @@ function refreshAfterData(){
 }
 // Profil venu de Firestore : on complète les champs manquants pour qu'aucune page ne plante
 function normP(p){ p=p||{}; ['games','hours','days','platforms','langs'].forEach(k=>{ if(!Array.isArray(p[k])) p[k]=[]; }); ['tags','ranks','roles'].forEach(k=>{ if(!p[k]||typeof p[k]!=='object') p[k]={}; });
-  if(!p.avatar||typeof p.avatar!=='object') p.avatar={hue:265}; if(typeof p.name!=='string'||!p.name) p.name='Joueur'; return p; }
+  if(!p.avatar||typeof p.avatar!=='object') p.avatar={hue:265}; if(typeof p.name!=='string'||!p.name) p.name='Joueur';
+  if(p.langs.some(x=>!LANG_OK.has(x))){ p.langs=p.langs.filter(x=>LANG_OK.has(x)); p._langLost=true; }   // langue retirée de la liste
+  return p; }
 const dataPending = () => DB.live && !!S.auth && !DB._loaded;
 /* Écran squelette : on montre tout de suite la forme des cartes pendant que les données arrivent */
 function loadingView(title){ const sk=`<div class="mcard sk-card" aria-hidden="true"><div class="mc-head"><span class="sk sk-av"></span><div class="sk-lines"><span class="sk" style="width:60%"></span><span class="sk" style="width:35%"></span></div></div><span class="sk" style="width:90%"></span><span class="sk" style="width:70%"></span></div>`;
@@ -2649,8 +2614,7 @@ function viewPlayer(id){
       :self?`<p class="muted">C'est ton profil tel que les autres joueurs le voient.</p>`:`<p class="muted">Crée ton profil pour voir ta compatibilité avec ${esc(p.name)}.</p>`}
     ${mateBtn}
     ${self?`<button class="btn btn-ghost" id="share2">Partager mon profil</button>`
-      : mate ? `<div class="contact-box" id="contact-box"><p class="hint">Chargement de ses contacts…</p></div>`
-      : `<p class="hint">Ses contacts et réseaux sociaux s'affichent une fois que vous êtes mates.</p>`}
+      : mate ? '' : `<p class="hint">Une fois mates, vous pouvez vous écrire dans les messages de Coopô.</p>`}
     ${self?'':`<div class="safety"><button class="linkbtn" id="report">Signaler</button><button class="linkbtn" id="block">Bloquer</button>${mate?`<button class="linkbtn" id="unmate">Retirer des mates</button>`:''}</div>`}
   </aside></div></div>`;
   const re=()=>{ viewPlayer(id); animateAfterRender(); };
@@ -2662,7 +2626,6 @@ function viewPlayer(id){
   document.getElementById('unmate')?.addEventListener('click',()=>modal(`<h3>Retirer ${esc(p.name)} de tes mates ?</h3><p class="muted">Vous ne pourrez plus vous écrire, sauf nouvelle demande acceptée.</p><div class="dlg-actions"><button class="btn btn-ghost" data-close>Annuler</button><button class="btn btn-danger" id="uok">Retirer</button></div>`,
     d=>d.querySelector('#uok').onclick=()=>{ removeRequest(id); d.close(); toast(`${p.name} retiré de tes mates`); re(); }));
   app.querySelectorAll('[data-rate]').forEach(b=>b.onclick=()=>{ rate(id,+b.dataset.rate); re(); });
-  if(mate) fillContacts(p,'contact-box');
   document.getElementById('report')?.addEventListener('click',()=>modal(`<h3>Signaler ${esc(p.name)}</h3><p class="muted">La modération examine chaque signalement. ${esc(p.name)} n'est pas prévenu et disparaît tout de suite de ton côté.</p>
     <div class="radio-list">${['Comportement toxique ou harcèlement','Contenu inapproprié','Faux profil ou usurpation','Arnaque','Adulte qui contacte un mineur','Autre'].map((r,i)=>`<label><input type="radio" name="rr" value="${r}" ${i?'':'checked'}> ${r}</label>`).join('')}</div>
     <textarea id="rtxt" rows="3" placeholder="Détails (facultatif)" maxlength="500"></textarea>
@@ -2672,52 +2635,6 @@ function viewPlayer(id){
     <div class="dlg-actions"><button class="btn btn-ghost" data-close>Annuler</button><button class="btn btn-danger" id="bok">Bloquer</button></div>`,
     d=>d.querySelector('#bok').onclick=()=>{ S.blocked.push(id); removeRequest(id); save(); DB.saveBlock(id,true); d.close(); toast(`${p.name} est bloqué`); location.hash='#/matchs'; }));
 }
-
-/* ----- Contacts entre mates (Discord / WhatsApp) -----
-   Stockés dans contacts/{uid}, lisibles uniquement par la personne et ses mates acceptés. */
-/* ----- Réseaux sociaux (pseudos), rangés avec les contacts : visibles seulement par les mates ----- */
-const SOCIALS = [
-  ['snapchat','Snapchat','ton.pseudo.snap', u=>'https://www.snapchat.com/add/'+u],
-  ['instagram','Instagram','ton.pseudo.insta', u=>'https://www.instagram.com/'+u+'/'],
-  ['tiktok','TikTok','ton.pseudo.tiktok', u=>'https://www.tiktok.com/@'+u],
-  ['x','X (Twitter)','tonpseudo', u=>'https://x.com/'+u],
-  ['youtube','YouTube','tachaine', u=>'https://www.youtube.com/@'+u],
-  ['twitch','Twitch','tonpseudo', u=>'https://www.twitch.tv/'+u],
-];
-// garde seulement le pseudo : enlève le @, les espaces et un éventuel lien collé
-function cleanHandle(v){
-  let s=String(v||'').trim(); if(!s) return '';
-  if(/^https?:\/\//i.test(s) || /\.(com|tv)\//i.test(s)){ const parts=s.replace(/^https?:\/\//i,'').replace(/[?#].*$/,'').split('/').slice(1).filter(Boolean);
-    s=parts.find(p=>p.startsWith('@')) || (/^(add|c|user|channel)$/i.test(parts[0]||'')?parts[1]:parts[0]) || ''; }
-  s=s.replace(/^@+/,'').replace(/\s+/g,'');
-  return s.replace(/[^A-Za-z0-9._-]/g,'').slice(0,40);
-}
-function pickSocials(c){ const o={}; SOCIALS.forEach(([k])=>{ const v=cleanHandle(c && c[k]); if(v) o[k]=v; }); return o; }
-function socialLinks(c,sm){
-  const so=(c && c.socials)||{};
-  return SOCIALS.filter(([k])=>so[k]).map(([k,l,,url])=>`<a class="btn btn-ghost btn-so so-${k}${sm}" target="_blank" rel="noopener noreferrer" href="${esc(url(so[k]))}" title="${l} de ce joueur">${l} · ${esc(so[k])}</a>`).join('');
-}
-async function contactsOf(p){
-  if(!DB.live) return { discord: p.discordPublic ? (p.discord||'') : '', whatsapp: p.whatsapp||'', socials: pickSocials(p.socials||{}) };
-  const c=await DB.getContacts(p.id);
-  const out={ discord:(c&&c.discord)||'', whatsapp:(c&&c.whatsapp)||'', socials:pickSocials(c||{}) };
-  if(!out.discord && p.discord && p.discordPublic) out.discord=p.discord;   // ancien profil pas encore mis à jour
-  return out;
-}
-function contactButtons(p,c,compact){
-  const sm=compact?' btn-sm':'';
-  const wa = /^\+\d{8,15}$/.test(c.whatsapp||'') ? `<a class="btn btn-wa${sm}" target="_blank" rel="noopener" href="https://wa.me/${c.whatsapp.slice(1)}?text=${encodeURIComponent(`Salut ${p.name}, c'est ${S.me?S.me.name:''} de Coopô 🎮 On joue ensemble ?`)}">WhatsApp</a>` : '';
-  const dc = c.discord ? `<button class="btn btn-ghost${sm}" type="button" data-copy-discord="${esc(c.discord)}" title="Copier son pseudo Discord">Discord · ${esc(c.discord)}</button>` : '';
-  const so = socialLinks(c,sm);
-  if(wa||dc||so) return wa+dc+so;
-  return compact ? '' : `<p class="hint">${esc(p.name)} n'a pas encore partagé de contact ni de réseau social. Écrivez-vous dans les messages.</p>`;
-}
-async function fillContacts(p,boxId,compact){
-  const c=await contactsOf(p); const box=document.getElementById(boxId); if(box) box.innerHTML=contactButtons(p,c,compact);
-}
-document.addEventListener('click',async e=>{ const b=e.target.closest('[data-copy-discord]'); if(!b) return; const v=b.dataset.copyDiscord;
-  try{ await navigator.clipboard.writeText(v); toast('Pseudo Discord copié'); }
-  catch(err){ modal(`<h3>Pseudo Discord</h3><input type="text" readonly value="${esc(v)}" onfocus="this.select()"><div class="dlg-actions"><button class="btn" data-close>Fermer</button></div>`); } });
 
 /* ----- Paramètres ----- */
 /* E-mail non vérifié (comptes créés avec e-mail + mot de passe) : on propose de renvoyer le lien de vérification */
@@ -2748,7 +2665,6 @@ function viewSettings(tab){
     <section class="panel"><h3>Affichage</h3><div>
       <div class="toggle"><div><label for="set-lite" class="lbl">Mode léger</label><p class="hint">Moins d'animations : plus fluide sur les petits téléphones, et la batterie tient mieux.</p></div><input class="switch" type="checkbox" id="set-lite" ${liteOn()?'checked':''}></div></div></section>
     <section class="panel"><h3>Confidentialité</h3><div>
-      ${tg('discord','Partager mon Discord avec mes mates','Seuls tes mates acceptés le voient.')}
       ${tg('tags','Afficher mes pseudos en jeu','Sur ton profil public.')}
       ${tg('online','Afficher quand je suis en ligne','Les autres joueurs voient ton statut et ta dernière visite.')}</div></section>
     ${refSection()}
@@ -2764,7 +2680,7 @@ function viewSettings(tab){
         :`<p class="muted">Compte avec mot de passe. Tu peux aussi relier ton compte Google pour te connecter plus vite.</p><div class="gbtn" style="justify-content:flex-start"></div>`}</section>
     ${fold('Supprimer mon compte',`<p class="muted">Ton profil, tes mates et tes réglages sont effacés définitivement.</p><div><button class="btn btn-danger" id="del">Supprimer mon compte</button></div>`)}
   </div></div>`;
-  app.querySelectorAll('[data-pv]').forEach(i=>i.onchange=()=>{ S.privacy[i.dataset.pv]=i.checked; save(); if(i.dataset.pv==='discord') DB.saveContacts(S.me); DB.savePrivacy(); toast('Préférence enregistrée'); });
+  app.querySelectorAll('[data-pv]').forEach(i=>i.onchange=()=>{ S.privacy[i.dataset.pv]=i.checked; save(); DB.savePrivacy(); toast('Préférence enregistrée'); });
   document.getElementById('set-lite').onchange=e=>{ setLite(e.target.checked); toast(e.target.checked?'Mode léger activé':'Animations rétablies'); };
   app.querySelectorAll('[data-unblock]').forEach(b=>b.onclick=()=>{ S.blocked=S.blocked.filter(x=>x!==b.dataset.unblock); save(); DB.saveBlock(b.dataset.unblock,false); toast('Joueur débloqué'); viewSettings(); });
   document.getElementById('wsave')?.addEventListener('click',()=>{ const nw={}; app.querySelectorAll('[data-w]').forEach(i=>nw[i.dataset.w]=Math.max(0,Math.min(100,parseInt(i.value,10)||0)));
@@ -2793,38 +2709,6 @@ function shapesSVG(){
     `<pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.6" fill="rgba(255,255,255,.2)"/></pattern>`);
 }
 
-function awaleSVG(){
-  const R=rng(23); let motifs='', grain='', pits='', seeds='';
-  // fond bogolan : rangées de motifs géométriques
-  for(let y=30;y<640;y+=70) for(let x=(y/70%2?40:5);x<1200;x+=80){
-    const k=(x+y)%4;
-    motifs+= k===0?`<path d="M${x} ${y}l10 -10 10 10 10 -10 10 10" />`
-      : k===1?`<circle cx="${x+20}" cy="${y-4}" r="3.2" fill="#F7E9D4" stroke="none"/><circle cx="${x+34}" cy="${y-4}" r="3.2" fill="#F7E9D4" stroke="none"/>`
-      : k===2?`<path d="M${x+14} ${y-14}v20M${x+4} ${y-4}h20"/>`
-      : `<rect x="${x+8}" y="${y-14}" width="18" height="18" rx="2" transform="rotate(45 ${x+17} ${y-5})"/>`;
-  }
-  // veines du bois
-  for(let i=0;i<14;i++){ const y=250+i*17+R()*6; grain+=`<path d="M190 ${y.toFixed(0)} C420 ${(y-8+R()*16).toFixed(0)} 780 ${(y-8+R()*16).toFixed(0)} 1010 ${y.toFixed(0)}" stroke="#2A1608" stroke-width="${(1+R()*1.6).toFixed(1)}" opacity="${(.18+R()*.18).toFixed(2)}" fill="none"/>`; }
-  const seed=(cx,cy)=>{ const a=R()*180|0, c=R()>.35?'#F2E2C4':'#9A6234';
-    return `<g transform="translate(${cx.toFixed(1)} ${cy.toFixed(1)}) rotate(${a})"><ellipse rx="9.5" ry="7" fill="${c}"/><ellipse rx="9.5" ry="7" fill="url(#awSeedSh)"/><path d="M-6 0h12" stroke="#5A3A20" stroke-width="1.3" opacity=".55"/><ellipse cx="-3" cy="-2.6" rx="3" ry="1.6" fill="#fff" opacity=".45"/></g>`; };
-  const scatter=(cx,cy,rad,n)=>{ let h=''; for(let i=0;i<n;i++){ const a=R()*Math.PI*2, d=Math.sqrt(R())*rad; h+=seed(cx+Math.cos(a)*d, cy+Math.sin(a)*d*0.85); } return h; };
-  const xs=[0,1,2,3,4,5].map(i=>356+i*98);
-  [292,408].forEach(cy=>xs.forEach(cx=>{ pits+=`<circle cx="${cx}" cy="${cy}" r="40" fill="url(#awPit)"/><circle cx="${cx}" cy="${cy}" r="40" fill="none" stroke="#F2C46D" stroke-opacity=".12" stroke-width="2"/>`; seeds+=scatter(cx,cy+3,20,1+(R()*5|0)); }));
-  [[238,350],[962,350]].forEach(([cx,cy],i)=>{ pits+=`<ellipse cx="${cx}" cy="${cy}" rx="52" ry="100" fill="url(#awPit)"/><ellipse cx="${cx}" cy="${cy}" rx="52" ry="100" fill="none" stroke="#F2C46D" stroke-opacity=".12" stroke-width="2"/>`; seeds+=scatter(cx,cy,34,i?14:9); });
-  return svgWrap(`<rect width="1200" height="640" fill="#24160D"/>
-    <g fill="none" stroke="#E2A23B" stroke-width="2.2" stroke-linecap="round" opacity=".13">${motifs}</g>
-    <ellipse cx="600" cy="360" rx="560" ry="240" fill="url(#awGlow)"/>
-    <ellipse cx="606" cy="486" rx="450" ry="34" fill="#000" opacity=".45" filter="url(#awBlur)"/>
-    <rect x="160" y="220" width="880" height="260" rx="130" fill="url(#awWood)"/>
-    <rect x="160" y="220" width="880" height="260" rx="130" fill="none" stroke="#F2C46D" stroke-opacity=".18" stroke-width="3"/>
-    <g clip-path="url(#awClip)">${grain}</g>${pits}${seeds}`,
-   `<linearGradient id="awWood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9C5F2E"/><stop offset=".55" stop-color="#7A4421"/><stop offset="1" stop-color="#5A3016"/></linearGradient>
-    <radialGradient id="awPit" cx=".5" cy=".42" r=".6"><stop offset="0" stop-color="#2A1608"/><stop offset=".75" stop-color="#3F2210"/><stop offset="1" stop-color="#6B3B1B"/></radialGradient>
-    <radialGradient id="awSeedSh" cx=".35" cy=".3" r=".8"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></radialGradient>
-    <radialGradient id="awGlow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#E2A23B" stop-opacity=".18"/><stop offset="1" stop-color="#E2A23B" stop-opacity="0"/></radialGradient>
-    <filter id="awBlur" x="-20%" y="-200%" width="140%" height="500%"><feGaussianBlur stdDeviation="14"/></filter>
-    <clipPath id="awClip"><rect x="160" y="220" width="880" height="260" rx="130"/></clipPath>`);
-}
 function lofiSVG(){
   const R=rng(57);
   const f=n=>n.toFixed(1);
@@ -2939,8 +2823,6 @@ const FX = {
   samurai:{ particles:{ kind:'petal', colors:['#F4ECE1','#F2B8C2','#FFFFFF'], n:12, dmin:10, dmax:17 }, click:'ink', wipe:'slash' },
   soft:   { orbs:['#FF9CC0','#FFC6DB','#F77BAA'], orbO:.35,
             particles:{ kind:'petal', colors:['#FFC6DB','#FFFFFF','#FF9CC0'], n:14, dmin:9, dmax:16 }, click:'hearts' },
-  awale:  { orbs:['#E2A23B','#D9622B','#7A4421'], orbO:.22,
-            particles:{ kind:'dot', colors:['#F2E2C4','#C9AE8C','#9A6234'], n:12, dmin:14, dmax:22 }, click:'ripple' },
   lofi:   { orbs:['#9ED2EC','#FFE07A','#7CC24A'], orbO:.22,
             particles:{ kind:'dot', colors:['#FFF4E0','#FFCCA6'], n:22, dmin:14, dmax:24 }, click:'notes' },
   esth:   { orbs:['#C9B8FF','#FFC2DF','#BFF0E0'], orbO:.5,
@@ -3069,7 +2951,7 @@ function coopoSceneHTML(){
 const WORLD_VIEW = {
   defaut:{ f:[1210,255], t:[.56,.12], zoom:1.25, tw:[.5,.1] }, sombre:{ f:[1210,255], t:[.56,.12], zoom:1.25, tw:[.5,.1] },
   samurai:{ f:[590,230], t:[.62,.36] }, soft:{ f:[600,300], t:[.5,.5] }, lofi:{ f:[900,160], t:[.6,.3] }, esth:{ f:[500,275], t:[.66,.42] },
-  awale:{ f:[500,290], t:[.5,.4], zoom:1.1 }, ocean:{ f:[100,330], t:[.2,.5], flip:true }, menthe:{ f:[960,115], t:[.72,.24] }, prunier:{ f:[680,330], t:[.64,.5] },
+  ocean:{ f:[100,330], t:[.2,.5], flip:true }, menthe:{ f:[960,115], t:[.72,.24] }, prunier:{ f:[680,330], t:[.64,.5] },
 };
 function frameWorld(){
   const el=document.getElementById('w-art'); if(!el) return; const W=el.clientWidth, H=el.clientHeight; if(!W||!H) return;
@@ -3112,11 +2994,6 @@ function groundSVG(id,W){
       <circle cx="${n0(sx)}" cy="${hy}" r="42" fill="url(#gSun)" opacity=".85" clip-path="url(#gSunC)"/><rect x="0" y="${hy}" width="${W}" height="${H-hy}" fill="${dk(.18)}"/><path d="M0 ${hy}H${W}" stroke="${lt(.6)}" stroke-width="2"/>`;
     let g=''; for(let k=1;k<=7;k++){ const y=hy+Math.pow(k/7,1.8)*(H-hy); g+=`M0 ${n0(y)}H${W}`; } for(let i=-18;i<=18;i++) g+=`M${n0(W/2)} ${hy}L${n0(W/2+i*130)} ${H}`;
     s+=`<path d="${g}" stroke="${lt(.34)}" stroke-width="1.4" fill="none"/>`;
-  } else if(id==='awale'){
-    const gold=a=>`rgba(226,162,59,${a})`;
-    for(let b=0;b<3;b++){ const y=128+b*68, o=b?1:.6; let z=`M0 ${y}`; for(let x=0;x<W;x+=40) z+=`l20-14l20 14`; s+=`<path d="${z}" fill="none" stroke="${gold(.34*o)}" stroke-width="3"/>`;
-      for(let x=20;x<W;x+=80) s+=`<path d="M${x} ${y+16}l11 11l-11 11l-11-11Z" fill="${gold(.22*o)}"/><path d="M${x+40} ${y+20}v14M${x+33} ${y+27}h14" stroke="${gold(.3*o)}" stroke-width="2.4"/>`;
-      s+=`<path d="M0 ${y+50}H${W}" stroke="${gold(.2*o)}" stroke-width="2" stroke-dasharray="3 9"/>`; }
   } else if(id==='ocean'){
     s+=hill(240,16,dk(.2));
     for(let i=0;i<cnt(34);i++){ const x=R()*W, h=50+R()*120, w=5+R()*6; s+=`<path d="M${n0(x)} ${H}c-16-${n0(h*.33)} 16-${n0(h*.66)} 0-${n0(h)}" fill="none" stroke="${i%3?'rgba(20,150,120,.5)':dk(.3)}" stroke-width="${n0(w)}" stroke-linecap="round"/>`; }
@@ -3275,7 +3152,6 @@ const SKINS = {
   soft:  {label:'Soft',       desc:'Rose pastel et fleurs',            sw:['#E9779E','#FFFFFF','#D9478A'], art:()=>bloomSVG()},
   lofi:  {label:'Lo-fi',      desc:'Ciel d\'été, nuages et herbes au vent', sw:['#1F86C2','#FFFFFF','#6CBF3A'], art:lofiSVG},
   esth:  {label:'Esthétique', desc:'Pastels et soleil rétro',          sw:['#C9B8FF','#FCFAFF','#8A6CF0'], art:esthSVG},
-  awale: {label:'Awalé',      desc:'Plateau en bois, graines et bogolan', sw:['#1E120A','#3A2618','#E2A23B'], art:awaleSVG},
   sombre:{label:'Sombre',     desc:'La version nuit du thème officiel',             sw:['#0C0A14','#16131F','#D4FF3F'], art:shapesSVG},
   ocean: {label:'Océan',      desc:'Fond marin, poissons et bulles',             sw:['#2F7FD8','#FFFFFF','#1F6FD1'], art:oceanSVG},
   menthe:{label:'Menthe',     desc:'Collines, brume et papillons',             sw:['#2FAE87','#FFFFFF','#128A6A'], art:mintSVG},
@@ -3300,7 +3176,8 @@ function curCode(){
   return hit?hit[0]:(SHOP.currencies&&SHOP.currencies[0])||'XOF';
 }
 const price = (kind,cur=curCode()) => CURRENCIES[cur][kind];
-const PAID_SKINS = ['samurai','soft','lofi','esth','ocean','menthe','awale','prunier'];
+const PAID_SKINS = ['samurai','soft','lofi','esth','ocean','menthe','prunier'];
+const RETIRED_SKINS = ['awale'];   // thèmes retirés : ceux qui les avaient reçoivent une plaque en souvenir (voir PLATES.souvenir)
 const PREMIUM_SKINS = [];   // thèmes premium (3 000 F) : aucun pour l'instant
 const skinPrice = (id,cur=curCode()) => price(PREMIUM_SKINS.includes(id)?'premium':'theme',cur);
 const money = (n,cur=curCode()) => n.toLocaleString('fr-FR').replace(/\u202f|\u00a0/g,' ')+' '+CURRENCIES[cur].unit;
@@ -3426,7 +3303,8 @@ document.addEventListener('click',async e=>{ if(!e.target.closest('#notif-toggle
 /* ---- Accueil : rappel pour compléter le profil, et jeux les plus joués ---- */
 function profileNudge(){
   if(!S.me) return '';
-  const miss=[]; if(!S.me.discord) miss.push('ton Discord'); if(!(S.me.days||[]).length) miss.push('tes jours'); if(!Object.keys(S.me.tags||{}).length) miss.push('tes pseudos en jeu');
+  if(S.langAsk) return `<a class="nudge" href="#/profil/modifier"><div><b>Choisis tes langues</b><span>La liste des langues a changé : une de tes langues n'y est plus. Choisis celles que tu parles en jeu.</span></div><span class="nudge-go" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span></a>`;
+  const miss=[]; if(!(S.me.days||[]).length) miss.push('tes jours'); if(!Object.keys(S.me.tags||{}).length) miss.push('tes pseudos en jeu');
   if(!miss.length) return '';
   return `<a class="nudge" href="#/profil/modifier"><div><b>Complète ton profil</b><span>Ajoute ${miss.join(', ')} : tes matchs seront plus précis.</span></div><span class="nudge-go" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span></a>`;
 }
@@ -3564,7 +3442,7 @@ const skinBtn = () => `<button class="skin-btn" type="button" aria-label="Change
 const skinGrid = () => `<div class="skins">${Object.entries(SKINS).map(([id,t])=>`<button type="button" class="skin" data-skin-pick="${id}" aria-pressed="${(S.skin||'defaut')===id}"><span class="sw" style="--a:${t.sw[0]};--b:${t.sw[1]};--c2:${t.sw[2]}"><i></i></span><b>${t.label}${canUseSkin(id)?'':` <span class="skin-lock">${LOCK_SVG}</span>`}</b><small>${canUseSkin(id)?t.desc:money(skinPrice(id))}${t.premium&&!canUseSkin(id)?' · premium':''}</small></button>`).join('')}</div>${AUTH_LIVE&&!ownsAll()&&PAID_SKINS.some(x=>!canUseSkin(x))?`<button type="button" class="pack-cta" data-buy-pack><span>Tous les thèmes</span><strong>${money(price('pack'))}</strong></button>`:''}`;
 
 const FONT_SPECS={"Zen Dots": "Zen+Dots", "Quicksand": "Quicksand:wght@500;600;700", "Righteous": "Righteous", "Nunito": "Nunito:wght@500;700", "Zen Maru Gothic": "Zen+Maru+Gothic:wght@500;700", "Syne": "Syne:wght@600;700;800", "DM Sans": "DM+Sans:wght@500;700", "Chakra Petch": "Chakra+Petch:wght@500;600;700", "Sora": "Sora:wght@500;600", "Outfit": "Outfit:wght@600;700", "Inter": "Inter:wght@400;500;600;700", "Anton": "Anton", "Source Sans 3": "Source+Sans+3:wght@400;600;700", "Noto Serif JP": "Noto+Serif+JP:wght@700", "Shippori Mincho B1": "Shippori+Mincho+B1:wght@700;800", "Zen Kaku Gothic New": "Zen+Kaku+Gothic+New:wght@400;500;700"};
-const SKIN_FONTS={"soft": ["Zen Dots", "Quicksand"], "awale": ["Syne", "DM Sans"], "lofi": ["Zen Maru Gothic", "Nunito"], "esth": ["Syne", "DM Sans"], "sombre": ["Outfit", "Inter"], "ocean": ["Chakra Petch", "Sora"], "menthe": ["Chakra Petch", "Sora"], "defaut": ["Outfit", "Inter"], "samurai": ["Anton", "Source Sans 3", "Noto Serif JP"], "prunier": ["Shippori Mincho B1", "Zen Kaku Gothic New"]};
+const SKIN_FONTS={"soft": ["Zen Dots", "Quicksand"], "lofi": ["Zen Maru Gothic", "Nunito"], "esth": ["Syne", "DM Sans"], "sombre": ["Outfit", "Inter"], "ocean": ["Chakra Petch", "Sora"], "menthe": ["Chakra Petch", "Sora"], "defaut": ["Outfit", "Inter"], "samurai": ["Anton", "Source Sans 3", "Noto Serif JP"], "prunier": ["Shippori Mincho B1", "Zen Kaku Gothic New"]};
 const _fontsLoaded=new Set();
 function loadSkinFonts(id){ const list=(SKIN_FONTS[id]||[]).filter(f=>FONT_SPECS[f]&&!_fontsLoaded.has(f)); if(!list.length) return;
   list.forEach(f=>_fontsLoaded.add(f)); const l=document.createElement('link'); l.rel='stylesheet';
@@ -3577,7 +3455,9 @@ function withSkinFade(fn){ const r=document.documentElement;
 // opts.preview : aperçu (le choix du joueur n'est pas modifié) · opts.then : à faire une fois le thème en place (réafficher la page…)
 function applySkin(id, anim, opts={}){
   if(!SKINS[id]) id='defaut';
-  if(!opts.preview){ S.skinWanted=id; if(_preview) endPreview(true); }
+  const guest=AUTH_LIVE&&!S.auth;   // pas connecté (accueil visiteur, connexion, inscription) : toujours le thème par défaut ; le thème choisi revient une fois connecté
+  if(guest){ id='defaut'; if(_preview) endPreview(true); }
+  else if(!opts.preview){ S.skinWanted=id; if(_preview) endPreview(true); }
   if(!opts.preview && !canUseSkin(id)) id='defaut';
   loadSkinFonts(id);
   const r=document.documentElement;
@@ -3731,7 +3611,7 @@ function onSignedIn(u){
   else if(!u.name && S.auth && S.auth.uid===u.uid && S.auth.name) u={...u,name:S.auth.name};   // ne jamais remplacer un nom connu par un nom vide
   const isNewSession = !S.auth || S.auth.uid!==u.uid;
   S.auth = { provider:'google', ...u };
-  { const sk=S.skinByUser&&S.skinByUser[u.uid]; if(sk&&SKINS[sk]&&sk!==S.skinWanted){ S.skinWanted=sk; applySkin(sk); } }
+  if(isNewSession){ const sk=S.skinByUser&&S.skinByUser[u.uid]; S.skinWanted=(sk&&SKINS[sk])?sk:'defaut'; applySkin(S.skinWanted); }   // le thème de CE compte (jamais celui d'un autre compte utilisé sur l'appareil)
   S.me = S.profiles[u.uid] || null;
   save();
   if(isNewSession) DB._loaded=false;   // nouveau compte sur cet appareil : rien n'est chargé tant que ses données ne sont pas arrivées
@@ -3754,7 +3634,7 @@ function clearSession(){
     S.requests=[]; S.notifs=[]; S.chats={}; S.unread={}; S.ratings={}; S.rated={}; S.blocked=[]; S.hidden=[]; S.banned=[]; S.reports=[]; S.squads=[]; S.joined=[]; S.profiles={}; S.dobs={}; }
   save(); splashSync();   // plus de compte à attendre : l'écran d'ouverture se retire
 }
-function onSignedOut(){ clearSession(); applySkin(S.skinWanted||'defaut'); splashSync(); if(location.hash!=='#/connexion') location.hash='#/connexion'; else route(); }
+function onSignedOut(){ clearSession(); applySkin('defaut'); splashSync(); if(location.hash!=='#/connexion') location.hash='#/connexion'; else route(); }
 async function signOut(){
   await DB.setPresence(false);
   if(AUTH_LIVE){ try{ google.accounts.id.disableAutoSelect(); }catch(e){} try{ await firebase.auth().signOut(); }catch(e){} }
@@ -3908,7 +3788,16 @@ async function forgotPw(){
    ========================================================= */
 const ADMINS = []; // uid des modérateurs : ajoutés automatiquement depuis la collection admins de Firestore
 const COUNTRIES=[['CI',"Côte d'Ivoire"],['SN','Sénégal'],['CM','Cameroun'],['ML','Mali'],['BF','Burkina Faso'],['BJ','Bénin'],['TG','Togo'],['NE','Niger'],['GN','Guinée'],['GA','Gabon'],['CG','Congo'],['CD','RD Congo'],['MG','Madagascar'],['MA','Maroc'],['DZ','Algérie'],['TN','Tunisie'],['FR','France'],['BE','Belgique'],['CH','Suisse'],['CA','Canada'],['XX','Autre']];
-const LANGS=[['fr','Français'],['en','Anglais'],['ar','Arabe'],['wo','Wolof'],['ln','Lingala'],['bci','Baoulé'],['dyu','Dioula'],['bm','Bambara'],['pt','Portugais'],['es','Espagnol']];
+const LANGS=[['fr','Français'],['en','Anglais'],['ar','Arabe'],['es','Espagnol'],['pt','Portugais'],['sw','Swahili'],['af','Afrikaans'],['sq','Albanais'],['de','Allemand'],['am','Amharique'],['hy','Arménien'],['az','Azéri'],['eu','Basque'],['bn','Bengali'],['be','Biélorusse'],['my','Birman'],['bs','Bosnien'],['bg','Bulgare'],['ca','Catalan'],['zh','Chinois (mandarin)'],['yue','Chinois (cantonais)'],['si','Cingalais'],['ko','Coréen'],['ht','Créole haïtien'],['hr','Croate'],['da','Danois'],['et','Estonien'],['fi','Finnois'],['gl','Galicien'],['cy','Gallois'],['ka','Géorgien'],['el','Grec'],['gu','Gujarati'],['he','Hébreu'],['hi','Hindi'],['hu','Hongrois'],['id','Indonésien'],['ga','Irlandais'],['is','Islandais'],['it','Italien'],['ja','Japonais'],['kn','Kannada'],['kk','Kazakh'],['km','Khmer'],['ky','Kirghize'],['ku','Kurde'],['lo','Lao'],['lv','Letton'],['lt','Lituanien'],['lb','Luxembourgeois'],['mk','Macédonien'],['ms','Malais'],['ml','Malayalam'],['mg','Malgache'],['mt','Maltais'],['mr','Marathi'],['mn','Mongol'],['nl','Néerlandais'],['ne','Népalais'],['no','Norvégien'],['ur','Ourdou'],['uz','Ouzbek'],['ps','Pachto'],['pa','Pendjabi'],['fa','Persan'],['pl','Polonais'],['ro','Roumain'],['ru','Russe'],['sr','Serbe'],['sk','Slovaque'],['sl','Slovène'],['so','Somali'],['sv','Suédois'],['tg','Tadjik'],['tl','Tagalog (filipino)'],['ta','Tamoul'],['cs','Tchèque'],['te','Télougou'],['th','Thaï'],['tr','Turc'],['tk','Turkmène'],['uk','Ukrainien'],['vi','Vietnamien']];   // langues du monde, par ordre alphabétique après les plus courantes (pour en ajouter une : ['code','Nom'])
+const LANG_OK=new Set(LANGS.map(x=>x[0])), LANG_TOP=['fr','en','ar','es','pt','sw'], LANG_MAX=6;
+const noAcc = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+// Choix des langues dans le profil : les langues choisies d'abord, puis les plus courantes, ou le résultat de la recherche par nom
+function langChips(q){ const sel=(draft&&draft.langs)||[], nq=noAcc(q).trim();
+  const pool = nq ? LANGS.filter(([k,l])=>noAcc(l).includes(nq)) : LANGS.filter(([k])=>LANG_TOP.includes(k));
+  const list=[...LANGS.filter(([k])=>sel.includes(k)), ...pool.filter(([k])=>!sel.includes(k))].slice(0,30);
+  return list.length ? chips('langs',list,sel) : '<p class="hint">Aucune langue ne correspond. Essaie un autre nom.</p>'; }
+const langField = () => `<div class="field lang-pick"><label class="lbl" for="lang-q">Langues parlées en jeu</label><input id="lang-q" type="search" autocomplete="off" placeholder="Chercher une langue (ex. anglais, arabe, swahili…)" aria-controls="lang-list"><div id="lang-list">${langChips('')}</div><span class="hint">${LANG_MAX} langues au maximum.</span></div>`;
+document.addEventListener('input',e=>{ if(e.target&&e.target.id==='lang-q'){ const b=document.getElementById('lang-list'); if(b) b.innerHTML=langChips(e.target.value); } });
 const RANKS=[['1','Débutant'],['2','Intermédiaire'],['3','Avancé'],['4','Expert'],['5','Pro']];
 /* ---- Rangs et rôles propres à chaque jeu (les autres jeux gardent les niveaux génériques ci-dessus) ---- */
 const GAME_RANKS={
@@ -4049,10 +3938,9 @@ function viewChat(id){
   const p=visible().find(x=>x.id===id);
   if(!p||!isMate(id)){ app.innerHTML=`<div class="wrap page"><div class="empty"><h3>Vous n'êtes pas encore mates</h3><p class="muted">Les messages s'ouvrent une fois la demande de mate acceptée.</p><a class="btn" href="#/messages">Retour aux messages</a></div></div>`; return; }
   S.unread[id]=0; { const seen=S.notifs.filter(n=>!n.read&&n.type==='message'&&n.from===id); seen.forEach(n=>n.read=true); DB.markRead(seen.map(n=>n.id)); } save(); renderNotifBadge();
-  app.innerHTML=`<div class="wrap page chat-page"><div class="chat-head">${backLink('#/messages','Messages')}<a class="chat-who" href="#/joueur/${p.id}">${avatar(p,44)}<div><b>${esc(p.name)}${modBadge(p)}</b>${isOnline(p)?'<span class="online">En ligne</span>':'<span class="muted" style="font-size:12px">Hors ligne</span>'}</div></a><div class="chat-contacts" id="chat-contacts"></div></div>
+  app.innerHTML=`<div class="wrap page chat-page"><div class="chat-head">${backLink('#/messages','Messages')}<a class="chat-who" href="#/joueur/${p.id}">${avatar(p,44)}<div><b>${esc(p.name)}${modBadge(p)}</b>${isOnline(p)?'<span class="online">En ligne</span>':'<span class="muted" style="font-size:12px">Hors ligne</span>'}</div></a></div>
     <div class="chat-box" id="chatbox"></div>
     <form class="chat-form" id="chatform"><input type="text" id="chatin" placeholder="Écris un message…" maxlength="500" autocomplete="off"><button class="btn btn-ac" type="submit">Envoyer</button></form></div>`;
-  fillContacts(p,'chat-contacts',true);
   renderChat(id);
   // la zone de messages change de hauteur (contacts chargés, clavier, rotation) : on reste calé sur le dernier message
   try{ const cb=document.getElementById('chatbox'); if(cb&&'ResizeObserver' in window) new ResizeObserver(()=>{ cb.scrollTop=cb.scrollHeight; }).observe(cb); }catch(e){}
@@ -4352,7 +4240,7 @@ async function shareProfile(){
 function viewHelp(){
   const faq=[['Comment est calculé le pourcentage de compatibilité ?','Chaque critère vaut un nombre de points (jeux en commun, horaires, style, jours, plateforme, rang, langue, pays). Le total est ramené sur 100. Sur le profil d\'un joueur, tu vois le détail critère par critère.'],
     ['Pourquoi je ne vois pas certains joueurs ?','Les 15-17 ans ne voient que des 15-17 ans, et les adultes que des adultes. Tu ne vois pas non plus les joueurs que tu as bloqués ni ceux masqués par la modération.'],
-    ['Comment contacter un joueur ?','Envoie-lui une demande de mate. S\'il accepte, vous pouvez vous écrire dans Messages, copier son pseudo Discord ou lui écrire sur WhatsApp s\'il les a partagés. Ces contacts ne sont jamais visibles par les autres joueurs.'],
+    ['Comment contacter un joueur ?','Envoie-lui une demande de mate. S\'il accepte, vous pouvez vous écrire dans Messages et vous retrouver dans des groupes. Tout se passe dans Coopô : aucun numéro ni pseudo d\'un autre réseau n\'est demandé.'],
     ['Mon e-mail ou ma date de naissance sont-ils visibles ?','Non, jamais. Les autres joueurs ne voient que ton pseudo, ton avatar, tes jeux et tes habitudes de jeu.'],
     ['À quoi servent les annonces ?','À trouver vite des joueurs pour une partie précise : « Je cherche 2 joueurs Free Fire ce soir ». Clique sur « Je suis partant » : l\'auteur est prévenu et reçoit une demande de mate. Les annonces disparaissent toutes seules après la partie.'],
     ['Comment participer à un tournoi ?','Dans Communauté › Tournois, clique sur « S\'inscrire ». Ton pseudo en jeu est transmis à l\'organisateur pour qu\'il puisse t\'inviter.'],
@@ -4381,8 +4269,8 @@ function viewLegal(kind){
     <h3>8. Thèmes payants</h3><p>Certains thèmes visuels sont payants, à l'unité ou en pack. Le paiement est traité par CinetPay (Mobile Money ou carte bancaire). Un thème acheté reste lié à ton compte tant qu'il existe. Les thèmes sont purement esthétiques et ne donnent aucun avantage pour la mise en relation. Les achats des utilisateurs de moins de 18 ans nécessitent l'accord d'un parent ou tuteur. Les conditions de remboursement sont détaillées dans la <a href="#/remboursement">politique de remboursement</a>.</p>
     <h3>9. Modifications</h3><p>Les présentes conditions peuvent évoluer ; tu seras informé des changements importants.</p>`
     :`
-    <h3>1. Données collectées</h3><p>Pour créer ton compte : e-mail, pseudo, date de naissance, et, si tu utilises Google, ton nom et ta photo Google. Pour ton profil : jeux, pseudos et rangs en jeu, horaires, jours, style, plateformes, pays, langues. Facultatif : pseudo Discord, pseudos de réseaux sociaux (Snapchat, Instagram, TikTok, X, YouTube, Twitch) et, à partir de 18 ans, numéro WhatsApp. Pour la communauté : tes annonces et tes inscriptions aux tournois. Pour le fonctionnement : demandes de mate, messages, signalements, blocages, notifications, ton statut « en ligne » et l'heure de ta dernière visite, ton avis « tu rejouerais avec lui ? » sur un joueur, et, si tu es venu par un lien de parrainage, le pseudo de ton parrain. Si tu nous écris par le formulaire de contact : ton message et l'e-mail que tu indiques.</p>
-    <h3>2. Ce qui est visible</h3><p>Les autres utilisateurs voient uniquement ton pseudo, ton avatar, tes jeux et tes habitudes de jeu. Ton statut « en ligne » et le moment de ta dernière visite sont visibles si tu ne les as pas désactivés dans les paramètres. Ton pseudo Discord, tes réseaux sociaux et ton numéro WhatsApp ne sont visibles que par tes mates acceptés. Tes avis sur les autres joueurs ne leur sont pas montrés. Le numéro WhatsApp n'est pas proposé aux 15-17 ans. Ton e-mail, ta date de naissance et ton âge exact ne sont jamais affichés. Ton e-mail reste uniquement dans le service de connexion (Firebase Authentication) : il n'est pas recopié dans la base de données du site. Tes messages privés ne sont lisibles que par toi et ton mate ; si tu signales une conversation, les derniers messages sont joints au signalement et la modération peut consulter cette conversation, uniquement pour traiter le signalement.</p>
+    <h3>1. Données collectées</h3><p>Pour créer ton compte : e-mail, pseudo, date de naissance, et, si tu utilises Google, ton nom et ta photo Google. Pour ton profil : jeux, pseudos et rangs en jeu, horaires, jours, style, plateformes, pays, langues. Coopô ne te demande aucun numéro de téléphone ni pseudo d'un autre réseau ; ceux qui avaient été enregistrés avant ont été effacés. Pour la communauté : tes annonces et tes inscriptions aux tournois. Pour le fonctionnement : demandes de mate, messages, signalements, blocages, notifications, ton statut « en ligne » et l'heure de ta dernière visite, ton avis « tu rejouerais avec lui ? » sur un joueur, et, si tu es venu par un lien de parrainage, le pseudo de ton parrain. Si tu nous écris par le formulaire de contact : ton message et l'e-mail que tu indiques.</p>
+    <h3>2. Ce qui est visible</h3><p>Les autres utilisateurs voient uniquement ton pseudo, ton avatar, tes jeux et tes habitudes de jeu. Ton statut « en ligne » et le moment de ta dernière visite sont visibles si tu ne les as pas désactivés dans les paramètres. Tes avis sur les autres joueurs ne leur sont pas montrés. Ton e-mail, ta date de naissance et ton âge exact ne sont jamais affichés. Ton e-mail reste uniquement dans le service de connexion (Firebase Authentication) : il n'est pas recopié dans la base de données du site. Tes messages privés ne sont lisibles que par toi et ton mate ; si tu signales une conversation, les derniers messages sont joints au signalement et la modération peut consulter cette conversation, uniquement pour traiter le signalement.</p>
     <h3>3. Utilisation</h3><p>Les données servent à calculer les compatibilités, à faire fonctionner les demandes de mate, les messages et les groupes, à séparer les tranches d'âge et à assurer la modération. Aucune donnée n'est vendue. Aucune publicité ciblée.</p>
     <h3>4. Hébergement</h3><p>Les données sont stockées sur Firebase, un service de Google Cloud. Elles sont protégées par des règles d'accès : ton e-mail et ta date de naissance ne sont lisibles que par toi et par la modération.</p>
     <h3>5. Conservation</h3><p>Les données sont conservées tant que le compte existe, puis supprimées. Les messages que tu as envoyés restent visibles par les mates qui les ont reçus. Les signalements peuvent être conservés anonymisés pour la sécurité du service.</p>
@@ -4428,7 +4316,7 @@ function viewOnboard(){
       <p class="ferr" id="ob-err" role="alert"></p>
       <div class="ob-actions">${step===2?'<button type="button" class="btn btn-ghost" id="ob-back">Retour</button>':''}<button type="submit" class="btn btn-ac btn-lg">${step===1?'Continuer':'Voir mes matchs'}</button></div>
     </form>
-    <p class="muted ob-later">Tu pourras ajouter plus tard tes pseudos en jeu, tes jours, ton Discord et ton avatar.</p></div>`;
+    <p class="muted ob-later">Tu pourras ajouter plus tard tes pseudos en jeu, tes jours et ton avatar.</p></div>`;
   initDob();
   const f=app.querySelector('#ob'), err=app.querySelector('#ob-err');
   const keepName=()=>{ const n=app.querySelector('#ob-name'); if(n) OB.name=n.value.trim(); };
@@ -4454,7 +4342,7 @@ function viewOnboard(){
     const plats=[...new Set(OB.games.flatMap(g=>GAME_PLATFORMS[g]||['mobile']))];
     const reg=((navigator.language||'').split('-')[1]||'').toUpperCase(); const country=COUNTRIES.some(c=>c[0]===reg)?reg:'';
     S.me={ id:'me', name:OB.name, dob:draft.dob, games:OB.games, hours:OB.hours, days:OB.weekend?['sam','dim']:[], style:OB.style, goal:'both', voice:'parfois',
-      platforms:plats.length?plats:['mobile'], country, langs:['fr'], discord:'', tags:{}, ranks:{}, avatar:{hue:[265,330,10,45,150,200][Math.floor(Math.random()*6)]} };
+      platforms:plats.length?plats:['mobile'], country, langs:['fr'], tags:{}, ranks:{}, avatar:{hue:[265,330,10,45,150,200][Math.floor(Math.random()*6)]} };
     if(S.auth) S.profiles[S.auth.uid]=S.me; S.onboard=true; save();
     btn.disabled=true; btn.textContent='Création du profil…';
     if(!(await DB.saveProfile(S.me))){   // rien n'est gardé en local si le profil n'existe pas en ligne
@@ -4617,18 +4505,20 @@ const DB = {
       const [prof,priv]=await Promise.all([db.collection('profiles').doc(uid).get(),db.collection('private').doc(uid).get()]);
       const prevMe=S.me||{};
       if(prof.exists){ const pd=prof.data(), pv=priv.exists?priv.data():{};
-        S.me=normP({...pd,id:'me',dob:pv.dob||''});
+        S.me=normP({...pd,id:'me',dob:pv.dob||''}); if(S.me._langLost){ delete S.me._langLost; S.langAsk=true; }   // une de ses langues a été retirée de la liste : on lui proposera d'en choisir une autre
         if(pv.tags&&typeof pv.tags==='object') S.me.tags=pv.tags;   // pseudos en jeu : la copie privée fait foi (la copie publique est vide quand ils sont masqués)
-        if(pd.privacy&&typeof pd.privacy==='object') ['discord','tags','online'].forEach(k=>{ if(typeof pd.privacy[k]==='boolean') S.privacy[k]=pd.privacy[k]; });   // confidentialité : les réglages du compte, sur tous les appareils
-        { const sk=pd.skin; if(sk&&SKINS[sk]) S.skinWanted=sk; } S.profiles[uid]=S.me; }
+        if(pd.privacy&&typeof pd.privacy==='object') ['tags','online'].forEach(k=>{ if(typeof pd.privacy[k]==='boolean') S.privacy[k]=pd.privacy[k]; });   // confidentialité : les réglages du compte, sur tous les appareils
+        { const sk=pd.skin; if(sk&&SKINS[sk]) S.skinWanted=sk; else if(sk) S.skinWanted='defaut'; if(RETIRED_SKINS.includes(sk)) this._retired=sk; } S.profiles[uid]=S.me; }
       if(priv.exists&&priv.data().dob) S.dobs[uid]=priv.data().dob;
       if(prof.exists&&prof.data().banned){ await signOut(); toast('Ce compte a été suspendu par la modération.',7000); return; }
       if(!prof.exists){ this._loaded=true; this._loading=false; this._noProfile=true; save(); refreshAfterData(); return; }
-      { // contacts privés (Discord / WhatsApp) ; un ancien Discord public est déplacé ici
-        const ct=await db.collection('contacts').doc(uid).get().catch(()=>null), c=ct&&ct.exists?ct.data():null;
-        if(c&&S.me){ S.me.discord=c.discord||S.me.discord||''; S.me.whatsapp=c.whatsapp||''; S.me.socials=pickSocials(c); }
-        else if(!ct&&S.me){ S.me.discord=prevMe.discord||S.me.discord||''; S.me.whatsapp=prevMe.whatsapp||''; S.me.socials=prevMe.socials||{}; }   // lecture ratée : on garde les contacts connus
-        else if(ct&&!ct.exists&&S.me&&S.me.discord){ if(await this.saveContacts(S.me)) await db.collection('profiles').doc(uid).set({discord:firebase.firestore.FieldValue.delete()},{merge:true}).catch(e=>console.error(e)); }
+      { // Coopô ne garde plus aucun pseudo d'autres réseaux : on efface ce que ce compte avait enregistré (une seule fois par appareil)
+        if(S.me){ delete S.me.discord; delete S.me.whatsapp; delete S.me.socials; delete S.privacy.discord; }
+        let done=false; try{ done=localStorage.getItem('coopo_purge1')===uid; }catch(e){}
+        const pd=prof.data();
+        if(!done || 'discord' in pd || 'discordPublic' in pd){ const FD=firebase.firestore.FieldValue.delete();
+          Promise.all([ db.collection('contacts').doc(uid).delete(), ('discord' in pd || 'discordPublic' in pd) ? db.collection('profiles').doc(uid).update({discord:FD,discordPublic:FD,privacy:{tags:!!S.privacy.tags,online:!!S.privacy.online}}) : null ])
+            .then(()=>{ try{ localStorage.setItem('coopo_purge1',uid); }catch(e){} }).catch(e=>console.error(e)); }
       }
       let g=S.me&&S.me.dob?ageGroup(S.me):'adult';
       // Anniversaire des 18 ans : le groupe d'âge enregistré doit suivre l'âge réel, sinon les règles refusent toutes les lectures
@@ -4688,24 +4578,19 @@ const DB = {
       try{ await db.collection('usernames').doc(lower).set({uid}); }   // en premier : si le pseudo appartient à un autre compte, rien d'autre n'est écrit
       catch(e){ if(String(e&&e.code).includes('permission')){ this._saveErr='name'; return false; } throw e; }
       await db.collection('private').doc(uid).set({dob,tags:me.tags||{},updatedAt:Date.now()},{mergeFields:['dob','tags','updatedAt']});
-      const {banned,hidden,rejoue,moderator,dispo,skin,discord,whatsapp,socials,...safe}=pub;
-      const data={...safe,tags:S.privacy.tags?(me.tags||{}):{},nameLower:lower,ageGroup:ageGroup(me),privacy:S.privacy,discordPublic:S.privacy.discord,online:!!S.privacy.online,lastSeen:S.privacy.online?Date.now():0,updatedAt:Date.now()};
-      if(isNew){ Object.assign(data,{banned:false,hidden:false,rejoue:0}); await ref.set(data); await this.saveContacts(me); await this.applyReferral(); await this.loadAll(); }
-      else { const ok=await this.saveContacts(me);
-        await ref.update(ok?{...data,discord:firebase.firestore.FieldValue.delete()}:data);   // update remplace chaque champ en entier : un rang, un pseudo en jeu ou une photo retirés disparaissent vraiment
+      const {banned,hidden,rejoue,moderator,dispo,skin,discord,discordPublic,whatsapp,socials,...safe}=pub;
+      const data={...safe,tags:S.privacy.tags?(me.tags||{}):{},nameLower:lower,ageGroup:ageGroup(me),privacy:{tags:!!S.privacy.tags,online:!!S.privacy.online},online:!!S.privacy.online,lastSeen:S.privacy.online?Date.now():0,updatedAt:Date.now()};
+      if(isNew){ Object.assign(data,{banned:false,hidden:false,rejoue:0}); await ref.set(data); await this.applyReferral(); await this.loadAll(); }
+      else { const FD=firebase.firestore.FieldValue.delete();
+        await ref.update({...data,discord:FD,discordPublic:FD});   // update remplace chaque champ en entier : un rang, un pseudo en jeu ou une photo retirés disparaissent vraiment
         if(oldLower&&oldLower!==lower) db.collection('usernames').doc(oldLower).delete().catch(e=>console.error(e)); }   // l'ancien pseudo redevient libre
       return true; }
     catch(e){ console.error(e); this._saveErr=(e&&e.code)||'error'; return false; } },
   // Réglages de confidentialité : appliqués tout de suite en ligne (pseudos en jeu masqués = retirés du profil public)
   async savePrivacy(){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live||!this.uid()||!S.me) return; const uid=this.uid();
     try{ if(!S.privacy.tags) await this.db.collection('private').doc(uid).set({tags:S.me.tags||{}},{mergeFields:['tags']});   // copie privée d'abord
-      await this.db.collection('profiles').doc(uid).update({privacy:S.privacy,discordPublic:S.privacy.discord,tags:S.privacy.tags?(S.me.tags||{}):{},online:!!S.privacy.online,lastSeen:S.privacy.online?Date.now():0}); }
+      await this.db.collection('profiles').doc(uid).update({privacy:{tags:!!S.privacy.tags,online:!!S.privacy.online},tags:S.privacy.tags?(S.me.tags||{}):{},online:!!S.privacy.online,lastSeen:S.privacy.online?Date.now():0}); }
     catch(e){ console.error(e); toast("Réglage non enregistré en ligne. Vérifie ta connexion et réessaie."); } },
-  // Contacts privés : lisibles uniquement par la personne et ses mates (règles Firestore)
-  async saveContacts(me){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live||!this.uid()||!me) return false;
-    try{ await this.db.collection('contacts').doc(this.uid()).set({ discord:S.privacy.discord?String(me.discord||'').slice(0,40):'', whatsapp:me.dob&&ageGroup(me)==='adult'?String(me.whatsapp||''):'', ...Object.fromEntries(SOCIALS.map(([k])=>[k, cleanHandle((me.socials||{})[k])])), updatedAt:Date.now() }); return true; }
-    catch(e){ console.error(e); return false; } },
-  async getContacts(id){ if(!this.live) return null; try{ const d=await this.db.collection('contacts').doc(id).get(); return d.exists?d.data():{}; }catch(e){ console.error(e); return null; } },
   // Annonces et tournois : boards/{tranche}/annonces et boards/{tranche}/tournois
   async loadBoards(){ if(!this.live||!this.uid()||!S.me||!S.me.dob) return; const g=ageGroup(S.me), db=this.db;
     try{ const q=await db.collection('boards').doc(g).collection('annonces').where('until','>',Date.now()).orderBy('until').limit(60).get();
