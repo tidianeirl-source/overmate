@@ -2397,7 +2397,7 @@ function viewProfileHub(){
     <nav class="menu" aria-label="Mon compte">
       ${menuRow(ICONS.parametres,'Réglages','Confidentialité et compte','#/parametres')}
       ${menuRow(MENU_ICO.palette,'Boutique',`Thèmes et plaques · thème actuel : ${esc((SKINS[S.skin]||SKINS.defaut).label)}`,'#/boutique')}
-      ${menuRow(MENU_ICO.gift,'Inviter des amis','Un thème offert à vous deux','','data-ref-share')}
+      ${menuRow(MENU_ICO.gift,'Inviter des amis','Un thème offert quand ton ami s\'inscrit','','data-ref-share')}
       ${menuRow(MENU_ICO.share,'Partager mon profil','Envoie ton lien à tes amis','','data-share-profile')}
       ${menuRow(MENU_ICO.help,'Aide','Questions et contact','#/aide')}
       ${isAdmin()?menuRow(MENU_ICO.shield,'Modération','Signalements à traiter','#/moderation'):''}
@@ -2586,6 +2586,8 @@ async function submitProfile(e){
   if(!draft.style) errs.push('Choisis ton style de jeu.');
   if(!draft.platforms.length) errs.push('Sélectionne au moins une plateforme.');
   const fe=document.getElementById('ferr');
+  const nameChanged = !!S.me && draft.name.toLowerCase()!==String(S.me.name||'').toLowerCase();
+  if(nameChanged && S.me.nameAt && Date.now()-S.me.nameAt < NAME_WAIT_DAYS*864e5) errs.push(nameWaitMsg(S.me.nameAt+NAME_WAIT_DAYS*864e5));
   if(!errs.length && (!S.me || draft.name.toLowerCase()!==String(S.me.name||'').toLowerCase())){ if(sbtn) sbtn.disabled=true; const taken=await DB.nameTaken(draft.name); if(sbtn) sbtn.disabled=false; if(taken) errs.push("Ce nom d'utilisateur est déjà pris."); }
   if(errs.length){ fe.innerHTML=errs.map(esc).join('<br>'); fe.scrollIntoView({block:'center'}); return; }
   // Le mot de passe n'est jamais stocké ici. En production : l'envoyer en HTTPS au serveur, qui le hache (argon2 / bcrypt).
@@ -2595,11 +2597,13 @@ async function submitProfile(e){
   if(!draft.langs.length) draft.langs=['fr'];
   S.langAsk=false;
   const prevMe=S.me, sLabel=sbtn?sbtn.textContent:'', wasComplete=profileComplete();
-  S.me={...draft,id:'me'}; if(S.auth) S.profiles[S.auth.uid]=S.me; if(isNew) S.onboard=true; save();
+  S.me={...draft,id:'me'}; if(nameChanged) S.me.nameAt=Date.now(); else if(prevMe&&prevMe.nameAt) S.me.nameAt=prevMe.nameAt;
+  if(S.auth) S.profiles[S.auth.uid]=S.me; if(isNew) S.onboard=true; save();
   if(sbtn){ sbtn.disabled=true; sbtn.textContent='Enregistrement…'; }
   if(!(await DB.saveProfile(S.me))){   // échec : on revient à l'ancien profil, sans faire croire que c'est enregistré
     S.me=prevMe; if(S.auth&&prevMe) S.profiles[S.auth.uid]=prevMe; save(); if(sbtn){ sbtn.disabled=false; sbtn.textContent=sLabel; }
-    fe.textContent = DB._saveErr==='name' ? "Ce nom d'utilisateur vient d'être pris. Choisis-en un autre." : "Tes modifications n'ont pas pu être enregistrées. Vérifie ta connexion et réessaie.";
+    if(DB._saveErr==='nameWait'&&prevMe){ prevMe.nameAt=DB._nameAt; save(); }   // on retient la date pour prévenir tout de suite la prochaine fois
+    fe.textContent = DB._saveErr==='nameWait' ? nameWaitMsg(DB._nameAt+NAME_WAIT_DAYS*864e5) : DB._saveErr==='name' ? "Ce nom d'utilisateur vient d'être pris. Choisis-en un autre." : "Tes modifications n'ont pas pu être enregistrées. Vérifie ta connexion et réessaie.";
     fe.scrollIntoView({block:'center'}); return; }
   demoScheduleIncoming();
   toast(isNew?'Profil créé':'Modifications enregistrées');
@@ -2637,11 +2641,11 @@ function viewMatches(){
   if(dataPending()) return loadingView('Mes matchs');
   if(!S.me) return needProfile('Mes matchs');
   if(DB.live&&DB._loaded) DB.refreshPlayers().then(ch=>{ if(ch&&location.hash==='#/matchs') refreshAfterData(); }).catch(()=>{});
-  if(!S.me.dob){ app.innerHTML=`<div class="wrap page"><div class="page-head"><h2>Mes matchs</h2></div><div class="empty"><h3>Ajoute ta date de naissance</h3><p class="muted">Elle sert à te proposer des joueurs de ta tranche d'âge. Elle n'est jamais affichée.</p><a class="btn btn-ac" href="#/profil">Compléter mon profil</a></div></div>`; return; }
+  if(!S.me.dob){ app.innerHTML=`<div class="wrap page"><div class="page-head"><h2>Mes matchs</h2></div><div class="empty"><h3>Ajoute ta date de naissance</h3><p class="muted">Elle sert à te proposer les bons joueurs. Elle n'est jamais affichée.</p><a class="btn btn-ac" href="#/profil">Compléter mon profil</a></div></div>`; return; }
   const vis=visible(), mates=matesList(), onlineNow=ranked().filter(({p})=>isOnline(p));
   let r=ranked(); if(S.sort==='online') r=[...r].sort((a,b)=>(isOnline(b.p)-isOnline(a.p))||(b.c.pct-a.c.pct));
   app.innerHTML=`<div class="wrap page">
-    <div class="page-head"><div><h2>Mes matchs</h2><p>${r.length?`${r.length} joueur${r.length>1?"s":""}, du plus compatible au moins compatible.`:"Aucun joueur de ta tranche d'âge n'est encore inscrit."}</p></div></div>
+    <div class="page-head"><div><h2>Mes matchs</h2><p>${r.length?`${r.length} joueur${r.length>1?"s":""}, du plus compatible au moins compatible.`:"Aucun joueur n'est encore inscrit."}</p></div></div>
     <a class="search-entry" href="#/recherche"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">${ICONS.recherche}</svg><span>Chercher un joueur, un jeu…</span></a>
     ${profileNudge()}
     ${r.length>1?`<div class="chips sort-row" role="group" aria-label="Trier"><span class="sort-lbl">Trier par</span><button type="button" class="chip" data-sort="compat" aria-pressed="${S.sort!=='online'}">Compatibilité</button><button type="button" class="chip" data-sort="online" aria-pressed="${S.sort==='online'}">En ligne d'abord</button></div>`:''}
@@ -2707,7 +2711,7 @@ function renderResults(){
   // Pagination : on n'affiche que les 24 premiers joueurs, puis 24 de plus à chaque clic
   document.getElementById('results').innerHTML = rows.length ? rows.slice(0,F.shown).map((m,i)=>matchCard(m,false,Math.min(i,10))).join('')
       + (rows.length>F.shown?`<div style="grid-column:1/-1;text-align:center;margin-top:8px"><button class="btn" type="button" id="more-results">Voir plus de joueurs (${rows.length-F.shown})</button></div>`:'')
-    : `<div class="empty" style="grid-column:1/-1"><h3>Aucun mate trouvé</h3><p class="muted">${filtersOn()?'Essaie d\'élargir tes filtres : retires-en un, ou baisse la compatibilité minimum.':'Aucun joueur de ta tranche d\'âge n\'est encore inscrit. Invite tes amis !'}</p>${filtersOn()?'<button class="btn btn-ac" type="button" id="s-reset2">Effacer les filtres</button>':'<button class="btn btn-ac" type="button" data-ref-share>Inviter mes amis</button>'}</div>`;
+    : `<div class="empty" style="grid-column:1/-1"><h3>Aucun mate trouvé</h3><p class="muted">${filtersOn()?'Essaie d\'élargir tes filtres : retires-en un, ou baisse la compatibilité minimum.':'Aucun joueur n\'est encore inscrit. Invite tes amis !'}</p>${filtersOn()?'<button class="btn btn-ac" type="button" id="s-reset2">Effacer les filtres</button>':'<button class="btn btn-ac" type="button" data-ref-share>Inviter mes amis</button>'}</div>`;
   const more=document.getElementById('more-results'); if(more) more.onclick=()=>{ F.shown+=24; renderResults(); };
   const r2=document.getElementById('s-reset2'); if(r2) r2.onclick=()=>{ resetFilters(); viewSearch(); };
   animateAfterRender(document.getElementById('results'));
@@ -3584,9 +3588,11 @@ document.addEventListener('click',e=>{ const g=e.target.closest('[data-pulse-gam
 
 /* ================= Parrainage ================= */
 (function captureRef(){ try{ const u=new URL(location.href); const r=u.searchParams.get('ref'); if(r){ localStorage.setItem('coopo_ref',r.toLowerCase().slice(0,20)); u.searchParams.delete('ref'); history.replaceState(null,'',u.pathname+(u.search||'')+u.hash); } }catch(e){} })();
-const REF_REWARD={ one:'soft', all:3 };   // 1 filleul : thème Soft pour les deux · 3 filleuls : tous les thèmes
+const NAME_WAIT_DAYS=14;   // un pseudo ne peut être changé qu'une fois tous les 14 jours
+const nameWaitMsg = until => `Tu as changé de pseudo il y a moins de ${NAME_WAIT_DAYS} jours. Tu pourras le changer à nouveau le ${new Date(until).toLocaleDateString('fr-FR',{day:'numeric',month:'long'})}.`;
+const REF_REWARD={ one:'soft', all:3 };   // 1 filleul : thème Soft pour celui qui invite · 3 filleuls : tous les thèmes (les anciens filleuls gardent le thème déjà reçu)
 const refLink = () => S.me ? `${location.origin}${location.pathname}?ref=${encodeURIComponent(S.me.name.toLowerCase())}` : '';
-async function shareRef(){ const url=refLink(); const data={title:'Coopô',text:`Rejoins-moi sur Coopô pour trouver des mates de jeu : avec mon lien, on gagne tous les deux un thème.`,url};
+async function shareRef(){ const url=refLink(); const data={title:'Coopô',text:`Rejoins-moi sur Coopô pour trouver des mates de jeu : inscris-toi avec mon lien.`,url};
   shareOrCopy(data,'Lien de parrainage copié'); }
 // Partage du téléphone si disponible, sinon copie ; en dernier recours, une fenêtre montre le lien à copier
 async function shareOrCopy(data,okMsg){
@@ -3596,7 +3602,7 @@ async function shareOrCopy(data,okMsg){
 function refSection(){
   if(!S.me) return '';
   const rw=S.rewards||{}, n=rw.referrals||0;
-  return `<section class="panel ref-panel"><h3>Parraine tes amis</h3><p class="hint">Partage ton lien. Quand un ami crée son compte avec, vous recevez <b>tous les deux le thème ${esc(SKINS[REF_REWARD.one].label)}</b>. À ${REF_REWARD.all} amis parrainés, tu débloques <b>tous les thèmes</b>.</p>
+  return `<section class="panel ref-panel"><h3>Parraine tes amis</h3><p class="hint">Partage ton lien. Quand un ami crée son compte avec, tu reçois <b>le thème ${esc(SKINS[REF_REWARD.one].label)}</b>. À ${REF_REWARD.all} amis parrainés, tu débloques <b>tous les thèmes</b>.</p>
     <div class="ref-row"><input class="ref-link" readonly value="${esc(refLink())}" aria-label="Ton lien de parrainage"><button class="btn btn-ac" type="button" id="ref-share">Partager</button></div>
     <div class="ref-stats"><b>${n}</b> ami${n>1?'s':''} parrainé${n>1?'s':''}${n>=REF_REWARD.all?' · tous les thèmes débloqués 🎉':n>0?' · thème '+esc(SKINS[REF_REWARD.one].label)+' débloqué':''}${rw.referred?' · tu as été parrainé : thème '+esc(SKINS[REF_REWARD.one].label)+' offert':''}</div></section>`;
 }
@@ -3908,7 +3914,7 @@ function viewAuth(mode){
       <ol class="auth-steps">${STEPS.map((t,i)=>`<li style="--i:${i}" ${su&&i===0?'class="on" aria-current="step"':''}><span>${i+1}</span>${t}</li>`).join('')}</ol>
     </aside>
     <section class="auth-form">
-      ${(()=>{ let r=''; try{ r=localStorage.getItem('coopo_ref')||''; }catch(e){} return su&&r?`<div class="invite-banner"><span class="ib-gift" aria-hidden="true">🎁</span><div><b>${esc(r)} t'invite sur Coopô</b><span>Crée ton compte : vous gagnez tous les deux le thème ${esc(SKINS[REF_REWARD.one].label)}.</span></div></div>`:''; })()}
+      ${(()=>{ let r=''; try{ r=localStorage.getItem('coopo_ref')||''; }catch(e){} return su&&r?`<div class="invite-banner"><span class="ib-gift" aria-hidden="true">🎁</span><div><b>${esc(r)} t'invite sur Coopô</b><span>Crée ton compte pour jouer avec ${esc(r)} et trouver d'autres mates.</span></div></div>`:''; })()}
       <div class="auth-head"><h2>${su?'Créer un compte':'Connexion'}</h2>
         <p>${su?'Entre tes infos pour créer ton compte.':'Connecte-toi pour retrouver ton profil.'}</p></div>
       <div class="gbtn"></div>
@@ -3951,7 +3957,7 @@ function authErr(err){
   if(c==='auth/invalid-email') return {mail:'Adresse e-mail invalide.'};
   if(c==='auth/weak-password') return {pw:'Mot de passe trop faible.'};
   if(['auth/invalid-credential','auth/wrong-password','auth/user-not-found','auth/invalid-login-credentials'].includes(c)) return {pw:'E-mail ou mot de passe incorrect.'};
-  if(c==='auth/too-many-requests') return {pw:'Trop de tentatives. Réessaie dans quelques minutes.'};
+  if(c==='auth/too-many-requests') return {pw:'Trop de tentatives. La connexion est bloquée un moment : réessaie plus tard ou utilise « Mot de passe oublié ».'};
   if(c==='auth/network-request-failed') return {mail:OFFLINE_MSG};
   if(c==='auth/user-disabled') return {mail:'Ce compte a été désactivé.'};
   return {pw:'Une erreur est survenue. Réessaie.'};
@@ -3984,17 +3990,38 @@ async function doSignup(){
   }catch(err){ if(!/^auth\//.test(String(err&&err.code))) console.error(err); showErrs(authErr(err)); }
   finally{ SIGNUP=null; busy(false); }
 }
+/* Trop d'essais de connexion ratés : on bloque la connexion à ce compte sur cet appareil pendant quelques heures.
+   (Firebase bloque aussi de son côté les essais répétés, quel que soit l'appareil.) */
+const LOGIN_MAX=5, LOGIN_LOCK_H=3, LOGIN_WINDOW_MIN=30;
+const loginTries = () => { try{ return JSON.parse(localStorage.getItem('coopo_login_tries')||'{}')||{}; }catch(e){ return {}; } };
+const loginTriesSave = t => { try{ localStorage.setItem('coopo_login_tries',JSON.stringify(t)); }catch(e){} };
+function loginLockedUntil(mail){ const r=loginTries()[mail]; return r&&r.until>Date.now()?r.until:0; }
+function loginLockMsg(until){ const min=Math.max(1,Math.ceil((until-Date.now())/60e3)); const h=Math.floor(min/60), m=min%60;
+  return `Trop d'essais ratés. La connexion à ce compte est bloquée pendant encore ${[h?h+' h':'',m?m+' min':''].filter(Boolean).join(' ')}. Tu peux aussi utiliser « Mot de passe oublié ».`; }
+function loginFailed(mail){ const t=loginTries(), now=Date.now(); let r=t[mail];
+  if(!r||now-r.first>LOGIN_WINDOW_MIN*60e3) r={n:0,first:now,until:0};
+  r.n++; if(r.n>=LOGIN_MAX){ r.until=now+LOGIN_LOCK_H*3600e3; r.n=0; r.first=now; }
+  Object.keys(t).forEach(k=>{ if(k!==mail&&!(t[k].until>now)&&now-t[k].first>LOGIN_WINDOW_MIN*60e3) delete t[k]; });   // ménage des vieux compteurs
+  t[mail]=r; loginTriesSave(t); return r; }
+function loginOk(mail){ const t=loginTries(); if(t[mail]){ delete t[mail]; loginTriesSave(t); } }
 async function doLogin(){
   const mail=aval('a-mail').toLowerCase(), pw=document.getElementById('a-pw').value, e={};
   if(!MAIL_RE.test(mail)) e.mail='Entre une adresse e-mail valide.';
   if(!pw) e.pw='Entre ton mot de passe.';
   if(showErrs(e)) return;
+  const locked=loginLockedUntil(mail); if(locked){ showErrs({pw:loginLockMsg(locked)}); return; }
   busy(true);
   try{
-    if(AUTH_LIVE){ if(!(await authReady())){ showErrs({mail:OFFLINE_MSG}); return; } await firebase.auth().signInWithEmailAndPassword(mail,pw); }
+    if(AUTH_LIVE){ if(!(await authReady())){ showErrs({mail:OFFLINE_MSG}); return; } await firebase.auth().signInWithEmailAndPassword(mail,pw); loginOk(mail); }
     else { const acc=S.accounts[mail]; if(!acc){ showErrs({mail:'Aucun compte avec cet e-mail.'}); return; }
       onSignedIn({ uid:acc.uid, name:acc.name, email:mail, photo:'', provider:'password' }); }
-  }catch(err){ if(!/^auth\//.test(String(err&&err.code))) console.error(err); showErrs(authErr(err)); }
+  }catch(err){ if(!/^auth\//.test(String(err&&err.code))) console.error(err);
+    const c=String(err&&err.code||'');
+    if(['auth/invalid-credential','auth/wrong-password','auth/user-not-found','auth/invalid-login-credentials'].includes(c)){
+      const r=loginFailed(mail);
+      if(r.until>Date.now()){ showErrs({pw:loginLockMsg(r.until)}); return; }
+      const left=LOGIN_MAX-r.n; showErrs({pw:`E-mail ou mot de passe incorrect.${left<=2?` Encore ${left} essai${left>1?'s':''} avant un blocage de ${LOGIN_LOCK_H} heures.`:''}`}); return; }
+    showErrs(authErr(err)); }
   finally{ busy(false); }
 }
 async function forgotPw(){
@@ -4457,7 +4484,7 @@ function newAnnonce(){
   if(!S.me){ location.hash='#/inscription'; return; }
   if(annoncesAll().filter(isMine).length>=MAX_ANNONCES){ toast(`Tu as déjà ${MAX_ANNONCES} annonces en cours. Retires-en une pour en publier une nouvelle.`); return; }
   const games=S.me.games.length?S.me.games:GAMES.slice(0,8);
-  modal(`<h3>Publier une annonce</h3><p class="muted">Les joueurs de ta tranche d'âge la verront dans Annonces. Elle disparaît toute seule après la partie.</p>
+  modal(`<h3>Publier une annonce</h3><p class="muted">Les joueurs la verront dans Annonces. Elle disparaît toute seule après la partie.</p>
     <div class="form" style="margin-top:12px">
     <div class="two"><div class="field"><label for="an-g">Jeu</label><select id="an-g">${games.map(g=>`<option value="${esc(g)}">${esc(g)}</option>`).join('')}</select></div>
       <div class="field"><label for="an-n">Je cherche</label><select id="an-n">${[1,2,3,4,5].map(n=>`<option value="${n}" ${n===2?'selected':''}>${n} joueur${n>1?'s':''}</option>`).join('')}</select></div></div>
@@ -4739,7 +4766,7 @@ function viewOnboard(){
       else { btn.disabled=false; btn.textContent='Voir mes matchs'; err.textContent="Ton profil n'a pas pu être enregistré. Vérifie ta connexion et réessaie."; }
       return; }
     if(typeof demoScheduleIncoming==='function') demoScheduleIncoming();
-    OB=null; toast(DB._refWait?'Profil créé ! Vérifie ton e-mail pour recevoir ton thème offert.':'Profil créé, bienvenue !');
+    OB=null; toast(DB._refWait?'Profil créé ! Vérifie ton e-mail pour valider l\'invitation de ton ami.':'Profil créé, bienvenue !');
     let next='#/matchs'; try{ next=sessionStorage.getItem('coopo_after_profile')||sessionStorage.getItem('coopo_after_login')||'#/matchs'; sessionStorage.removeItem('coopo_after_profile'); sessionStorage.removeItem('coopo_after_login'); }catch(x){}
     location.hash=next; };
 }
@@ -4980,11 +5007,15 @@ const DB = {
   // Enregistre le profil en ligne. Renvoie true si c'est fait ; sinon false, et _saveErr dit pourquoi ('name' = pseudo déjà pris).
   async saveProfile(me){ if(!this.live){ if(!AUTH_LIVE) return true; if(!(await this.ready())){ this._saveErr='offline'; return false; } } const uid=this.uid(), db=this.db; const {dob,id,age,...pub}=me; const lower=me.name.toLowerCase(); this._saveErr='';
     try{ const ref=db.collection('profiles').doc(uid); const cur=await ref.get().catch(()=>null); const isNew=!(cur&&cur.exists), oldLower=cur&&cur.exists?String(cur.data().nameLower||cur.data().name||'').toLowerCase():'';
+      // Pseudo : un seul changement tous les 14 jours (les comptes qui n'ont jamais changé de pseudo peuvent le faire tout de suite)
+      const renamed=!isNew&&!!oldLower&&oldLower!==lower, lastName=!isNew?(+cur.data().nameAt||0):0;
+      if(renamed&&lastName&&Date.now()-lastName<NAME_WAIT_DAYS*864e5){ this._saveErr='nameWait'; this._nameAt=lastName; return false; }
       try{ await db.collection('usernames').doc(lower).set({uid}); }   // en premier : si le pseudo appartient à un autre compte, rien d'autre n'est écrit
       catch(e){ if(String(e&&e.code).includes('permission')){ this._saveErr='name'; return false; } throw e; }
       await db.collection('private').doc(uid).set({dob,tags:me.tags||{},updatedAt:Date.now()},{mergeFields:['dob','tags','updatedAt']});
       const {banned,hidden,rejoue,moderator,dispo,skin,discord,discordPublic,whatsapp,socials,...safe}=pub;
       const data={...safe,tags:S.privacy.tags?(me.tags||{}):{},nameLower:lower,ageGroup:ageGroup(me),privacy:{tags:!!S.privacy.tags,online:!!S.privacy.online},online:!!S.privacy.online,lastSeen:S.privacy.online?Date.now():0,updatedAt:Date.now()};
+      if(renamed) data.nameAt=Date.now(); else if(lastName) data.nameAt=lastName; else delete data.nameAt;
       if(isNew){ Object.assign(data,{banned:false,hidden:false,rejoue:0}); await ref.set(data); await this.applyReferral(); await this.loadAll(); }
       else { const FD=firebase.firestore.FieldValue.delete();
         await ref.update({...data,discord:FD,discordPublic:FD});   // update remplace chaque champ en entier : un rang, un pseudo en jeu ou une photo retirés disparaissent vraiment
@@ -5131,14 +5162,14 @@ const DB = {
   async applyReferral(){ if(!this.live||!this.uid()||!S.me) return; let code=''; try{ code=(localStorage.getItem('coopo_ref')||'').toLowerCase(); }catch(e){} if(!code) return;
     const drop=()=>{ this._refWait=false; try{ localStorage.removeItem('coopo_ref'); }catch(e){} };
     if(code===S.me.name.toLowerCase()||(S.rewards&&S.rewards.referred)){ drop(); return; }
+    try{ const done=await this.db.collection('referrals').doc(this.uid()).get(); if(done.exists){ drop(); return; } }catch(e){}   // déjà parrainé : une seule fois
     try{ const u=firebase.auth().currentUser;
       if(u&&!u.emailVerified){ await u.reload().catch(()=>{}); if(!u.emailVerified){ this._refWait=true; return; } await u.getIdToken(true).catch(()=>{}); }
       const un=await this.db.collection('usernames').doc(code).get(); if(!un.exists||un.data().uid===this.uid()){ drop(); return; }
       const by=un.data().uid, db=this.db, b=db.batch();
       b.set(db.collection('referrals').doc(this.uid()),{by,byName:code,at:Date.now()});
       b.set(db.collection('rewards').doc(by),{referrals:firebase.firestore.FieldValue.increment(1)},{merge:true});
-      b.set(db.collection('rewards').doc(this.uid()),{referred:true},{merge:true});
-      await b.commit(); drop(); S.rewards={...(S.rewards||{}),referred:true}; save(); toast(`Parrainage validé : le thème ${SKINS[REF_REWARD.one].label} est à toi !`); }
+      await b.commit(); drop(); }   // seul celui qui invite reçoit le thème (les filleuls d'avant gardent le leur)
     catch(e){ console.error(e); drop(); } },
   async loadPurchases(){ if(!this.live||!this.uid()) return; try{ const d=await this.db.collection('purchases').doc(this.uid()).get(); const x=d.exists?d.data():{}; S.owned={pack:!!x.pack,themes:Array.isArray(x.themes)?x.themes:[],plates:Array.isArray(x.plates)?x.plates:[]}; const r=await this.db.collection('rewards').doc(this.uid()).get(); S.rewards=r.exists?r.data():{}; save(); }catch(e){ console.error(e); } },
   async loadReports(){ if(!this.live) return; const db=this.db;
