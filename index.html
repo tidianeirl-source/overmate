@@ -3550,8 +3550,8 @@ document.addEventListener('click',e=>{
 /* ---- Notifications de l'appareil (quand Coopô est ouverte en arrière-plan) ---- */
 async function deviceNotify(n){
   try{ if(!('Notification' in window)||Notification.permission!=='granted'||!S.notifyOn) return; if(!document.hidden) return;
-    const title=n.type==='request'?'Nouvelle demande de mate':n.type==='message'?'Nouveau message':n.type==='annonce'?'Réponse à ton annonce':'Coopô';
-    const opt={ body:String(n.text||'').slice(0,120), icon:'icons/icon-192.png', badge:'icons/icon-192.png', tag:'coopo-'+(n.type||'n'), data:{url:location.origin+location.pathname+(n.type==='message'?'#/messages':'#/matchs')} };
+    const title=n.type==='request'?'Nouvelle demande de mate':n.type==='message'?'Nouveau message':n.type==='annonce'?'Réponse à ton annonce':n.type==='flame'?'Ta flamme va s\'éteindre':n.type==='group'?'Invitation dans un groupe':'Coopô';
+    const opt={ body:String(n.text||'').slice(0,120), icon:'icons/icon-192.png', badge:'icons/icon-192.png', tag:'coopo-'+(n.type||'n'), data:{url:location.origin+location.pathname+(n.type==='message'||n.type==='flame'?'#/messages':n.type==='group'?'#/groupes/groupes':'#/matchs')} };
     const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration(); if(reg) reg.showNotification(title,opt); else new Notification(title,opt);
   }catch(e){} }
 function notifySettingHTML(){
@@ -4235,7 +4235,8 @@ function newSquad(){
    - both = dernier jour où les DEUX ont écrit ; count = nombre de jours d'affilée à ce moment-là.
    ========================================================= */
 const FLAME_STEPS=[10,30,100,365], FLAME_FROM=2, FLAME_WARN_HOUR=18;   // la flamme s'affiche à partir de 2 jours ; sablier à partir de 18 h si la journée n'est pas validée
-const dayNow = () => Math.floor(Date.now()/86400000);
+let DAY_SHIFT=0;   // si l'horloge du téléphone est fausse, le serveur refuse la flamme : on se recale d'un jour (voir DB.sendMessage)
+const dayNow = () => Math.floor(Date.now()/86400000)+DAY_SHIFT;
 function flameState(id){ const s=(S.streaks||{})[id]; if(!s||!AUTH_LIVE) return null; const t=dayNow(), me=DB.uid();
   const alive=s.both>=t-1&&s.count>0, done=s.both===t, mine=(s.last||{})[me]===t, his=(s.last||{})[id]===t;
   return { count:alive?s.count:0, alive, done, mine, his, warn:alive&&!done&&new Date().getUTCHours()>=FLAME_WARN_HOUR }; }
@@ -4262,7 +4263,7 @@ function flameCheck(){ if(!AUTH_LIVE||!S.me||new Date().getUTCHours()<FLAME_WARN
   Object.keys(S.streaks||{}).forEach(id=>{ const f=flameState(id), p=PLAYERS.find(x=>x.id===id); if(!f||!p||!isMate(id)||f.count<FLAME_FROM||f.done||f.mine||S.flameNudged[id]===t) return;
     S.flameNudged[id]=t; const n={type:'flame',from:id,text:`⏳ Ta flamme de ${f.count} jours avec ${p.name} s'éteint à minuit : écris-lui !`};
     notify({...n,toast:location.hash!=='#/messages/'+id}); deviceNotify(n); }); save(); }
-setInterval(()=>{ if(!document.hidden) flameCheck(); },20*60e3);
+setInterval(flameCheck,20*60e3);   // tourne aussi quand l'appli est en arrière-plan : c'est là que la notification du téléphone sert
 
 /* =========================================================
    GROUPES : des salons permanents avec discussion en temps réel
@@ -4830,13 +4831,19 @@ function viewAdmin(){
   const groups={}; S.reports.forEach(r=>{ (groups[r.id]||(groups[r.id]=[])).push(r); });
   const rows=Object.entries(groups).sort((a,b)=>b[1].length-a[1].length);
   app.innerHTML=`<div class="wrap page"><div class="page-head"><div><h2>Modération</h2><p>${S.reports.filter(r=>r.status==='open').length} signalement(s) à traiter · ${S.hidden.length} profil(s) masqué(s) · ${S.banned.length} banni(s)</p></div></div>
-    <div class="admin-stats"><div><b>${PLAYERS.length}</b><span>profils</span></div><div><b>${PLAYERS.filter(p=>isOnline(p)).length}</b><span>en ligne</span></div><div><b>${S.requests.filter(r=>r.status==='accepted').length}</b><span>paires de mates</span></div><div><b>${allSquads().length}</b><span>groupes</span></div></div>
+    <div class="admin-stats"><div><b>${PLAYERS.length}</b><span>profils</span></div><div><b>${PLAYERS.filter(p=>isOnline(p)).length}</b><span>en ligne</span></div><div><b>${S.requests.filter(r=>r.status==='accepted').length}</b><span>paires de mates</span></div><div><b>${allSquads().length}</b><span>sessions</span></div></div>
+    ${AUTH_LIVE&&SHOP.api?`<section class="panel admin-row"><div class="admin-head"><div><b>Anciens pseudos d'autres réseaux</b><span class="muted">Efface de la base les pseudos Discord, WhatsApp, Snapchat… de tous les joueurs, même ceux qui ne se sont pas reconnectés. Les comptes, les profils et les achats ne sont pas touchés.</span></div>
+      <div class="nact"><button class="btn btn-sm" id="purge-go">Tout effacer</button></div></div><p class="muted" id="purge-out" role="status"></p></section>`:''}
     ${rows.length?rows.map(([id,rs])=>{ const p=PLAYERS.find(x=>x.id===id); const hid=S.hidden.includes(id), ban=S.banned.includes(id), open=rs.filter(r=>r.status==='open').length;
       return `<section class="panel admin-row"><div class="admin-head">${p?avatar(p,44):''}<div><b>${p?esc(p.name)+modBadge(p):esc(id)}</b><span class="muted">${rs.length} signalement(s) · ${open} ouvert(s)${hid?' · <strong>masqué</strong>':''}${ban?' · <strong>banni</strong>':''}</span></div>
         <div class="nact">${ban?`<button class="btn btn-sm" data-unban="${esc(id)}">Lever le ban</button>`:`<button class="btn btn-sm ${hid?'':'btn-ghost'}" data-hide="${esc(id)}">${hid?'Rétablir':'Masquer'}</button><button class="btn btn-sm btn-danger" data-ban="${esc(id)}">Bannir</button>`}${open?`<button class="btn btn-sm" data-done="${esc(id)}">Marquer traité</button>`:''}</div></div>
         <ul class="admin-list">${rs.map(r=>`<li class="${r.status==='open'?'open':'done'}"><b>${esc(r.reason)}</b> ${r.details?'— '+esc(r.details):''} <small class="muted">${ago(r.at)} · ${r.status==='open'?'ouvert':'traité'}</small>
           ${r.messages&&r.messages.length?`<details class="rep-msgs"><summary>Derniers messages joints (${r.messages.length})</summary><div>${r.messages.map(m=>`<p class="${m.mine?'by-rep':'by-target'}"><b>${m.mine?'Signaleur':'Joueur signalé'} :</b> ${esc(m.text)}</p>`).join('')}</div>${r.by?`<button class="btn btn-sm btn-ghost" type="button" data-chat-by="${esc(r.by)}" data-chat-target="${esc(id)}">Voir la conversation complète</button><div class="rep-full"></div>`:''}</details>`:''}</li>`).join('')}</ul></section>`; }).join('')
       :'<div class="empty"><h3>Aucun signalement</h3><p class="muted">Tout est calme.</p></div>'}</div>`;
+  const pg=document.getElementById('purge-go'); if(pg) pg.onclick=async()=>{ const out=document.getElementById('purge-out'); pg.disabled=true; out.textContent='Effacement en cours…'; let c=0,p=0;
+    try{ if(!(DB.live&&DB.fns)) await DB.ready(); for(let k=0;k<25;k++){ const r=(await DB.fns.httpsCallable('purgeContacts')({})).data; c+=r.contacts||0; p+=r.profils||0; if(!r.encore) break; }
+      out.textContent=`Terminé : ${c} fiche(s) de pseudos supprimée(s), ${p} profil(s) nettoyé(s).`; }
+    catch(e){ out.textContent='Pas terminé : '+((e&&e.message)||'erreur')+' Réessaie plus tard.'; } pg.disabled=false; };
   app.querySelectorAll('[data-hide]').forEach(b=>b.onclick=()=>{ const id=b.dataset.hide; S.hidden=S.hidden.includes(id)?S.hidden.filter(x=>x!==id):[...S.hidden,id]; save(); DB.adminHide(id,S.hidden.includes(id)); viewAdmin(); });
   app.querySelectorAll('[data-ban]').forEach(b=>b.onclick=()=>modal(`<h3>Bannir ce compte ?</h3><p class="muted">Le profil disparaît pour tout le monde et le compte ne peut plus se connecter.</p><div class="dlg-actions"><button class="btn btn-ghost" data-close>Annuler</button><button class="btn btn-danger" id="bk">Bannir</button></div>`,
     d=>d.querySelector('#bk').onclick=()=>{ const id=b.dataset.ban; S.banned.push(id); DB.closeReports(id); S.reports.forEach(r=>{ if(r.id===id) r.status='done'; }); save(); DB.adminBan(id,true); d.close(); viewAdmin(); }));
@@ -5027,18 +5034,22 @@ const DB = {
   async loadReportedChat(by,target){ if(!this.live) return []; try{ const id=[by,target].sort().join('_'); const q=await this.db.collection('chats').doc(id).collection('messages').orderBy('at','desc').limit(30).get();
       const out=[]; q.forEach(d=>{ const m=d.data(); out.push({fromTarget:m.from===target,text:m.text,at:m.at}); }); return out.reverse(); }catch(e){ console.error(e); return null; } },
   // Flamme : ce que mon message d'aujourd'hui change dans streaks/{paire} (rien si j'ai déjà écrit aujourd'hui)
-  streakData(id){ const t=dayNow(), me=this.uid(), cur=(S.streaks||{})[id]||{}, last={...(cur.last||{})}; if(last[me]===t) return null;
+  streakData(id,shift){ const t=dayNow()+(shift||0), me=this.uid(), cur=(S.streaks||{})[id]||{}, last={...(cur.last||{})}; if(last[me]===t) return null;
     last[me]=t; let both=cur.both||0, count=cur.count||0;
     if(last[id]===t && both!==t){ count = both===t-1 ? count+1 : 1; both=t; }   // l'autre a déjà écrit aujourd'hui : la journée est validée
     return { members:[me,id].sort(), last, both, count }; },
   async sendMessage(id,m){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; const db=this.db;
     try{ const F=firebase.firestore.FieldValue, pair=this.pairId(id);
-      const mk=st=>{ const b=db.batch(); b.set(db.collection('chats').doc(pair).collection('messages').doc(),{from:this.uid(),text:m.text,at:m.at});
+      const mk=st=>{ const b=db.batch(), mref=db.collection('chats').doc(pair).collection('messages').doc(); b.set(mref,{from:this.uid(),text:m.text,at:m.at});
+        if(st) st.msg=mref.id;   // la flamme cite le message envoyé dans le même lot : sans vrai message, les règles la refusent
         b.set(db.collection('limits').doc(this.uid()),{lastMsg:F.serverTimestamp()},{merge:true});   // 1 message par seconde maximum
         if(st) b.set(db.collection('streaks').doc(pair),st); return b; };
-      let st=this.streakData(id);
-      try{ await mk(st).commit(); }
-      catch(e){ if(!st||!String(e&&e.code).includes('permission')) throw e; st=null; await mk(null).commit(); }   // flamme refusée (minuit vient de passer, règles pas encore publiées…) : le message part quand même
+      let st=this.streakData(id), sent=false;
+      // Le jour est celui du serveur (heure d'Abidjan). Si l'horloge du téléphone est décalée, on réessaie avec le jour d'après puis d'avant.
+      for(const sh of (st?[0,1,-1]:[])){ if(sh) st=this.streakData(id,sh); if(!st) break;
+        try{ await mk(st).commit(); sent=true; if(sh) DAY_SHIFT+=sh; break; }
+        catch(e){ if(!String(e&&e.code).includes('permission')) throw e; } }
+      if(!sent){ st=null; await mk(null).commit(); }   // flamme refusée (minuit vient de passer, règles pas encore publiées…) : le message part quand même
       if(st){ (S.streaks=S.streaks||{})[id]={last:st.last,both:st.both,count:st.count}; save(); flameMilestone(id); }
       if(!this._lastNotifTo||this._lastNotifTo[id]==null||Date.now()-this._lastNotifTo[id]>60000){ (this._lastNotifTo=this._lastNotifTo||{})[id]=Date.now(); await this.saveNotif(id,{type:'message',from:'me',text:`${S.me.name} : ${m.text.slice(0,80)}`}); }
     }catch(e){ console.error(e); toast(String(e&&e.code).includes('permission')?'Doucement : attends une seconde entre deux messages.':"Le message n'est pas parti, réessaie."); } },
