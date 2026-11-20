@@ -1875,7 +1875,7 @@ try{ document.documentElement.style.setProperty('--logo','url("'+LOGO_MASK+'")')
 .np-neon{ --np-bg:#0D0B1E; --np-tx:#7CFFCB; --np-bd:#7CFFCB; box-shadow:0 0 .55em rgba(124,255,203,.6); animation:npGlow 2.4s ease-in-out infinite; }
 /* motifs gaming */
 .np-pixel{ --np-tx:#C6F86A; --np-bd:#6E9424; border-radius:.2em; background:linear-gradient(rgba(255,255,255,.07) 50%,transparent 50%) 0 0/6px 6px, linear-gradient(90deg,rgba(255,255,255,.07) 50%,transparent 50%) 0 0/6px 6px, #1E2233; }
-.np-manette{ --np-tx:#fff; --np-bd:#9A7BFF; padding-inline:1.15em; background:radial-gradient(circle at .5em 50%,#FF5C7A 0 .17em,transparent .2em), radial-gradient(circle at calc(100% - .5em) 50%,#4FD1FF 0 .17em,transparent .2em), #2B1B5A; }
+.np-manette{ --np-tx:#fff; --np-bd:#9A7BFF; padding-inline:.95em; background:radial-gradient(circle at .42em 50%,#FF5C7A 0 .15em,transparent .18em), radial-gradient(circle at calc(100% - .42em) 50%,#4FD1FF 0 .15em,transparent .18em), #2B1B5A; }
 .np-circuit{ --np-tx:#6DF2C2; --np-bd:#239C78; background:linear-gradient(90deg,transparent 46%,rgba(109,242,194,.2) 46% 54%,transparent 54%) 0 0/14px 100%, linear-gradient(transparent 44%,rgba(109,242,194,.14) 44% 56%,transparent 56%) 0 0/100% 9px, #062A22; }
 .np-damier{ --np-tx:#FFD23F; --np-bd:#FFD23F; background:conic-gradient(#1F1F25 25%,#0E0E11 0 50%,#1F1F25 0 75%,#0E0E11 0) 0 0/10px 10px; }
 /* effets brillants : un reflet passe */
@@ -1917,7 +1917,7 @@ html.lite .np, html.lite .np::after{ animation:none !important; }
 html[data-skin] body .on-world{ color:#fff; text-shadow:var(--w-halo); }
 html[data-skin] body p.on-world{ color:rgba(255,255,255,.92); }
 .shop .page-head{ align-items:center; }
-.shop-cur{ min-width:170px; } .shop-cur label{ color:#fff; text-shadow:var(--w-halo); }
+.shop-cur{ display:flex; align-items:center; gap:8px; grid-template-columns:none; } .shop-cur label{ color:#fff; text-shadow:var(--w-halo); font-size:13px; } .shop-cur select{ min-height:38px; padding-top:4px; padding-bottom:4px; width:auto; max-width:200px; }
 .shop-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; }
 .shop-grid-wide{ grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr)); }
 .shop-sec{ margin-top:28px; } .shop-sec > h3{ font:var(--fdw) 20px/1.2 var(--fd); text-transform:var(--case); color:#fff; text-shadow:var(--w-halo); }
@@ -1976,7 +1976,8 @@ button.g-who{ cursor:pointer; font:inherit; color:inherit; text-align:left; min-
 /* ==== Flammes ==== */
 .flame{ display:inline-flex; align-items:center; gap:3px; flex:none; padding:1px 9px 1px 6px; border-radius:999px; background:#3A1404; color:#FFD9A8; font:700 13px/1.6 var(--fb); white-space:nowrap; text-shadow:none; }
 .flame b{ font:inherit; } .flame.warn{ background:#4A3A00; color:#FFE27A; animation:flamePulse 1.6s ease-in-out infinite; }
-#flame-top{ flex:none; } #flame-top:empty,.flame-hint:empty{ display:none; }
+.flame-hint:empty{ display:none; }
+.g-name{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .flame-hint{ margin:0 0 10px; padding:8px 12px; border-radius:var(--ri); background:rgba(var(--w-top),.66); border:1px solid rgba(255,255,255,.2); color:#fff; font-size:13px; line-height:1.4; }
 .flame-party{ display:grid; gap:8px; justify-items:center; text-align:center; } .flame-big{ font-size:64px; line-height:1.1; animation:flameDance 1.2s ease-in-out infinite; }
 @keyframes flamePulse{ 50%{ transform:scale(1.08); } }
@@ -3461,7 +3462,7 @@ function viewShop(tab){
   app.innerHTML=`<div class="wrap page shop"><div class="page-head"><div><h2>Boutique</h2><p>Thèmes et plaques nominatives pour personnaliser ton Coopô.</p></div>
       ${many?`<div class="field shop-cur"><label for="shop-cur">Devise</label><select id="shop-cur">${Object.entries(CURRENCIES).filter(([k])=>curOK(k)).map(([k,v])=>`<option value="${k}" ${k===curCode()?'selected':''}>${v.label}</option>`).join('')}</select></div>`:''}</div>
     <div class="chips board-tabs" role="tablist">${SHOP_TABS.map(([k,l])=>`<a class="chip" role="tab" href="#/boutique/${k}" aria-selected="${tab===k}" aria-pressed="${tab===k}">${l}</a>`).join('')}</div>
-    ${PAY.mode==='test'&&isAdmin()?TEST_NOTE:''}${body}</div>`;
+    ${PAY.mode==='test'&&isAdmin()?TEST_NOTE.replace('</div>','<button class="btn btn-sm" data-shop-buy="plate:rubis">Essayer un faux achat</button></div>'):''}${body}</div>`;
 }
 document.addEventListener('change',e=>{ if(e.target&&(e.target.id==='shop-cur'||e.target.id==='set-cur')){ S.currency=e.target.value; save(); const y=scrollY; route(); scrollTo(0,y); } });
 document.addEventListener('click',e=>{ const t=e.target;
@@ -4161,7 +4162,7 @@ function viewChat(id){
   const p=visible().find(x=>x.id===id);
   if(!p||!isMate(id)){ app.innerHTML=`<div class="wrap page"><div class="empty"><h3>Vous n'êtes pas encore mates</h3><p class="muted">Les messages s'ouvrent une fois la demande de mate acceptée.</p><a class="btn" href="#/messages">Retour aux messages</a></div></div>`; return; }
   S.unread[id]=0; { const seen=S.notifs.filter(n=>!n.read&&n.type==='message'&&n.from===id); seen.forEach(n=>n.read=true); DB.markRead(seen.map(n=>n.id)); } save(); renderNotifBadge();
-  app.innerHTML=`<div class="wrap page chat-page"><div class="chat-head">${backLink('#/messages','Messages')}<a class="chat-who" href="#/joueur/${p.id}">${avatar(p,44)}<div><b>${np(p)}${modBadge(p)}</b>${isOnline(p)?'<span class="online">En ligne</span>':'<span class="muted" style="font-size:12px">Hors ligne</span>'}</div></a><span id="flame-top">${flameTag(id)}</span></div>
+  app.innerHTML=`<div class="wrap page chat-page"><div class="chat-head">${backLink('#/messages','Messages')}<a class="chat-who" href="#/joueur/${p.id}">${avatar(p,44)}<div><b>${np(p)}${modBadge(p)}</b>${isOnline(p)?'<span class="online">En ligne</span>':'<span class="muted" style="font-size:12px">Hors ligne</span>'}</div></a></div>
     <p class="flame-hint" id="flame-hint"></p>
     <div class="chat-box" id="chatbox"></div>
     <form class="chat-form" id="chatform"><input type="text" id="chatin" placeholder="Écris un message…" maxlength="500" autocomplete="off"><button class="btn btn-ac" type="submit">Envoyer</button></form></div>`;
@@ -4189,7 +4190,7 @@ function renderChat(id){
   box.innerHTML = msgs.length ? msgs.map(m=>`<div class="bubble ${m.from==='me'?'me':''}"><span>${esc(m.text)}</span>${msgWarn(m)}<small>${ago(m.at)}</small></div>`).join('')
     : `<div class="chat-empty"><p class="muted">Première partie ensemble ? Propose un créneau 🎮</p><div class="chips">${QUICK_MSGS.map(t=>`<button type="button" class="chip" data-quick="${esc(t)}">${esc(t)}</button>`).join('')}</div></div>`;
   box.scrollTop=box.scrollHeight;
-  { const p=PLAYERS.find(x=>x.id===id), fh=document.getElementById('flame-hint'), ft=document.getElementById('flame-top'); if(fh) fh.innerHTML=flameHint(id,p?p.name:'Ton mate'); if(ft) ft.innerHTML=flameTag(id); }
+  { const p=PLAYERS.find(x=>x.id===id), fh=document.getElementById('flame-hint'); if(fh) fh.innerHTML=flameHint(id,p?p.name:'Ton mate'); }
 }
 
 /* ---- Sessions d'un soir (anciennes « escouades ») ---- */
@@ -4285,7 +4286,7 @@ function gAvatar(g,size=48){ if(g.image&&g.ageGroup!=='minor'&&/^data:image\/(pn
   let h=0; for(const c of String(g.id)) h=(h*31+c.charCodeAt(0))%360;
   return `<span class="av g-av" aria-hidden="true" style="width:${size}px;height:${size}px;--h:${h};font-size:${Math.round(size*.36)}px">${esc((g.name||'?').slice(0,2).toUpperCase())}</span>`; }
 const ROLE_TAG={ admin:'<em class="g-role admin">Admin</em>', mod:'<em class="g-role">Modo</em>' };
-const groupRow = g => `<a class="chat-row${gUnread(g)?' unread':''}" href="#/groupe/${esc(g.id)}">${gAvatar(g,52)}<div><b>${esc(g.name)}${g.private?' <span class="g-lock" title="Groupe privé">'+LOCK_SVG+'</span>':''}</b><span class="muted">${esc(g.game||'Tous les jeux')} · ${g.members.length} membre${g.members.length>1?'s':''}</span></div>${gUnread(g)?'<span class="badge static" aria-label="Nouveaux messages">•</span>':''}</a>`;
+const groupRow = g => `<a class="chat-row${gUnread(g)?' unread':''}" href="#/groupe/${esc(g.id)}">${gAvatar(g,52)}<div><b><span class="g-name">${esc(g.name)}</span>${g.private?' <span class="g-lock" title="Groupe privé">'+LOCK_SVG+'</span>':''}</b><span class="muted">${esc(g.game||'Tous les jeux')} · ${g.members.length} membre${g.members.length>1?'s':''}</span></div>${gUnread(g)?'<span class="badge static" aria-label="Nouveaux messages">•</span>':''}</a>`;
 
 function viewGroupsList(){
   const mine=GROUPS.filter(gIn).sort((a,b)=>tsMs(b.lastAt||b.at)-tsMs(a.lastAt||a.at)), inv=GROUPS.filter(g=>!gIn(g)&&(g.invited||[]).includes(myId())),
@@ -4652,7 +4653,7 @@ function viewLegal(kind){
     <h3>5. Modération et signalements</h3><p>Chaque utilisateur peut signaler ou bloquer un autre utilisateur. Les signalements sont examinés par l'équipe de modération. Un profil que tu signales disparaît aussitôt de ton côté ; l'équipe de modération décide ensuite de le masquer ou de bannir le compte pour tout le monde.</p>
     <h3>6. Responsabilité</h3><p>Coopô facilite la mise en relation mais n'organise pas les parties et n'est pas partie aux échanges entre utilisateurs. Reste prudent : ne partage jamais d'informations personnelles sensibles (adresse, école, numéro de téléphone) avec un inconnu.</p>
     <h3>7. Suppression du compte</h3><p>Tu peux supprimer ton compte à tout moment depuis les paramètres. Ton profil, tes données privées, tes contacts, tes demandes de mate, tes blocages, tes notifications, tes groupes, tes annonces et tes inscriptions aux tournois sont alors effacés, sauf obligation légale de conservation. Les messages que tu as déjà envoyés restent visibles par les mates qui les ont reçus.</p>
-    <h3>8. Thèmes payants</h3><p>Certains thèmes visuels sont payants, à l'unité ou en pack. Le paiement est traité par CinetPay (Mobile Money ou carte bancaire). Un thème acheté reste lié à ton compte tant qu'il existe. Les thèmes sont purement esthétiques et ne donnent aucun avantage pour la mise en relation. Les achats des utilisateurs de moins de 18 ans nécessitent l'accord d'un parent ou tuteur. Les conditions de remboursement sont détaillées dans la <a href="#/remboursement">politique de remboursement</a>.</p>
+    <h3>8. Boutique : thèmes et plaques</h3><p>Certains thèmes visuels et certaines plaques nominatives sont payants, à l'unité ou en pack. Le paiement passe par un prestataire de paiement agréé (Mobile Money) et chaque achat est vérifié par notre serveur avant d'être ajouté à ton compte. Tant que la mention « mode test » est affichée dans la boutique, aucun vrai paiement n'est possible. Un objet acheté reste lié à ton compte tant qu'il existe. Les thèmes et les plaques sont purement esthétiques et ne donnent aucun avantage pour la mise en relation. Les achats des utilisateurs de moins de 18 ans nécessitent l'accord d'un parent ou tuteur. Les conditions de remboursement sont détaillées dans la <a href="#/remboursement">politique de remboursement</a>.</p>
     <h3>9. Modifications</h3><p>Les présentes conditions peuvent évoluer ; tu seras informé des changements importants.</p>`
     :`
     <h3>1. Données collectées</h3><p>Pour créer ton compte : e-mail, pseudo, date de naissance, et, si tu utilises Google, ton nom et ta photo Google. Pour ton profil : jeux, pseudos et rangs en jeu, horaires, jours, style, plateformes, pays, langues. Coopô ne te demande aucun numéro de téléphone ni pseudo d'un autre réseau ; ceux qui avaient été enregistrés avant ont été effacés. Pour la communauté : tes annonces et tes inscriptions aux tournois. Pour le fonctionnement : demandes de mate, messages, signalements, blocages, notifications, ton statut « en ligne » et l'heure de ta dernière visite, ton avis « tu rejouerais avec lui ? » sur un joueur, et, si tu es venu par un lien de parrainage, le pseudo de ton parrain. Si tu nous écris par le formulaire de contact : ton message et l'e-mail que tu indiques.</p>
@@ -4661,7 +4662,7 @@ function viewLegal(kind){
     <h3>4. Hébergement</h3><p>Les données sont stockées sur Firebase, un service de Google Cloud. Elles sont protégées par des règles d'accès : ton e-mail et ta date de naissance ne sont lisibles que par toi et par la modération.</p>
     <h3>5. Conservation</h3><p>Les données sont conservées tant que le compte existe, puis supprimées. Les messages que tu as envoyés restent visibles par les mates qui les ont reçus. Les signalements peuvent être conservés anonymisés pour la sécurité du service.</p>
     <h3>6. Tes droits</h3><p>Tu peux consulter, modifier et supprimer tes données depuis ton compte, ou en nous écrivant via le formulaire <a href="#/contact">Nous écrire</a>. Les utilisateurs mineurs peuvent exercer ces droits avec un parent ou tuteur. En Côte d'Ivoire, tu peux aussi saisir l'ARTCI, l'autorité chargée de la protection des données personnelles.</p>
-    <h3>7. Paiements</h3><p>Les paiements sont traités par CinetPay. Coopô ne reçoit ni ton numéro de carte ni ton code Mobile Money ; nous conservons uniquement la référence de la transaction, l'article acheté, le montant et son statut.</p>
+    <h3>7. Paiements</h3><p>Les paiements sont traités par un prestataire de paiement agréé, dont le nom est indiqué sur la page de paiement. Coopô ne reçoit ni ton numéro de carte ni ton code Mobile Money ; nous conservons uniquement la référence de la transaction, l'article acheté, le montant et son statut.</p>
     <h3>8. Cookies</h3><p>Le site utilise uniquement le stockage nécessaire au fonctionnement (session, thème choisi). Pas de cookies publicitaires ni de mesure d'audience. Pour afficher le site plus vite, une copie des données que tu as déjà consultées (liste des joueurs, messages) est gardée dans ton navigateur ; elle est effacée quand tu te déconnectes ou quand tu vides les données du site. Le détail est dans la <a href="#/cookies">politique de cookies</a>.</p>
     <h3>9. Sécurité</h3><p>Les échanges avec le site sont chiffrés (HTTPS). Les mots de passe sont gérés par Firebase Authentication : nous ne les voyons jamais. L'accès aux données est limité par des règles côté serveur, et seule l'équipe de modération peut consulter les signalements. Aucun système n'est infaillible : choisis un mot de passe unique, vérifie ton adresse e-mail et ne partage jamais tes identifiants. Dans les messages, les numéros de téléphone sont bloqués pour les 15-17 ans et un avertissement s'affiche sur les liens reçus.</p>
     <h3>10. Modifications</h3><p>Cette politique peut évoluer avec le site. La date de mise à jour est indiquée en haut de la page et tu seras informé des changements importants.</p>`}
@@ -4776,7 +4777,7 @@ function viewCookies(){
     <p><b>Copie locale des données</b> : pour un affichage plus rapide, les données déjà consultées (liste des joueurs, messages) sont gardées dans ton navigateur.</p>
     <p><b>Connexion avec Google</b> : si tu choisis ce mode de connexion, Google dépose ses propres cookies pendant l'identification, selon sa politique de confidentialité.</p>
     <p><b>Polices d'écriture</b> : les polices sont chargées depuis Google Fonts ; ton adresse IP est donc transmise à Google lors de ce chargement, sans cookie.</p>
-    <p><b>Paiement</b> : lors d'un achat, la page de paiement CinetPay peut utiliser ses propres cookies, nécessaires à la transaction.</p>
+    <p><b>Paiement</b> : lors d'un achat, la page du prestataire de paiement peut utiliser ses propres cookies, nécessaires à la transaction.</p>
     <h3>Comment les supprimer</h3><p>Te déconnecter efface ta session. Tu peux aussi effacer les données du site dans les réglages de ton navigateur (rubrique « Données des sites » ou « Cookies »). Tu devras alors te reconnecter et rechoisir ton thème.</p>
     <h3>Évolution</h3><p>Si un jour nous ajoutons un outil de mesure d'audience ou de publicité, nous te demanderons ton accord avant de l'activer.</p>
   </div>`;
@@ -4791,7 +4792,7 @@ function viewRefund(){
     <p><b>Paiement débité sans déblocage</b> : si le thème n'apparaît pas sur ton compte, nous le débloquons ou nous te remboursons, au choix.</p>
     <p><b>Double paiement ou mauvais montant</b> : la somme payée en trop t'est rendue.</p>
     <p><b>Achat d'un mineur sans accord parental</b> : un parent ou tuteur peut demander l'annulation de l'achat.</p>
-    <h3>Comment faire la demande</h3><p>Écris-nous via <a href="#/contact">Nous écrire</a> en indiquant la référence de la transaction (elle commence par <b>OM</b> et figure dans ton reçu CinetPay), ton pseudo et le motif. Nous répondons sous 7 jours. Le remboursement est versé sur le moyen de paiement utilisé lors de l'achat (numéro Mobile Money ou carte bancaire).</p>
+    <h3>Comment faire la demande</h3><p>Écris-nous via <a href="#/contact">Nous écrire</a> en indiquant la référence de la transaction (elle commence par <b>OM</b> et s'affiche sur la page « Paiement » après ton achat), ton pseudo et le motif. Nous répondons sous 7 jours. Le remboursement est versé sur le moyen de paiement utilisé lors de l'achat (numéro Mobile Money ou carte bancaire).</p>
     <h3>Compte supprimé ou banni</h3><p>Les thèmes sont liés à ton compte. Si tu supprimes ton compte, ils sont perdus et ne sont pas remboursés au-delà des 14 jours. En cas de bannissement pour non-respect des règles, les achats ne sont pas remboursés.</p>
   </div>`;
 }
