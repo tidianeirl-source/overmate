@@ -718,6 +718,39 @@ input.invalid{ border-color:var(--lo) !important; animation:shake .35s; }
 .bubble.me{ align-self:flex-end; background:var(--pk); color:var(--on-pk); border-color:var(--pk); border-radius:18px 18px 4px 18px; }
 .bubble small{ font-size:11px; opacity:.85; } .bubble.me small{ opacity:1; } .bubble span{ overflow-wrap:anywhere; }
 .chat-form{ display:flex; gap:8px; margin-top:12px; }
+/* Messages sur téléphone : une seule liste pleine largeur (mates et groupes mélangés, le plus récent en haut),
+   des filtres en haut, et sous chaque nom l'état du dernier message. */
+.page-head.sn-top{ display:flex; flex-direction:row; flex-wrap:nowrap; align-items:center; gap:10px; margin-bottom:10px; }
+.page-head.sn-top > div:first-child{ flex:1 1 0; min-width:0; } .sn-top h2{ margin:0; }
+.sn-round{ flex:none; width:44px; height:44px; padding:0; border-radius:50%; display:grid; place-items:center; } .sn-round svg{ width:20px; height:20px; }
+.sn-search{ width:100%; margin-bottom:10px; } .sn-search[hidden]{ display:none; }
+.sn-chips{ display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; margin:0 -22px 12px; padding:2px 22px; } .sn-chips::-webkit-scrollbar{ display:none; }
+.sn-chips .chip{ flex:none; white-space:nowrap; }
+.sn-list{ background:var(--s1); border:1px solid var(--hair); border-radius:var(--rc); overflow:hidden; }
+.sn-row{ display:grid; grid-template-columns:56px minmax(0,1fr) auto; gap:12px; align-items:center; padding:11px 14px; text-decoration:none; color:inherit; min-height:78px; }
+.sn-row + .sn-row{ border-top:1px solid var(--hair); } .sn-row[hidden]{ display:none; }
+.sn-row:active{ background:var(--hair); }
+.sn-av{ position:relative; width:56px; height:56px; } .sn-av > *:first-child{ border-radius:50% !important; } .sn-row.grp .sn-av > *:first-child{ border-radius:18px !important; }
+.sn-av .online{ position:absolute; right:0; bottom:0; width:14px; height:14px; border:2.5px solid var(--s1); box-sizing:border-box; }
+.sn-mid{ display:grid; gap:3px; min-width:0; } .sn-mid b{ display:flex; align-items:center; gap:6px; min-width:0; font-size:17px; line-height:1.2; } .sn-mid b > span:first-child{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
+.sn-st{ display:flex; align-items:center; gap:6px; min-width:0; font-size:13px; color:var(--mut,inherit); opacity:.9; white-space:nowrap; overflow:hidden; }
+.sn-st i{ flex:none; width:12px; height:12px; border-radius:3px; border:2px solid currentColor; box-sizing:border-box; } .sn-st .t{ flex:none; }
+.sn-st.new{ color:var(--pk); opacity:1; font-weight:700; } .sn-st.new i{ background:currentColor; }
+.sn-st.sent i{ width:0; height:0; border:6px solid transparent; border-left:10px solid currentColor; border-right:0; border-radius:0; }
+.sn-st .x{ flex:0 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; opacity:.8; font-weight:500; color:var(--mut,inherit); }
+.sn-end{ display:grid; place-items:center; min-width:28px; opacity:.55; } .sn-end svg{ width:22px; height:22px; } .sn-row.unread .sn-end{ opacity:1; }
+.sn-none{ padding:22px 16px; text-align:center; }
+.sn-fab{ position:fixed; right:18px; bottom:calc(104px + env(safe-area-inset-bottom,0px)); z-index:30; width:58px; height:58px; padding:0; border-radius:50%; display:grid; place-items:center; box-shadow:0 8px 22px rgba(0,0,0,.28); } .sn-fab svg{ width:24px; height:24px; }
+@media (min-width:1000px){ .sn-fab{ display:none; } }
+/* Conversation sur téléphone : le champ, le micro et l'envoi tiennent dans une seule barre arrondie */
+@media (max-width:999px){
+  .chat-form{ gap:4px; padding:5px; border-radius:999px; background:var(--field); border:1.5px solid var(--line); align-items:center; }
+  .chat-form > input{ flex:1 1 0; min-width:0; border:0 !important; background:none !important; box-shadow:none !important; padding-left:14px; }
+  .chat-form > input:focus{ outline:none; } .chat-form:focus-within{ border-color:var(--pk); }
+  .chat-form .mic-btn{ background:none; border:0; box-shadow:none; color:var(--pk); }
+  .chat-form > .btn-ac{ border-radius:999px; min-height:44px; }
+  .chat-form .rec-bar{ border:0; background:none; padding-left:12px; }
+}
 /* Messages sur ordinateur, façon messagerie : la liste des conversations à gauche, la conversation en grand à droite.
    Sur téléphone, rien ne change : la colonne de gauche est cachée et .dm-shell ne fait rien. */
 .dm-shell{ display:contents; } .dm-side, .dm-empty, .dm-rail{ display:none; }
@@ -4254,17 +4287,41 @@ const dmRefresh = () => { const sd=document.getElementById('dm-side'); if(sd&&sd
 // Place la colonne à la bonne hauteur : juste sous l'en-tête du site, jusqu'en bas de la fenêtre
 function dmFit(){ const sh=document.querySelector('.dm-shell'); if(!sh) return; const top=sh.getBoundingClientRect().top+window.scrollY; sh.style.setProperty('--dm-top',Math.round(top+24)+'px'); const on=sh.querySelector('.dm-row.on'); if(on&&on.scrollIntoView) on.scrollIntoView({block:'nearest'}); }
 window.addEventListener('resize',dmFit);
+/* Liste des messages sur téléphone : mates et groupes dans une seule liste, avec l'état du dernier message. */
+const CHAT_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>';
+const shortAgo = t => ago(t).replace('il y a ','');
+function snList(mates){
+  const groups=GROUPS.filter(gIn);
+  const items=[...mates.map(p=>({k:'c',p,at:(lastMsg(p.id)||{}).at||0})),...groups.map(g=>({k:'g',g,at:tsMs(g.lastAt||g.at)}))].sort((x,y)=>y.at-x.at);
+  const nU=mates.filter(p=>S.unread[p.id]).length+groups.filter(gUnread).length;
+  const rows=items.map(it=>{
+    if(it.k==='g'){ const g=it.g, u=gUnread(g);
+      return `<a class="sn-row grp${u?' unread':''}" href="#/groupe/${esc(g.id)}" data-f="group${u?' unread':''}" data-n="${esc(g.name.toLowerCase())}"><span class="sn-av">${gAvatar(g,56)}</span><div class="sn-mid"><b><span>${esc(g.name)}</span>${g.private?'<span class="g-lock" title="Groupe privé">'+LOCK_SVG+'</span>':''}</b>
+        <span class="sn-st${u?' new':''}"><i></i><span class="t">${u?'Nouveaux messages':'Groupe'}</span><span class="x">${u&&g.lastAt?'· '+shortAgo(tsMs(g.lastAt)):`· ${g.members.length} membre${g.members.length>1?'s':''}${g.lastAt?' · '+shortAgo(tsMs(g.lastAt)):''}`}</span></span></div><span class="sn-end">${u?'<span class="badge static" aria-label="Nouveaux messages">•</span>':CHAT_SVG}</span></a>`; }
+    const p=it.p, last=lastMsg(p.id), u=S.unread[p.id]||0, f=flameState(p.id), on=isOnline(p), fl=f&&f.count>=FLAME_FROM;
+    const st=u?['new',u>1?`${u} nouveaux messages`:'Nouveau message']:!last?['','Dis bonjour 👋']:last.from==='me'?['sent','Envoyé']:['','Reçu'];
+    return `<a class="sn-row${u?' unread':''}" href="#/messages/${p.id}" data-f="${u?'unread ':''}${on?'online ':''}${fl?'flame':''}" data-n="${esc(String(p.name||'').toLowerCase())}"><span class="sn-av">${avatar(p,56)}${on?'<span class="online" title="En ligne"></span>':''}</span><div class="sn-mid"><b><span>${np(p)}</span>${modBadge(p)}</b>
+      <span class="sn-st ${st[0]}">${last||u?'<i></i>':''}<span class="t">${st[1]}</span><span class="x">${last?'· '+shortAgo(last.at):''}${fl?` · ${f.count} ${f.warn?'⏳':'🔥'}`:''}</span></span></div><span class="sn-end">${u?`<span class="badge static">${u}</span>`:CHAT_SVG}</span></a>`; }).join('');
+  const chip=(k,l,n)=>`<button type="button" class="chip" data-snf="${k}" aria-pressed="${k==='all'}">${l}${n?` <span class="cnt">${n}</span>`:''}</button>`;
+  return `<div class="page-head sn-top"><div><h2>Messages</h2></div><button class="btn sn-round" type="button" id="sn-find" aria-label="Chercher une conversation" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button><a class="btn sn-round" href="#/matchs" aria-label="Trouver de nouveaux mates" title="Trouver de nouveaux mates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9.5" cy="8" r="3.5"/><path d="M3 20c.5-3.5 3-5.5 6.5-5.5s6 2 6.5 5.5M19 7v6M16 10h6"/></svg></a></div>
+    <input class="sn-search" id="sn-q" type="search" placeholder="Chercher un mate ou un groupe" autocomplete="off" aria-label="Chercher un mate ou un groupe" hidden>
+    <div class="sn-chips" role="group" aria-label="Filtrer les conversations">${chip('all','Tous')}${chip('unread','Non lus',nU)}${chip('online','En ligne')}${chip('flame','Flammes 🔥')}${chip('group','Groupes')}</div>
+    ${items.length?`<div class="sn-list" id="sn-list">${rows}<p class="muted sn-none" id="sn-none" hidden>Aucune conversation ici.</p></div>`
+      :`<div class="empty"><h3>Pas encore de mates</h3><p class="muted">Envoie une demande à un joueur compatible. Dès qu'il accepte, vous pouvez discuter ici.</p><a class="btn btn-ac" href="#/matchs">Voir mes matchs</a></div>`}
+    <a class="btn btn-ac sn-fab" href="#/groupes/groupes" aria-label="Trouver ou créer un groupe" title="Trouver ou créer un groupe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></a>`; }
+function snWire(){ const list=document.getElementById('sn-list'), q=document.getElementById('sn-q'), find=document.getElementById('sn-find'); let f='all';
+  const apply=()=>{ if(!list) return; const t=(q&&!q.hidden?q.value:'').trim().toLowerCase(); let n=0;
+    list.querySelectorAll('.sn-row').forEach(r=>{ const ok=(f==='all'||(' '+r.dataset.f+' ').includes(' '+f+' '))&&(!t||r.dataset.n.includes(t)); r.hidden=!ok; if(ok) n++; });
+    const none=document.getElementById('sn-none'); if(none) none.hidden=n>0; };
+  document.querySelectorAll('[data-snf]').forEach(c=>c.onclick=()=>{ f=c.dataset.snf; document.querySelectorAll('[data-snf]').forEach(x=>x.setAttribute('aria-pressed',x===c)); apply(); });
+  if(find&&q){ find.onclick=()=>{ q.hidden=!q.hidden; find.setAttribute('aria-expanded',!q.hidden); if(q.hidden){ q.value=''; apply(); } else q.focus(); }; q.oninput=apply; } }
 function viewMessages(id){
   if(dataPending()) return loadingView('Messages');
   if(!S.me) return needProfile('Messages');
   if(id) return viewChat(id);
   const mates=matesList().sort((a,b)=>{ const la=lastMsg(a.id), lb=lastMsg(b.id); return (lb?lb.at:0)-(la?la.at:0); });
-  app.innerHTML=`<div class="dm-shell">${dmSide('')}<div class="dm-empty"><div><h3>Choisis une conversation</h3><p class="muted">Tes mates sont dans la colonne de gauche, tes groupes dans la barre tout à gauche.</p></div></div><div class="wrap page dm-list-page" style="max-width:720px"><div class="page-head"><div><h2>Messages</h2><p>Discute avec tes mates. Les messages sont réservés aux mates acceptés.</p></div></div>
-    ${mates.length?`<div class="chat-list">${mates.map(p=>{ const last=lastMsg(p.id), u=S.unread[p.id]||0;
-      return `<a class="chat-row${u?' unread':''}" href="#/messages/${p.id}">${avatar(p,52)}<div><b>${np(p)}${modBadge(p)}${isOnline(p)?' <span class="online"></span>':''}${flameTag(p.id)}</b><span class="muted">${last?esc((last.from==='me'?'Toi : ':'')+last.text):'Dis bonjour 👋'}</span></div>${u?`<span class="badge static">${u}</span>`:last?`<small class="muted">${ago(last.at)}</small>`:''}</a>`; }).join('')}</div>`
-    :`<div class="empty"><h3>Pas encore de mates</h3><p class="muted">Envoie une demande à un joueur compatible. Dès qu'il accepte, vous pouvez discuter ici.</p><a class="btn btn-ac" href="#/matchs">Voir mes matchs</a></div>`}
-    <h3 class="on-world g-h">Groupes</h3>${GROUPS.filter(gIn).length?`<div class="chat-list">${GROUPS.filter(gIn).sort((a,b)=>tsMs(b.lastAt||b.at)-tsMs(a.lastAt||a.at)).map(groupRow).join('')}</div>`:''}
-    <p style="margin-top:10px"><a class="btn btn-sm" href="#/groupes/groupes">${GROUPS.filter(gIn).length?'Tous les groupes':'Trouver ou créer un groupe'}</a></p></div></div>`;
+  app.innerHTML=`<div class="dm-shell">${dmSide('')}<div class="dm-empty"><div><h3>Choisis une conversation</h3><p class="muted">Tes mates sont dans la colonne de gauche, tes groupes dans la barre tout à gauche.</p></div></div><div class="wrap page dm-list-page" style="max-width:720px">${snList(mates)}</div></div>`;
+  snWire();
   dmFit();
 }
 function viewChat(id){
