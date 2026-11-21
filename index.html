@@ -2066,8 +2066,8 @@ const CONFIG = {
   noCommonGameCap: 40,
   minUsername: 3, maxUsername: 20, minPassword: 8,
   // Âge minimum pour utiliser le site
-  minAge: 15,
-  // Protection des mineurs : les 15-17 ans ne voient et ne sont vus que par des 15-17 ans,
+  minAge: 13,
+  // Protection des mineurs : les 13-17 ans ne voient et ne sont vus que par des 13-17 ans,
   // les adultes uniquement par des adultes.
   adultAge: 18, separateMinors: true,
 };
@@ -2199,7 +2199,7 @@ const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>
 const ring = (p,size='') => `<div class="ring ${size}${p>=80?' glow':''}" data-count="${p}" style="--p:${p};--c:${tier(p)}" role="img" aria-label="${p} % compatible"><span>${p}<small>%</small></span></div>`;
 function avatar(u,size=48){
   const a=u.avatar||{hue:260};
-  const minor = u.ageGroup==='minor' || (u.dob && ageGroup(u)==='minor');   // jamais de photo pour les 15-17 ans
+  const minor = u.ageGroup==='minor' || (u.dob && ageGroup(u)==='minor');   // jamais de photo pour les 13-17 ans
   if(a.src && !minor && /^data:image\/(png|jpeg|webp);base64,/.test(a.src)) return `<img class="av" src="${esc(a.src)}" alt="" loading="lazy" decoding="async" width="${size}" height="${size}" style="width:${size}px;height:${size}px">`;
   return `<span class="av" aria-hidden="true" style="width:${size}px;height:${size}px;--h:${(Number(a.hue)||0)%360};font-size:${Math.round(size*.36)}px">${esc((u.name||'?').slice(0,2).toUpperCase())}</span>`;
 }
@@ -2461,7 +2461,7 @@ function viewProfile(tab){
       </div>`}
       <div class="field"><span class="lbl">Avatar</span>
         <div class="avatar-pick" id="avpick">${hues.map(h=>`<button type="button" data-hue="${h}" aria-label="Avatar couleur ${h}" aria-pressed="${!draft.avatar.src&&draft.avatar.hue===h}">${avatar({name:draft.name||'Toi',avatar:{hue:h}},48)}</button>`).join('')}
-          ${ageGroup(draft)==='minor'?'<span class="hint">Les photos sont désactivées pour les 15-17 ans, pour ta sécurité.</span>':'<span class="btn btn-ghost btn-sm upload">Importer une image<input type="file" accept="image/*" id="f-av" aria-label="Importer une image d\'avatar"></span>'}
+          ${ageGroup(draft)==='minor'?'<span class="hint">Les photos sont désactivées pour les 13-17 ans, pour ta sécurité.</span>':'<span class="btn btn-ghost btn-sm upload">Importer une image<input type="file" accept="image/*" id="f-av" aria-label="Importer une image d\'avatar"></span>'}
           <span id="av-prev">${draft.avatar.src?avatar(draft,48):''}</span></div></div>
     </section>
     <section class="panel"><h3>Jeux joués</h3>
@@ -3128,7 +3128,7 @@ function groundSVG(id,W){
   let s='';
   if(id==='defaut'||id==='sombre'){
     const tree=(x,y,k)=>`<g transform="translate(${n0(x)} ${y}) scale(${k})" fill="${dk(.34)}" stroke="${dk(.34)}"><path d="M-9 0C-8-24-12-42-7-58C-16-63-26-67-31-77M-7-58C-6-67-10-76-5-84M-7-58C1-63 4-71 2-82M-7-58C6-58 18-63 26-73M9 0C8-24 11-42 7-58L-7-58Z" stroke-width="4" stroke-linecap="round"/><ellipse cx="-31" cy="-81" rx="14" ry="7"/><ellipse cx="-5" cy="-89" rx="11" ry="6"/><ellipse cx="4" cy="-85" rx="12" ry="6"/><ellipse cx="28" cy="-77" rx="15" ry="7"/></g>`;
-    const house=(x,y)=>`<g transform="translate(${n0(x)} ${y})"><path d="M-15-17h30v17h-30zM-19-16L0-31L19-16Z" fill="${dk(.38)}"/><rect x="-9" y="-12" width="6" height="6" rx="1" fill="#D4FF3F" opacity=".8"/><rect x="3" y="-12" width="6" height="6" rx="1" fill="#D4FF3F" opacity=".55"/></g>`;
+    const house=(x,y)=>`<g transform="translate(${n0(x)} ${y})"><path d="M-13-17h30v17h-30zM-19-16L0-31L19-16Z" fill="${dk(.38)}"/><rect x="-9" y="-12" width="6" height="6" rx="1" fill="#D4FF3F" opacity=".8"/><rect x="3" y="-12" width="6" height="6" rx="1" fill="#D4FF3F" opacity=".55"/></g>`;
     s+=hill(168,18,dk(.13))+hill(214,16,dk(.19))+tree(W*.14,258,.95)+tree(W*.88,254,1.1)+house(W*.36,262)+house(W*.36+44,266)+(W>700?house(W*.66,260)+tree(W*.55,262,.6):'')+hill(264,12,dk(.27));
     for(let i=0;i<cnt(16);i++) s+=`<circle cx="${n0(R()*W)}" cy="${n0(212+R()*96)}" r="${(1.6+R()*2).toFixed(1)}" fill="#D4FF3F" opacity="${(.35+R()*.5).toFixed(2)}"/>`;
     s+=blades(cnt(40),H,22,62,dk(.32));
@@ -4217,7 +4217,7 @@ function viewChat(id){
   // la zone de messages change de hauteur (contacts chargés, clavier, rotation) : on reste calé sur le dernier message
   try{ const cb=document.getElementById('chatbox'); if(cb&&'ResizeObserver' in window) new ResizeObserver(()=>{ cb.scrollTop=cb.scrollHeight; }).observe(cb); }catch(e){}
   document.getElementById('chatform').addEventListener('submit',e=>{ e.preventDefault(); const i=document.getElementById('chatin'), t=i.value.trim(); if(!t) return;
-    if(S.me&&ageGroup(S.me)==='minor'&&hasPhone(t)){ toast('Pour ta sécurité, les numéros de téléphone ne peuvent pas être envoyés ici.'); return; }   // 15-17 ans : pas de numéro dans le chat
+    if(S.me&&ageGroup(S.me)==='minor'&&hasPhone(t)){ toast('Pour ta sécurité, les numéros de téléphone ne peuvent pas être envoyés ici.'); return; }   // 13-17 ans : pas de numéro dans le chat
     i.value='';
     const m={from:'me',text:t,at:Date.now()}; (S.chats[id]||(S.chats[id]=[])).push(m); save(); DB.sendMessage(id,m).then(()=>{ if(location.hash==='#/messages/'+id) renderChat(id); }); renderChat(id);
     if(!AUTH_LIVE && Math.random()<.75) setTimeout(()=>{ const r={from:id,text:pick(CANNED),at:Date.now()}; (S.chats[id]||(S.chats[id]=[])).push(r);
@@ -4373,7 +4373,7 @@ setInterval(flameCheck,20*60e3);   // tourne aussi quand l'appli est en arrière
                groups/{id}/messages/{id} = { from, text, at }
    - Rôles : créateur (admin), modérateurs, membres. Seuls les membres lisent les messages (règles Firestore).
    - 50 membres maximum par groupe, pour rester dans la formule gratuite de Firebase.
-   - Comme partout sur Coopô, les 15-17 ans et les adultes ont des groupes séparés.
+   - Comme partout sur Coopô, les 13-17 ans et les adultes ont des groupes séparés.
    ========================================================= */
 const GROUP_MAX=50, GROUP_OWN_MAX=3;
 let GROUPS=[];   // groupes visibles : les miens, ceux où je suis invité, les groupes publics de ma tranche d'âge
@@ -4492,7 +4492,7 @@ function groupInvite(id){ const g=gById(id); if(!g) return; const can=matesList(
 /* =========================================================
    COMMUNAUTÉ : annonces « Je cherche » et tournois
    Firestore : boards/{adult|minor}/annonces/{id} et boards/{adult|minor}/tournois/{id}
-   Chaque tranche d'âge a son propre tableau : les 15-17 ans et les adultes ne se croisent pas.
+   Chaque tranche d'âge a son propre tableau : les 13-17 ans et les adultes ne se croisent pas.
    ========================================================= */
 const myGroupNow = () => S.me&&S.me.dob ? ageGroup(S.me) : 'adult';
 const myId = () => DB.live ? DB.uid() : 'me';
@@ -4608,7 +4608,7 @@ document.addEventListener('click',e=>{
 let TOURNOIS=[];
 const DEMO_TOURNOIS=[
   {id:'t1',title:'Coupe Coopô Free Fire',game:'Free Fire',date:Date.now()+5*864e5,format:'Escouades de 4 · élimination directe',max:16,prize:'Un thème au choix pour l\'équipe gagnante',desc:'Inscris-toi seul, on complète les escouades. Lobby envoyé sur WhatsApp ou Discord 30 min avant.',players:['p8','p1'],entries:{},status:'open',ageGroup:'adult',at:Date.now()},
-  {id:'t2',title:'Défi Brawl Stars 15-17',game:'Brawl Stars',date:Date.now()+3*864e5,format:'Solo · 3 manches',max:12,prize:'Thème au choix',desc:'Tournoi réservé aux 15-17 ans.',players:['p15'],entries:{},status:'open',ageGroup:'minor',at:Date.now()},
+  {id:'t2',title:'Défi Brawl Stars 13-17',game:'Brawl Stars',date:Date.now()+3*864e5,format:'Solo · 3 manches',max:12,prize:'Thème au choix',desc:'Tournoi réservé aux 13-17 ans.',players:['p15'],entries:{},status:'open',ageGroup:'minor',at:Date.now()},
 ];
 function tournoisAll(){
   const src = DB.live ? TOURNOIS : [...DEMO_TOURNOIS, ...(S.tournois||[])];
@@ -4623,7 +4623,7 @@ function tournoiCard(t){
   return `<article class="mcard tournoi${t.status==='done'?' done':''}" style="--c:var(--pk)">
     <div class="sq-top"><span class="sq-game">${esc(t.game)}</span><span class="sq-slots ${full||!open?'full':''}">${players.length}/${+t.max||0} · ${status}</span></div>
     <h3>${esc(t.title)}</h3>
-    <dl class="facts"><div><dt>Quand</dt><dd>${esc(fmtDay(t.date))}</dd></div>${t.format?`<div><dt>Format</dt><dd>${esc(t.format)}</dd></div>`:''}${t.prize?`<div><dt>À gagner</dt><dd>${esc(t.prize)}</dd></div>`:''}${isAdmin()?`<div><dt>Pour</dt><dd>${t.ageGroup==='minor'?'15-17 ans':'Adultes'}</dd></div>`:''}</dl>
+    <dl class="facts"><div><dt>Quand</dt><dd>${esc(fmtDay(t.date))}</dd></div>${t.format?`<div><dt>Format</dt><dd>${esc(t.format)}</dd></div>`:''}${t.prize?`<div><dt>À gagner</dt><dd>${esc(t.prize)}</dd></div>`:''}${isAdmin()?`<div><dt>Pour</dt><dd>${t.ageGroup==='minor'?'13-17 ans':'Adultes'}</dd></div>`:''}</dl>
     ${t.desc?`<p class="muted">${esc(t.desc)}</p>`:''}
     ${mem.length?`<div class="sq-mem">${mem.slice(0,14).map(x=>x===S.me?avatar(S.me,30):`<a href="#/joueur/${x.id}" title="${esc(x.name)}">${avatar(x,30)}</a>`).join('')}</div>`:''}
     <div class="sq-act">${isAdmin()?`<button class="btn btn-sm btn-ghost" data-to-list="${esc(t.id)}">Inscrits</button><button class="btn btn-sm btn-ghost" data-to-edit="${esc(t.id)}">Modifier</button>`:''}
@@ -4666,7 +4666,7 @@ function editTournoi(id){
     <div class="two"><div class="field"><label for="tg">Jeu</label><select id="tg">${GAMES.map(g=>`<option value="${esc(g)}" ${t&&t.game===g?'selected':''}>${esc(g)}</option>`).join('')}</select></div>
       <div class="field"><label for="td">Date et heure</label><input id="td" type="datetime-local" value="${local}"></div></div>
     <div class="two"><div class="field"><label for="tm">Places</label><input id="tm" type="text" inputmode="numeric" value="${t?t.max:16}"></div>
-      <div class="field"><label for="ta">Pour</label><select id="ta" ${isNew?'':'disabled'}><option value="adult" ${t&&t.ageGroup==='minor'?'':'selected'}>Adultes</option><option value="minor" ${t&&t.ageGroup==='minor'?'selected':''}>15-17 ans</option></select></div></div>
+      <div class="field"><label for="ta">Pour</label><select id="ta" ${isNew?'':'disabled'}><option value="adult" ${t&&t.ageGroup==='minor'?'':'selected'}>Adultes</option><option value="minor" ${t&&t.ageGroup==='minor'?'selected':''}>13-17 ans</option></select></div></div>
     <div class="field"><label for="tf">Format</label><input id="tf" type="text" maxlength="80" value="${esc(t?t.format:'')}" placeholder="ex. Escouades de 4 · élimination directe"></div>
     <div class="field"><label for="tp">À gagner (facultatif)</label><input id="tp" type="text" maxlength="80" value="${esc(t?t.prize:'')}" placeholder="ex. Un thème au choix pour les gagnants"></div>
     <div class="field"><label for="tx">Règles et infos</label><textarea id="tx" rows="3" maxlength="500">${esc(t?t.desc:'')}</textarea></div>
@@ -4730,7 +4730,7 @@ async function shareProfile(){
 /* ---- Aide, CGU, confidentialité ---- */
 function viewHelp(){
   const faq=[['Comment est calculé le pourcentage de compatibilité ?','Chaque critère vaut un nombre de points (jeux en commun, horaires, style, jours, plateforme, rang, langue, pays). Le total est ramené sur 100. Sur le profil d\'un joueur, tu vois le détail critère par critère.'],
-    ['Pourquoi je ne vois pas certains joueurs ?','Les 15-17 ans ne voient que des 15-17 ans, et les adultes que des adultes. Tu ne vois pas non plus les joueurs que tu as bloqués ni ceux masqués par la modération.'],
+    ['Pourquoi je ne vois pas certains joueurs ?','Les 13-17 ans ne voient que des 13-17 ans, et les adultes que des adultes. Tu ne vois pas non plus les joueurs que tu as bloqués ni ceux masqués par la modération.'],
     ['Comment contacter un joueur ?','Envoie-lui une demande de mate. S\'il accepte, vous pouvez vous écrire dans Messages et vous retrouver dans des groupes. Tout se passe dans Coopô : aucun numéro ni pseudo d\'un autre réseau n\'est demandé.'],
     ['Mon e-mail ou ma date de naissance sont-ils visibles ?','Non, jamais. Les autres joueurs ne voient que ton pseudo, ton avatar, tes jeux et tes habitudes de jeu.'],
     ['À quoi servent les annonces ?','À trouver vite des joueurs pour une partie précise : « Je cherche 2 joueurs Free Fire ce soir ». Clique sur « Je suis partant » : l\'auteur est prévenu et reçoit une demande de mate. Les annonces disparaissent toutes seules après la partie.'],
@@ -4768,7 +4768,7 @@ function viewLegal(kind){
     <h3>6. Tes droits</h3><p>Tu peux consulter, modifier et supprimer tes données depuis ton compte, ou en nous écrivant via le formulaire <a href="#/contact">Nous écrire</a>. Les utilisateurs mineurs peuvent exercer ces droits avec un parent ou tuteur. En Côte d'Ivoire, tu peux aussi saisir l'ARTCI, l'autorité chargée de la protection des données personnelles.</p>
     <h3>7. Paiements</h3><p>Les paiements sont traités par SasPay (Mobile Money ou carte bancaire). Pour un achat, Coopô transmet à SasPay ton adresse e-mail (pour ton reçu), ton pseudo, ton pays, l'objet acheté et son prix ; rien d'autre. Coopô ne reçoit ni ton numéro de carte ni ton code Mobile Money ; nous conservons uniquement la référence de la transaction, l'article acheté, le montant et son statut.</p>
     <h3>8. Cookies</h3><p>Le site utilise uniquement le stockage nécessaire au fonctionnement (session, thème choisi). Pas de cookies publicitaires ni de mesure d'audience. Pour afficher le site plus vite, une copie des données que tu as déjà consultées (liste des joueurs, messages) est gardée dans ton navigateur ; elle est effacée quand tu te déconnectes ou quand tu vides les données du site. Le détail est dans la <a href="#/cookies">politique de cookies</a>.</p>
-    <h3>9. Sécurité</h3><p>Les échanges avec le site sont chiffrés (HTTPS). Les mots de passe sont gérés par Firebase Authentication : nous ne les voyons jamais. L'accès aux données est limité par des règles côté serveur, et seule l'équipe de modération peut consulter les signalements. Aucun système n'est infaillible : choisis un mot de passe unique, vérifie ton adresse e-mail et ne partage jamais tes identifiants. Dans les messages, les numéros de téléphone sont bloqués pour les 15-17 ans et un avertissement s'affiche sur les liens reçus.</p>
+    <h3>9. Sécurité</h3><p>Les échanges avec le site sont chiffrés (HTTPS). Les mots de passe sont gérés par Firebase Authentication : nous ne les voyons jamais. L'accès aux données est limité par des règles côté serveur, et seule l'équipe de modération peut consulter les signalements. Aucun système n'est infaillible : choisis un mot de passe unique, vérifie ton adresse e-mail et ne partage jamais tes identifiants. Dans les messages, les numéros de téléphone sont bloqués pour les 13-17 ans et un avertissement s'affiche sur les liens reçus.</p>
     <h3>10. Modifications</h3><p>Cette politique peut évoluer avec le site. La date de mise à jour est indiquée en haut de la page et tu seras informé des changements importants.</p>`}
     </div>`;
 }
@@ -4853,7 +4853,7 @@ function viewWelcome(){
   const ex=[['KO','KoffiNight','Free Fire · Soir','91',330],['AW','AwaBuild','eFootball · Week-end','84',150],['DJ','DjeliSniper','COD Mobile · Nuit','77',45]];
   app.innerHTML=`<div class="wrap page welcome">
     <section class="wl-hero">
-      <span class="wl-kicker">Gratuit · dès 15 ans · profils modérés</span>
+      <span class="wl-kicker">Gratuit · dès 13 ans · profils modérés</span>
       <h1>Trouve des joueurs avec qui <span class="hl">jouer ce soir</span>.</h1>
       <p>Coopô te met en relation avec des gamers d'Afrique francophone qui jouent aux mêmes jeux, aux mêmes heures et avec le même style que toi.</p>
       <div class="wl-cta"><a class="btn btn-ac btn-lg" href="#/inscription">Créer mon compte gratuit</a><a class="linkbtn" href="#/connexion">J'ai déjà un compte</a></div>
@@ -4865,7 +4865,7 @@ function viewWelcome(){
     <section class="wl-feats">
       <div><b>🎮 Mêmes jeux, mêmes heures</b><span>Free Fire, eFootball, COD Mobile, FC, Fortnite… et tes horaires.</span></div>
       <div><b>⚡ Dispo maintenant</b><span>Dis que tu es libre, lance un duo en un clic.</span></div>
-      <div><b>🛡️ Entre joueurs de ton âge</b><span>Les 15-17 ans et les adultes ne se croisent pas.</span></div>
+      <div><b>🛡️ Entre joueurs de ton âge</b><span>Les 13-17 ans et les adultes ne se croisent pas.</span></div>
     </section>
     <p class="wl-legal">En t'inscrivant, tu acceptes les <a href="#/cgu">CGU</a> et la <a href="#/confidentialite">politique de confidentialité</a>.</p>
   </div>`;
