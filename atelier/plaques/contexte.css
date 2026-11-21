@@ -1,0 +1,35 @@
+/* ---- où les plaques s'affichent ---- */
+.chat-row b{ min-width:0; }
+.plq-on:hover > .plq > i, .plq-live > .plq > i{ background-image:var(--art-live,var(--art,none)); }
+.plq-img > i{ aspect-ratio:auto; width:64%; background-size:cover; background-position:center; }   /* plaque faite d'une image ou d'un GIF (voir PLATES : img, gif) */
+/* conversations : colonne de gauche sur ordinateur, liste sur téléphone, en-tête d'une conversation */
+.dm-row.plq-on{ margin-block:2px; }
+.dm-row.plq-on.on{ box-shadow:0 0 0 2px var(--pk); }
+.sn-row.plq-on{ --plq-y:5px; --plq-x:8px; --plq-r:16px; }
+.sn-row.plq-on .sn-av .online{ border-color:var(--pa); }
+.sn-row.plq-on .sn-end{ opacity:1; } .sn-row.plq-on .sn-end svg{ display:none; }   /* la petite bulle de droite laisse la place au dessin (la pastille des messages non lus reste) */
+.chat-who.plq-on{ border-color:transparent; padding-right:clamp(40px,9vw,120px); }
+@media (max-width:999px){ .chat-page .chat-who.plq-on{ padding:4px 12px 4px 4px; border-radius:12px; margin-right:4px; } }
+/* groupes : membres, invitations */
+.nrow.plq-on{ padding-inline:10px; margin-block:2px; }
+.plq-on .linkbtn{ padding:3px 10px; border-radius:999px; background:var(--pbt,rgba(0,0,0,.34)); color:var(--ptx); font-size:13px; font-weight:600; text-decoration:none; }
+/* cartes des joueurs et profils */
+/* carte d'un joueur : la plaque s'arrête avant le rond de compatibilité */
+.mc-head.mc-plq{ grid-template-columns:minmax(0,1fr) auto; } .top-match .mc-head.mc-plq{ min-width:min(380px,100%); }
+.mc-id{ display:grid; grid-template-columns:auto minmax(0,1fr); gap:12px; align-items:center; min-width:0; margin:-8px 0 -8px -10px; padding:8px 10px; border-radius:calc(var(--rc) - 8px); }
+.me-id.plq-on{ margin:-10px -12px; padding:10px 12px; border-radius:var(--ri); }
+/* profil d'un joueur : la photo, le pseudo et la ligne d'infos tiennent sur une seule ligne, posée sur la plaque */
+.pp-id{ flex:1 1 auto; display:flex; gap:18px; align-items:center; min-width:0; padding:14px 18px; border-radius:var(--rc); }
+.pp-id > div{ flex:1 1 0; min-width:0; }
+@media (max-width:560px){ .pp-id{ gap:12px; padding:12px 14px; } .pp-id .av{ width:64px !important; height:64px !important; font-size:23px !important; } .pp-id h1{ font-size:26px; } }
+/* une plaque montrée « en situation » dans la boutique, et l'aperçu avant achat */
+.plq-demo{ display:grid; grid-template-columns:auto minmax(0,1fr); gap:10px; align-items:center; width:100%; min-height:52px; padding:8px 10px; border-radius:12px; text-align:left; }
+.plq-demo > div{ display:grid; min-width:0; line-height:1.25; } .plq-demo b{ font:700 15px/1.25 var(--fb); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .plq-demo .muted{ font-size:12px; }
+.plq-demo .av{ border-radius:50% !important; }
+.shop-grid.shop-grid-np{ grid-template-columns:repeat(auto-fill,minmax(min(236px,100%),1fr)); }
+.shop-tag.in{ position:static; display:inline-block; margin-left:8px; vertical-align:middle; text-transform:none; }
+.np-prev{ display:grid; gap:10px; margin-top:14px; }
+.np-prev > div{ display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:var(--ri); background:var(--s2); min-width:0; }
+.np-prev > div > div{ display:grid; gap:2px; min-width:0; } .np-prev .muted{ font-size:12px; }
+.np-prev-name{ font:var(--fdw) 22px/1.2 var(--fd); }
+.np-prev-msg{ flex-direction:column; align-items:flex-start !important; gap:4px !important; } .np-prev-msg small{ font-size:13px; } .np-prev-msg .bubble{ animation:none; max-width:100%; }
