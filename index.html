@@ -2301,9 +2301,10 @@ function updateFavicon(){ const draw=()=>{ try{ const cs=getComputedStyle(docume
   _favImg.complete ? draw() : _favImg.onload=draw; }
 // 5 onglets seulement : la recherche se range dans Matchs, les réglages dans Profil
 const NAV=[['accueil','Accueil'],['matchs','Matchs'],['groupes','Communauté'],['messages','Messages'],['profil','Profil']];
-const NAV_PARENT={groupe:'groupes',recherche:'matchs',parametres:'profil',boutique:'profil','faux-paiement':'profil',paiement:'profil',aide:'profil',contact:'profil',app:'profil',cgu:'profil',confidentialite:'profil',cookies:'profil',remboursement:'profil',moderation:'profil'};   // page secondaire → onglet allumé
+const NAV_PARENT={groupe:'messages',recherche:'matchs',parametres:'profil',boutique:'profil','faux-paiement':'profil',paiement:'profil',aide:'profil',contact:'profil',app:'profil',cgu:'profil',confidentialite:'profil',cookies:'profil',remboursement:'profil',moderation:'profil'};   // page secondaire → onglet allumé
 const TAB_LBL={groupes:'Commu'};
 function renderNav(active){
+  if(active==='groupes'&&location.hash.startsWith('#/groupes/groupes')) active='messages';   // la liste des groupes se range maintenant avec les messages
   const navItems = isAdmin() ? [...NAV,['moderation','Modération']] : NAV;
   const top = navItems.some(([r])=>r===active) ? active : (NAV_PARENT[active]||active);   // menu du haut (ordinateur) : « Modération » y a son propre onglet
   active=NAV_PARENT[active]||active;
@@ -4561,7 +4562,7 @@ const groupRow = g => `<a class="chat-row${gUnread(g)?' unread':''}" href="#/gro
 function viewGroupsList(){
   const mine=GROUPS.filter(gIn).sort((a,b)=>tsMs(b.lastAt||b.at)-tsMs(a.lastAt||a.at)), inv=GROUPS.filter(g=>!gIn(g)&&(g.invited||[]).includes(myId())),
     pub=GROUPS.filter(g=>!gIn(g)&&!g.private&&!(g.invited||[]).includes(myId())&&!(g.kicked||[]).includes(myId())&&!S.blocked.includes(g.owner)).sort((a,b)=>b.members.length-a.members.length);
-  app.innerHTML=`<div class="wrap page">${boardHead('groupes','Des salons pour discuter à plusieurs, par jeu ou entre amis.',S.me?'<button class="btn btn-ac" id="newgrp">Créer un groupe</button>':'')}
+  app.innerHTML=`<div class="wrap page">${backLink('#/messages','Messages')}<div class="page-head"><div><h2>Groupes</h2><p>Des salons pour discuter à plusieurs, par jeu ou entre amis.</p></div>${S.me?'<button class="btn btn-ac" id="newgrp">Créer un groupe</button>':''}</div>
     ${inv.length?`<h3 class="on-world g-h">Invitations</h3><div class="chat-list">${inv.map(g=>`<div class="chat-row g-inv">${gAvatar(g,52)}<div><b>${esc(g.name)}</b><span class="muted">${esc(g.game||'Tous les jeux')} · ${g.members.length} membre${g.members.length>1?'s':''}</span></div><span class="nact"><button class="btn btn-sm btn-ac" data-gjoin="${esc(g.id)}">Rejoindre</button><button class="btn btn-sm btn-ghost" data-gdecline="${esc(g.id)}">Refuser</button></span></div>`).join('')}</div>`:''}
     <h3 class="on-world g-h">Mes groupes</h3>
     ${mine.length?`<div class="chat-list">${mine.map(groupRow).join('')}</div>`:'<div class="empty"><h3>Tu n\'es dans aucun groupe</h3><p class="muted">Crée le tien et invite tes mates, ou rejoins un groupe public.</p></div>'}
@@ -4666,8 +4667,7 @@ const myId = () => DB.live ? DB.uid() : 'me';
 const fmtDay = ts => new Date(ts).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})+' · '+new Date(ts).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
 function boardHead(tab,sub,action){
   const nA=annoncesAll().length, nT=tournoisAll().filter(t=>t.status==='open'&&t.date>Date.now()).length;
-  const nG=GROUPS.filter(g=>gUnread(g)||(!gIn(g)&&(g.invited||[]).includes(myId()))).length;
-  const T=[['annonces','Annonces',nA],['groupes','Groupes',nG],['sessions','Sessions',0],['tournois','Tournois',nT]];
+  const T=[['annonces','Annonces',nA],['sessions','Sessions',0],['tournois','Tournois',nT]];   // les groupes ont quitté la Communauté : on les trouve dans Messages
   return `<div class="page-head"><div><h2>Communauté</h2><p>${sub}</p></div>${action||''}</div>
     <div class="chips board-tabs" role="tablist">${T.map(([k,l,n])=>`<a class="chip" role="tab" href="#/groupes/${k}" aria-selected="${tab===k}" aria-pressed="${tab===k}">${l}${n?` <span class="cnt">${n}</span>`:''}</a>`).join('')}</div>
     ${discordOK()?`<div class="discord-row"><span>Envie de parler en vocal ? Le serveur Discord COOPO est ouvert.</span>${discordBtn('btn btn-sm')}</div>`:''}`;
