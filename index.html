@@ -2081,6 +2081,36 @@ button.g-who{ cursor:pointer; font:inherit; color:inherit; text-align:left; min-
 @keyframes flameDance{ 50%{ transform:scale(1.12) rotate(-4deg); } }
 html.lite .flame.warn, html.lite .flame-big{ animation:none; }
 @media (prefers-reduced-motion:reduce){ .flame.warn,.flame-big{ animation:none; } }
+
+/* =========================================================
+   Messagerie sur téléphone : plein écran, sans décor
+   - dans une conversation : ni logo, ni cloche, ni boutique, ni barre d'onglets ; la conversation occupe tout l'écran
+   - dans la liste : pas d'en-tête du site
+   - des angles plus nets (moins d'arrondis)
+   ========================================================= */
+@media (max-width:999px){
+  body:has(.chat-page) .top, body:has(.dm-list-page) .top{ display:none; }
+  body:has(.chat-page) .tabbar{ display:none; }
+  body:has(.dm-list-page) .page{ padding-top:max(14px,env(safe-area-inset-top)); }
+  .chat-page{ position:fixed; left:0; right:0; top:0; z-index:20; width:auto; max-width:none; height:var(--vvh,100dvh) !important; min-height:0; margin:0; padding:0 !important; display:flex; flex-direction:column; background:var(--s1); color:var(--tx); }
+  .chat-page .chat-head{ flex:none; margin:0; padding:max(6px,env(safe-area-inset-top)) 6px 6px 2px; gap:4px; background:var(--s1); border-bottom:1px solid var(--hair); }
+  .chat-page .chat-head .back{ margin:0; color:var(--tx); min-width:40px; min-height:44px; justify-content:center; font-size:0; gap:0; } .chat-page .chat-head .back svg{ width:22px; height:22px; }
+  .chat-page .chat-who{ flex:1 1 0; min-width:0; padding:0; border:0; border-radius:0; background:none; color:var(--tx); text-align:left; } .chat-page .chat-who .muted{ color:inherit; opacity:.7; }
+  .chat-page .chat-head, .chat-page .chat-head .back, .chat-page .chat-who, .chat-page .chat-who b, .chat-page .chat-who span:not(.online):not([class*=plate]):not([class*=np]){ color:var(--tx) !important; text-shadow:none !important; }
+  .chat-page .chat-calls{ gap:0; } .chat-page .call-btn{ background:none; border:0; box-shadow:none; border-radius:8px; color:var(--pk); } .chat-page .call-btn svg{ width:22px; height:22px; }
+  .chat-page .flame-hint{ flex:none; margin:0; padding:4px 12px; } .chat-page .flame-hint:empty{ display:none; }
+  .chat-page .chat-box{ flex:1 1 0; min-height:0; max-height:none; border:0; border-radius:0; padding:12px 10px; gap:6px; background:var(--s1); }
+  .chat-page .chat-form{ flex:none; margin:0; gap:6px; padding:8px 8px max(8px,env(safe-area-inset-bottom)); border:0; border-top:1px solid var(--hair); border-radius:0; background:var(--s1); }
+  .chat-page .chat-form > input{ border:1px solid var(--line) !important; background:var(--field) !important; border-radius:8px; padding:0 12px; min-height:44px; }
+  .chat-page .chat-form .mic-btn{ border-radius:8px; }
+  .chat-page .chat-form > .btn-ac{ border-radius:8px; min-height:44px; box-shadow:none; }
+  .chat-page .chat-form .rec-bar{ border:1px solid var(--line); border-radius:8px; background:var(--field); }
+  .chat-page .bubble{ max-width:84%; border-radius:10px 10px 10px 2px; border-width:1px; padding:8px 12px; animation:none; } .chat-page .bubble.me{ border-radius:10px 10px 2px 10px; }
+  body:has(.chat-page) .toast{ bottom:calc(76px + env(safe-area-inset-bottom,0px)); }
+  /* la liste : des angles plus nets */
+  .sn-list{ border-radius:10px; } .sn-round{ border-radius:10px; } .sn-fab{ border-radius:14px; } .sn-chips .chip{ border-radius:8px; } .sn-search{ border-radius:8px; }
+  .sn-row.grp .sn-av > *:first-child{ border-radius:12px !important; }
+}
 </style>
 </head>
 <body>
@@ -4287,6 +4317,8 @@ const dmRefresh = () => { const sd=document.getElementById('dm-side'); if(sd&&sd
 // Place la colonne à la bonne hauteur : juste sous l'en-tête du site, jusqu'en bas de la fenêtre
 function dmFit(){ const sh=document.querySelector('.dm-shell'); if(!sh) return; const top=sh.getBoundingClientRect().top+window.scrollY; sh.style.setProperty('--dm-top',Math.round(top+24)+'px'); const on=sh.querySelector('.dm-row.on'); if(on&&on.scrollIntoView) on.scrollIntoView({block:'nearest'}); }
 window.addEventListener('resize',dmFit);
+// Téléphone : la conversation prend exactement la hauteur visible, même quand le clavier est ouvert
+(function(){ const vv=window.visualViewport; if(!vv) return; const fit=()=>{ document.documentElement.style.setProperty('--vvh',Math.round(vv.height)+'px'); const b=document.getElementById('chatbox'); if(b&&document.activeElement&&document.activeElement.id==='chatin') b.scrollTop=b.scrollHeight; }; vv.addEventListener('resize',fit); fit(); })();
 /* Liste des messages sur téléphone : mates et groupes dans une seule liste, avec l'état du dernier message. */
 const CHAT_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>';
 const shortAgo = t => ago(t).replace('il y a ','');
