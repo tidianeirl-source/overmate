@@ -755,7 +755,10 @@ input.invalid{ border-color:var(--lo) !important; animation:shake .35s; }
    Sur téléphone, rien ne change : la colonne de gauche est cachée et .dm-shell ne fait rien. */
 .dm-shell{ display:contents; } .dm-side, .dm-empty, .dm-rail{ display:none; }
 @media (min-width:1000px){
-  .dm-shell{ display:grid; grid-template-columns:68px 280px minmax(0,1fr); gap:14px; align-items:start; max-width:1320px; margin:0 auto; padding:0 28px; }
+  /* la messagerie prend toute la largeur de la fenêtre */
+  body:has(.dm-shell) .frame{ width:calc(100% - 28px); max-width:none; }
+  .dm-shell{ display:grid; grid-template-columns:68px 300px minmax(0,1fr); gap:14px; align-items:start; max-width:none; margin:0; padding:0 8px; }
+  .dm-shell .chat-page, .dm-shell .dm-side, .dm-shell .dm-rail, .dm-shell .dm-empty{ --dm-gap:10px; }
   .dm-shell > .wrap{ max-width:none; width:auto; margin:0; padding-left:0; padding-right:0; }
   .dm-shell .dm-list-page{ display:none; }   /* la liste en grand ne sert plus : elle est déjà à gauche */
   .dm-shell .chat-page, .dm-side, .dm-empty{ height:calc(100vh - var(--dm-top,150px)); min-height:420px; }
