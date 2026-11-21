@@ -718,6 +718,22 @@ input.invalid{ border-color:var(--lo) !important; animation:shake .35s; }
 .bubble.me{ align-self:flex-end; background:var(--pk); color:var(--on-pk); border-color:var(--pk); border-radius:18px 18px 4px 18px; }
 .bubble small{ font-size:11px; opacity:.85; } .bubble.me small{ opacity:1; } .bubble span{ overflow-wrap:anywhere; }
 .chat-form{ display:flex; gap:8px; margin-top:12px; }
+/* Appels : boutons dans l'en-tête de la conversation + écran d'appel plein écran */
+.chat-calls{ display:flex; gap:8px; margin-left:auto; flex:none; }
+.call-btn{ width:44px; height:44px; min-width:44px; padding:0; border-radius:50%; display:grid; place-items:center; } .call-btn svg{ width:20px; height:20px; }
+.chat-head:has(.chat-calls){ flex-wrap:nowrap; gap:10px; } .chat-head:has(.chat-calls) .chat-who{ flex:0 1 auto; min-width:0; }
+@media (max-width:520px){ .chat-head:has(.chat-calls) .back{ font-size:0; gap:0; min-width:40px; min-height:44px; justify-content:center; } .chat-head:has(.chat-calls) .back svg{ width:22px; height:22px; } }
+#call-ov{ position:fixed; inset:0; z-index:4000; display:flex; flex-direction:column; align-items:center; justify-content:space-between; gap:16px; padding:max(28px,env(safe-area-inset-top)) 20px max(28px,env(safe-area-inset-bottom)); background:#0E0B1F; color:#fff; text-align:center; }
+#call-ov .co-who{ display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6vh; position:relative; z-index:2; min-width:0; max-width:100%; }
+#call-ov .co-who b{ font-size:24px; line-height:1.2; overflow-wrap:anywhere; } #call-ov .co-state{ font-size:15px; opacity:.85; font-variant-numeric:tabular-nums; min-height:1.4em; }
+#call-ov.video.live .co-who{ margin-top:0; flex-direction:row; align-self:flex-start; text-align:left; padding:8px 14px 8px 8px; border-radius:999px; background:rgba(14,11,31,.55); } #call-ov.video.live .co-who b{ font-size:16px; } #call-ov.video.live .co-who .avatar{ transform:scale(.55); margin:-12px; }
+#call-remote{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; background:#0E0B1F; z-index:0; }
+#call-local{ position:absolute; right:14px; top:max(14px,env(safe-area-inset-top)); width:96px; height:128px; object-fit:cover; border-radius:14px; border:2px solid rgba(255,255,255,.7); background:#1B1730; z-index:2; transform:scaleX(-1); }
+#call-ov .co-btns{ display:flex; flex-wrap:wrap; justify-content:center; gap:18px; position:relative; z-index:2; }
+.co-b{ display:flex; flex-direction:column; align-items:center; gap:6px; border:0; background:none; color:#fff; font:inherit; font-size:12px; cursor:pointer; min-width:64px; }
+.co-b i{ width:60px; height:60px; border-radius:50%; display:grid; place-items:center; background:rgba(255,255,255,.16); } .co-b svg{ width:26px; height:26px; }
+.co-b.off i{ background:#fff; color:#0E0B1F; } .co-b.end i{ background:#E5484D; } .co-b.yes i{ background:#2FB36A; }
+.co-b:focus-visible i{ outline:3px solid #fff; outline-offset:3px; }
 /* Messages vocaux : bouton micro, barre d'enregistrement, lecteur dans la bulle */
 .mic-btn{ flex:none; width:46px; min-width:46px; padding:0; display:grid; place-items:center; } .mic-btn svg{ width:20px; height:20px; }
 .chat-form.rec > :not(.rec-bar){ display:none; }
@@ -2066,8 +2082,8 @@ const CONFIG = {
   noCommonGameCap: 40,
   minUsername: 3, maxUsername: 20, minPassword: 8,
   // Âge minimum pour utiliser le site
-  minAge: 15,
-  // Protection des mineurs : les 15-17 ans ne voient et ne sont vus que par des 15-17 ans,
+  minAge: 13,
+  // Protection des mineurs : les 13-17 ans ne voient et ne sont vus que par des 13-17 ans,
   // les adultes uniquement par des adultes.
   adultAge: 18, separateMinors: true,
 };
@@ -2199,7 +2215,7 @@ const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>
 const ring = (p,size='') => `<div class="ring ${size}${p>=80?' glow':''}" data-count="${p}" style="--p:${p};--c:${tier(p)}" role="img" aria-label="${p} % compatible"><span>${p}<small>%</small></span></div>`;
 function avatar(u,size=48){
   const a=u.avatar||{hue:260};
-  const minor = u.ageGroup==='minor' || (u.dob && ageGroup(u)==='minor');   // jamais de photo pour les 15-17 ans
+  const minor = u.ageGroup==='minor' || (u.dob && ageGroup(u)==='minor');   // jamais de photo pour les 13-17 ans
   if(a.src && !minor && /^data:image\/(png|jpeg|webp);base64,/.test(a.src)) return `<img class="av" src="${esc(a.src)}" alt="" loading="lazy" decoding="async" width="${size}" height="${size}" style="width:${size}px;height:${size}px">`;
   return `<span class="av" aria-hidden="true" style="width:${size}px;height:${size}px;--h:${(Number(a.hue)||0)%360};font-size:${Math.round(size*.36)}px">${esc((u.name||'?').slice(0,2).toUpperCase())}</span>`;
 }
@@ -2461,7 +2477,7 @@ function viewProfile(tab){
       </div>`}
       <div class="field"><span class="lbl">Avatar</span>
         <div class="avatar-pick" id="avpick">${hues.map(h=>`<button type="button" data-hue="${h}" aria-label="Avatar couleur ${h}" aria-pressed="${!draft.avatar.src&&draft.avatar.hue===h}">${avatar({name:draft.name||'Toi',avatar:{hue:h}},48)}</button>`).join('')}
-          ${ageGroup(draft)==='minor'?'<span class="hint">Les photos sont désactivées pour les 15-17 ans, pour ta sécurité.</span>':'<span class="btn btn-ghost btn-sm upload">Importer une image<input type="file" accept="image/*" id="f-av" aria-label="Importer une image d\'avatar"></span>'}
+          ${ageGroup(draft)==='minor'?'<span class="hint">Les photos sont désactivées pour les 13-17 ans, pour ta sécurité.</span>':'<span class="btn btn-ghost btn-sm upload">Importer une image<input type="file" accept="image/*" id="f-av" aria-label="Importer une image d\'avatar"></span>'}
           <span id="av-prev">${draft.avatar.src?avatar(draft,48):''}</span></div></div>
     </section>
     <section class="panel"><h3>Jeux joués</h3>
@@ -3128,7 +3144,7 @@ function groundSVG(id,W){
   let s='';
   if(id==='defaut'||id==='sombre'){
     const tree=(x,y,k)=>`<g transform="translate(${n0(x)} ${y}) scale(${k})" fill="${dk(.34)}" stroke="${dk(.34)}"><path d="M-9 0C-8-24-12-42-7-58C-16-63-26-67-31-77M-7-58C-6-67-10-76-5-84M-7-58C1-63 4-71 2-82M-7-58C6-58 18-63 26-73M9 0C8-24 11-42 7-58L-7-58Z" stroke-width="4" stroke-linecap="round"/><ellipse cx="-31" cy="-81" rx="14" ry="7"/><ellipse cx="-5" cy="-89" rx="11" ry="6"/><ellipse cx="4" cy="-85" rx="12" ry="6"/><ellipse cx="28" cy="-77" rx="15" ry="7"/></g>`;
-    const house=(x,y)=>`<g transform="translate(${n0(x)} ${y})"><path d="M-15-17h30v17h-30zM-19-16L0-31L19-16Z" fill="${dk(.38)}"/><rect x="-9" y="-12" width="6" height="6" rx="1" fill="#D4FF3F" opacity=".8"/><rect x="3" y="-12" width="6" height="6" rx="1" fill="#D4FF3F" opacity=".55"/></g>`;
+    const house=(x,y)=>`<g transform="translate(${n0(x)} ${y})"><path d="M-13-17h30v17h-30zM-19-16L0-31L19-16Z" fill="${dk(.38)}"/><rect x="-9" y="-12" width="6" height="6" rx="1" fill="#D4FF3F" opacity=".8"/><rect x="3" y="-12" width="6" height="6" rx="1" fill="#D4FF3F" opacity=".55"/></g>`;
     s+=hill(168,18,dk(.13))+hill(214,16,dk(.19))+tree(W*.14,258,.95)+tree(W*.88,254,1.1)+house(W*.36,262)+house(W*.36+44,266)+(W>700?house(W*.66,260)+tree(W*.55,262,.6):'')+hill(264,12,dk(.27));
     for(let i=0;i<cnt(16);i++) s+=`<circle cx="${n0(R()*W)}" cy="${n0(212+R()*96)}" r="${(1.6+R()*2).toFixed(1)}" fill="#D4FF3F" opacity="${(.35+R()*.5).toFixed(2)}"/>`;
     s+=blades(cnt(40),H,22,62,dk(.32));
@@ -3871,6 +3887,7 @@ function onSignedIn(u){
 }
 // Fin de session : rien de l'ancien compte ne reste sur l'appareil (messages, notifications, demandes, profil, date de naissance)
 function clearSession(){
+  if(CALL) endCall('hangup');
   DB.stopChat(); DB.stopGroup(); DB._unsub.forEach(u=>u()); DB._unsub=[]; clearInterval(DB._hb); GROUPS=[]; GMSGS={}; DB._streakReady=false; DB._lastGroups=0;
   DB._loaded=false; DB._checked=false; DB._notifReady=false; DB._refWait=false; DB._miss={};
   S.auth=null; S.me=null; S.rewards=null; S.owned=null;
@@ -4205,11 +4222,12 @@ function viewChat(id){
   const p=visible().find(x=>x.id===id);
   if(!p||!isMate(id)){ app.innerHTML=`<div class="wrap page"><div class="empty"><h3>Vous n'êtes pas encore mates</h3><p class="muted">Les messages s'ouvrent une fois la demande de mate acceptée.</p><a class="btn" href="#/messages">Retour aux messages</a></div></div>`; return; }
   S.unread[id]=0; { const seen=S.notifs.filter(n=>!n.read&&n.type==='message'&&n.from===id); seen.forEach(n=>n.read=true); DB.markRead(seen.map(n=>n.id)); } save(); renderNotifBadge();
-  app.innerHTML=`<div class="wrap page chat-page"><div class="chat-head">${backLink('#/messages','Messages')}<a class="chat-who" href="#/joueur/${p.id}">${avatar(p,44)}<div><b>${np(p)}${modBadge(p)}</b>${isOnline(p)?'<span class="online">En ligne</span>':'<span class="muted" style="font-size:12px">Hors ligne</span>'}</div></a></div>
+  app.innerHTML=`<div class="wrap page chat-page"><div class="chat-head">${backLink('#/messages','Messages')}<a class="chat-who" href="#/joueur/${p.id}">${avatar(p,44)}<div><b>${np(p)}${modBadge(p)}</b>${isOnline(p)?'<span class="online">En ligne</span>':'<span class="muted" style="font-size:12px">Hors ligne</span>'}</div></a>${callBtns()}</div>
     <p class="flame-hint" id="flame-hint"></p>
     <div class="chat-box" id="chatbox"></div>
     <form class="chat-form" id="chatform"><input type="text" id="chatin" placeholder="Écris un message…" maxlength="500" autocomplete="off">${micBtn()}<button class="btn btn-ac" type="submit">Envoyer</button></form></div>`;
   renderChat(id);
+  document.querySelectorAll('[data-call]').forEach(b=>b.onclick=()=>startCall(id,b.dataset.call));
   // Message vocal : enregistré puis envoyé comme un message (30 secondes maximum)
   document.getElementById('micbtn')?.addEventListener('click',()=>recordVoice(v=>{ const vid=newId();
     VOICES[vid]=v.data; const m={from:'me',text:VOICE_TEXT,at:Date.now(),voice:{id:vid,dur:v.dur}}; (S.chats[id]||(S.chats[id]=[])).push(m); save();
@@ -4217,13 +4235,114 @@ function viewChat(id){
   // la zone de messages change de hauteur (contacts chargés, clavier, rotation) : on reste calé sur le dernier message
   try{ const cb=document.getElementById('chatbox'); if(cb&&'ResizeObserver' in window) new ResizeObserver(()=>{ cb.scrollTop=cb.scrollHeight; }).observe(cb); }catch(e){}
   document.getElementById('chatform').addEventListener('submit',e=>{ e.preventDefault(); const i=document.getElementById('chatin'), t=i.value.trim(); if(!t) return;
-    if(S.me&&ageGroup(S.me)==='minor'&&hasPhone(t)){ toast('Pour ta sécurité, les numéros de téléphone ne peuvent pas être envoyés ici.'); return; }   // 15-17 ans : pas de numéro dans le chat
+    if(S.me&&ageGroup(S.me)==='minor'&&hasPhone(t)){ toast('Pour ta sécurité, les numéros de téléphone ne peuvent pas être envoyés ici.'); return; }   // 13-17 ans : pas de numéro dans le chat
     i.value='';
     const m={from:'me',text:t,at:Date.now()}; (S.chats[id]||(S.chats[id]=[])).push(m); save(); DB.sendMessage(id,m).then(()=>{ if(location.hash==='#/messages/'+id) renderChat(id); }); renderChat(id);
     if(!AUTH_LIVE && Math.random()<.75) setTimeout(()=>{ const r={from:id,text:pick(CANNED),at:Date.now()}; (S.chats[id]||(S.chats[id]=[])).push(r);
       if(location.hash==='#/messages/'+id){ save(); renderChat(id); } else { S.unread[id]=(S.unread[id]||0)+1; notify({type:'message',from:id,text:`${p.name} : ${r.text}`}); } }, 2000+Math.random()*3000); });
   DB.listenChat(id,()=>{ if(location.hash==='#/messages/'+id) renderChat(id); });
 }
+/* ---- Appels vocaux et vidéo ----
+   Deux mates s'appellent directement, de téléphone à téléphone (WebRTC). Le son et l'image ne passent pas par Coopô.
+   Pour se trouver, les deux téléphones s'échangent leurs réglages dans calls/{paire} :
+     { parts, from, to, kind:'audio'|'video', status:'ringing'|'active'|'ended', offer, answer, at, why, endedBy }
+   Un relais (réglé sur le serveur, page /turn) aide quand les deux réseaux ne se voient pas directement.
+   Limite : l'appel ne sonne que si le mate a Coopô ouvert. */
+const CALL_RING_S=40;
+let CALL=null;   // l'appel en cours : { id, pair, role:'out'|'in', kind, at, status, pc, stream, remote, ... }
+const canCall = () => !!(window.RTCPeerConnection&&navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
+const PHONE_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>';
+const CAM_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="13" height="12" rx="3"/><path d="M15.5 10.5l6-3.5v10l-6-3.5"/></svg>';
+const HANG_SVG=PHONE_SVG.replace('<svg ','<svg style="transform:rotate(135deg)" ');
+const callBtns = () => canCall()&&AUTH_LIVE ? `<div class="chat-calls"><button class="btn call-btn" type="button" data-call="audio" aria-label="Appel vocal" title="Appel vocal">${PHONE_SVG}</button><button class="btn call-btn" type="button" data-call="video" aria-label="Appel vidéo" title="Appel vidéo">${CAM_SVG}</button></div>` : '';
+// Adresses qui aident les deux téléphones à se trouver. Sans relais réglé, on garde l'aide de base (suffit en Wi-Fi, pas toujours en 4G).
+async function iceServers(){ const base=[{urls:'stun:stun.l.google.com:19302'}];
+  try{ if(!SHOP.api) return base; const u=firebase.auth().currentUser; if(!u) return base; const tk=await u.getIdToken();
+    const r=await Promise.race([fetch(SHOP.api.replace(/\/$/,'')+'/turn',{headers:{Authorization:'Bearer '+tk}}),new Promise((_,no)=>setTimeout(()=>no(new Error('lent')),4000))]);
+    const j=await r.json(); if(r.ok&&Array.isArray(j.iceServers)&&j.iceServers.length) return j.iceServers; }catch(e){}
+  return base; }
+const iceDone = (pc,ms=2500) => new Promise(res=>{ if(pc.iceGatheringState==='complete') return res(); const t=setTimeout(res,ms);
+  pc.addEventListener('icegatheringstatechange',()=>{ if(pc.iceGatheringState==='complete'){ clearTimeout(t); res(); } }); });
+const callMedia = kind => navigator.mediaDevices.getUserMedia(kind==='video'?{audio:true,video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}}:{audio:true});
+const callMediaErr = (e,kind) => toast(e&&e.name==='NotAllowedError'?`Autorise le micro${kind==='video'?' et la caméra':''} dans ton navigateur pour appeler.`:`Le micro${kind==='video'?' ou la caméra':''} n'est pas disponible sur cet appareil.`,4500);
+function callPc(c,servers){ const pc=c.pc=new RTCPeerConnection({iceServers:servers});
+  c.stream.getTracks().forEach(t=>pc.addTrack(t,c.stream));
+  pc.ontrack=e=>{ c.remote=e.streams[0]||new MediaStream([e.track]); callAttach(); };
+  pc.onconnectionstatechange=()=>{ if(CALL!==c) return; const st=pc.connectionState;
+    if(st==='connected'){ if(c.status!=='active'){ c.status='active'; c.t0=c.t0||Date.now(); clearTimeout(c.ringT); callRing(false); } c.lost=false; renderCall(); }
+    else if(st==='disconnected'){ c.lost=true; renderCall(); }
+    else if(st==='failed'){ endCall('fail'); } };
+  return pc; }
+// Lancer un appel
+async function startCall(id,kind){
+  if(CALL){ toast('Tu es déjà en appel.'); return; }
+  if(!canCall()){ toast("Les appels ne sont pas possibles sur ce navigateur."); return; }
+  if(!DB.live&&!(await DB.ready())) return;
+  if(!isMate(id)){ toast("Vous n'êtes pas encore mates."); return; }
+  const c=CALL={id,pair:DB.pairId(id),role:'out',kind,at:Date.now(),status:'calling',muted:false,camOff:false}; renderCall();
+  try{ c.stream=await callMedia(kind); }catch(e){ if(CALL===c){ closeCall(); callMediaErr(e,kind); } return; }
+  if(CALL!==c){ c.stream.getTracks().forEach(t=>t.stop()); return; }
+  callAttach();
+  try{ const pc=callPc(c,await iceServers()); const offer=await pc.createOffer(); await pc.setLocalDescription(offer); await iceDone(pc); if(CALL!==c) return;
+    const me=DB.uid(); await DB.db.collection('calls').doc(c.pair).set({parts:[me,id].sort(),from:me,to:id,kind,status:'ringing',offer:{type:'offer',sdp:pc.localDescription.sdp},at:c.at});
+    if(CALL!==c) return; c.sent=true; c.status='ringing'; renderCall(); callRing(true,true);
+    c.ringT=setTimeout(()=>{ if(CALL===c&&c.status!=='active') endCall('noanswer'); },CALL_RING_S*1000); }
+  catch(e){ console.error(e); if(CALL===c){ closeCall(); toast("L'appel n'a pas pu démarrer. Réessaie dans un instant.",3500); } } }
+// Répondre
+async function acceptCall(){ const c=CALL; if(!c||c.role!=='in'||c.status!=='ringing') return; c.status='connecting'; callRing(false); renderCall();
+  try{ c.stream=await callMedia(c.kind); }catch(e){ if(CALL===c){ endCall('refused'); callMediaErr(e,c.kind); } return; }
+  if(CALL!==c){ c.stream.getTracks().forEach(t=>t.stop()); return; }
+  callAttach();
+  try{ const pc=callPc(c,await iceServers()); await pc.setRemoteDescription(c.offer); const ans=await pc.createAnswer(); await pc.setLocalDescription(ans); await iceDone(pc); if(CALL!==c) return;
+    await DB.db.collection('calls').doc(c.pair).update({status:'active',answer:{type:'answer',sdp:pc.localDescription.sdp}});
+    c.ringT=setTimeout(()=>{ if(CALL===c&&c.status!=='active') endCall('fail'); },20000); }
+  catch(e){ console.error(e); if(CALL===c) endCall('fail'); } }
+// Raccrocher, refuser, ou fin automatique. On prévient l'autre téléphone, puis on ferme tout.
+const CALL_WHY={ hangup:'Appel terminé.', refused:'Appel refusé.', noanswer:'Pas de réponse.', busy:'Ton mate est déjà en appel.', fail:"La connexion n'a pas pu s'établir. Réessaie, si possible en Wi-Fi." };
+function endCall(why){ const c=CALL; if(!c) return;
+  if(c.role==='in'||c.sent) DB.db.collection('calls').doc(c.pair).update({status:'ended',why,endedBy:DB.uid()}).catch(e=>console.error(e));
+  closeCall(c.role==='in'&&why==='refused'?'':c.role==='out'&&why==='hangup'&&c.status!=='active'?'Appel annulé.':CALL_WHY[why]||CALL_WHY.hangup); }
+function closeCall(msg){ const c=CALL; if(!c) return; CALL=null; clearTimeout(c.ringT); clearInterval(c.tick); callRing(false);
+  try{ c.stream&&c.stream.getTracks().forEach(t=>t.stop()); }catch(e){} try{ c.pc&&c.pc.close(); }catch(e){}
+  const ov=document.getElementById('call-ov'); if(ov) ov.remove(); if(msg) toast(msg,3000); }
+// Ce que dit le document d'appel (reçu en direct de la base)
+function onCallDoc(pair,d){ if(!d) return; const me=DB.uid(), c=CALL;
+  if(c&&c.pair===pair&&d.at===c.at){
+    if(d.status==='ended'&&d.endedBy!==me){ closeCall(c.role==='in'&&c.status==='ringing'?'':CALL_WHY[d.why==='refused'||d.why==='busy'||d.why==='fail'?d.why:'hangup']); return; }
+    if(c.role==='out'&&d.status==='active'&&d.answer&&!c.answered&&c.pc){ c.answered=true; callRing(false); c.status='connecting'; renderCall();
+      c.pc.setRemoteDescription(d.answer).catch(e=>{ console.error(e); if(CALL===c) endCall('fail'); });
+      clearTimeout(c.ringT); c.ringT=setTimeout(()=>{ if(CALL===c&&c.status!=='active') endCall('fail'); },20000); }
+    return; }
+  if(d.to!==me||d.status!=='ringing'||Math.abs(Date.now()-d.at)>CALL_RING_S*1000) return;   // pas pour moi, ou trop vieux
+  if(c){ if(c.pair!==pair||c.at!==d.at) DB.db.collection('calls').doc(pair).update({status:'ended',why:'busy',endedBy:me}).catch(()=>{}); return; }
+  if(!isMate(d.from)||!d.offer) return;
+  const n=CALL={id:d.from,pair,role:'in',kind:d.kind==='video'?'video':'audio',at:d.at,status:'ringing',offer:d.offer,muted:false,camOff:false};
+  n.ringT=setTimeout(()=>{ if(CALL===n&&n.status==='ringing') closeCall('Appel manqué.'); },Math.max(3000,CALL_RING_S*1000-(Date.now()-d.at)));
+  renderCall(); callRing(true); }
+// Sonnerie (petits bips) + vibration. Le navigateur peut refuser le son tant qu'on n'a pas touché l'écran : ce n'est pas grave.
+let RING=null;
+function callRing(on,soft){ if(RING){ clearInterval(RING.t); try{ RING.ctx.close(); }catch(e){} RING=null; try{ navigator.vibrate&&navigator.vibrate(0); }catch(e){} } if(!on) return;
+  try{ const ctx=new (window.AudioContext||window.webkitAudioContext)(); const beep=()=>{ if(ctx.state==='suspended') return; [0,.28].forEach(d=>{ const o=ctx.createOscillator(), g=ctx.createGain(); o.frequency.value=soft?440:660; g.gain.value=soft?.04:.12; o.connect(g); g.connect(ctx.destination); o.start(ctx.currentTime+d); o.stop(ctx.currentTime+d+.2); }); if(!soft){ try{ navigator.vibrate&&navigator.vibrate([250,120,250]); }catch(e){} } };
+    RING={ctx,t:setInterval(beep,soft?3000:1800)}; beep(); }catch(e){} }
+// L'écran d'appel (posé par-dessus tout le site : il reste si on change de page)
+function callAttach(){ const c=CALL; if(!c) return; const r=document.getElementById(c.kind==='video'?'call-remote':'call-audio'), l=document.getElementById('call-local');
+  if(r&&c.remote&&r.srcObject!==c.remote){ r.srcObject=c.remote; r.play&&r.play().catch(()=>{}); } if(l&&c.stream&&l.srcObject!==c.stream){ l.srcObject=c.stream; l.play&&l.play().catch(()=>{}); } }
+function renderCall(){ const c=CALL; if(!c) return; let ov=document.getElementById('call-ov'); if(!ov){ ov=document.createElement('div'); ov.id='call-ov'; ov.setAttribute('role','dialog'); ov.setAttribute('aria-modal','true'); document.body.appendChild(ov); }
+  const p=visible().find(x=>x.id===c.id)||S.profiles[c.id]||{id:c.id,name:'Ton mate'}, live=c.status==='active', video=c.kind==='video';
+  const state=()=>c.lost?'Reconnexion…':live?vTime((Date.now()-c.t0)/1000):c.status==='calling'?'Préparation de l\'appel…':c.status==='connecting'?'Connexion…':c.role==='in'?(video?'Appel vidéo entrant':'Appel vocal entrant'):'Ça sonne…';
+  const b=(act,cls,label,svg)=>`<button class="co-b ${cls}" type="button" data-co="${act}"><i>${svg}</i><span>${label}</span></button>`;
+  ov.className=(video?'video':'audio')+(live?' live':''); ov.setAttribute('aria-label',`Appel avec ${p.name||'ton mate'}`);
+  ov.innerHTML=`${video?`<video id="call-remote" autoplay playsinline></video><video id="call-local" autoplay playsinline muted${c.stream?'':' hidden'}></video>`:'<audio id="call-audio" autoplay></audio>'}
+    <div class="co-who">${avatar(p,96)}<div><b>${esc(p.name||'Ton mate')}</b><div class="co-state" id="co-state" aria-live="polite">${state()}</div></div></div>
+    <div class="co-btns">${c.role==='in'&&c.status==='ringing' ? b('no','end','Refuser',HANG_SVG)+b('yes','yes','Répondre',video?CAM_SVG:PHONE_SVG)
+      : b('mute',c.muted?'off':'',c.muted?'Micro coupé':'Micro',MIC_SVG)+(video?b('cam',c.camOff?'off':'',c.camOff?'Caméra coupée':'Caméra',CAM_SVG):'')+b('end','end','Raccrocher',HANG_SVG)}</div>`;
+  ov.querySelectorAll('[data-co]').forEach(x=>x.onclick=()=>{ const a=x.dataset.co;
+    if(a==='yes') acceptCall(); else if(a==='no') endCall('refused'); else if(a==='end') endCall('hangup');
+    else if(a==='mute'){ c.muted=!c.muted; c.stream&&c.stream.getAudioTracks().forEach(t=>t.enabled=!c.muted); renderCall(); }
+    else if(a==='cam'){ c.camOff=!c.camOff; c.stream&&c.stream.getVideoTracks().forEach(t=>t.enabled=!c.camOff); renderCall(); } });
+  callAttach(); clearInterval(c.tick); c.tick=setInterval(()=>{ const e=document.getElementById('co-state'); if(e&&CALL===c) e.textContent=state(); },1000); }
+window.addEventListener('pagehide',()=>{ if(CALL) endCall('hangup'); });
+
 /* ---- Messages vocaux ----
    Le son est enregistré par le téléphone (30 secondes maximum), puis rangé à part du message :
    chats/{paire}/voices/{id} ou groups/{groupe}/voices/{id} = { from, data, dur, at }.
@@ -4373,7 +4492,7 @@ setInterval(flameCheck,20*60e3);   // tourne aussi quand l'appli est en arrière
                groups/{id}/messages/{id} = { from, text, at }
    - Rôles : créateur (admin), modérateurs, membres. Seuls les membres lisent les messages (règles Firestore).
    - 50 membres maximum par groupe, pour rester dans la formule gratuite de Firebase.
-   - Comme partout sur Coopô, les 15-17 ans et les adultes ont des groupes séparés.
+   - Comme partout sur Coopô, les 13-17 ans et les adultes ont des groupes séparés.
    ========================================================= */
 const GROUP_MAX=50, GROUP_OWN_MAX=3;
 let GROUPS=[];   // groupes visibles : les miens, ceux où je suis invité, les groupes publics de ma tranche d'âge
@@ -4492,7 +4611,7 @@ function groupInvite(id){ const g=gById(id); if(!g) return; const can=matesList(
 /* =========================================================
    COMMUNAUTÉ : annonces « Je cherche » et tournois
    Firestore : boards/{adult|minor}/annonces/{id} et boards/{adult|minor}/tournois/{id}
-   Chaque tranche d'âge a son propre tableau : les 15-17 ans et les adultes ne se croisent pas.
+   Chaque tranche d'âge a son propre tableau : les 13-17 ans et les adultes ne se croisent pas.
    ========================================================= */
 const myGroupNow = () => S.me&&S.me.dob ? ageGroup(S.me) : 'adult';
 const myId = () => DB.live ? DB.uid() : 'me';
@@ -4608,7 +4727,7 @@ document.addEventListener('click',e=>{
 let TOURNOIS=[];
 const DEMO_TOURNOIS=[
   {id:'t1',title:'Coupe Coopô Free Fire',game:'Free Fire',date:Date.now()+5*864e5,format:'Escouades de 4 · élimination directe',max:16,prize:'Un thème au choix pour l\'équipe gagnante',desc:'Inscris-toi seul, on complète les escouades. Lobby envoyé sur WhatsApp ou Discord 30 min avant.',players:['p8','p1'],entries:{},status:'open',ageGroup:'adult',at:Date.now()},
-  {id:'t2',title:'Défi Brawl Stars 15-17',game:'Brawl Stars',date:Date.now()+3*864e5,format:'Solo · 3 manches',max:12,prize:'Thème au choix',desc:'Tournoi réservé aux 15-17 ans.',players:['p15'],entries:{},status:'open',ageGroup:'minor',at:Date.now()},
+  {id:'t2',title:'Défi Brawl Stars 13-17',game:'Brawl Stars',date:Date.now()+3*864e5,format:'Solo · 3 manches',max:12,prize:'Thème au choix',desc:'Tournoi réservé aux 13-17 ans.',players:['p15'],entries:{},status:'open',ageGroup:'minor',at:Date.now()},
 ];
 function tournoisAll(){
   const src = DB.live ? TOURNOIS : [...DEMO_TOURNOIS, ...(S.tournois||[])];
@@ -4623,7 +4742,7 @@ function tournoiCard(t){
   return `<article class="mcard tournoi${t.status==='done'?' done':''}" style="--c:var(--pk)">
     <div class="sq-top"><span class="sq-game">${esc(t.game)}</span><span class="sq-slots ${full||!open?'full':''}">${players.length}/${+t.max||0} · ${status}</span></div>
     <h3>${esc(t.title)}</h3>
-    <dl class="facts"><div><dt>Quand</dt><dd>${esc(fmtDay(t.date))}</dd></div>${t.format?`<div><dt>Format</dt><dd>${esc(t.format)}</dd></div>`:''}${t.prize?`<div><dt>À gagner</dt><dd>${esc(t.prize)}</dd></div>`:''}${isAdmin()?`<div><dt>Pour</dt><dd>${t.ageGroup==='minor'?'15-17 ans':'Adultes'}</dd></div>`:''}</dl>
+    <dl class="facts"><div><dt>Quand</dt><dd>${esc(fmtDay(t.date))}</dd></div>${t.format?`<div><dt>Format</dt><dd>${esc(t.format)}</dd></div>`:''}${t.prize?`<div><dt>À gagner</dt><dd>${esc(t.prize)}</dd></div>`:''}${isAdmin()?`<div><dt>Pour</dt><dd>${t.ageGroup==='minor'?'13-17 ans':'Adultes'}</dd></div>`:''}</dl>
     ${t.desc?`<p class="muted">${esc(t.desc)}</p>`:''}
     ${mem.length?`<div class="sq-mem">${mem.slice(0,14).map(x=>x===S.me?avatar(S.me,30):`<a href="#/joueur/${x.id}" title="${esc(x.name)}">${avatar(x,30)}</a>`).join('')}</div>`:''}
     <div class="sq-act">${isAdmin()?`<button class="btn btn-sm btn-ghost" data-to-list="${esc(t.id)}">Inscrits</button><button class="btn btn-sm btn-ghost" data-to-edit="${esc(t.id)}">Modifier</button>`:''}
@@ -4666,7 +4785,7 @@ function editTournoi(id){
     <div class="two"><div class="field"><label for="tg">Jeu</label><select id="tg">${GAMES.map(g=>`<option value="${esc(g)}" ${t&&t.game===g?'selected':''}>${esc(g)}</option>`).join('')}</select></div>
       <div class="field"><label for="td">Date et heure</label><input id="td" type="datetime-local" value="${local}"></div></div>
     <div class="two"><div class="field"><label for="tm">Places</label><input id="tm" type="text" inputmode="numeric" value="${t?t.max:16}"></div>
-      <div class="field"><label for="ta">Pour</label><select id="ta" ${isNew?'':'disabled'}><option value="adult" ${t&&t.ageGroup==='minor'?'':'selected'}>Adultes</option><option value="minor" ${t&&t.ageGroup==='minor'?'selected':''}>15-17 ans</option></select></div></div>
+      <div class="field"><label for="ta">Pour</label><select id="ta" ${isNew?'':'disabled'}><option value="adult" ${t&&t.ageGroup==='minor'?'':'selected'}>Adultes</option><option value="minor" ${t&&t.ageGroup==='minor'?'selected':''}>13-17 ans</option></select></div></div>
     <div class="field"><label for="tf">Format</label><input id="tf" type="text" maxlength="80" value="${esc(t?t.format:'')}" placeholder="ex. Escouades de 4 · élimination directe"></div>
     <div class="field"><label for="tp">À gagner (facultatif)</label><input id="tp" type="text" maxlength="80" value="${esc(t?t.prize:'')}" placeholder="ex. Un thème au choix pour les gagnants"></div>
     <div class="field"><label for="tx">Règles et infos</label><textarea id="tx" rows="3" maxlength="500">${esc(t?t.desc:'')}</textarea></div>
@@ -4730,7 +4849,7 @@ async function shareProfile(){
 /* ---- Aide, CGU, confidentialité ---- */
 function viewHelp(){
   const faq=[['Comment est calculé le pourcentage de compatibilité ?','Chaque critère vaut un nombre de points (jeux en commun, horaires, style, jours, plateforme, rang, langue, pays). Le total est ramené sur 100. Sur le profil d\'un joueur, tu vois le détail critère par critère.'],
-    ['Pourquoi je ne vois pas certains joueurs ?','Les 15-17 ans ne voient que des 15-17 ans, et les adultes que des adultes. Tu ne vois pas non plus les joueurs que tu as bloqués ni ceux masqués par la modération.'],
+    ['Pourquoi je ne vois pas certains joueurs ?','Les 13-17 ans ne voient que des 13-17 ans, et les adultes que des adultes. Tu ne vois pas non plus les joueurs que tu as bloqués ni ceux masqués par la modération.'],
     ['Comment contacter un joueur ?','Envoie-lui une demande de mate. S\'il accepte, vous pouvez vous écrire dans Messages et vous retrouver dans des groupes. Tout se passe dans Coopô : aucun numéro ni pseudo d\'un autre réseau n\'est demandé.'],
     ['Mon e-mail ou ma date de naissance sont-ils visibles ?','Non, jamais. Les autres joueurs ne voient que ton pseudo, ton avatar, tes jeux et tes habitudes de jeu.'],
     ['À quoi servent les annonces ?','À trouver vite des joueurs pour une partie précise : « Je cherche 2 joueurs Free Fire ce soir ». Clique sur « Je suis partant » : l\'auteur est prévenu et reçoit une demande de mate. Les annonces disparaissent toutes seules après la partie.'],
@@ -4762,13 +4881,13 @@ function viewLegal(kind){
     :`
     <h3>1. Données collectées</h3><p>Pour créer ton compte : e-mail, pseudo, date de naissance, et, si tu utilises Google, ton nom et ta photo Google. Pour ton profil : jeux, pseudos et rangs en jeu, horaires, jours, style, plateformes, pays, langues. Coopô ne te demande aucun numéro de téléphone ni pseudo d'un autre réseau ; ceux qui avaient été enregistrés avant ont été effacés. Pour la communauté : tes annonces et tes inscriptions aux tournois. Pour le fonctionnement : demandes de mate, messages, signalements, blocages, notifications, ton statut « en ligne » et l'heure de ta dernière visite, ton avis « tu rejouerais avec lui ? » sur un joueur, et, si tu es venu par un lien de parrainage, le pseudo de ton parrain. Si tu nous écris par le formulaire de contact : ton message et l'e-mail que tu indiques.</p>
     <h3>2. Ce qui est visible</h3><p>Les autres utilisateurs voient uniquement ton pseudo, ton avatar, tes jeux et tes habitudes de jeu. Ton statut « en ligne » et le moment de ta dernière visite sont visibles si tu ne les as pas désactivés dans les paramètres. Tes avis sur les autres joueurs ne leur sont pas montrés. Ton e-mail, ta date de naissance et ton âge exact ne sont jamais affichés. Ton e-mail reste uniquement dans le service de connexion (Firebase Authentication) : il n'est pas recopié dans la base de données du site. Tes messages privés ne sont lisibles que par toi et ton mate ; si tu signales une conversation, les derniers messages sont joints au signalement et la modération peut consulter cette conversation, uniquement pour traiter le signalement.</p>
-    <h3>3. Utilisation</h3><p>Les données servent à calculer les compatibilités, à faire fonctionner les demandes de mate, les messages et les groupes, à séparer les tranches d'âge et à assurer la modération. Aucune donnée n'est vendue. Aucune publicité ciblée. Messages privés, écrits ou vocaux : seuls toi et ton mate les lisez ou les écoutez ; la modération n'y accède que si l'un de vous signale la conversation. Groupes : les messages sont lus par les membres du groupe, et la modération de Coopô peut les consulter et les supprimer pour protéger les joueurs. Flammes : Coopô enregistre seulement les jours où vous vous êtes écrit, pas le contenu.</p>
+    <h3>3. Utilisation</h3><p>Les données servent à calculer les compatibilités, à faire fonctionner les demandes de mate, les messages et les groupes, à séparer les tranches d'âge et à assurer la modération. Aucune donnée n'est vendue. Aucune publicité ciblée. Messages privés, écrits ou vocaux : seuls toi et ton mate les lisez ou les écoutez. Les appels vocaux et vidéo passent directement entre vos deux appareils (parfois par un relais technique) et ne sont jamais enregistrés ; la modération n'y accède que si l'un de vous signale la conversation. Groupes : les messages sont lus par les membres du groupe, et la modération de Coopô peut les consulter et les supprimer pour protéger les joueurs. Flammes : Coopô enregistre seulement les jours où vous vous êtes écrit, pas le contenu.</p>
     <h3>4. Hébergement</h3><p>Les données sont stockées sur Firebase, un service de Google Cloud. Elles sont protégées par des règles d'accès : ton e-mail et ta date de naissance ne sont lisibles que par toi et par la modération.</p>
     <h3>5. Conservation</h3><p>Les données sont conservées tant que le compte existe, puis supprimées. Les messages que tu as envoyés restent visibles par les mates qui les ont reçus. Les signalements peuvent être conservés anonymisés pour la sécurité du service.</p>
     <h3>6. Tes droits</h3><p>Tu peux consulter, modifier et supprimer tes données depuis ton compte, ou en nous écrivant via le formulaire <a href="#/contact">Nous écrire</a>. Les utilisateurs mineurs peuvent exercer ces droits avec un parent ou tuteur. En Côte d'Ivoire, tu peux aussi saisir l'ARTCI, l'autorité chargée de la protection des données personnelles.</p>
     <h3>7. Paiements</h3><p>Les paiements sont traités par SasPay (Mobile Money ou carte bancaire). Pour un achat, Coopô transmet à SasPay ton adresse e-mail (pour ton reçu), ton pseudo, ton pays, l'objet acheté et son prix ; rien d'autre. Coopô ne reçoit ni ton numéro de carte ni ton code Mobile Money ; nous conservons uniquement la référence de la transaction, l'article acheté, le montant et son statut.</p>
     <h3>8. Cookies</h3><p>Le site utilise uniquement le stockage nécessaire au fonctionnement (session, thème choisi). Pas de cookies publicitaires ni de mesure d'audience. Pour afficher le site plus vite, une copie des données que tu as déjà consultées (liste des joueurs, messages) est gardée dans ton navigateur ; elle est effacée quand tu te déconnectes ou quand tu vides les données du site. Le détail est dans la <a href="#/cookies">politique de cookies</a>.</p>
-    <h3>9. Sécurité</h3><p>Les échanges avec le site sont chiffrés (HTTPS). Les mots de passe sont gérés par Firebase Authentication : nous ne les voyons jamais. L'accès aux données est limité par des règles côté serveur, et seule l'équipe de modération peut consulter les signalements. Aucun système n'est infaillible : choisis un mot de passe unique, vérifie ton adresse e-mail et ne partage jamais tes identifiants. Dans les messages, les numéros de téléphone sont bloqués pour les 15-17 ans et un avertissement s'affiche sur les liens reçus.</p>
+    <h3>9. Sécurité</h3><p>Les échanges avec le site sont chiffrés (HTTPS). Les mots de passe sont gérés par Firebase Authentication : nous ne les voyons jamais. L'accès aux données est limité par des règles côté serveur, et seule l'équipe de modération peut consulter les signalements. Aucun système n'est infaillible : choisis un mot de passe unique, vérifie ton adresse e-mail et ne partage jamais tes identifiants. Dans les messages, les numéros de téléphone sont bloqués pour les 13-17 ans et un avertissement s'affiche sur les liens reçus.</p>
     <h3>10. Modifications</h3><p>Cette politique peut évoluer avec le site. La date de mise à jour est indiquée en haut de la page et tu seras informé des changements importants.</p>`}
     </div>`;
 }
@@ -4853,7 +4972,7 @@ function viewWelcome(){
   const ex=[['KO','KoffiNight','Free Fire · Soir','91',330],['AW','AwaBuild','eFootball · Week-end','84',150],['DJ','DjeliSniper','COD Mobile · Nuit','77',45]];
   app.innerHTML=`<div class="wrap page welcome">
     <section class="wl-hero">
-      <span class="wl-kicker">Gratuit · dès 15 ans · profils modérés</span>
+      <span class="wl-kicker">Gratuit · dès 13 ans · profils modérés</span>
       <h1>Trouve des joueurs avec qui <span class="hl">jouer ce soir</span>.</h1>
       <p>Coopô te met en relation avec des gamers d'Afrique francophone qui jouent aux mêmes jeux, aux mêmes heures et avec le même style que toi.</p>
       <div class="wl-cta"><a class="btn btn-ac btn-lg" href="#/inscription">Créer mon compte gratuit</a><a class="linkbtn" href="#/connexion">J'ai déjà un compte</a></div>
@@ -4865,7 +4984,7 @@ function viewWelcome(){
     <section class="wl-feats">
       <div><b>🎮 Mêmes jeux, mêmes heures</b><span>Free Fire, eFootball, COD Mobile, FC, Fortnite… et tes horaires.</span></div>
       <div><b>⚡ Dispo maintenant</b><span>Dis que tu es libre, lance un duo en un clic.</span></div>
-      <div><b>🛡️ Entre joueurs de ton âge</b><span>Les 15-17 ans et les adultes ne se croisent pas.</span></div>
+      <div><b>🛡️ Entre joueurs de ton âge</b><span>Les 13-17 ans et les adultes ne se croisent pas.</span></div>
     </section>
     <p class="wl-legal">En t'inscrivant, tu acceptes les <a href="#/cgu">CGU</a> et la <a href="#/confidentialite">politique de confidentialité</a>.</p>
   </div>`;
@@ -5063,6 +5182,8 @@ const DB = {
         if(!chg) return; save(); renderNotifBadge();
         this.fetchPlayers(fresh).catch(()=>{}).then(()=>refreshAfterData()); },lerr));
       // Flammes : une écoute sur toutes mes séries (un petit document par mate avec qui j'ai une série)
+      // Appels : on écoute les appels de mes mates (ça sonne, décroché, raccroché)
+      if(canCall()) this._unsub.push(db.collection('calls').where('parts','array-contains',uid).onSnapshot(snap=>{ snap.docChanges().forEach(ch=>{ if(ch.type!=='removed') onCallDoc(ch.doc.id,ch.doc.data()); }); },e=>console.error(e)));
       this._unsub.push(db.collection('streaks').where('members','array-contains',uid).onSnapshot(snap=>{ S.streaks=S.streaks||{};
         snap.docChanges().forEach(ch=>{ const s=ch.doc.data()||{}, other=(s.members||[]).find(x=>x!==uid); if(!other) return;
           if(ch.type==='removed'){ delete S.streaks[other]; return; } S.streaks[other]={last:s.last||{},both:+s.both||0,count:+s.count||0}; flameMilestone(other); });
