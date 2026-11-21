@@ -718,6 +718,28 @@ input.invalid{ border-color:var(--lo) !important; animation:shake .35s; }
 .bubble.me{ align-self:flex-end; background:var(--pk); color:var(--on-pk); border-color:var(--pk); border-radius:18px 18px 4px 18px; }
 .bubble small{ font-size:11px; opacity:.85; } .bubble.me small{ opacity:1; } .bubble span{ overflow-wrap:anywhere; }
 .chat-form{ display:flex; gap:8px; margin-top:12px; }
+/* Messages sur ordinateur, façon messagerie : la liste des conversations à gauche, la conversation en grand à droite.
+   Sur téléphone, rien ne change : la colonne de gauche est cachée et .dm-shell ne fait rien. */
+.dm-shell{ display:contents; } .dm-side, .dm-empty{ display:none; }
+@media (min-width:1000px){
+  .dm-shell{ display:grid; grid-template-columns:300px minmax(0,1fr); gap:20px; align-items:start; max-width:1320px; margin:0 auto; padding:0 28px; }
+  .dm-shell > .wrap{ max-width:none; width:auto; margin:0; padding-left:0; padding-right:0; }
+  .dm-shell .dm-list-page{ display:none; }   /* la liste en grand ne sert plus : elle est déjà à gauche */
+  .dm-shell .chat-page, .dm-side, .dm-empty{ height:calc(100vh - var(--dm-top,150px)); min-height:420px; }
+  .dm-shell .chat-page{ min-height:420px; padding-bottom:0; } .dm-shell .chat-box{ flex:1 1 0; min-height:0; max-height:none; }
+  .dm-shell .chat-head .back{ display:none; }   /* la liste est à côté : plus besoin du retour */
+  .dm-shell .bubble{ max-width:min(70%,640px); }
+  .dm-side{ display:flex; flex-direction:column; gap:4px; overflow:auto; padding:14px 10px; background:var(--s1); border:1px solid var(--hair); border-radius:var(--rc); margin-top:24px; height:calc(100vh - var(--dm-top,150px) - 24px); }
+  .dm-side h3{ margin:10px 8px 4px; font-size:12px; letter-spacing:.04em; text-transform:uppercase; opacity:.7; display:flex; align-items:center; justify-content:space-between; }
+  .dm-side h3 a{ text-transform:none; letter-spacing:0; font-size:20px; line-height:1; text-decoration:none; color:inherit; width:28px; height:28px; display:grid; place-items:center; border-radius:8px; } .dm-side h3 a:hover{ background:var(--hair); }
+  .dm-row{ display:grid; grid-template-columns:36px minmax(0,1fr) auto; gap:10px; align-items:center; padding:7px 8px; border-radius:12px; text-decoration:none; color:inherit; min-height:50px; }
+  .dm-row:hover{ background:var(--hair); } .dm-row.on{ background:color-mix(in srgb,var(--pk) 16%,transparent); }
+  .dm-row > div{ display:grid; min-width:0; line-height:1.25; } .dm-row b{ display:flex; align-items:center; gap:6px; min-width:0; font-size:15px; } .dm-row b > span:first-child{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .dm-row .muted{ font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .dm-row.unread .muted{ color:var(--tx); font-weight:700; }
+  .dm-row .av, .dm-row .avatar{ border-radius:50% !important; }
+  .dm-none{ margin:6px 8px; font-size:13px; }
+  .dm-empty{ display:grid; place-items:center; text-align:center; margin-top:24px; height:calc(100vh - var(--dm-top,150px) - 24px); background:var(--s1); border:1px solid var(--hair); border-radius:var(--rc); padding:24px; }
+}
 /* Appels : boutons dans l'en-tête de la conversation + écran d'appel plein écran */
 .chat-calls{ display:flex; gap:8px; margin-left:auto; flex:none; }
 .call-btn{ width:44px; height:44px; min-width:44px; padding:0; border-radius:50%; display:grid; place-items:center; } .call-btn svg{ width:20px; height:20px; }
@@ -4206,27 +4228,40 @@ document.addEventListener('click',e=>{ if(e.target.closest('.notif-btn,[data-not
 function lastMsg(id){ const m=(S.chats[id]||[]).slice(-1)[0]||null, n=S.notifs.filter(x=>x.type==='message'&&x.from===id).sort((a,b)=>(b.at||0)-(a.at||0))[0];
   if(n&&(!m||(n.at||0)>(m.at||0))){ const t=String(n.text||''), i=t.indexOf(' : '); return {from:id,text:i>=0?t.slice(i+3):t,at:n.at||0}; }
   return m; }
+/* Colonne des conversations (ordinateur seulement) : les mates puis les groupes, le plus récent en haut. key = 'c:<joueur>' ou 'g:<groupe>'. */
+function dmSideInner(key){
+  const mates=matesList().sort((a,b)=>{ const la=lastMsg(a.id), lb=lastMsg(b.id); return (lb?lb.at:0)-(la?la.at:0); });
+  const groups=GROUPS.filter(gIn).sort((a,b)=>tsMs(b.lastAt||b.at)-tsMs(a.lastAt||a.at));
+  return `<h3>Messages privés</h3>${mates.length?mates.map(p=>{ const last=lastMsg(p.id), u=S.unread[p.id]||0;
+      return `<a class="dm-row${key==='c:'+p.id?' on':''}${u?' unread':''}" href="#/messages/${p.id}"${key==='c:'+p.id?' aria-current="page"':''}>${avatar(p,36)}<div><b><span>${np(p)}</span>${isOnline(p)?'<span class="online"></span>':''}</b><span class="muted">${last?esc((last.from==='me'?'Toi : ':'')+last.text):'Dis bonjour 👋'}</span></div>${u?`<span class="badge static">${u}</span>`:''}</a>`; }).join(''):'<p class="muted dm-none">Pas encore de mates.</p>'}
+    <h3>Groupes <a href="#/groupes/groupes" aria-label="Trouver ou créer un groupe" title="Trouver ou créer un groupe">+</a></h3>${groups.length?groups.map(g=>`<a class="dm-row${key==='g:'+g.id?' on':''}${gUnread(g)?' unread':''}" href="#/groupe/${esc(g.id)}"${key==='g:'+g.id?' aria-current="page"':''}>${gAvatar(g,36)}<div><b><span>${esc(g.name)}</span></b><span class="muted">${g.members.length} membre${g.members.length>1?'s':''}</span></div>${gUnread(g)?'<span class="badge static" aria-label="Nouveaux messages">•</span>':''}</a>`).join(''):'<p class="muted dm-none">Aucun groupe.</p>'}`; }
+const dmSide = key => `<nav class="dm-side" id="dm-side" aria-label="Conversations" data-key="${esc(key||'')}">${dmSideInner(key)}</nav>`;
+const dmRefresh = () => { const sd=document.getElementById('dm-side'); if(sd&&sd.offsetParent!==null){ const y=sd.scrollTop; sd.innerHTML=dmSideInner(sd.dataset.key); sd.scrollTop=y; } };
+// Place la colonne à la bonne hauteur : juste sous l'en-tête du site, jusqu'en bas de la fenêtre
+function dmFit(){ const sh=document.querySelector('.dm-shell'); if(!sh) return; const top=sh.getBoundingClientRect().top+window.scrollY; sh.style.setProperty('--dm-top',Math.round(top+24)+'px'); const on=sh.querySelector('.dm-row.on'); if(on&&on.scrollIntoView) on.scrollIntoView({block:'nearest'}); }
+window.addEventListener('resize',dmFit);
 function viewMessages(id){
   if(dataPending()) return loadingView('Messages');
   if(!S.me) return needProfile('Messages');
   if(id) return viewChat(id);
   const mates=matesList().sort((a,b)=>{ const la=lastMsg(a.id), lb=lastMsg(b.id); return (lb?lb.at:0)-(la?la.at:0); });
-  app.innerHTML=`<div class="wrap page" style="max-width:720px"><div class="page-head"><div><h2>Messages</h2><p>Discute avec tes mates. Les messages sont réservés aux mates acceptés.</p></div></div>
+  app.innerHTML=`<div class="dm-shell">${dmSide('')}<div class="dm-empty"><div><h3>Choisis une conversation</h3><p class="muted">Tes mates et tes groupes sont dans la colonne de gauche.</p></div></div><div class="wrap page dm-list-page" style="max-width:720px"><div class="page-head"><div><h2>Messages</h2><p>Discute avec tes mates. Les messages sont réservés aux mates acceptés.</p></div></div>
     ${mates.length?`<div class="chat-list">${mates.map(p=>{ const last=lastMsg(p.id), u=S.unread[p.id]||0;
       return `<a class="chat-row${u?' unread':''}" href="#/messages/${p.id}">${avatar(p,52)}<div><b>${np(p)}${modBadge(p)}${isOnline(p)?' <span class="online"></span>':''}${flameTag(p.id)}</b><span class="muted">${last?esc((last.from==='me'?'Toi : ':'')+last.text):'Dis bonjour 👋'}</span></div>${u?`<span class="badge static">${u}</span>`:last?`<small class="muted">${ago(last.at)}</small>`:''}</a>`; }).join('')}</div>`
     :`<div class="empty"><h3>Pas encore de mates</h3><p class="muted">Envoie une demande à un joueur compatible. Dès qu'il accepte, vous pouvez discuter ici.</p><a class="btn btn-ac" href="#/matchs">Voir mes matchs</a></div>`}
     <h3 class="on-world g-h">Groupes</h3>${GROUPS.filter(gIn).length?`<div class="chat-list">${GROUPS.filter(gIn).sort((a,b)=>tsMs(b.lastAt||b.at)-tsMs(a.lastAt||a.at)).map(groupRow).join('')}</div>`:''}
-    <p style="margin-top:10px"><a class="btn btn-sm" href="#/groupes/groupes">${GROUPS.filter(gIn).length?'Tous les groupes':'Trouver ou créer un groupe'}</a></p></div>`;
+    <p style="margin-top:10px"><a class="btn btn-sm" href="#/groupes/groupes">${GROUPS.filter(gIn).length?'Tous les groupes':'Trouver ou créer un groupe'}</a></p></div></div>`;
+  dmFit();
 }
 function viewChat(id){
   const p=visible().find(x=>x.id===id);
   if(!p||!isMate(id)){ app.innerHTML=`<div class="wrap page"><div class="empty"><h3>Vous n'êtes pas encore mates</h3><p class="muted">Les messages s'ouvrent une fois la demande de mate acceptée.</p><a class="btn" href="#/messages">Retour aux messages</a></div></div>`; return; }
   S.unread[id]=0; { const seen=S.notifs.filter(n=>!n.read&&n.type==='message'&&n.from===id); seen.forEach(n=>n.read=true); DB.markRead(seen.map(n=>n.id)); } save(); renderNotifBadge();
-  app.innerHTML=`<div class="wrap page chat-page"><div class="chat-head">${backLink('#/messages','Messages')}<a class="chat-who" href="#/joueur/${p.id}">${avatar(p,44)}<div><b>${np(p)}${modBadge(p)}</b>${isOnline(p)?'<span class="online">En ligne</span>':'<span class="muted" style="font-size:12px">Hors ligne</span>'}</div></a>${callBtns()}</div>
+  app.innerHTML=`<div class="dm-shell">${dmSide('c:'+id)}<div class="wrap page chat-page"><div class="chat-head">${backLink('#/messages','Messages')}<a class="chat-who" href="#/joueur/${p.id}">${avatar(p,44)}<div><b>${np(p)}${modBadge(p)}</b>${isOnline(p)?'<span class="online">En ligne</span>':'<span class="muted" style="font-size:12px">Hors ligne</span>'}</div></a>${callBtns()}</div>
     <p class="flame-hint" id="flame-hint"></p>
     <div class="chat-box" id="chatbox"></div>
-    <form class="chat-form" id="chatform"><input type="text" id="chatin" placeholder="Écris un message…" maxlength="500" autocomplete="off">${micBtn()}<button class="btn btn-ac" type="submit">Envoyer</button></form></div>`;
-  renderChat(id);
+    <form class="chat-form" id="chatform"><input type="text" id="chatin" placeholder="Écris un message…" maxlength="500" autocomplete="off">${micBtn()}<button class="btn btn-ac" type="submit">Envoyer</button></form></div></div>`;
+  dmFit(); renderChat(id);
   document.querySelectorAll('[data-call]').forEach(b=>b.onclick=()=>startCall(id,b.dataset.call));
   // Message vocal : enregistré puis envoyé comme un message (30 secondes maximum)
   document.getElementById('micbtn')?.addEventListener('click',()=>recordVoice(v=>{ const vid=newId();
@@ -4407,7 +4442,7 @@ const hasLink = t => /(?:https?:\/\/|www\.)\S+|\b[a-z0-9-]+\.(?:com|net|org|io|g
 const msgWarn = m => m.from==='me' ? '' : hasPhone(m.text) ? '<em class="bubble-warn">Prudence : ne partage ton numéro qu\'avec quelqu\'un que tu connais vraiment.</em>'
   : hasLink(m.text) ? '<em class="bubble-warn">Prudence avec les liens : ne saisis jamais ton mot de passe sur un site inconnu.</em>' : '';
 function renderChat(id){
-  const box=document.getElementById('chatbox'); if(!box) return; const msgs=S.chats[id]||[];
+  const box=document.getElementById('chatbox'); if(!box) return; const msgs=S.chats[id]||[]; dmRefresh();
   box.innerHTML = msgs.length ? msgs.map(m=>`<div class="bubble ${m.from==='me'?'me':''}">${m.voice?voiceBubble(m.voice,'c',id):`<span>${esc(m.text)}</span>${msgWarn(m)}`}<small>${ago(m.at)}</small></div>`).join('')
     : `<div class="chat-empty"><p class="muted">Première partie ensemble ? Propose un créneau 🎮</p><div class="chips">${QUICK_MSGS.map(t=>`<button type="button" class="chip" data-quick="${esc(t)}">${esc(t)}</button>`).join('')}</div></div>`;
   box.scrollTop=box.scrollHeight;
@@ -4563,10 +4598,10 @@ function viewGroup(id){
       ${(g.kicked||[]).includes(myId())?'<p class="muted">Tu ne peux plus rejoindre ce groupe.</p>':g.members.length>=GROUP_MAX?'<p class="muted">Ce groupe est complet.</p>':(!g.private||invited)?'<button class="btn btn-ac" id="gjoin">Rejoindre le groupe</button>':'<p class="muted">Ce groupe est privé : il faut une invitation.</p>'}</section></div>`;
     document.getElementById('gjoin')?.addEventListener('click',async ev=>{ ev.currentTarget.disabled=true; if(await DB.joinGroup(id)){ toast('Tu as rejoint le groupe'); route(); } else ev.currentTarget.disabled=false; }); return; }
   (S.gseen=S.gseen||{})[id]=Date.now(); save();
-  app.innerHTML=`<div class="wrap page chat-page"><div class="chat-head">${backLink('#/groupes/groupes','Groupes')}<button class="chat-who g-who" type="button" id="ginfo">${gAvatar(g,44)}<div><b>${esc(g.name)}</b><span class="muted" style="font-size:12px">${g.members.length} membre${g.members.length>1?'s':''} · infos</span></div></button></div>
+  app.innerHTML=`<div class="dm-shell">${dmSide('g:'+id)}<div class="wrap page chat-page"><div class="chat-head">${backLink('#/groupes/groupes','Groupes')}<button class="chat-who g-who" type="button" id="ginfo">${gAvatar(g,44)}<div><b>${esc(g.name)}</b><span class="muted" style="font-size:12px">${g.members.length} membre${g.members.length>1?'s':''} · infos</span></div></button></div>
     <div class="chat-box" id="chatbox"><p class="muted" style="margin:auto">Chargement des messages…</p></div>
-    <form class="chat-form" id="chatform"><input type="text" id="chatin" placeholder="Écris au groupe…" maxlength="500" autocomplete="off">${micBtn()}<button class="btn btn-ac" type="submit">Envoyer</button></form></div>`;
-  document.getElementById('ginfo').onclick=()=>groupInfo(id);
+    <form class="chat-form" id="chatform"><input type="text" id="chatin" placeholder="Écris au groupe…" maxlength="500" autocomplete="off">${micBtn()}<button class="btn btn-ac" type="submit">Envoyer</button></form></div></div>`;
+  dmFit(); document.getElementById('ginfo').onclick=()=>groupInfo(id);
   document.getElementById('micbtn')?.addEventListener('click',()=>recordVoice(v=>{ const vid=newId(); VOICES[vid]=v.data; DB.sendGroupMessage(id,VOICE_TEXT,{id:vid,dur:v.dur}); }));
   try{ const cb=document.getElementById('chatbox'); if(cb&&'ResizeObserver' in window) new ResizeObserver(()=>{ cb.scrollTop=cb.scrollHeight; }).observe(cb); }catch(e){}
   document.getElementById('chatform').addEventListener('submit',e=>{ e.preventDefault(); const i=document.getElementById('chatin'), t=i.value.trim(); if(!t) return;
