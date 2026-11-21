@@ -756,7 +756,7 @@ input.invalid{ border-color:var(--lo) !important; animation:shake .35s; }
 .dm-shell{ display:contents; } .dm-side, .dm-empty, .dm-rail{ display:none; }
 @media (min-width:1000px){
   /* la messagerie prend toute la largeur de la fenêtre */
-  body:has(.dm-shell) .frame{ width:calc(100% - 28px); max-width:none; }
+  html body:has(.dm-shell) .frame{ width:100%; max-width:none; margin:0; padding-left:clamp(14px,2vw,32px); padding-right:clamp(14px,2vw,32px); }   /* vaut pour tous les thèmes */
   .dm-shell{ display:grid; grid-template-columns:68px 300px minmax(0,1fr); gap:14px; align-items:start; max-width:none; margin:0; padding:0 8px; }
   .dm-shell .chat-page, .dm-shell .dm-side, .dm-shell .dm-rail, .dm-shell .dm-empty{ --dm-gap:10px; }
   .dm-shell > .wrap{ max-width:none; width:auto; margin:0; padding-left:0; padding-right:0; }
