@@ -821,8 +821,14 @@ input.invalid{ border-color:var(--lo) !important; animation:shake .35s; }
 .voice-play{ display:flex; align-items:center; gap:10px; min-height:40px; min-width:150px; padding:2px 0; border:0; background:none; color:inherit; font:inherit; cursor:pointer; text-align:left; }
 .voice-play .v-ico{ flex:none; width:34px; height:34px; border-radius:50%; display:grid; place-items:center; background:currentColor; } .voice-play .v-ico svg{ width:14px; height:14px; }
 .bubble .voice-play .v-ico svg{ fill:var(--field); } .bubble.me .voice-play .v-ico svg{ fill:var(--pk); }
-.voice-play .v-bar{ flex:1 1 0; min-width:60px; height:4px; border-radius:2px; background:color-mix(in srgb,currentColor 28%,transparent); overflow:hidden; }
-.voice-play .v-bar i{ display:block; height:100%; width:0; background:currentColor; }
+/* ondes du vocal (comme sur Snapchat) : des barres claires, recouvertes de barres pleines à mesure que le son avance (--vp ; --p est déjà pris par l'anneau de compatibilité) */
+.voice-play .v-wave{ --vp:0%; position:relative; flex:none; width:clamp(112px,38vw,220px); height:28px; }
+.voice-play .vw{ position:absolute; inset:0; display:flex; align-items:center; justify-content:space-between; gap:1px; }
+.voice-play .vw i{ flex:1 1 0; min-width:1.5px; max-width:3px; min-height:3px; border-radius:2px; background:color-mix(in srgb,currentColor 34%,transparent); }
+.voice-play .vw-on{ clip-path:inset(0 calc(100% - var(--vp)) 0 0); }
+.voice-play .vw-on i{ background:currentColor; }
+.voice-play.on .vw-on{ transition:clip-path .25s linear; }
+@media (prefers-reduced-motion:reduce){ .voice-play.on .vw-on{ transition:none; } }
 .voice-play .v-time{ flex:none; font-size:12px; font-variant-numeric:tabular-nums; }
 .voice-play .i-pause{ display:none; } .voice-play.on .i-pause{ display:block; } .voice-play.on .i-play{ display:none; }
 .voice-play:focus-visible{ outline:2px solid currentColor; outline-offset:3px; border-radius:8px; }
@@ -4657,7 +4663,7 @@ function viewChat(id){
   document.querySelectorAll('[data-call]').forEach(b=>b.onclick=()=>startCall(id,b.dataset.call));
   // Message vocal : enregistré puis envoyé comme un message (30 secondes maximum)
   document.getElementById('micbtn')?.addEventListener('click',()=>recordVoice(v=>{ const vid=newId();
-    VOICES[vid]=v.data; const m={from:'me',text:VOICE_TEXT,at:Date.now(),voice:{id:vid,dur:v.dur}}; (S.chats[id]||(S.chats[id]=[])).push(m); save();
+    VOICES[vid]=v.data; const m={from:'me',text:VOICE_TEXT,at:Date.now(),voice:{id:vid,dur:v.dur,...(v.w?{w:v.w}:{})}}; (S.chats[id]||(S.chats[id]=[])).push(m); save();
     DB.sendMessage(id,m).then(()=>{ if(location.hash==='#/messages/'+id) renderChat(id); }); renderChat(id); }));
   // la zone de messages change de hauteur (contacts chargés, clavier, rotation) : on reste calé sur le dernier message
   try{ const cb=document.getElementById('chatbox'); if(cb&&'ResizeObserver' in window) new ResizeObserver(()=>{ cb.scrollTop=cb.scrollHeight; }).observe(cb); }catch(e){}
@@ -4826,7 +4832,36 @@ const canVoice = () => !!(navigator.mediaDevices&&navigator.mediaDevices.getUser
 const MIC_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
 const micBtn = () => canVoice() ? `<button class="btn mic-btn" type="button" id="micbtn" aria-label="Enregistrer un message vocal" title="Message vocal">${MIC_SVG}</button>` : '';
 const vTime = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
-const voiceBubble = (v,kind,owner) => `<button type="button" class="voice-play${VPLAY&&VPLAY.id===v.id&&!VPLAY.audio.paused?' on':''}" data-voice="${esc(v.id)}" data-vk="${kind}" data-vo="${esc(owner)}" data-dur="${+v.dur||0}" aria-label="Écouter le message vocal (${vTime(+v.dur||0)})"><span class="v-ico"><svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg><svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg></span><span class="v-bar"><i></i></span><span class="v-time">${vTime(+v.dur||0)}</span></button>`;
+/* Ondes des vocaux (comme sur Snapchat)
+   À l'enregistrement, le son est découpé en VW_N tranches ; la force de chaque tranche (0 à 31) tient en un caractère (0 à 9, puis a à v).
+   Ces caractères partent avec le message (voice.w) : les barres s'affichent sans télécharger le son.
+   Anciens vocaux (sans w) : des barres d'attente, remplacées par les vraies dès la première écoute (gardées sur l'appareil). */
+const VW_N=36, VW_RE=/^[0-9a-v]{1,64}$/;
+const VWAVE=(()=>{ try{ return JSON.parse(localStorage.getItem('coopo_vw')||'{}')||{}; }catch(e){ return {}; } })();
+function vwKeep(id,w){ VWAVE[id]=w; try{ const k=Object.keys(VWAVE); k.slice(0,Math.max(0,k.length-400)).forEach(x=>delete VWAVE[x]); localStorage.setItem('coopo_vw',JSON.stringify(VWAVE)); }catch(e){} }
+// Les ondes d'un son (adresse data:audio…) : '' si ce téléphone ne sait pas le décoder
+async function vwFromData(data){ try{ const AC=window.OfflineAudioContext||window.webkitOfflineAudioContext; if(!AC||!VOICE_RE.test(data)) return '';
+    const bin=atob(data.slice(data.indexOf(',')+1)), u=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i);
+    const ctx=new AC(1,2,44100);
+    const ab=await Promise.race([new Promise((ok,ko)=>{ const p=ctx.decodeAudioData(u.buffer,ok,ko); if(p&&p.then) p.then(ok,ko); }),new Promise((ok,ko)=>setTimeout(()=>ko(new Error('trop long')),2500))]);
+    const n=VW_N, len=ab.length, chs=[]; if(!len) return ''; for(let c=0;c<ab.numberOfChannels;c++) chs.push(ab.getChannelData(c));
+    const step=len/n, rms=[]; let max=0;
+    for(let i=0;i<n;i++){ const a=Math.floor(i*step), b=Math.max(a+1,Math.floor((i+1)*step)); let s=0,k=0;
+      for(let j=a;j<b;j+=4){ let v=0; for(const d of chs) v+=d[j]; v/=chs.length; s+=v*v; k++; }   // un échantillon sur 4 suffit
+      const r=Math.sqrt(s/Math.max(1,k)); rms.push(r); if(r>max) max=r; }
+    if(max<0.003) return '0'.repeat(n);   // silence
+    return rms.map(r=>Math.round(31*Math.pow(r/max,0.7)).toString(32)).join(''); }
+  catch(e){ return ''; } }
+// Barres d'attente des anciens vocaux : toujours les mêmes pour un même vocal
+function vwSeed(id){ let h=2166136261; for(const c of String(id)) h=Math.imul(h^c.charCodeAt(0),16777619);
+  const r=[]; for(let i=0;i<VW_N;i++){ h=Math.imul(h^(h>>>15),2246822519)>>>0; r.push(h%17); }
+  return r.map((x,i)=>Math.min(31,Math.round(4+((r[i-1]??x)+x*2+(r[i+1]??x))/4)).toString(32)).join(''); }
+const vwBars = w => [...w].map(c=>`<i style="height:${Math.round(10+(parseInt(c,32)||0)/31*90)}%"></i>`).join('');
+const vwOf = v => VW_RE.test(v.w||'')?v.w:(VW_RE.test(VWAVE[v.id]||'')?VWAVE[v.id]:'');
+const vPct = p => { const a=p&&p.audio; if(!a) return 0; const d=isFinite(a.duration)&&a.duration>0?a.duration:(+p.dur||0); return d?Math.min(100,a.currentTime/d*100):0; };
+const vSetP = (x,pct) => { const w=x&&x.querySelector('.v-wave'); if(w) w.style.setProperty('--vp',(+pct||0).toFixed(1)+'%'); };
+const voiceBubble = (v,kind,owner) => { const real=vwOf(v), bars=vwBars(real||vwSeed(v.id)), cur=VPLAY&&VPLAY.id===v.id;
+  return `<button type="button" class="voice-play${cur&&!VPLAY.audio.paused?' on':''}" data-voice="${esc(v.id)}" data-vk="${kind}" data-vo="${esc(owner)}" data-dur="${+v.dur||0}"${real?' data-wr="1"':''} aria-label="Écouter le message vocal (${vTime(+v.dur||0)})"><span class="v-ico"><svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg><svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg></span><span class="v-wave" aria-hidden="true" style="--vp:${cur?vPct(VPLAY).toFixed(1):0}%"><span class="vw">${bars}</span><span class="vw vw-on">${bars}</span></span><span class="v-time">${vTime(+v.dur||0)}</span></button>`; };
 let REC=null;   // enregistrement en cours
 function stopRec(send){ const r=REC; if(!r) return; REC=null; clearInterval(r.tick); r.send=send; try{ if(r.mr.state!=='inactive') r.mr.stop(); else r.finish(); }catch(e){ r.finish(); } }
 async function recordVoice(onDone){
@@ -4844,8 +4879,9 @@ async function recordVoice(onDone){
     if(!r.send) return; const dur=Math.min(VOICE_MAX,Math.max(1,Math.round((r.t1-t0)/1000)));
     if(r.t1-t0<700||!chunks.length){ toast('Message trop court.'); return; }
     const fr=new FileReader(); fr.onerror=()=>toast("Le message vocal n'a pas pu être préparé.");
-    fr.onload=()=>{ const data=String(fr.result||''); if(!VOICE_RE.test(data)){ toast("Ce format de son n'est pas pris en charge."); return; }
-      if(data.length>VOICE_LIMIT){ toast('Message vocal trop lourd : fais-le un peu plus court.'); return; } onDone({data,dur}); };
+    fr.onload=async()=>{ const data=String(fr.result||''); if(!VOICE_RE.test(data)){ toast("Ce format de son n'est pas pris en charge."); return; }
+      if(data.length>VOICE_LIMIT){ toast('Message vocal trop lourd : fais-le un peu plus court.'); return; }
+      const w=await vwFromData(data); onDone({data,dur,w}); };   // les ondes partent avec le message ('' si le téléphone ne sait pas les calculer)
     fr.readAsDataURL(new Blob(chunks,{type:(mr.mimeType||type||'audio/webm').split(';')[0]})); };
   mr.ondataavailable=e=>{ if(e.data&&e.data.size) chunks.push(e.data); };
   mr.onstop=()=>{ r.t1=r.t1||Date.now(); r.finish(); }; mr.onerror=()=>{ r.send=false; r.t1=Date.now(); if(REC===r){ REC=null; clearInterval(r.tick); } r.finish(); };
@@ -4861,13 +4897,16 @@ let VPLAY=null;
 const vBtn = id => document.querySelector(`.voice-play[data-voice="${CSS.escape(id)}"]`);
 document.addEventListener('click',async e=>{ const b=e.target.closest('.voice-play'); if(!b) return; const id=b.dataset.voice;
   if(VPLAY&&VPLAY.id===id){ if(VPLAY.audio.paused){ VPLAY.audio.play().catch(()=>{}); } else VPLAY.audio.pause(); return; }
-  if(VPLAY){ try{ VPLAY.audio.pause(); }catch(x){} const o=vBtn(VPLAY.id); if(o){ o.classList.remove('on'); o.querySelector('.v-bar i').style.width='0'; } VPLAY=null; }
+  if(VPLAY){ try{ VPLAY.audio.pause(); }catch(x){} const o=vBtn(VPLAY.id); if(o){ o.classList.remove('on'); vSetP(o,0); } VPLAY=null; }
   if(b.dataset.busy) return; b.dataset.busy='1'; const data=await DB.loadVoice(b.dataset.vk,b.dataset.vo,id); delete b.dataset.busy; { const nb=vBtn(id); if(nb) delete nb.dataset.busy; }
   if(!data||!VOICE_RE.test(data)){ toast("Ce message vocal n'est plus disponible."); return; }
-  const audio=new Audio(data), me={id,audio}; VPLAY=me; const dur=+b.dataset.dur||0;
-  const sync=()=>{ const x=vBtn(id); if(!x) return; x.classList.toggle('on',VPLAY===me&&!audio.paused); const d=isFinite(audio.duration)&&audio.duration>0?audio.duration:dur; x.querySelector('.v-bar i').style.width=(d?Math.min(100,audio.currentTime/d*100):0)+'%'; };
+  // ancien vocal sans ondes : on les calcule maintenant que le son est là, et on les garde sur l'appareil
+  if(!(vBtn(id)||b).dataset.wr) vwFromData(data).then(w=>{ if(!w) return; vwKeep(id,w);
+    document.querySelectorAll(`.voice-play[data-voice="${CSS.escape(id)}"]`).forEach(x=>{ x.dataset.wr='1'; x.querySelectorAll('.vw').forEach(s=>s.innerHTML=vwBars(w)); }); });
+  const dur=+b.dataset.dur||0, audio=new Audio(data), me={id,audio,dur}; VPLAY=me;
+  const sync=()=>{ const x=vBtn(id); if(!x) return; x.classList.toggle('on',VPLAY===me&&!audio.paused); vSetP(x,vPct(me)); };
   audio.ontimeupdate=audio.onplay=audio.onpause=sync;
-  audio.onended=()=>{ if(VPLAY===me) VPLAY=null; const x=vBtn(id); if(x){ x.classList.remove('on'); x.querySelector('.v-bar i').style.width='0'; } };
+  audio.onended=()=>{ if(VPLAY===me) VPLAY=null; const x=vBtn(id); if(x){ x.classList.remove('on'); vSetP(x,0); } };
   audio.onerror=()=>{ if(VPLAY===me) VPLAY=null; sync(); toast('Ce téléphone ne peut pas lire ce message vocal.'); };
   audio.play().catch(()=>{}); });
 // Premiers messages proposés dans une conversation vide : un appui remplit le champ, le joueur peut le modifier avant d'envoyer
@@ -5108,7 +5147,7 @@ function viewGroup(id){
   document.getElementById('g-add')?.addEventListener('click',()=>groupInvite(id));
   photoWire(ph=>{ if(gHasMinor(gById(id))){ toast('Pas de photo dans un groupe où il y a des 13-17 ans.',3500); document.getElementById('photobtn')?.remove(); return; }
     const pid=newId(); PHOTOS[pid]=ph.data; DB.sendGroupMessage(id,PHOTO_TEXT,null,{id:pid,w:ph.w,h:ph.h}); });
-  document.getElementById('micbtn')?.addEventListener('click',()=>recordVoice(v=>{ const vid=newId(); VOICES[vid]=v.data; DB.sendGroupMessage(id,VOICE_TEXT,{id:vid,dur:v.dur}); }));
+  document.getElementById('micbtn')?.addEventListener('click',()=>recordVoice(v=>{ const vid=newId(); VOICES[vid]=v.data; DB.sendGroupMessage(id,VOICE_TEXT,{id:vid,dur:v.dur,...(v.w?{w:v.w}:{})}); }));
   try{ const cb=document.getElementById('chatbox'); if(cb&&'ResizeObserver' in window) new ResizeObserver(()=>{ cb.scrollTop=cb.scrollHeight; }).observe(cb); }catch(e){}
   document.getElementById('chatform').addEventListener('submit',e=>{ e.preventDefault(); const i=document.getElementById('chatin'), t=i.value.trim(); if(!t) return;
     if(myGroupNow()==='minor'&&hasPhone(t)){ toast('Pour ta sécurité, les numéros de téléphone ne peuvent pas être envoyés ici.'); return; }
@@ -5858,12 +5897,14 @@ const DB = {
       for(const sh of (st?[0,1,-1]:[])){ if(sh) st=this.streakData(id,sh); if(!st) break;
         try{ await mk(st).commit(); sent=true; if(sh) DAY_SHIFT+=sh; break; }
         catch(e){ if(!String(e&&e.code).includes('permission')) throw e; } }
-      if(!sent){ st=null; await mk(null).commit(); }   // flamme refusée (minuit vient de passer, règles pas encore publiées…) : le message part quand même
+      if(!sent){ st=null;   // flamme refusée (minuit vient de passer, règles pas encore publiées…) : le message part quand même
+        try{ await mk(null).commit(); }
+        catch(e){ if(!(m.voice&&m.voice.w&&String(e&&e.code).includes('permission'))) throw e; delete m.voice.w; await mk(null).commit(); } }   // ondes refusées (anciennes règles) : le vocal part sans elles
       if(st){ (S.streaks=S.streaks||{})[id]={last:st.last,both:st.both,count:st.count}; save(); flameMilestone(id); }
       if(!this._lastNotifTo||this._lastNotifTo[id]==null||Date.now()-this._lastNotifTo[id]>60000){ (this._lastNotifTo=this._lastNotifTo||{})[id]=Date.now(); await this.saveNotif(id,{type:'message',from:'me',text:`${S.me.name} : ${m.text.slice(0,80)}`}); }
     }catch(e){ console.error(e); toast(String(e&&e.code).includes('permission')?'Doucement : attends une seconde entre deux messages.':"Le message n'est pas parti, réessaie."); } },
   listenChat(id,cb){ if(!this.live) return; this.stopChat();   // les 200 derniers messages (et plus les 200 premiers)
-    this._chatUnsub=this.db.collection('chats').doc(this.pairId(id)).collection('messages').orderBy('at').limitToLast(200).onSnapshot(snap=>{ S.chats[id]=[]; snap.forEach(d=>{ const m=d.data(); const o={from:this.fromUid(m.from),text:m.text,at:m.at}; if(m.voice&&m.voice.id) o.voice={id:String(m.voice.id),dur:+m.voice.dur||0}; if(m.photo&&m.photo.id) o.photo={id:String(m.photo.id),w:+m.photo.w||4,h:+m.photo.h||3}; S.chats[id].push(o); }); save(); cb(); },e=>console.error(e)); },
+    this._chatUnsub=this.db.collection('chats').doc(this.pairId(id)).collection('messages').orderBy('at').limitToLast(200).onSnapshot(snap=>{ S.chats[id]=[]; snap.forEach(d=>{ const m=d.data(); const o={from:this.fromUid(m.from),text:m.text,at:m.at}; if(m.voice&&m.voice.id){ o.voice={id:String(m.voice.id),dur:+m.voice.dur||0}; if(VW_RE.test(String(m.voice.w||''))) o.voice.w=m.voice.w; } if(m.photo&&m.photo.id) o.photo={id:String(m.photo.id),w:+m.photo.w||4,h:+m.photo.h||3}; S.chats[id].push(o); }); save(); cb(); },e=>console.error(e)); },
   // Image d'un message photo : en mémoire si elle a déjà été vue, sinon téléchargée
   async loadPhoto(kind,owner,pid){ if(PHOTOS[pid]) return PHOTOS[pid]; if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return null;
     try{ const base=kind==='g'?this.db.collection('groups').doc(owner):this.db.collection('chats').doc(this.pairId(owner)); const d=await base.collection('photos').doc(pid).get();
@@ -5917,16 +5958,18 @@ const DB = {
   async sendGroupMessage(id,text,voice,photo){ const m={from:myId(),text,at:Date.now()}; if(voice) m.voice=voice; if(photo) m.photo=photo;
     if(!AUTH_LIVE){ (GMSGS[id]=GMSGS[id]||[]).push({...m,id:'l'+m.at}); renderGroupChat(id); return; }
     if(!this.live&&!(await this.ready())) return; const db=this.db, F=firebase.firestore.FieldValue, ref=db.collection('groups').doc(id);
-    try{ const b=db.batch(); b.set(ref.collection('messages').doc(),m); if(voice) b.set(ref.collection('voices').doc(voice.id),{from:m.from,data:VOICES[voice.id]||'',dur:voice.dur,at:m.at});
-      if(photo) b.set(ref.collection('photos').doc(photo.id),{from:m.from,data:PHOTOS[photo.id]||'',w:photo.w,h:photo.h,at:m.at});
-      b.set(db.collection('limits').doc(this.uid()),{lastMsg:F.serverTimestamp()},{merge:true}); await b.commit();
+    try{ const mk=()=>{ const b=db.batch(); b.set(ref.collection('messages').doc(),m); if(voice) b.set(ref.collection('voices').doc(voice.id),{from:m.from,data:VOICES[voice.id]||'',dur:voice.dur,at:m.at});
+        if(photo) b.set(ref.collection('photos').doc(photo.id),{from:m.from,data:PHOTOS[photo.id]||'',w:photo.w,h:photo.h,at:m.at});
+        b.set(db.collection('limits').doc(this.uid()),{lastMsg:F.serverTimestamp()},{merge:true}); return b; };
+      try{ await mk().commit(); }
+      catch(e){ if(!(m.voice&&m.voice.w&&String(e&&e.code).includes('permission'))) throw e; m.voice={id:m.voice.id,dur:m.voice.dur}; await mk().commit(); }   // ondes refusées (anciennes règles) : le vocal part sans elles
       const g=gById(id); if(g&&Date.now()-tsMs(g.lastAt)>5*60e3){ g.lastAt=Date.now(); ref.update({lastAt:F.serverTimestamp()}).catch(e=>console.error(e)); }   // « nouveaux messages » pour les autres membres, au plus une écriture toutes les 5 minutes
     }catch(e){ console.error(e); toast(String(e&&e.code).includes('permission')?"Message refusé : attends une seconde, ou tu n'es plus membre de ce groupe.":"Le message n'est pas parti, réessaie."); } },
   deleteGroupMessage(id,mid){ if(!this.live) { GMSGS[id]=(GMSGS[id]||[]).filter(m=>m.id!==mid); renderGroupChat(id); return; } const gm=(GMSGS[id]||[]).find(m=>m.id===mid); if(gm&&gm.voice) this.db.collection('groups').doc(id).collection('voices').doc(gm.voice.id).delete().catch(e=>console.error(e));   // le son part avec le message
     if(gm&&gm.photo) this.db.collection('groups').doc(id).collection('photos').doc(gm.photo.id).delete().catch(e=>console.error(e));   // la photo aussi
     this.db.collection('groups').doc(id).collection('messages').doc(mid).delete().catch(e=>{ console.error(e); toast("Le message n'a pas pu être supprimé."); }); },
   listenGroup(id,cb){ this.stopGroup(); if(!this.live){ cb(); return; }   // les 100 derniers messages, en temps réel
-    this._groupUnsub=this.db.collection('groups').doc(id).collection('messages').orderBy('at').limitToLast(100).onSnapshot(snap=>{ GMSGS[id]=[]; snap.forEach(x=>{ const m=x.data(); const o={id:x.id,from:m.from,text:m.text,at:m.at}; if(m.voice&&m.voice.id) o.voice={id:String(m.voice.id),dur:+m.voice.dur||0}; if(m.photo&&m.photo.id) o.photo={id:String(m.photo.id),w:+m.photo.w||4,h:+m.photo.h||3}; GMSGS[id].push(o); }); cb(); },
+    this._groupUnsub=this.db.collection('groups').doc(id).collection('messages').orderBy('at').limitToLast(100).onSnapshot(snap=>{ GMSGS[id]=[]; snap.forEach(x=>{ const m=x.data(); const o={id:x.id,from:m.from,text:m.text,at:m.at}; if(m.voice&&m.voice.id){ o.voice={id:String(m.voice.id),dur:+m.voice.dur||0}; if(VW_RE.test(String(m.voice.w||''))) o.voice.w=m.voice.w; } if(m.photo&&m.photo.id) o.photo={id:String(m.photo.id),w:+m.photo.w||4,h:+m.photo.h||3}; GMSGS[id].push(o); }); cb(); },
       e=>{ console.error(e); this.stopGroup(); this.loadGroups(true).then(()=>{ if(location.hash==='#/groupe/'+id) route(); }); }); },   // plus le droit de lire (retiré du groupe, groupe supprimé) : on recharge la liste
   stopGroup(){ if(this._groupUnsub){ try{ this._groupUnsub(); }catch(e){} this._groupUnsub=null; } },
   async saveNotif(toId,n){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ await this.db.collection('notifications').doc(this.toUid(toId)).collection('items').add({...n,from:this.toUid(n.from),at:Date.now(),read:false}); }catch(e){ console.error(e); } },
