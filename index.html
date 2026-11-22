@@ -2738,8 +2738,7 @@ function viewProfileHub(){
 // Petit mot d'explication pour ceux qui avaient le thème Awalé (affiché une seule fois)
 function retiredNotice(){ if(!S.retiredMsg) return; S.retiredMsg=false; save();
   setTimeout(()=>modal(`<h3>Le thème Awalé a été retiré</h3><p class="muted">Coopô fait le ménage dans ses thèmes : Awalé n'est plus disponible, et ton compte est repassé au thème Coopô.</p>
-    <p>Pour te remercier de l'avoir porté, la plaque <b>${np({plate:'souvenir',name:'Souvenir Awalé'})}</b> t'est offerte. Elle ne s'achète pas : seuls les anciens d'Awalé l'ont.</p>
-    <div class="dlg-actions"><button class="btn btn-ghost" data-close>Plus tard</button><a class="btn btn-ac" href="#/boutique/objets" data-close>Voir ma plaque</a></div>`),1600); }
+    <div class="dlg-actions"><button class="btn btn-ghost" data-close>Fermer</button><a class="btn btn-ac" href="#/boutique/themes" data-close>Voir les thèmes</a></div>`),1600); }
 function previewProfile(){ modal(`<h3>Ton profil public</h3><p class="muted">Ce que les autres joueurs voient.</p><div style="margin-top:16px">${matchCard({p:publicMe(),c:null})}</div>
     <p class="hint" style="margin-top:12px">Pseudos en jeu : ${S.privacy.tags?'visibles':'masqués'}</p><div class="dlg-actions"><button class="btn" data-close>Fermer</button></div>`); }
 document.addEventListener('click',e=>{ if(e.target.closest('[data-preview-profile]')) previewProfile(); if(e.target.closest('[data-share-profile]')) shareProfile(); });
@@ -3643,7 +3642,7 @@ function curCode(){
 }
 const price = (kind,cur=curCode()) => CURRENCIES[cur][kind];
 const PAID_SKINS = ['samurai','soft','lofi','esth','ocean','menthe','prunier'];
-const RETIRED_SKINS = ['awale'];   // thèmes retirés : ceux qui les avaient reçoivent une plaque en souvenir (voir PLATES.souvenir)
+const RETIRED_SKINS = ['awale'];   // thèmes retirés : le compte repasse au thème Coopô, avec un petit mot d'explication
 const PREMIUM_SKINS = [];   // thèmes premium (3 000 F) : aucun pour l'instant
 const skinPrice = (id,cur=curCode()) => price(PREMIUM_SKINS.includes(id)?'premium':'theme',cur);
 const money = (n,cur=curCode()) => n.toLocaleString('fr-FR').replace(/\u202f|\u00a0/g,' ')+' '+CURRENCIES[cur].unit;
@@ -3692,12 +3691,15 @@ const PLATES = {
   // Pour la vendre : l'ajouter au catalogue du serveur de paiement (lib/catalogue.js), ranger sa famille dans PLATE_CATS avec un prix, puis retirer « soon:true ».
 };
 // [catégorie, titre, clé de prix, phrase]
-const PLATE_CATS=[['couleur','Couleurs','p1','Une couleur franche, et des cristaux qui scintillent.'],['degrade','Dégradés animés','p2','Lever de soleil, lagune, braises, néons : le décor bouge doucement.'],['gaming','Motifs gaming','p2','Pixels, manette, circuit, drapeau à damier.'],['brillant','Effets brillants','p3','Or, chrome, hologramme : un reflet passe sur la plaque.'],['illustre','Illustrées','p5','Un vrai petit décor qui s\'anime : un pré de coquelicots, un bonnet de bouffon.'],['rare','Édition limitée','p4','En vente pour un temps limité, puis plus jamais.']];
+const PLATE_CATS=[['couleur','Couleurs','p1','Une couleur franche, et des cristaux qui scintillent.'],['degrade','Dégradés animés','p2','Lever de soleil, lagune, néons : le décor bouge doucement.'],['gaming','Motifs gaming','p2','Pixels, manette, circuit, drapeau à damier.'],['brillant','Effets brillants','p3','Or, chrome, hologramme : un reflet passe sur la plaque.'],['illustre','Illustrées','p5','Un vrai petit décor qui s\'anime : un pré de coquelicots, un bonnet de bouffon.'],['rare','Édition limitée','p4','En vente pour un temps limité, puis plus jamais.']];
 const RARE_UNTIL='2027-01-31';   // dernier jour de vente des plaques en édition limitée (le serveur applique la même date)
 const rareOpen = () => Date.now() < Date.parse(RARE_UNTIL+'T23:59:59Z');
-const platesIn = cat => Object.keys(PLATES).filter(k=>PLATES[k].cat===cat);
+// Plaques retirées le 22 novembre 2026 : plus en vente, plus montrées dans la boutique, plus offertes (même aux modérateurs).
+// Un joueur qui en aurait vraiment acheté ou gagné une la garde : elle reste dans « Mes objets » et s'affiche toujours sur son profil.
+const RETIRED_PLATES=['or','chrome','holo','braise','souvenir'];
+const platesIn = cat => Object.keys(PLATES).filter(k=>PLATES[k].cat===cat&&!RETIRED_PLATES.includes(k));
 const platesSoon = () => Object.keys(PLATES).filter(k=>PLATES[k].soon);   // plaques en préparation : pas encore en vente
-const PPACKS={ couleurs:{label:'Pack Couleurs',cat:'couleur',price:'k1'}, degrades:{label:'Pack Dégradés',cat:'degrade',price:'k2'}, gaming:{label:'Pack Gaming',cat:'gaming',price:'k2'}, brillants:{label:'Pack Brillants',cat:'brillant',price:'k3'},
+const PPACKS={ couleurs:{label:'Pack Couleurs',cat:'couleur',price:'k1'}, degrades:{label:'Pack Dégradés',cat:'degrade',price:'k1'}, gaming:{label:'Pack Gaming',cat:'gaming',price:'k2'},
   plaques:{label:'Toutes les plaques',price:'k4',tag:'Populaire'} };
 const ppackItems = k => PPACKS[k].cat ? platesIn(PPACKS[k].cat) : ['couleur','degrade','gaming','brillant'].flatMap(platesIn);
 const platePrice = (id,cur=curCode()) => { const c=PLATE_CATS.find(x=>x[0]===PLATES[id].cat); return c?price(c[2],cur):0; };
@@ -3719,6 +3721,7 @@ function plqWatch(){ if(_plqIO) _plqIO.disconnect(); if(!('IntersectionObserver'
   _plqIO=new IntersectionObserver(es=>es.forEach(e=>e.target.classList.toggle('plq-live',e.isIntersecting)),{threshold:.6});
   document.querySelectorAll('.shop .plq-demo').forEach(x=>_plqIO.observe(x)); }
 function ownsPlate(id){ const pl=PLATES[id]; if(!pl||pl.soon) return false; if(pl.cat==='base') return true;
+  if(RETIRED_PLATES.includes(id)) return pl.cat==='recompense' ? (((S.rewards||{}).plates)||[]).includes(id) : ((S.owned&&S.owned.plates)||[]).includes(id);   // plaque retirée : seulement si on l'a vraiment
   if(!AUTH_LIVE||!SHOP.enabled) return true;   // démonstration : tout est libre
   if(S.auth&&isAdmin()) return true;           // modérateurs
   if(pl.cat==='recompense') return (((S.rewards||{}).plates)||[]).includes(id);
@@ -3809,7 +3812,7 @@ function viewShop(tab){
   if(tab==='themes') body=`<div class="shop-grid">${Object.keys(SKINS).map(themeCard).join('')}</div>`;
   else if(tab==='plaques') body=`<section class="shop-sec"><h3>Offerte</h3><p class="muted">Une plaque, c'est un bandeau décoré derrière ton pseudo : dans les messages, les groupes et sur ton profil.</p><div class="shop-grid shop-grid-np">${plateCard('base')}</div></section>`
     + PLATE_CATS.filter(([c])=>platesIn(c).some(x=>!PLATES[x].soon)).map(([c,l,,sub])=>`<section class="shop-sec${c==='rare'?' shop-sec-rare':''}"><h3>${l}</h3><p class="muted">${sub}</p><div class="shop-grid shop-grid-np">${platesIn(c).filter(x=>!PLATES[x].soon).map(plateCard).join('')}</div></section>`).join('')
-    + `<section class="shop-sec"><h3>À gagner</h3><p class="muted">Ces plaques ne s'achètent pas : elles se méritent.</p><div class="shop-grid shop-grid-np">${platesIn('recompense').filter(x=>x!=='souvenir'||ownsPlate(x)).map(plateCard).join('')}</div></section>`
+    + `<section class="shop-sec"><h3>À gagner</h3><p class="muted">Ces plaques ne s'achètent pas : elles se méritent.</p><div class="shop-grid shop-grid-np">${platesIn('recompense').map(plateCard).join('')}</div></section>`
     + (platesSoon().length?`<section class="shop-sec"><h3>Bientôt</h3><p class="muted">Des plaques en préparation. Tu peux déjà regarder l'aperçu.</p><div class="shop-grid shop-grid-np">${platesSoon().map(plateCard).join('')}</div></section>`:'');
   else if(tab==='packs') body=`<div class="shop-grid shop-grid-wide">${['pack',...Object.keys(PPACKS).map(k=>'ppack:'+k)].map(packCard).join('')}</div>`;
   else { const th=Object.keys(SKINS).filter(canUseSkin), pls=Object.keys(PLATES).filter(ownsPlate);
@@ -5554,11 +5557,8 @@ const DB = {
       if(S.me&&S.me.dob&&prof.data().ageGroup!==g){ try{ await db.collection('profiles').doc(uid).update({ageGroup:g}); }catch(e){ console.error(e); if(prof.data().ageGroup) g=prof.data().ageGroup; } }
       const [ps,rq,bl,rt,sq,ad]=await Promise.all([db.collection('profiles').where('ageGroup','==',g).where('hidden','==',false).limit(300).get(), db.collection('requests').where('participants','array-contains',uid).get(), db.collection('blocks').doc(uid).collection('list').get(), db.collection('ratings').where('by','==',uid).get(), db.collection('squads').where('ageGroup','==',g).get(), db.collection('admins').doc(uid).get(), this.loadPurchases()]);
       this._checked=true;
-      // Thème Awalé retiré : la plaque « Souvenir Awalé » est offerte (une seule fois) et le compte repasse au thème par défaut
-      if(this._retired || ((S.owned&&S.owned.themes)||[]).includes('awale')){ let had=(((S.rewards||{}).plates)||[]).includes('souvenir');
-        if(!had && await this.grantPlate('souvenir')){ had=true; S.retiredMsg=true; }
-        if(this._retired && had){ db.collection('profiles').doc(uid).update({skin:'defaut'}).catch(e=>console.error(e)); }
-        this._retired=null; }
+      // Thème Awalé retiré : le compte repasse au thème par défaut, avec un petit mot d'explication (une seule fois)
+      if(this._retired){ db.collection('profiles').doc(uid).update({skin:'defaut'}).catch(e=>console.error(e)); S.retiredMsg=true; this._retired=null; }
       PLAYERS.length=0; ps.forEach(d=>{ if(d.id!==uid) PLAYERS.push(normP({...d.data(),id:d.id,age:undefined})); }); this._lastPlayers=Date.now();
       S.requests=[]; rq.forEach(d=>{ const r=d.data(); S.requests.push({id:d.id,from:this.fromUid(r.from),to:this.fromUid(r.to),status:r.status,at:r.at}); });
       S.blocked=[]; bl.forEach(d=>S.blocked.push(d.id));
