@@ -2371,9 +2371,10 @@ const CONFIG = {
   minUsername: 3, maxUsername: 20, minPassword: 8,
   // Âge minimum pour utiliser le site
   minAge: 13,
-  // Protection des mineurs : les 13-17 ans ne voient et ne sont vus que par des 13-17 ans,
-  // les adultes uniquement par des adultes.
-  adultAge: 18, separateMinors: true,
+  // Protection des mineurs : tout le monde se voit (separateMinors: false). Entre un adulte et un 13-17 ans,
+  // c'est le 13-17 ans qui envoie la demande de mate ; messages écrits, vocaux et appels vocaux oui, appels vidéo et photos non.
+  // (separateMinors: true remettrait les deux groupes séparés dans le site, mais les règles Firestore v7 restent celles des âges réunis.)
+  adultAge: 18, separateMinors: false,
 };
 
 const GAMES = ['Free Fire','eFootball','Call of Duty Mobile','EA FC Mobile','PUBG Mobile','Fortnite','Roblox','Minecraft',
@@ -2849,7 +2850,7 @@ function initDob(){
       const a=ageFrom(draft.dob);
       if(a<CONFIG.minAge){ st.className='dob-status bad'; st.innerHTML=`<b>${a} ans</b><span>Il faut avoir au moins ${CONFIG.minAge} ans pour utiliser Coopô.</span>`; }
       else{ const minor=a<CONFIG.adultAge; st.className='dob-status ok';
-        st.innerHTML=`<b>${a} ans</b><span>${!CONFIG.separateMinors?'Parfait, tu peux trouver ton mate.':minor?`Tu verras les joueurs de ${CONFIG.minAge} à ${CONFIG.adultAge-1} ans.`:`Tu verras les joueurs de ${CONFIG.adultAge} ans et plus.`}</span>`; }
+        st.innerHTML=`<b>${a} ans</b><span>${!CONFIG.separateMinors?(minor?'Parfait, tu peux trouver ton mate. Avec les joueurs de 18 ans et plus, c\'est toi qui envoies la demande.':'Parfait, tu peux trouver ton mate.'):minor?`Tu verras les joueurs de ${CONFIG.minAge} à ${CONFIG.adultAge-1} ans.`:`Tu verras les joueurs de ${CONFIG.adultAge} ans et plus.`}</span>`; }
       if(animate){ st.classList.remove('pop'); void st.offsetWidth; st.classList.add('pop'); }
     } else { draft.dob=''; st.className='dob-status'; st.textContent=''; }
   };
@@ -3046,14 +3047,18 @@ function renderResults(){
   animateAfterRender(document.getElementById('results'));
 }
 /* ----- Profil public d'un joueur ----- */
+// Les jeux du profil (avec le pseudo en jeu quand on a le droit de le voir)
+const ppGames = (p,showTags,shared) => (p.games||[]).map(g=>`<div class="gametag${shared(g)?' shared':''}"><span>${esc(g)}${p.ranks&&p.ranks[g]?` <small class="rank">${esc(rankLabel(g,p.ranks[g]))}</small>`:''}${p.roles&&p.roles[g]?` <small class="rank role">${esc(p.roles[g])}</small>`:''}</span><em>${showTags&&p.tags&&p.tags[g]?esc(p.tags[g]):(shared(g)?'En commun':'')}</em></div>`).join('');
 function viewPlayer(id){
   const self = id==='me';
   const p = self ? publicMe() : visible().find(x=>x.id===id);
   if(!p){ app.innerHTML=`<div class="wrap page"><div class="empty"><h3>Ce profil n'est pas disponible</h3><a class="btn" href="#/matchs">Retour à mes matchs</a></div></div>`; return; }
   const c=S.me&&!self?compat(S.me,p):null, q=self?null:reqWith(id), mate=!!q&&q.status==='accepted';
   const shared = g => S.me&&!self&&S.me.games.includes(g);
-  const showTags = self ? S.privacy.tags : !(p.privacy && p.privacy.tags===false);
+  // Pseudos en jeu : ceux d'un 13-17 ans ne sont montrés qu'aux 13-17 ans et à ses mates
+  const showTags = self ? S.privacy.tags : !(p.privacy && p.privacy.tags===false) && (!minorP(p) || myGroupNow()==='minor' || mate);
   const mateBtn = self ? `<a class="btn btn-ac" href="#/profil/modifier">Modifier mon profil</a>` : !S.me ? `<a class="btn btn-ac" href="#/inscription">Crée ton compte pour le contacter</a>`
+    : !q && !canAsk(p) ? `<p class="hint pp-minor">Joueur de moins de 18 ans : c'est lui qui peut t'envoyer une demande de mate.</p>`   // un adulte ne démarre pas de conversation avec un 13-17 ans
     : !q ? `<button class="btn btn-ac" id="mate">Envoyer une demande de mate</button>`
     : q.status==='pending' && q.from==='me' ? `<p class="hint">Demande envoyée · en attente</p><button class="btn btn-ghost btn-sm" id="cancel">Annuler la demande</button>`
     : q.status==='pending' ? `<p class="hint">${esc(p.name)} veut devenir ton mate</p><div class="nact"><button class="btn btn-ac" id="accept">Accepter</button><button class="btn btn-ghost" id="decline">Refuser</button></div>`
@@ -3062,7 +3067,7 @@ function viewPlayer(id){
   <div class="pp">
     <div class="pp-head">${plateOf(p)?`<div class="pp-id${plqOn(p,1)}">${plq(p)}`:''}${avatar(p,88)}<div><h1>${esc(p.name)}${modBadge(p)}</h1><div class="pp-meta">${isMod(p)?`<span class="mod-tag">${MOD_SVG}Modérateur</span>`:''}${isOnline(p)?'<span class="online">En ligne</span>':`<span class="muted" style="font-size:13px">${seenTxt(p)}</span>`}${p.country?`<span class="muted">· ${esc(L(COUNTRIES,p.country))}</span>`:''}${(p.langs||[]).length?`<span class="muted">· ${p.langs.map(x=>L(LANGS,x)).join(', ')}</span>`:''}${p.rejoue?`<span class="rejoue" title="Nombre de mates qui rejoueraient avec ce joueur">👍 ${+p.rejoue||0} ${(+p.rejoue||0)>1?'rejoueraient':'rejouerait'} avec lui</span>`:''}</div></div>${plateOf(p)?'</div>':''}${!self&&dispoActive(p)?`<p class="pp-dispo"><i class="dot-live"></i><span><b>Dispo maintenant</b> pour ${esc(p.dispo.game)}, jusqu'à ${fmtUntil(p.dispo.until)}${p.dispo.note?`<em>${esc(p.dispo.note)}</em>`:''}</span></p>`:''}</div>
     <div class="pp-main">
-    <section class="panel"><h3>Jeux</h3><div class="tags">${p.games.map(g=>`<div class="gametag${shared(g)?' shared':''}"><span>${esc(g)}${p.ranks&&p.ranks[g]?` <small class="rank">${esc(rankLabel(g,p.ranks[g]))}</small>`:''}${p.roles&&p.roles[g]?` <small class="rank role">${esc(p.roles[g])}</small>`:''}</span><em>${showTags&&p.tags[g]?esc(p.tags[g]):(shared(g)?'En commun':'')}</em></div>`).join('')}</div></section>
+    <section class="panel"><h3>Jeux</h3><div class="tags" id="pp-games">${ppGames(p,showTags,shared)}</div></section>
     <section class="panel"><h3>Habitudes de jeu</h3><dl class="facts">
       <div><dt>Horaires</dt><dd>${list(p.hours,h=>L(HOURS,h))}</dd></div>
       <div><dt>Jours</dt><dd>${list(p.days,d=>L(DAYS,d))}</dd></div>
@@ -3083,6 +3088,9 @@ function viewPlayer(id){
     ${self?'':`<div class="safety"><button class="linkbtn" id="report">Signaler</button><button class="linkbtn" id="block">Bloquer</button>${mate?`<button class="linkbtn" id="unmate">Retirer des mates</button>`:''}</div>`}
   </aside></div></div>`;
   const re=()=>{ viewPlayer(id); animateAfterRender(); };
+  // Les pseudos en jeu d'un 13-17 ans sont rangés à part (gametags) : on les charge seulement quand on a le droit de les voir
+  if(!self && showTags && minorP(p) && DB.live && !p._gt){ p._gt=1;
+    DB.loadGameTags(p.id).then(t=>{ if(!t||!Object.keys(t).length) return; p.tags={...(p.tags||{}),...t}; const el=document.getElementById('pp-games'); if(el&&location.hash==='#/joueur/'+id) el.innerHTML=ppGames(p,showTags,shared); }); }
   document.getElementById('share2')?.addEventListener('click',shareProfile);
   document.getElementById('mate')?.addEventListener('click',ev=>{ const b=ev.currentTarget.getBoundingClientRect(); burst(b.left+b.width/2,b.top+b.height/2); sendRequest(p); re(); });
   document.getElementById('cancel')?.addEventListener('click',()=>{ removeRequest(id); toast('Demande annulée'); re(); });
@@ -3131,7 +3139,7 @@ function viewSettings(tab){
     <section class="panel"><h3>Affichage</h3><div>
       <div class="toggle"><div><label for="set-lite" class="lbl">Mode léger</label><p class="hint">Moins d'animations : plus fluide sur les petits téléphones, et la batterie tient mieux.</p></div><input class="switch" type="checkbox" id="set-lite" ${liteOn()?'checked':''}></div></div></section>
     <section class="panel"><h3>Confidentialité</h3><div>
-      ${tg('tags','Afficher mes pseudos en jeu','Sur ton profil public.')}
+      ${tg('tags','Afficher mes pseudos en jeu',myGroupNow()==='minor'?'Seulement aux 13-17 ans et à tes mates.':'Sur ton profil public.')}
       ${tg('online','Afficher quand je suis en ligne','Les autres joueurs voient ton statut et ta dernière visite.')}</div></section>
     ${refSection()}
     <section class="panel"><h3>Application</h3><div data-install-box>${installHTML()}</div><div style="margin-top:14px">${notifySettingHTML()}</div></section>
@@ -3889,7 +3897,7 @@ function dispoModal(){
 async function dispoStop(){ if(!S.me) return; S.me.dispo=null; save(); toast("Tu n'es plus affiché comme dispo"); await DB.setDispo(null); route(); }
 function dispoCard(p){
   const q=reqWith(p.id), mate=!!q&&q.status==='accepted', same=S.me&&S.me.games.includes(p.dispo.game);
-  const act = mate?`<a class="btn btn-sm" href="#/messages/${p.id}">Écrire</a>` : q?`<span class="muted dc-sent">Demande envoyée</span>` : `<button class="btn btn-sm btn-ac" data-dispo-mate="${p.id}">Duo ?</button>`;
+  const act = mate?`<a class="btn btn-sm" href="#/messages/${p.id}">Écrire</a>` : q?`<span class="muted dc-sent">Demande envoyée</span>` : !canAsk(p) ? '' : `<button class="btn btn-sm btn-ac" data-dispo-mate="${p.id}">Duo ?</button>`;   // un adulte ne propose pas de duo à un 13-17 ans
   return `<div class="dz${same?' same':''}"><a href="#/joueur/${p.id}" class="dz-who">${avatar(p,52)}<b>${esc(p.name)}${modBadge(p)}</b><span>${esc(p.dispo.game)}</span><small>jusqu'à ${fmtUntil(p.dispo.until)}</small></a>${act}</div>`;
 }
 // Accueil : qui est dispo tout de suite. Une seule ligne de petites cartes qui défile sur le côté (le détail est sur la fiche du joueur).
@@ -3905,7 +3913,7 @@ function dispoSection(){
 document.addEventListener('click',e=>{
   if(e.target.closest('#dispo-go')) dispoModal();
   if(e.target.closest('#dispo-stop')) dispoStop();
-  const m=e.target.closest('[data-dispo-mate]'); if(m){ const p=PLAYERS.find(x=>x.id===m.dataset.dispoMate); if(p){ sendRequest(p); route(); } }
+  const m=e.target.closest('[data-dispo-mate]'); if(m){ const p=PLAYERS.find(x=>x.id===m.dataset.dispoMate); if(p&&canAsk(p)){ sendRequest(p); route(); } }
 });
 
 /* ---- Notifications de l'appareil (quand Coopô est ouverte en arrière-plan) ---- */
@@ -4473,6 +4481,7 @@ const isMate = id => !!reqWith(id) && reqWith(id).status==='accepted';
 const matesList = () => visible().filter(p=>isMate(p.id));
 const pendingReceived = () => S.requests.filter(r=>r.to==='me'&&r.status==='pending'&&visible().some(p=>p.id===r.from));
 function sendRequest(p){
+  if(!canAsk(p)){ toast("C'est au joueur de moins de 18 ans de t'envoyer la demande."); return; }   // v7 — aussi vérifié par les règles Firestore
   const r={id:'r'+Date.now(),from:'me',to:p.id,status:'pending',at:Date.now()}; S.requests.push(r); save(); DB.saveRequest(r);
   toast(`Demande envoyée à ${p.name}`);
   if(!AUTH_LIVE) setTimeout(()=>{ const q=reqWith(p.id); if(!q||q.status!=='pending') return;
@@ -4488,7 +4497,7 @@ function answerRequest(id,accept){
 function removeRequest(id){ const q=reqWith(id); if(!q) return; S.requests=S.requests.filter(r=>r!==q); save(); DB.deleteRequest(q); }
 function demoScheduleIncoming(){
   if(AUTH_LIVE||!S.me||S.demoDone) return; S.demoDone=true; save();
-  setTimeout(()=>{ if(!S.me) return; const c=ranked().filter(({p})=>!reqWith(p.id))[0]; if(!c) return;
+  setTimeout(()=>{ if(!S.me) return; const c=ranked().filter(({p})=>!reqWith(p.id)&&(!crossAge(p)||minorP(p)))[0]; if(!c) return;   // jamais une demande d'un adulte vers un 13-17 ans
     S.requests.push({id:'r'+Date.now(),from:c.p.id,to:'me',status:'pending',at:Date.now()}); save();
     notify({type:'request',from:c.p.id,text:`${c.p.name} veut devenir ton mate`});
     if(location.hash==='#/joueur/'+c.p.id||location.hash==='#/matchs') route(); }, 20000);
@@ -4595,13 +4604,13 @@ function viewChat(id){
   const p=visible().find(x=>x.id===id);
   if(!p||!isMate(id)){ app.innerHTML=`<div class="wrap page"><div class="empty"><h3>Vous n'êtes pas encore mates</h3><p class="muted">Les messages s'ouvrent une fois la demande de mate acceptée.</p><a class="btn" href="#/messages">Retour aux messages</a></div></div>`; return; }
   S.unread[id]=0; { const seen=S.notifs.filter(n=>!n.read&&n.type==='message'&&n.from===id); seen.forEach(n=>n.read=true); DB.markRead(seen.map(n=>n.id)); } save(); renderNotifBadge();
-  app.innerHTML=`<div class="dm-shell">${dmSide('c:'+id)}<div class="wrap page chat-page"><div class="chat-head">${backLink('#/messages','Messages')}<a class="chat-who${plqOn(p,1)}" href="#/joueur/${p.id}">${plq(p)}${avatar(p,44)}<div><b>${esc(p.name)}${modBadge(p)}</b>${isOnline(p)?'<span class="online">En ligne</span>':'<span class="muted" style="font-size:12px">Hors ligne</span>'}</div></a>${callBtns()}</div>
+  app.innerHTML=`<div class="dm-shell">${dmSide('c:'+id)}<div class="wrap page chat-page"><div class="chat-head">${backLink('#/messages','Messages')}<a class="chat-who${plqOn(p,1)}" href="#/joueur/${p.id}">${plq(p)}${avatar(p,44)}<div><b>${esc(p.name)}${modBadge(p)}</b>${isOnline(p)?'<span class="online">En ligne</span>':'<span class="muted" style="font-size:12px">Hors ligne</span>'}</div></a>${callBtns(p)}</div>
     <p class="flame-hint" id="flame-hint"></p>
     <div class="chat-box" id="chatbox"></div>
-    <form class="chat-form" id="chatform"><input type="text" id="chatin" placeholder="Écris un message…" maxlength="500" autocomplete="off">${photoBtn()}${micBtn()}<button class="btn btn-ac" type="submit">Envoyer</button></form></div></div>`;
+    <form class="chat-form" id="chatform"><input type="text" id="chatin" placeholder="Écris un message…" maxlength="500" autocomplete="off">${photoBtn(!minorP(p))}${micBtn()}<button class="btn btn-ac" type="submit">Envoyer</button></form></div></div>`;
   dmFit(); renderChat(id);
-  // Photo : réduite sur l'appareil, puis envoyée comme un message
-  photoWire(ph=>{ const pid=newId(); PHOTOS[pid]=ph.data; const m={from:'me',text:PHOTO_TEXT,at:Date.now(),photo:{id:pid,w:ph.w,h:ph.h}}; (S.chats[id]||(S.chats[id]=[])).push(m); save();
+  // Photo : réduite sur l'appareil, puis envoyée comme un message (jamais à un 13-17 ans)
+  photoWire(ph=>{ if(minorP(p)) return; const pid=newId(); PHOTOS[pid]=ph.data; const m={from:'me',text:PHOTO_TEXT,at:Date.now(),photo:{id:pid,w:ph.w,h:ph.h}}; (S.chats[id]||(S.chats[id]=[])).push(m); save();
     DB.sendMessage(id,m).then(()=>{ if(location.hash==='#/messages/'+id) renderChat(id); }); renderChat(id); });
   document.querySelectorAll('[data-call]').forEach(b=>b.onclick=()=>startCall(id,b.dataset.call));
   // Message vocal : enregistré puis envoyé comme un message (30 secondes maximum)
@@ -4612,6 +4621,7 @@ function viewChat(id){
   try{ const cb=document.getElementById('chatbox'); if(cb&&'ResizeObserver' in window) new ResizeObserver(()=>{ cb.scrollTop=cb.scrollHeight; }).observe(cb); }catch(e){}
   document.getElementById('chatform').addEventListener('submit',e=>{ e.preventDefault(); const i=document.getElementById('chatin'), t=i.value.trim(); if(!t) return;
     if(S.me&&ageGroup(S.me)==='minor'&&hasPhone(t)){ toast('Pour ta sécurité, les numéros de téléphone ne peuvent pas être envoyés ici.'); return; }   // 13-17 ans : pas de numéro dans le chat
+    if(minorP(p)&&hasPhone(t)){ toast('Pour la sécurité des 13-17 ans, les numéros de téléphone ne peuvent pas être envoyés ici.'); return; }   // ni de la part d'un adulte vers un 13-17 ans
     i.value='';
     const m={from:'me',text:t,at:Date.now()}; (S.chats[id]||(S.chats[id]=[])).push(m); save(); DB.sendMessage(id,m).then(()=>{ if(location.hash==='#/messages/'+id) renderChat(id); }); renderChat(id);
     if(!AUTH_LIVE && Math.random()<.75) setTimeout(()=>{ const r={from:id,text:pick(CANNED),at:Date.now()}; (S.chats[id]||(S.chats[id]=[])).push(r);
@@ -4630,7 +4640,8 @@ const canCall = () => !!(window.RTCPeerConnection&&navigator.mediaDevices&&navig
 const PHONE_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>';
 const CAM_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="13" height="12" rx="3"/><path d="M15.5 10.5l6-3.5v10l-6-3.5"/></svg>';
 const HANG_SVG=PHONE_SVG.replace('<svg ','<svg style="transform:rotate(135deg)" ');
-const callBtns = () => canCall()&&AUTH_LIVE ? `<div class="chat-calls"><button class="btn call-btn" type="button" data-call="audio" aria-label="Appel vocal" title="Appel vocal">${PHONE_SVG}</button><button class="btn call-btn" type="button" data-call="video" aria-label="Appel vidéo" title="Appel vidéo">${CAM_SVG}</button></div>` : '';
+// v7 — entre un adulte et un 13-17 ans : appel vocal seulement (pas de bouton vidéo)
+const callBtns = p => canCall()&&AUTH_LIVE ? `<div class="chat-calls"><button class="btn call-btn" type="button" data-call="audio" aria-label="Appel vocal" title="Appel vocal">${PHONE_SVG}</button>${p&&crossAge(p)?'':`<button class="btn call-btn" type="button" data-call="video" aria-label="Appel vidéo" title="Appel vidéo">${CAM_SVG}</button>`}</div>` : '';
 // Adresses qui aident les deux téléphones à se trouver. Sans relais réglé, on garde l'aide de base (suffit en Wi-Fi, pas toujours en 4G).
 async function iceServers(){ const base=[{urls:'stun:stun.l.google.com:19302'}];
   try{ if(!SHOP.api) return base; const u=firebase.auth().currentUser; if(!u) return base; const tk=await u.getIdToken();
@@ -4655,6 +4666,7 @@ async function startCall(id,kind){
   if(!canCall()){ toast("Les appels ne sont pas possibles sur ce navigateur."); return; }
   if(!DB.live&&!(await DB.ready())) return;
   if(!isMate(id)){ toast("Vous n'êtes pas encore mates."); return; }
+  if(kind==='video'&&crossAge(PLAYERS.find(x=>x.id===id))){ toast('Entre un adulte et un 13-17 ans, seuls les appels vocaux sont possibles.',3500); return; }   // v7
   const c=CALL={id,pair:DB.pairId(id),role:'out',kind,at:Date.now(),status:'calling',muted:false,camOff:false}; renderCall();
   try{ c.stream=await callMedia(kind); }catch(e){ if(CALL===c){ closeCall(); callMediaErr(e,kind); } return; }
   if(CALL!==c){ c.stream.getTracks().forEach(t=>t.stop()); return; }
@@ -4692,6 +4704,7 @@ function onCallDoc(pair,d){ if(!d) return; const me=DB.uid(), c=CALL;
   if(d.to!==me||d.status!=='ringing'||Math.abs(Date.now()-d.at)>CALL_RING_S*1000) return;   // pas pour moi, ou trop vieux
   if(c){ if(c.pair!==pair||c.at!==d.at) DB.db.collection('calls').doc(pair).update({status:'ended',why:'busy',endedBy:me}).catch(()=>{}); return; }
   if(!isMate(d.from)||!d.offer) return;
+  if(d.kind==='video'&&crossAge(PLAYERS.find(x=>x.id===d.from))){ DB.db.collection('calls').doc(pair).update({status:'ended',why:'refused',endedBy:me}).catch(()=>{}); return; }   // v7 — pas de vidéo entre âges différents
   const n=CALL={id:d.from,pair,role:'in',kind:d.kind==='video'?'video':'audio',at:d.at,status:'ringing',offer:d.offer,muted:false,camOff:false};
   n.ringT=setTimeout(()=>{ if(CALL===n&&n.status==='ringing') closeCall('Appel manqué.'); },Math.max(3000,CALL_RING_S*1000-(Date.now()-d.at)));
   renderCall(); callRing(true); }
@@ -4720,15 +4733,16 @@ function renderCall(){ const c=CALL; if(!c) return; let ov=document.getElementBy
 window.addEventListener('pagehide',()=>{ if(CALL) endCall('hangup'); });
 
 /* ---- Photos dans les messages ----
-   Réservé aux adultes (les 13-17 ans n'envoient pas de photos). La photo est réduite sur l'appareil avant l'envoi,
+   Réservé aux adultes, entre adultes (les 13-17 ans n'envoient ni ne reçoivent de photos). La photo est réduite sur l'appareil avant l'envoi,
    puis rangée à part du message, comme les vocaux : chats/{paire}/photos/{id} ou groups/{groupe}/photos/{id} = { from, data, w, h, at }.
    Le message garde { id, w, h } ; l'image n'est téléchargée que quand la bulle arrive à l'écran. */
 const PHOTO_TEXT='📷 Photo', PHOTO_RE=/^data:image\/(jpeg|webp);base64,/, PHOTO_LIMIT=420000, PHOTO_MAX=1280;
 const PHOTOS={};   // images déjà chargées ou tout juste envoyées (en mémoire seulement)
 const canPhoto = () => !!(window.FileReader&&document.createElement('canvas').getContext) && myGroupNow()==='adult';
 const IMG_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><circle cx="8.5" cy="10" r="1.6"/><path d="M4 17l5-4.5 3.5 3 3-2.500 4.500 4"/></svg>'.replace('2.500 4.500','2.5 4.5');
-const photoBtn = () => canPhoto() ? `<button class="btn mic-btn" type="button" id="photobtn" aria-label="Envoyer une photo" title="Photo">${IMG_SVG}</button><input type="file" id="photoin" accept="image/jpeg,image/png,image/webp" hidden>` : '';
+const photoBtn = (ok=true) => canPhoto()&&ok ? `<button class="btn mic-btn" type="button" id="photobtn" aria-label="Envoyer une photo" title="Photo">${IMG_SVG}</button><input type="file" id="photoin" accept="image/jpeg,image/png,image/webp" hidden>` : '';
 const photoBubble = (ph,kind,owner) => { const w=Math.max(1,+ph.w||4), h=Math.max(1,+ph.h||3), d=PHOTOS[ph.id];
+  if(myGroupNow()==='minor') return `<span class="photo-msg" data-ok="1" style="aspect-ratio:${w}/${Math.min(h,w*1.6)}"><span class="ph-wait">Photo réservée aux adultes</span></span>`;   // v7 — un 13-17 ans ne voit pas les photos (les règles refusent aussi de les lui envoyer)
   return `<button type="button" class="photo-msg" data-photo="${esc(ph.id)}" data-pk="${kind}" data-po="${esc(owner)}" style="aspect-ratio:${w}/${Math.min(h,w*1.6)}" aria-label="Voir la photo en grand">${d&&PHOTO_RE.test(d)?`<img src="${d}" alt="Photo envoyée dans la conversation">`:'<span class="ph-wait">Photo…</span>'}</button>`; };
 // Réduit une image choisie : 1280 px au plus, en JPEG, sous la taille autorisée
 function shrinkPhoto(file){ return new Promise((ok,no)=>{ const url=URL.createObjectURL(file), img=new Image();
@@ -4831,7 +4845,7 @@ function renderChat(id){
 }
 
 /* ---- Sessions d'un soir (anciennes « escouades ») ---- */
-const allSquads = () => [...DEMO_SQUADS,...S.squads].filter(s=>!S.hidden.includes(s.owner)&&!S.blocked.includes(s.owner)&&(S.me&&S.me.dob?s.ageGroup===ageGroup(S.me):s.ageGroup==='adult')).sort((a,b)=>b.at-a.at);
+const allSquads = () => [...DEMO_SQUADS,...S.squads].filter(s=>!S.hidden.includes(s.owner)&&!S.blocked.includes(s.owner)).sort((a,b)=>b.at-a.at);   // v7 — les sessions de tous les âges
 const squadMembers = s => [...s.members,...(S.joined.includes(s.id)&&!s.members.includes('me')?['me']:[])];
 function viewGroupsTab(){
   const sq=allSquads(), me=S.me;
@@ -4859,6 +4873,7 @@ function newSquad(){
     <p class="err" id="sq-e"></p></div>
     <div class="dlg-actions"><button class="btn btn-ghost" data-close>Annuler</button><button class="btn btn-ac" id="sq-ok">Créer la session</button></div>`,
     d=>d.querySelector('#sq-ok').onclick=()=>{ const t=d.querySelector('#sq-t').value.trim(); if(t.length<3){ d.querySelector('#sq-e').textContent='Donne un titre à ta session.'; return; }
+      if(myGroupNow()==='minor'&&hasPhone(t+' '+d.querySelector('#sq-x').value)){ d.querySelector('#sq-e').textContent='Pour ta sécurité, pas de numéro de téléphone dans une session.'; return; }
       const s={id:'q'+Date.now(),owner:'me',game:d.querySelector('#sq-g').value,title:t,day:d.querySelector('#sq-d').value,hour:d.querySelector('#sq-h').value,slots:+d.querySelector('#sq-s').value,voice:d.querySelector('#sq-v').value==='1',desc:d.querySelector('#sq-x').value.trim(),members:['me'],ageGroup:ageGroup(S.me),at:Date.now()};
       S.squads.push(s); save(); DB.saveSquad(s); d.close(); toast('Session créée'); viewGroupsTab(); });
 }
@@ -4908,10 +4923,13 @@ setInterval(flameCheck,20*60e3);   // tourne aussi quand l'appli est en arrière
                groups/{id}/messages/{id} = { from, text, at }
    - Rôles : créateur (admin), modérateurs, membres. Seuls les membres lisent les messages (règles Firestore).
    - 50 membres maximum par groupe, pour rester dans la formule gratuite de Firebase.
-   - Comme partout sur Coopô, les 13-17 ans et les adultes ont des groupes séparés.
+   - v7 — les groupes sont ouverts à tous les âges. Un adulte n'invite un 13-17 ans que s'ils sont mates (une invitation à la fois),
+     et dans un groupe où il y a un 13-17 ans : pas de photo, pas de numéro de téléphone.
    ========================================================= */
 const GROUP_MAX=50, GROUP_OWN_MAX=3;
-let GROUPS=[];   // groupes visibles : les miens, ceux où je suis invité, les groupes publics de ma tranche d'âge
+let GROUPS=[];   // groupes visibles : les miens, ceux où je suis invité, les groupes publics
+// Un 13-17 ans (autre que moi) fait-il partie du groupe ? (profils chargés seulement)
+const gHasMinor = g => !!g && (g.members||[]).some(u=>{ if(u===myId()) return false; const p=gPlayer(u); return !!p&&minorP(p); });
 const normG = g => { ['mods','members','invited','kicked'].forEach(k=>{ if(!Array.isArray(g[k])) g[k]=[]; }); g.name=String(g.name||'Groupe'); g.private=!!g.private; return g; };
 const tsMs = v => v&&typeof v.toMillis==='function' ? v.toMillis() : (+v||0);
 const gById = id => GROUPS.find(g=>g.id===id);
@@ -4962,6 +4980,7 @@ function groupForm(g){
     d.querySelector('#g-ok').onclick=async ev=>{ const b=ev.currentTarget, err=d.querySelector('#g-e'), name=d.querySelector('#g-n').value.trim().replace(/\s+/g,' ');
       if(name.length<3){ err.textContent='Donne un nom d\'au moins 3 caractères à ton groupe.'; return; }
       if(hasPhone(name)||hasLink(name)){ err.textContent='Pas de numéro ni de lien dans le nom du groupe.'; return; }
+      if(minor&&hasPhone(d.querySelector('#g-d').value)){ err.textContent='Pour ta sécurité, pas de numéro de téléphone dans la description.'; return; }
       const data={ name, desc:d.querySelector('#g-d').value.trim().slice(0,300), game:d.querySelector('#g-g').value, image:minor?'':image, private:d.querySelector('[name=g-p]:checked').value==='1' };
       b.disabled=true;
       if(isNew){ const id=await DB.createGroup(data); if(id){ d.close(); toast('Groupe créé'); location.hash='#/groupe/'+id; } else { b.disabled=false; err.textContent='Le groupe n\'a pas pu être créé. Vérifie ta connexion et réessaie.'; } }
@@ -4981,15 +5000,17 @@ function viewGroup(id){
   (S.gseen=S.gseen||{})[id]=Date.now(); save();
   app.innerHTML=`<div class="dm-shell">${dmSide('g:'+id)}<div class="wrap page chat-page"><div class="chat-head">${backLink('#/groupes/groupes','Groupes')}<button class="chat-who g-who" type="button" id="ginfo">${gAvatar(g,44)}<div><b>${esc(g.name)}</b><span class="muted" style="font-size:12px">${g.members.length} membre${g.members.length>1?'s':''} · infos</span></div></button></div>
     <div class="chat-box" id="chatbox"><p class="muted" style="margin:auto">Chargement des messages…</p></div>
-    <form class="chat-form" id="chatform"><input type="text" id="chatin" placeholder="Écris au groupe…" maxlength="500" autocomplete="off">${photoBtn()}${micBtn()}<button class="btn btn-ac" type="submit">Envoyer</button></form></div></div>`;
+    <form class="chat-form" id="chatform"><input type="text" id="chatin" placeholder="Écris au groupe…" maxlength="500" autocomplete="off">${photoBtn(!gHasMinor(g))}${micBtn()}<button class="btn btn-ac" type="submit">Envoyer</button></form></div></div>`;
   dmFit(); document.getElementById('ginfo').onclick=()=>groupInfo(id);
-  photoWire(ph=>{ const pid=newId(); PHOTOS[pid]=ph.data; DB.sendGroupMessage(id,PHOTO_TEXT,null,{id:pid,w:ph.w,h:ph.h}); });
+  photoWire(ph=>{ if(gHasMinor(gById(id))){ toast('Pas de photo dans un groupe où il y a des 13-17 ans.',3500); document.getElementById('photobtn')?.remove(); return; }
+    const pid=newId(); PHOTOS[pid]=ph.data; DB.sendGroupMessage(id,PHOTO_TEXT,null,{id:pid,w:ph.w,h:ph.h}); });
   document.getElementById('micbtn')?.addEventListener('click',()=>recordVoice(v=>{ const vid=newId(); VOICES[vid]=v.data; DB.sendGroupMessage(id,VOICE_TEXT,{id:vid,dur:v.dur}); }));
   try{ const cb=document.getElementById('chatbox'); if(cb&&'ResizeObserver' in window) new ResizeObserver(()=>{ cb.scrollTop=cb.scrollHeight; }).observe(cb); }catch(e){}
   document.getElementById('chatform').addEventListener('submit',e=>{ e.preventDefault(); const i=document.getElementById('chatin'), t=i.value.trim(); if(!t) return;
     if(myGroupNow()==='minor'&&hasPhone(t)){ toast('Pour ta sécurité, les numéros de téléphone ne peuvent pas être envoyés ici.'); return; }
+    if(gHasMinor(gById(id))&&hasPhone(t)){ toast('Il y a des 13-17 ans dans ce groupe : les numéros de téléphone ne peuvent pas être envoyés ici.',3500); return; }
     i.value=''; DB.sendGroupMessage(id,t); });
-  DB.fetchPlayers(g.members).then(ch=>{ if(ch&&location.hash==='#/groupe/'+id) renderGroupChat(id); }).catch(()=>{});
+  DB.fetchPlayers(g.members).then(ch=>{ if(location.hash!=='#/groupe/'+id) return; if(gHasMinor(gById(id))) document.getElementById('photobtn')?.remove(); if(ch) renderGroupChat(id); }).catch(()=>{});
   DB.listenGroup(id,()=>{ if(location.hash==='#/groupe/'+id){ (S.gseen=S.gseen||{})[id]=Date.now(); renderGroupChat(id); } });
 }
 let GMSGS={};   // messages du groupe ouvert
@@ -5028,9 +5049,17 @@ function groupInvite(id){ const g=gById(id); if(!g) return; const can=matesList(
 /* =========================================================
    COMMUNAUTÉ : annonces « Je cherche » et tournois
    Firestore : boards/{adult|minor}/annonces/{id} et boards/{adult|minor}/tournois/{id}
-   Chaque tranche d'âge a son propre tableau : les 13-17 ans et les adultes ne se croisent pas.
+   Chacun publie dans le tableau de son âge ; v7 — tout le monde lit les deux.
+   Tournoi du tableau « adult » : ouvert à tous ; du tableau « minor » : réservé aux 13-17 ans.
    ========================================================= */
 const myGroupNow = () => S.me&&S.me.dob ? ageGroup(S.me) : 'adult';
+// v7 — âges réunis : tout le monde se voit. Entre un adulte et un 13-17 ans, c'est le 13-17 ans qui envoie la demande de mate ;
+// messages écrits, vocaux et appels vocaux oui ; appels vidéo et photos non (les règles Firestore le vérifient aussi).
+const minorP = p => !!p && ageGroup(p)==='minor';
+const crossAge = p => !!p && ageGroup(p)!==myGroupNow();
+const canAsk = p => !crossAge(p) || myGroupNow()==='minor';   // un adulte n'envoie pas de demande à un 13-17 ans
+// Pseudos en jeu écrits sur le profil public : ceux d'un adulte (s'il les affiche) ; jamais ceux d'un 13-17 ans (rangés dans gametags)
+const publicTags = me => S.privacy.tags && ageGroup(me)==='adult' ? (me.tags||{}) : {};
 const myId = () => DB.live ? DB.uid() : 'me';
 const fmtDay = ts => new Date(ts).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})+' · '+new Date(ts).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
 function boardHead(tab,sub,action){
@@ -5052,7 +5081,7 @@ function viewSquads(tab){
 /* ---- Annonces « Je cherche » ---- */
 const WHEN=[['now','Maintenant',3],['soir','Ce soir',8],['demain','Demain',36]];
 const MAX_ANNONCES=2;   // annonces actives par joueur
-let ANNONCES=[];        // annonces de ma tranche d'âge (Firestore)
+let ANNONCES=[];        // annonces des deux tableaux (Firestore)
 const DEMO_ANNONCES=[
   {id:'a1',by:'p8',byName:'Gbaka_225',game:'Free Fire',need:2,rank:'Héroïque',when:'soir',text:'Ranked ce soir, vocal obligatoire. On vise Grand Maître.',at:Date.now()-40*60e3,until:Date.now()+6*3600e3,replies:[],ageGroup:'adult'},
   {id:'a2',by:'p5',byName:'MamadouFC',game:'eFootball',need:1,rank:'Division 3',when:'now',text:'Coop 2v2 tout de suite, je suis en ligne.',at:Date.now()-10*60e3,until:Date.now()+2*3600e3,replies:['p1'],ageGroup:'adult'},
@@ -5062,8 +5091,8 @@ const DEMO_ANNONCES=[
 const isMine = a => a.by==='me' || (DB.live && a.by===DB.uid());
 function annoncesAll(){
   const src = DB.live ? ANNONCES : [...DEMO_ANNONCES, ...(S.annonces||[])];
-  const g=myGroupNow(), my=S.me?S.me.games:[];
-  return src.filter(a=>a.until>Date.now() && a.ageGroup===g && !S.blocked.includes(a.by) && !S.hidden.includes(a.by) && !S.banned.includes(a.by))
+  const my=S.me?S.me.games:[];   // v7 — les annonces de tous les âges
+  return src.filter(a=>a.until>Date.now() && !S.blocked.includes(a.by) && !S.hidden.includes(a.by) && !S.banned.includes(a.by))
     .sort((x,y)=>(isMine(y)-isMine(x)) || ((my.includes(y.game))-(my.includes(x.game))) || (y.at-x.at));
 }
 function annonceCard(a){
@@ -5080,7 +5109,7 @@ function annonceCard(a){
       <div class="an-act">${mine?`<span class="muted">${repliers.length?`${repliers.length} partant${repliers.length>1?'s':''}`:'Pas encore de réponse'}</span><button class="btn btn-sm btn-ghost" data-an-del="${esc(a.id)}">Retirer</button>`
         : inn?`<span class="mates-ok">✓ Partant</span><button class="btn btn-sm btn-ghost" data-an-leave="${esc(a.id)}">Annuler</button>`
         : `<button class="btn btn-sm btn-ac" data-an-join="${esc(a.id)}">Je suis partant</button>`}</div></div>
-    ${mine&&repliers.length?`<div class="an-replies">${repliers.map(x=>`<a class="mate-pill" href="#/joueur/${x.id}">${avatar(x,24)}${esc(x.name)}${isMate(x.id)?'':' · demande reçue'}</a>`).join('')}</div>`:''}
+    ${mine&&repliers.length?`<div class="an-replies">${repliers.map(x=>`<a class="mate-pill" href="#/joueur/${x.id}">${avatar(x,24)}${esc(x.name)}${isMate(x.id)?'':reqWith(x.id)?' · demande reçue':''}</a>`).join('')}</div>`:''}
   </article>`;
 }
 function viewAnnonces(){
@@ -5106,7 +5135,9 @@ function newAnnonce(){
     <div class="dlg-actions"><button class="btn btn-ghost" data-close>Annuler</button><button class="btn btn-ac" id="an-ok">Publier</button></div>`, d=>{
     const fill=()=>{ const g=d.querySelector('#an-g').value; d.querySelector('#an-r').innerHTML='<option value="">Peu importe</option>'+rankOptions(g).map(([,l])=>`<option value="${esc(l)}">${esc(l)}</option>`).join(''); };
     d.querySelector('#an-g').onchange=fill; fill();
-    d.querySelector('#an-ok').onclick=async()=>{ const btn=d.querySelector('#an-ok'); btn.disabled=true;
+    d.querySelector('#an-ok').onclick=async()=>{ const btn=d.querySelector('#an-ok');
+      if(myGroupNow()==='minor'&&hasPhone(d.querySelector('#an-t').value)){ d.querySelector('#an-e').textContent='Pour ta sécurité, pas de numéro de téléphone dans une annonce.'; return; }
+      btn.disabled=true;
       const w=WHEN.find(x=>x[0]===d.querySelector('#an-w').value)||WHEN[0], now=Date.now();
       const a={id:'a'+now,by:myId(),byName:S.me.name,game:d.querySelector('#an-g').value,need:+d.querySelector('#an-n').value,rank:d.querySelector('#an-r').value,when:w[0],
         text:d.querySelector('#an-t').value.trim().slice(0,140),at:now,until:now+w[2]*3600e3,replies:[],ageGroup:myGroupNow()};
@@ -5124,6 +5155,8 @@ async function joinAnnonce(id,on){
   await DB.replyAnnonce(a,true);
   const author=PLAYERS.find(p=>p.id===a.by); if(!author) return;
   let q=reqWith(author.id);
+  // v7 — un adulte ne fait pas de demande à un 13-17 ans : il est seulement noté partant, c'est le jeune qui décide de l'ajouter
+  if(!q&&!canAsk(author)){ toast(`Tu es noté partant. ${author.name} peut t'envoyer une demande de mate s'il le souhaite.`,4000); return; }
   if(!q){ const r={id:'r'+Date.now(),from:'me',to:author.id,status:'pending',at:Date.now()}; S.requests.push(r); save(); await DB.saveRequest(r); q=r; }
   await DB.saveNotif(author.id,{type:'annonce',from:'me',text:`${S.me.name} est partant pour ton annonce ${a.game}`});
   toast(q.status==='accepted'?`${author.name} est prévenu : écris-lui pour vous organiser`:`${author.name} est prévenu, et une demande de mate lui est envoyée`);
@@ -5145,24 +5178,25 @@ const DEMO_TOURNOIS=[
   {id:'t1',title:'Coupe Coopô Free Fire',game:'Free Fire',date:Date.now()+5*864e5,format:'Escouades de 4 · élimination directe',max:16,prize:'Un thème au choix pour l\'équipe gagnante',desc:'Inscris-toi seul, on complète les escouades. Lobby envoyé sur WhatsApp ou Discord 30 min avant.',players:['p8','p1'],entries:{},status:'open',ageGroup:'adult',at:Date.now()},
   {id:'t2',title:'Défi Brawl Stars 13-17',game:'Brawl Stars',date:Date.now()+3*864e5,format:'Solo · 3 manches',max:12,prize:'Thème au choix',desc:'Tournoi réservé aux 13-17 ans.',players:['p15'],entries:{},status:'open',ageGroup:'minor',at:Date.now()},
 ];
-function tournoisAll(){
+function tournoisAll(){   // v7 — tous les tournois sont visibles par tout le monde
   const src = DB.live ? TOURNOIS : [...DEMO_TOURNOIS, ...(S.tournois||[])];
-  const g=myGroupNow();
-  return src.filter(t=>isAdmin()||t.ageGroup===g).sort((a,b)=>((a.status==='done')-(b.status==='done')) || (a.date-b.date));
+  return src.slice().sort((a,b)=>((a.status==='done')-(b.status==='done')) || (a.date-b.date));
 }
+// Tournoi du tableau « adult » : ouvert à tous ; du tableau « minor » : réservé aux 13-17 ans
+const tournoiOpenTo = t => t.ageGroup!=='minor' || myGroupNow()==='minor';
 function tournoiCard(t){
   const me=myId(), players=t.players||[], inn=players.includes(me), full=players.length>=t.max, open=t.status==='open'&&t.date>Date.now()-3*3600e3;
   const status = t.status==='done'?'Terminé':!open?'Inscriptions closes':full?'Complet':'Inscriptions ouvertes';
-  const canJoin = t.ageGroup===myGroupNow();
+  const canJoin = tournoiOpenTo(t);
   const mem=players.map(id=>id===me?S.me:PLAYERS.find(p=>p.id===id)).filter(Boolean);
   return `<article class="mcard tournoi${t.status==='done'?' done':''}" style="--c:var(--pk)">
     <div class="sq-top"><span class="sq-game">${esc(t.game)}</span><span class="sq-slots ${full||!open?'full':''}">${players.length}/${+t.max||0} · ${status}</span></div>
     <h3>${esc(t.title)}</h3>
-    <dl class="facts"><div><dt>Quand</dt><dd>${esc(fmtDay(t.date))}</dd></div>${t.format?`<div><dt>Format</dt><dd>${esc(t.format)}</dd></div>`:''}${t.prize?`<div><dt>À gagner</dt><dd>${esc(t.prize)}</dd></div>`:''}${isAdmin()?`<div><dt>Pour</dt><dd>${t.ageGroup==='minor'?'13-17 ans':'Adultes'}</dd></div>`:''}</dl>
+    <dl class="facts"><div><dt>Quand</dt><dd>${esc(fmtDay(t.date))}</dd></div>${t.format?`<div><dt>Format</dt><dd>${esc(t.format)}</dd></div>`:''}${t.prize?`<div><dt>À gagner</dt><dd>${esc(t.prize)}</dd></div>`:''}${t.ageGroup==='minor'||isAdmin()?`<div><dt>Pour</dt><dd>${t.ageGroup==='minor'?'13-17 ans seulement':'Tout le monde'}</dd></div>`:''}</dl>
     ${t.desc?`<p class="muted">${esc(t.desc)}</p>`:''}
     ${mem.length?`<div class="sq-mem">${mem.slice(0,14).map(x=>x===S.me?avatar(S.me,30):`<a href="#/joueur/${x.id}" title="${esc(x.name)}">${avatar(x,30)}</a>`).join('')}</div>`:''}
     <div class="sq-act">${isAdmin()?`<button class="btn btn-sm btn-ghost" data-to-list="${esc(t.id)}">Inscrits</button><button class="btn btn-sm btn-ghost" data-to-edit="${esc(t.id)}">Modifier</button>`:''}
-      ${t.status==='done'||!canJoin?'':inn?`<span class="mates-ok">✓ Inscrit</span>${open?`<button class="btn btn-sm" data-to-leave="${esc(t.id)}">Se désinscrire</button>`:''}`:open&&!full?`<button class="btn btn-sm btn-ac" data-to-join="${esc(t.id)}">S'inscrire</button>`:''}</div>
+      ${t.status==='done'?'':!canJoin?'<span class="muted">Réservé aux 13-17 ans</span>':inn?`<span class="mates-ok">✓ Inscrit</span>${open?`<button class="btn btn-sm" data-to-leave="${esc(t.id)}">Se désinscrire</button>`:''}`:open&&!full?`<button class="btn btn-sm btn-ac" data-to-join="${esc(t.id)}">S'inscrire</button>`:''}</div>
   </article>`;
 }
 function viewTournois(){
@@ -5177,7 +5211,7 @@ function joinTournoi(id,on){
   const go=async()=>{ const me=myId();
     if(DB.live && !(await DB.joinTournoi(t,on))) return;
     t.players = on ? [...new Set([...(t.players||[]),me])] : (t.players||[]).filter(x=>x!==me);
-    t.entries = {...(t.entries||{})}; if(on) t.entries[me]={name:S.me.name,ig:(S.me.tags||{})[t.game]||''}; else delete t.entries[me];
+    t.entries = {...(t.entries||{})}; if(on) t.entries[me]={name:S.me.name,ig:myGroupNow()==='minor'?'':(S.me.tags||{})[t.game]||''}; else delete t.entries[me];   // le pseudo en jeu d'un 13-17 ans n'est pas écrit dans le tournoi
     if(!DB.live) save();
     toast(on?`Inscrit à « ${t.title} » 🎮`:'Désinscription enregistrée'); route(); };
   if(on && !((S.me.tags||{})[t.game])){   // l'organisateur a besoin de ton pseudo ou ID en jeu
@@ -5201,7 +5235,7 @@ function editTournoi(id){
     <div class="two"><div class="field"><label for="tg">Jeu</label><select id="tg">${GAMES.map(g=>`<option value="${esc(g)}" ${t&&t.game===g?'selected':''}>${esc(g)}</option>`).join('')}</select></div>
       <div class="field"><label for="td">Date et heure</label><input id="td" type="datetime-local" value="${local}"></div></div>
     <div class="two"><div class="field"><label for="tm">Places</label><input id="tm" type="text" inputmode="numeric" value="${t?t.max:16}"></div>
-      <div class="field"><label for="ta">Pour</label><select id="ta" ${isNew?'':'disabled'}><option value="adult" ${t&&t.ageGroup==='minor'?'':'selected'}>Adultes</option><option value="minor" ${t&&t.ageGroup==='minor'?'selected':''}>13-17 ans</option></select></div></div>
+      <div class="field"><label for="ta">Pour</label><select id="ta" ${isNew?'':'disabled'}><option value="adult" ${t&&t.ageGroup==='minor'?'':'selected'}>Tout le monde</option><option value="minor" ${t&&t.ageGroup==='minor'?'selected':''}>13-17 ans seulement</option></select></div></div>
     <div class="field"><label for="tf">Format</label><input id="tf" type="text" maxlength="80" value="${esc(t?t.format:'')}" placeholder="ex. Escouades de 4 · élimination directe"></div>
     <div class="field"><label for="tp">À gagner (facultatif)</label><input id="tp" type="text" maxlength="80" value="${esc(t?t.prize:'')}" placeholder="ex. Un thème au choix pour les gagnants"></div>
     <div class="field"><label for="tx">Règles et infos</label><textarea id="tx" rows="3" maxlength="500">${esc(t?t.desc:'')}</textarea></div>
@@ -5226,11 +5260,15 @@ function confirmDel(d){ const b=d.querySelector('#tdel'); if(b.dataset.sure) ret
 function tournoiList(id){
   const t=tournoisAll().find(x=>x.id===id); if(!t) return;
   const e=t.entries||{}, rows=(t.players||[]).map(u=>{ const p=u===myId()?S.me:PLAYERS.find(x=>x.id===u); return {u,name:(e[u]&&e[u].name)||(p&&p.name)||'',ig:(e[u]&&e[u].ig)||(p&&p.tags&&p.tags[t.game])||''}; });
-  const txt=rows.map((r,i)=>`${i+1}. ${r.name||'Joueur'}${r.ig?` · ${t.game} : ${r.ig}`:''}`).join('\n');
+  const txt=()=>rows.map((r,i)=>`${i+1}. ${r.name||'Joueur'}${r.ig?` · ${t.game} : ${r.ig}`:''}`).join('\n');
+  const igTxt=r=>r.ig?`${esc(t.game)} : ${esc(r.ig)}`:'pseudo en jeu non renseigné';
   modal(`<h3>Inscrits · ${esc(t.title)}</h3><p class="muted">${rows.length} / ${+t.max||0} joueurs</p>
-    ${rows.length?`<ol class="to-list">${rows.map(r=>`<li><b>${esc(r.name||'Joueur')}</b>${r.ig?`<span class="muted">${esc(t.game)} : ${esc(r.ig)}</span>`:'<span class="muted">pseudo en jeu non renseigné</span>'}</li>`).join('')}</ol>`:'<p class="muted">Personne pour l\'instant.</p>'}
+    ${rows.length?`<ol class="to-list">${rows.map((r,i)=>`<li><b>${esc(r.name||'Joueur')}</b><span class="muted" data-to-ig="${i}">${igTxt(r)}</span></li>`).join('')}</ol>`:'<p class="muted">Personne pour l\'instant.</p>'}
     <div class="dlg-actions">${rows.length?'<button class="btn btn-ghost" id="tcopy">Copier la liste</button>':''}<button class="btn" data-close>Fermer</button></div>`, d=>{
-    d.querySelector('#tcopy')?.addEventListener('click',async()=>{ try{ await navigator.clipboard.writeText(txt); toast('Liste copiée'); }catch(err){} }); });
+    d.querySelector('#tcopy')?.addEventListener('click',async()=>{ try{ await navigator.clipboard.writeText(txt()); toast('Liste copiée'); }catch(err){} });
+    // v7 — les pseudos en jeu des 13-17 ans ne sont pas dans le tournoi : la modération les lit à part (gametags)
+    if(DB.live&&isAdmin()) rows.forEach((r,i)=>{ if(r.ig) return; DB.loadGameTags(r.u).then(tg=>{ const v=tg&&tg[t.game]; if(!v) return; r.ig=String(v).slice(0,40); const el=d.querySelector(`[data-to-ig="${i}"]`); if(el) el.innerHTML=igTxt(r); }); });
+  });
 }
 document.addEventListener('click',e=>{
   const j=e.target.closest('[data-to-join]'); if(j){ joinTournoi(j.dataset.toJoin,true); return; }
@@ -5242,7 +5280,7 @@ document.addEventListener('click',e=>{
 /* ---- Aperçu sur l'accueil ---- */
 function boardsTeaser(){
   if(!S.me) return '';
-  const t=tournoisAll().find(x=>x.status==='open'&&x.date>Date.now()&&x.ageGroup===myGroupNow()), an=annoncesAll().filter(a=>!isMine(a)).slice(0,t?2:3);
+  const t=tournoisAll().find(x=>x.status==='open'&&x.date>Date.now()&&tournoiOpenTo(x)), an=annoncesAll().filter(a=>!isMine(a)).slice(0,t?2:3);
   const head=`<div class="dispo-head"><h3>Communauté</h3><a class="linkbtn" href="#/groupes">Tout voir</a></div>`;
   const go='<svg class="menu-go" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
   if(!an.length&&!t) return `<section class="home-sec reveal board-teaser">${head}<div class="list-card pad"><p class="muted">Tu cherches des joueurs pour une partie précise ? Publie une annonce, par exemple « Je cherche 2 joueurs ${esc(S.me.games[0]||'Free Fire')} ce soir ».</p><div><a class="btn btn-sm btn-ac" href="#/groupes/annonces">Publier une annonce</a></div></div></section>`;
@@ -5265,10 +5303,11 @@ async function shareProfile(){
 /* ---- Aide, CGU, confidentialité ---- */
 function viewHelp(){
   const faq=[['Comment est calculé le pourcentage de compatibilité ?','Chaque critère vaut un nombre de points (jeux en commun, horaires, style, jours, plateforme, rang, langue, pays). Le total est ramené sur 100. Sur le profil d\'un joueur, tu vois le détail critère par critère.'],
-    ['Pourquoi je ne vois pas certains joueurs ?','Les 13-17 ans ne voient que des 13-17 ans, et les adultes que des adultes. Tu ne vois pas non plus les joueurs que tu as bloqués ni ceux masqués par la modération.'],
+    ['Pourquoi je ne vois pas certains joueurs ?','Tu ne vois pas les joueurs que tu as bloqués, ni ceux masqués par la modération.'],
     ['Comment contacter un joueur ?','Envoie-lui une demande de mate. S\'il accepte, vous pouvez vous écrire dans Messages et vous retrouver dans des groupes. Tout se passe dans Coopô : aucun numéro ni pseudo d\'un autre réseau n\'est demandé.'],
+    ['Adultes et 13-17 ans peuvent-ils jouer ensemble ?','Oui. Mais avec un joueur de moins de 18 ans, c\'est lui qui envoie la demande de mate : un adulte ne peut pas commencer une conversation avec lui. Entre un adulte et un 13-17 ans, les messages écrits, les vocaux et les appels vocaux sont possibles, mais pas les appels vidéo ni les photos. Les pseudos en jeu d\'un 13-17 ans ne sont montrés qu\'aux 13-17 ans et à ses mates.'],
     ['Mon e-mail ou ma date de naissance sont-ils visibles ?','Non, jamais. Les autres joueurs ne voient que ton pseudo, ton avatar, tes jeux et tes habitudes de jeu.'],
-    ['À quoi servent les annonces ?','À trouver vite des joueurs pour une partie précise : « Je cherche 2 joueurs Free Fire ce soir ». Clique sur « Je suis partant » : l\'auteur est prévenu et reçoit une demande de mate. Les annonces disparaissent toutes seules après la partie.'],
+    ['À quoi servent les annonces ?','À trouver vite des joueurs pour une partie précise : « Je cherche 2 joueurs Free Fire ce soir ». Clique sur « Je suis partant » : l\'auteur est prévenu et reçoit une demande de mate (si l\'auteur a moins de 18 ans et toi plus, tu es seulement noté partant : c\'est lui qui choisit de t\'ajouter). Les annonces disparaissent toutes seules après la partie.'],
     ['Comment participer à un tournoi ?','Dans Communauté › Tournois, clique sur « S\'inscrire ». Ton pseudo en jeu est transmis à l\'organisateur pour qu\'il puisse t\'inviter.'],
     ['Que faire face à un comportement toxique ?','Utilise Signaler sur son profil : l\'équipe de modération examine chaque signalement. Tu peux aussi le bloquer immédiatement.'],
     ['Comment supprimer mon compte ?','Dans Profil, puis Réglages, tout en bas. Tes données sont effacées définitivement.']];
@@ -5286,7 +5325,7 @@ function viewLegal(kind){
   app.innerHTML=`<div class="wrap page legal">${backAuto()}<div class="page-head"><div><h2>${cgu?"Conditions générales d'utilisation":'Politique de confidentialité'}</h2><p>Dernière mise à jour : novembre 2026</p></div></div>
     ${cgu?`
     <h3>1. Objet</h3><p>Coopô est un service de mise en relation entre joueurs de jeux vidéo, édité depuis la Côte d'Ivoire par Konate Tidiane. En créant un compte, tu acceptes les présentes conditions.</p>
-    <h3>2. Âge minimum</h3><p>Le service est réservé aux personnes âgées d'au moins ${CONFIG.minAge} ans. Les utilisateurs de ${CONFIG.minAge} à ${CONFIG.adultAge-1} ans ne sont mis en relation qu'avec des utilisateurs de la même tranche d'âge. Toute fausse déclaration d'âge entraîne la suppression du compte.</p>
+    <h3>2. Âge minimum</h3><p>Le service est réservé aux personnes âgées d'au moins ${CONFIG.minAge} ans. Entre un adulte et un utilisateur de ${CONFIG.minAge} à ${CONFIG.adultAge-1} ans, seul ce dernier peut envoyer une demande de mate ; les appels vidéo et l'envoi de photos ne sont pas possibles entre eux, et les numéros de téléphone sont bloqués dans leurs conversations. Toute fausse déclaration d'âge entraîne la suppression du compte.</p>
     <h3>3. Compte</h3><p>Tu es responsable de la confidentialité de ton mot de passe et de l'usage de ton compte. Un seul compte par personne. Le pseudo ne doit pas usurper l'identité d'un tiers.</p>
     <h3>4. Comportement</h3><p>Sont interdits : le harcèlement, les propos haineux ou discriminatoires, les contenus sexuels, les arnaques, la collecte de données d'autres utilisateurs et toute sollicitation d'un mineur par un adulte. L'éditeur peut masquer, suspendre ou supprimer un compte sans préavis en cas de manquement.</p>
     <h3>5. Modération et signalements</h3><p>Chaque utilisateur peut signaler ou bloquer un autre utilisateur. Les signalements sont examinés par l'équipe de modération. Un profil que tu signales disparaît aussitôt de ton côté ; l'équipe de modération décide ensuite de le masquer ou de bannir le compte pour tout le monde.</p>
@@ -5297,13 +5336,13 @@ function viewLegal(kind){
     :`
     <h3>1. Données collectées</h3><p>Pour créer ton compte : e-mail, pseudo, date de naissance, et, si tu utilises Google, ton nom et ta photo Google. Pour ton profil : jeux, pseudos et rangs en jeu, horaires, jours, style, plateformes, pays, langues. Coopô ne te demande aucun numéro de téléphone ni pseudo d'un autre réseau ; ceux qui avaient été enregistrés avant ont été effacés. Pour la communauté : tes annonces et tes inscriptions aux tournois. Pour le fonctionnement : demandes de mate, messages, signalements, blocages, notifications, ton statut « en ligne » et l'heure de ta dernière visite, ton avis « tu rejouerais avec lui ? » sur un joueur, et, si tu es venu par un lien de parrainage, le pseudo de ton parrain. Si tu nous écris par le formulaire de contact : ton message et l'e-mail que tu indiques.</p>
     <h3>2. Ce qui est visible</h3><p>Les autres utilisateurs voient uniquement ton pseudo, ton avatar, tes jeux et tes habitudes de jeu. Ton statut « en ligne » et le moment de ta dernière visite sont visibles si tu ne les as pas désactivés dans les paramètres. Tes avis sur les autres joueurs ne leur sont pas montrés. Ton e-mail, ta date de naissance et ton âge exact ne sont jamais affichés. Ton e-mail reste uniquement dans le service de connexion (Firebase Authentication) : il n'est pas recopié dans la base de données du site. Tes messages privés ne sont lisibles que par toi et ton mate ; si tu signales une conversation, les derniers messages sont joints au signalement et la modération peut consulter cette conversation, uniquement pour traiter le signalement.</p>
-    <h3>3. Utilisation</h3><p>Les données servent à calculer les compatibilités, à faire fonctionner les demandes de mate, les messages et les groupes, à séparer les tranches d'âge et à assurer la modération. Aucune donnée n'est vendue. Aucune publicité ciblée. Messages privés, écrits, vocaux ou photos : seuls toi et ton mate les voyez. Les appels vocaux et vidéo passent directement entre vos deux appareils (parfois par un relais technique) et ne sont jamais enregistrés ; la modération n'y accède que si l'un de vous signale la conversation. Groupes : les messages sont lus par les membres du groupe, et la modération de Coopô peut les consulter et les supprimer pour protéger les joueurs. Flammes : Coopô enregistre seulement les jours où vous vous êtes écrit, pas le contenu.</p>
+    <h3>3. Utilisation</h3><p>Les données servent à calculer les compatibilités, à faire fonctionner les demandes de mate, les messages et les groupes, à protéger les 13-17 ans et à assurer la modération. Aucune donnée n'est vendue. Aucune publicité ciblée. Messages privés, écrits, vocaux ou photos : seuls toi et ton mate les voyez. Les appels vocaux et vidéo passent directement entre vos deux appareils (parfois par un relais technique) et ne sont jamais enregistrés ; la modération n'y accède que si l'un de vous signale la conversation. Groupes : les messages sont lus par les membres du groupe, et la modération de Coopô peut les consulter et les supprimer pour protéger les joueurs. Flammes : Coopô enregistre seulement les jours où vous vous êtes écrit, pas le contenu.</p>
     <h3>4. Hébergement</h3><p>Les données sont stockées sur Firebase, un service de Google Cloud. Elles sont protégées par des règles d'accès : ton e-mail et ta date de naissance ne sont lisibles que par toi et par la modération.</p>
     <h3>5. Conservation</h3><p>Les données sont conservées tant que le compte existe, puis supprimées. Les messages que tu as envoyés restent visibles par les mates qui les ont reçus. Les signalements peuvent être conservés anonymisés pour la sécurité du service.</p>
     <h3>6. Tes droits</h3><p>Tu peux consulter, modifier et supprimer tes données depuis ton compte, ou en nous écrivant via le formulaire <a href="#/contact">Nous écrire</a>. Les utilisateurs mineurs peuvent exercer ces droits avec un parent ou tuteur. En Côte d'Ivoire, tu peux aussi saisir l'ARTCI, l'autorité chargée de la protection des données personnelles.</p>
     <h3>7. Paiements</h3><p>Les paiements sont traités par SasPay (Mobile Money ou carte bancaire). Pour un achat, Coopô transmet à SasPay ton adresse e-mail (pour ton reçu), ton pseudo, ton pays, l'objet acheté et son prix ; rien d'autre. Coopô ne reçoit ni ton numéro de carte ni ton code Mobile Money ; nous conservons uniquement la référence de la transaction, l'article acheté, le montant et son statut.</p>
     <h3>8. Cookies</h3><p>Le site utilise uniquement le stockage nécessaire au fonctionnement (session, thème choisi). Pas de cookies publicitaires ni de mesure d'audience. Pour afficher le site plus vite, une copie des données que tu as déjà consultées (liste des joueurs, messages) est gardée dans ton navigateur ; elle est effacée quand tu te déconnectes ou quand tu vides les données du site. Le détail est dans la <a href="#/cookies">politique de cookies</a>.</p>
-    <h3>9. Sécurité</h3><p>Les échanges avec le site sont chiffrés (HTTPS). Les mots de passe sont gérés par Firebase Authentication : nous ne les voyons jamais. L'accès aux données est limité par des règles côté serveur, et seule l'équipe de modération peut consulter les signalements. Aucun système n'est infaillible : choisis un mot de passe unique, vérifie ton adresse e-mail et ne partage jamais tes identifiants. Dans les messages, les numéros de téléphone sont bloqués pour les 13-17 ans et un avertissement s'affiche sur les liens reçus.</p>
+    <h3>9. Sécurité</h3><p>Les échanges avec le site sont chiffrés (HTTPS). Les mots de passe sont gérés par Firebase Authentication : nous ne les voyons jamais. L'accès aux données est limité par des règles côté serveur, et seule l'équipe de modération peut consulter les signalements. Aucun système n'est infaillible : choisis un mot de passe unique, vérifie ton adresse e-mail et ne partage jamais tes identifiants. Dans les messages, les numéros de téléphone sont bloqués pour les 13-17 ans et dans les conversations avec eux et un avertissement s'affiche sur les liens reçus.</p>
     <h3>10. Modifications</h3><p>Cette politique peut évoluer avec le site. La date de mise à jour est indiquée en haut de la page et tu seras informé des changements importants.</p>`}
     </div>`;
 }
@@ -5400,7 +5439,7 @@ function viewWelcome(){
     <section class="wl-feats">
       <div><b>🎮 Mêmes jeux, mêmes heures</b><span>Free Fire, eFootball, COD Mobile, FC, Fortnite… et tes horaires.</span></div>
       <div><b>⚡ Dispo maintenant</b><span>Dis que tu es libre, lance un duo en un clic.</span></div>
-      <div><b>🛡️ Entre joueurs de ton âge</b><span>Les 13-17 ans et les adultes ne se croisent pas.</span></div>
+      <div><b>🛡️ Les 13-17 ans protégés</b><span>Avec un adulte, c'est le jeune qui envoie la demande. Pas d'appel vidéo ni de photo entre eux.</span></div>
     </section>
     <p class="wl-legal">En t'inscrivant, tu acceptes les <a href="#/cgu">CGU</a> et la <a href="#/confidentialite">politique de confidentialité</a>.</p>
   </div>`;
@@ -5555,7 +5594,11 @@ const DB = {
       let g=S.me&&S.me.dob?ageGroup(S.me):'adult';
       // Anniversaire des 18 ans : le groupe d'âge enregistré doit suivre l'âge réel, sinon les règles refusent toutes les lectures
       if(S.me&&S.me.dob&&prof.data().ageGroup!==g){ try{ await db.collection('profiles').doc(uid).update({ageGroup:g}); }catch(e){ console.error(e); if(prof.data().ageGroup) g=prof.data().ageGroup; } }
-      const [ps,rq,bl,rt,sq,ad]=await Promise.all([db.collection('profiles').where('ageGroup','==',g).where('hidden','==',false).limit(300).get(), db.collection('requests').where('participants','array-contains',uid).get(), db.collection('blocks').doc(uid).collection('list').get(), db.collection('ratings').where('by','==',uid).get(), db.collection('squads').where('ageGroup','==',g).get(), db.collection('admins').doc(uid).get(), this.loadPurchases()]);
+      // v7 — âges réunis : les profils et les sessions de tous les âges
+      const [ps,rq,bl,rt,sq,ad]=await Promise.all([db.collection('profiles').where('hidden','==',false).limit(300).get(), db.collection('requests').where('participants','array-contains',uid).get(), db.collection('blocks').doc(uid).collection('list').get(), db.collection('ratings').where('by','==',uid).get(), db.collection('squads').get(), db.collection('admins').doc(uid).get(), this.loadPurchases()]);
+      // v7 — les pseudos en jeu d'un 13-17 ans quittent son profil public (copie privée et gametags d'abord, pour ne rien perdre)
+      { const pt=prof.data().tags; if(g==='minor'&&pt&&typeof pt==='object'&&Object.keys(pt).length){ const tg={...pt,...(S.me.tags||{})};
+        Promise.resolve().then(async()=>{ await db.collection('private').doc(uid).set({tags:tg},{mergeFields:['tags']}); await this.syncGameTags(tg); await db.collection('profiles').doc(uid).update({tags:{}}); }).catch(e=>console.error(e)); } }
       this._checked=true;
       // Thème Awalé retiré : le compte repasse au thème par défaut, avec un petit mot d'explication (une seule fois)
       if(this._retired){ db.collection('profiles').doc(uid).update({skin:'defaut'}).catch(e=>console.error(e)); S.retiredMsg=true; this._retired=null; }
@@ -5624,7 +5667,8 @@ const DB = {
       catch(e){ if(String(e&&e.code).includes('permission')){ this._saveErr='name'; return false; } throw e; }
       await db.collection('private').doc(uid).set({dob,tags:me.tags||{},updatedAt:Date.now()},{mergeFields:['dob','tags','updatedAt']});
       const {banned,hidden,rejoue,moderator,dispo,skin,discord,discordPublic,whatsapp,socials,...safe}=pub;
-      const data={...safe,tags:S.privacy.tags?(me.tags||{}):{},nameLower:lower,ageGroup:ageGroup(me),privacy:{tags:!!S.privacy.tags,online:!!S.privacy.online},online:!!S.privacy.online,lastSeen:S.privacy.online?Date.now():0,updatedAt:Date.now()};
+      const data={...safe,tags:publicTags(me),nameLower:lower,ageGroup:ageGroup(me),privacy:{tags:!!S.privacy.tags,online:!!S.privacy.online},online:!!S.privacy.online,lastSeen:S.privacy.online?Date.now():0,updatedAt:Date.now()};
+      if(ageGroup(me)==='minor') await this.syncGameTags(me.tags||{});   // v7 — les pseudos en jeu d'un 13-17 ans sont rangés à part
       if(renamed) data.nameAt=Date.now(); else if(lastName) data.nameAt=lastName; else delete data.nameAt;
       if(isNew){ Object.assign(data,{banned:false,hidden:false,rejoue:0}); await ref.set(data); await this.applyReferral(); await this.loadAll(); }
       else { const FD=firebase.firestore.FieldValue.delete();
@@ -5635,13 +5679,21 @@ const DB = {
   // Réglages de confidentialité : appliqués tout de suite en ligne (pseudos en jeu masqués = retirés du profil public)
   async savePrivacy(){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live||!this.uid()||!S.me) return; const uid=this.uid();
     try{ if(!S.privacy.tags) await this.db.collection('private').doc(uid).set({tags:S.me.tags||{}},{mergeFields:['tags']});   // copie privée d'abord
-      await this.db.collection('profiles').doc(uid).update({privacy:{tags:!!S.privacy.tags,online:!!S.privacy.online},tags:S.privacy.tags?(S.me.tags||{}):{},online:!!S.privacy.online,lastSeen:S.privacy.online?Date.now():0}); }
+      if(ageGroup(S.me)==='minor') await this.syncGameTags(S.me.tags||{});
+      await this.db.collection('profiles').doc(uid).update({privacy:{tags:!!S.privacy.tags,online:!!S.privacy.online},tags:publicTags(S.me),online:!!S.privacy.online,lastSeen:S.privacy.online?Date.now():0}); }
     catch(e){ console.error(e); toast("Réglage non enregistré en ligne. Vérifie ta connexion et réessaie."); } },
-  // Annonces et tournois : boards/{tranche}/annonces et boards/{tranche}/tournois
-  async loadBoards(){ if(!this.live||!this.uid()||!S.me||!S.me.dob) return; const g=ageGroup(S.me), db=this.db;
-    try{ const q=await db.collection('boards').doc(g).collection('annonces').where('until','>',Date.now()).orderBy('until').limit(60).get();
-      ANNONCES=[]; q.forEach(d=>ANNONCES.push({...d.data(),id:d.id,ageGroup:g})); }catch(e){ console.error(e); }
-    try{ const out=[]; for(const gg of (isAdmin()?['adult','minor']:[g])){ const q=await db.collection('boards').doc(gg).collection('tournois').orderBy('date','desc').limit(30).get(); q.forEach(d=>out.push({...d.data(),id:d.id,ageGroup:gg})); } TOURNOIS=out; }catch(e){ console.error(e); }
+  // v7 — pseudos en jeu d'un 13-17 ans : gametags/{uid}, lu seulement par les 13-17 ans, ses mates et la modération (vide = effacé).
+  // Une erreur ici (règles pas encore publiées, réseau) ne bloque jamais l'enregistrement du profil.
+  async syncGameTags(tags){ if(!this.live||!this.uid()) return; const ref=this.db.collection('gametags').doc(this.uid()), t={};
+    Object.entries(tags||{}).forEach(([k,v])=>{ if(k&&v&&Object.keys(t).length<40) t[String(k).slice(0,40)]=String(v).slice(0,40); });
+    try{ if(S.privacy.tags&&Object.keys(t).length) await ref.set({tags:t,at:Date.now()}); else await ref.delete(); }catch(e){ console.error(e); } },
+  async loadGameTags(id){ if(!this.live||!this.uid()) return null; try{ const d=await this.db.collection('gametags').doc(this.toUid(id)).get(); const t=d.exists?d.data().tags:null; return t&&typeof t==='object'?t:null; }catch(e){ return null; } },
+  // Annonces et tournois : boards/{adult|minor}/annonces et boards/{adult|minor}/tournois (v7 — on lit les deux tableaux)
+  async loadBoards(){ if(!this.live||!this.uid()||!S.me||!S.me.dob) return; const db=this.db, BOARDS=['adult','minor'];
+    try{ const qs=await Promise.all(BOARDS.map(gg=>db.collection('boards').doc(gg).collection('annonces').where('until','>',Date.now()).orderBy('until').limit(60).get().catch(e=>{ console.error(e); return null; })));
+      if(qs.some(Boolean)){ ANNONCES=[]; qs.forEach((q,i)=>q&&q.forEach(d=>ANNONCES.push({...d.data(),id:d.id,ageGroup:BOARDS[i]}))); } }catch(e){ console.error(e); }
+    try{ const qs=await Promise.all(BOARDS.map(gg=>db.collection('boards').doc(gg).collection('tournois').orderBy('date','desc').limit(30).get().catch(e=>{ console.error(e); return null; })));
+      if(qs.some(Boolean)){ const out=[]; qs.forEach((q,i)=>q&&q.forEach(d=>out.push({...d.data(),id:d.id,ageGroup:BOARDS[i]}))); TOURNOIS=out; } }catch(e){ console.error(e); }
     this._lastBoards=Date.now(); },
   async refreshBoards(){ if(!this.live||!this.uid()||this._boardsBusy||(this._lastBoards&&Date.now()-this._lastBoards<30000)) return false; this._boardsBusy=true; try{ await this.loadBoards(); return true; }finally{ this._boardsBusy=false; } },
   async saveAnnonce(a){ if(!this.live){ if(!AUTH_LIVE) return true; if(!(await this.ready())) return false; } try{ const {by,byName,game,need,rank,when,text,at,until}=a;
@@ -5652,7 +5704,7 @@ const DB = {
       if(id){ const {players,entries,...rest}=data; await col.doc(id).set(rest,{merge:true}); } else { const r=await col.add(data); t.id=r.id; } return true; }catch(e){ console.error(e); return false; } },
   async deleteTournoi(t){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ await this.db.collection('boards').doc(t.ageGroup).collection('tournois').doc(t.id).delete(); }catch(e){ console.error(e); toast("Le tournoi n'a pas pu être supprimé"); } },
   async joinTournoi(t,on){ if(!this.live){ if(!AUTH_LIVE) return true; if(!(await this.ready())) return false; } try{ const F=firebase.firestore.FieldValue, uid=this.uid();
-      const upd={players:on?F.arrayUnion(uid):F.arrayRemove(uid)}; upd['entries.'+uid]=on?{name:S.me.name,ig:String((S.me.tags||{})[t.game]||'').slice(0,40)}:F.delete();
+      const upd={players:on?F.arrayUnion(uid):F.arrayRemove(uid)}; upd['entries.'+uid]=on?{name:S.me.name,ig:myGroupNow()==='minor'?'':String((S.me.tags||{})[t.game]||'').slice(0,40)}:F.delete();   // v7 — pas le pseudo en jeu d'un 13-17 ans
       await this.db.collection('boards').doc(t.ageGroup).collection('tournois').doc(t.id).update(upd); return true; }catch(e){ console.error(e); toast(on?"L'inscription n'a pas pu être enregistrée":"La désinscription n'a pas pu être enregistrée"); return false; } },
   async saveRequest(r){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; const from=this.toUid(r.from), to=this.toUid(r.to); const db=this.db;
     try{ const ref=db.collection('requests').doc(`${from}_${to}`), data={from,to,participants:[from,to],status:r.status,at:r.at};
@@ -5715,10 +5767,10 @@ const DB = {
   async deleteSquad(id){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ await this.db.collection('squads').doc(id).delete(); }catch(e){ console.error(e); } },
   async joinSquad(id,on){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ const F=firebase.firestore.FieldValue; await this.db.collection('squads').doc(id).update({members:on?F.arrayUnion(this.uid()):F.arrayRemove(this.uid())}); }catch(e){ console.error(e); } },
   // ---------- Groupes (groups/{id} et groups/{id}/messages) ----------
-  // Trois lectures : mes groupes, mes invitations, les groupes publics de ma tranche d'âge (les règles refusent tout le reste)
+  // Trois lectures : mes groupes, mes invitations, les groupes publics (v7 — de tous les âges ; les règles refusent tout le reste)
   async loadGroups(force){ if(!this.live||!this.uid()||!S.me||!S.me.dob) return false; if(!force&&this._lastGroups&&Date.now()-this._lastGroups<30000) return false; this._lastGroups=Date.now();
-    const uid=this.uid(), g=ageGroup(S.me), col=this.db.collection('groups'), out={};
-    const qs=await Promise.all([col.where('ageGroup','==',g).where('members','array-contains',uid).get(), col.where('ageGroup','==',g).where('invited','array-contains',uid).get(), col.where('ageGroup','==',g).where('private','==',false).limit(60).get()].map(p=>p.catch(e=>{ console.error(e); return null; })));
+    const uid=this.uid(), col=this.db.collection('groups'), out={};
+    const qs=await Promise.all([col.where('members','array-contains',uid).get(), col.where('invited','array-contains',uid).get(), col.where('private','==',false).limit(60).get()].map(p=>p.catch(e=>{ console.error(e); return null; })));
     if(qs.every(q=>!q)) return false;
     qs.forEach(q=>q&&q.forEach(x=>{ out[x.id]=normG({...x.data(),id:x.id}); })); GROUPS=Object.values(out); return true; },
   async createGroup(data){ const id='g'+Date.now().toString(36)+Math.random().toString(36).slice(2,8), me=myId();
@@ -5737,9 +5789,11 @@ const DB = {
   kickFromGroup(id,uid){ const g=gById(id), owner=g&&g.owner===myId();   // un modérateur ne touche qu'à members et kicked (règles) ; le créateur retire aussi le rôle
     return this._gUpdate(id,F=>owner?{members:F.arrayRemove(uid),mods:F.arrayRemove(uid),kicked:F.arrayUnion(uid)}:{members:F.arrayRemove(uid),kicked:F.arrayUnion(uid)},x=>{ x.members=x.members.filter(u=>u!==uid); x.mods=x.mods.filter(u=>u!==uid); if(!x.kicked.includes(uid)) x.kicked.push(uid); }); },
   setGroupMod(id,uid,on){ return this._gUpdate(id,F=>({mods:on?F.arrayUnion(uid):F.arrayRemove(uid)}),g=>{ g.mods=on?[...new Set([...g.mods,uid])]:g.mods.filter(u=>u!==uid); }); },
-  async inviteToGroup(id,ids){ const g=gById(id); if(!g||!ids.length) return 0; const ok=await this._gUpdate(id,F=>({invited:F.arrayUnion(...ids)}),x=>{ x.invited=[...new Set([...x.invited,...ids])]; }); if(!ok) return 0;
-    if(this.live) await Promise.all(ids.map(u=>this.saveNotif(u,{type:'group',gid:id,from:'me',text:`${S.me.name} t'invite dans le groupe « ${g.name} »`.slice(0,190)})));
-    return ids.length; },
+  // v7 — une invitation à la fois (les règles vérifient chaque personne invitée : un adulte n'invite un 13-17 ans que s'ils sont mates)
+  async inviteToGroup(id,ids){ const g=gById(id); if(!g||!ids.length) return 0; let n=0;
+    for(const u of ids){ const ok=await this._gUpdate(id,F=>({invited:F.arrayUnion(u)}),x=>{ if(!x.invited.includes(u)) x.invited.push(u); }); if(!ok) break; n++;
+      if(this.live) await this.saveNotif(u,{type:'group',gid:id,from:'me',text:`${S.me.name} t'invite dans le groupe « ${g.name} »`.slice(0,190)}); }
+    return n; },
   async deleteGroup(id){ this.stopGroup(); if(AUTH_LIVE){ if(!this.live&&!(await this.ready())) return false; const ref=this.db.collection('groups').doc(id);
       try{ for(let k=0;k<6;k++){ const q=await ref.collection('messages').limit(300).get(); if(q.empty) break; const b=this.db.batch(); q.forEach(x=>b.delete(x.ref)); await b.commit(); }   // les messages d'abord, puis le groupe
         try{ for(let k=0;k<30;k++){ const q=await ref.collection('voices').limit(8).get(); if(q.empty) break; const b=this.db.batch(); q.forEach(x=>b.delete(x.ref)); await b.commit(); } }catch(e){ console.error(e); }   // les sons des messages vocaux
@@ -5783,7 +5837,7 @@ const DB = {
       S.rewards={...(S.rewards||{}),plates:[...(((S.rewards||{}).plates)||[]),id]}; save(); return true; }catch(e){ console.error(e); return false; } },
   async setDispo(d){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live||!this.uid()) return; try{ await this.db.collection('profiles').doc(this.uid()).update({dispo:d||null}); }catch(e){ console.error(e); toast('Statut non enregistré en ligne'); } },
   async refreshPlayers(){ if(!this.live||!this.uid()||!S.me||!S.me.dob) return false; if(this._refreshing||(this._lastPlayers&&Date.now()-this._lastPlayers<180000)) return false; this._lastPlayers=Date.now(); this._refreshing=true;
-    try{ const uid=this.uid(), g=ageGroup(S.me); const ps=await this.db.collection('profiles').where('ageGroup','==',g).where('hidden','==',false).limit(300).get();
+    try{ const uid=this.uid(); const ps=await this.db.collection('profiles').where('hidden','==',false).limit(300).get();   // v7 — tous les âges
       const fresh=[]; ps.forEach(d=>{ if(d.id!==uid) fresh.push(normP({...d.data(),id:d.id,age:undefined})); }); const keep=PLAYERS.filter(p=>(p._reported||p._extra)&&!fresh.some(f=>f.id===p.id)); PLAYERS.length=0; fresh.concat(keep).forEach(p=>PLAYERS.push(p)); return true; }catch(e){ console.error(e); return false; } finally{ this._refreshing=false; } },
   // Parrainage : validé une seule fois, quand le filleul a un profil ET une adresse e-mail vérifiée (les comptes Google le sont d'office).
   // Tant que l'e-mail n'est pas vérifié, le code est gardé et retesté au prochain chargement.
@@ -5818,6 +5872,7 @@ const DB = {
         ...GROUPS.filter(g=>g.owner===uid).map(g=>quiet(this.deleteGroup(g.id))),
         ...GROUPS.filter(g=>g.owner!==uid&&g.members.includes(uid)).map(g=>quiet(db.collection('groups').doc(g.id).update({members:F.arrayRemove(uid),mods:F.arrayRemove(uid)}))),
         quiet(db.collection('streaks').where('members','array-contains',uid).get().then(q=>Promise.all(q.docs.map(x=>x.ref.delete())))),
+        quiet(db.collection('gametags').doc(uid).delete()),   // v7 — pseudos en jeu rangés à part (13-17 ans)
         ...ANNONCES.filter(a=>a.by===uid).map(a=>quiet(db.collection('boards').doc(a.ageGroup).collection('annonces').doc(a.id).delete())),
         ...ANNONCES.filter(a=>a.by!==uid&&(a.replies||[]).includes(uid)).map(a=>quiet(db.collection('boards').doc(a.ageGroup).collection('annonces').doc(a.id).update({replies:F.arrayRemove(uid)}))),
         ...TOURNOIS.filter(t=>(t.players||[]).includes(uid)).map(t=>{ const u={players:F.arrayRemove(uid)}; u['entries.'+uid]=F.delete(); return quiet(db.collection('boards').doc(t.ageGroup).collection('tournois').doc(t.id).update(u)); }) ]);
