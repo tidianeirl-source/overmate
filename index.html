@@ -2375,6 +2375,69 @@ html.world-live.scrolled #world-top .pd-bob{ animation-play-state:paused !import
 .shop-sec h3 small{ font:600 14px var(--fb); margin-left:6px; color:inherit; opacity:.85; }
 body:not([data-route="profil"]):not([data-route="parametres"]):not([data-route="boutique"]):not([data-route="inventaire"]) .top .inv-btn{ display:none; }
 </style>
+<style id="coopo-messages">
+/* ==== Modifier et supprimer ses messages ==== */
+.msg-more{ display:inline-grid; place-items:center; min-width:26px; min-height:24px; margin:-3px -6px -3px 2px; padding:0 4px; border:0; border-radius:8px; background:none; color:inherit; opacity:.8; cursor:pointer; vertical-align:middle; line-height:0; }
+.msg-more svg{ width:16px; height:16px; }
+.msg-more:hover,.msg-more:focus-visible{ opacity:1; background:color-mix(in srgb,currentColor 16%,transparent); }
+.bubble[data-own]{ -webkit-touch-callout:none; }
+.bubble.del{ background:none !important; border-style:dashed !important; color:var(--mu) !important; }
+.bubble.del small{ opacity:.9; }
+.msg-del{ font-style:italic; }
+.msg-quote{ overflow-wrap:anywhere; }
+.msg-acts{ flex-wrap:wrap; }
+.edit-bar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:10px; padding:8px 8px 8px 14px; border-radius:14px; background:var(--s1); border:1px solid var(--line); color:var(--tx); }
+.edit-bar > span{ display:grid; gap:1px; min-width:0; }
+.edit-bar b{ font-size:13px; color:var(--pk); }
+.edit-bar small{ font-size:13px; color:var(--mu); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.edit-bar .btn{ flex:none; }
+.chat-form.editing .mic-btn{ display:none; }
+@media (max-width:999px){
+  .chat-page .edit-bar{ flex:none; margin:0; border-radius:0; border-width:1px 0 0; background:var(--s2); }
+}
+/* ==== Stickers faits maison ==== */
+.stk-msg{ display:block; width:132px; height:132px; font-size:132px; padding:0; border:0; border-radius:0; color:inherit; cursor:pointer;
+  background:transparent no-repeat 0 0; background-size:calc(var(--n,1) * 1em) 1em; }
+.stk-msg[data-stk]:not([data-ok]){ background-color:color-mix(in srgb,currentColor 9%,transparent); border-radius:22%; }   /* en cours de chargement */
+.stk-msg.anim{ animation:stkPlay calc(var(--n) * 125ms) steps(var(--n)) infinite; }
+@keyframes stkPlay{ from{ background-position-x:0; } to{ background-position-x:calc(var(--n) * -1em); } }
+html.lite .stk-msg.anim{ animation:none; }
+@media (prefers-reduced-motion:reduce){ .stk-msg.anim{ animation:none; } }
+.stk-msg.stk-ci{ clip-path:circle(50%); } .stk-msg.stk-rd{ border-radius:22%; }   /* image sans transparence (anciens iPhone) : la forme est appliquée ici */
+.stk-msg:is(.stk-gone,.stk-off){ width:auto; height:auto; font-size:inherit; cursor:default; background:none; }
+.stk-msg:focus-visible{ outline:2px solid var(--pk); outline-offset:4px; border-radius:16px; }
+.bubble:has(> .stk-msg[data-stk]:not(.stk-gone)){ background:none !important; border-color:transparent !important; box-shadow:none !important; padding:2px 0 !important; color:var(--tx) !important; }
+.bubble:has(> .stk-msg[data-stk]:not(.stk-gone)) small{ color:var(--mu); opacity:1; }
+.stk-view{ display:grid; place-items:center; padding:6px 0 0; }
+.stk-big{ width:min(220px,60vw); height:min(220px,60vw); font-size:min(220px,60vw); cursor:default; }
+.stk-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; } .stk-head h3{ margin:0; }
+.stk-head .btn svg,.stk-src .btn svg{ width:20px; height:20px; flex:none; }
+.stk-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(76px,1fr)); gap:10px; margin:14px 0 2px; max-height:min(52vh,420px); overflow:auto; padding:6px 6px 2px 0; }
+.stk-cap{ grid-column:1/-1; margin:4px 0 0; font-size:13px; font-weight:700; color:var(--mu); }
+.stk-tile{ position:relative; }
+.stk-pick{ display:grid; place-items:center; width:100%; aspect-ratio:1; padding:6px; border:1px solid var(--line); border-radius:16px; background:var(--s2); color:var(--tx); cursor:pointer; transition:transform .16s cubic-bezier(.23,1,.32,1), border-color .16s ease; }
+.stk-pick:active{ transform:scale(.96); }
+@media (hover:hover) and (pointer:fine){ .stk-pick:hover{ border-color:var(--pk); } }
+.stk-pick .stk-msg{ width:62px; height:62px; font-size:62px; pointer-events:none; }
+.stk-grid.manage .stk-pick{ cursor:default; }
+.stk-x{ position:absolute; top:-6px; right:-6px; width:28px; height:28px; display:grid; place-items:center; border-radius:50%; border:2px solid var(--bg); background:#C8283F; color:#fff; font:700 17px/1 var(--fb); cursor:pointer; }
+.stk-empty{ grid-column:1/-1; text-align:center; padding:18px 8px; } .stk-empty p{ margin:4px 0; }
+.stk-src{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0 6px; } .stk-src .btn{ min-height:56px; gap:8px; }
+.stk-ed{ display:grid; justify-items:center; gap:4px; margin-top:12px; } .stk-ed .hint{ margin:0; }
+#stk-cv{ width:min(240px,62vw); height:auto; aspect-ratio:1; border-radius:18px; touch-action:none; cursor:grab;
+  background:repeating-conic-gradient(#D9DEE5 0 25%,#F3F5F8 0 50%) 0 0/18px 18px; }
+#stk-cv:active{ cursor:grabbing; }
+.stk-opts{ display:grid; gap:12px; margin-top:10px; } .stk-opts .field{ margin:0; display:grid; gap:6px; } .stk-opts input[type="range"]{ width:100%; accent-color:var(--pk); }
+.stk-check{ display:flex; align-items:center; gap:8px; font-weight:700; font-size:14px; } .stk-check input{ width:20px; height:20px; accent-color:var(--pk); }
+/* bouton d'envoi : le mot sur grand écran, une icône sur téléphone (il faut la place pour stickers, photo et micro) */
+.send-btn .send-ico,.send-btn .save-ico{ display:none; width:22px; height:22px; }
+@media (max-width:520px){
+  .chat-form > .send-btn{ width:46px; min-width:46px; padding:0; justify-content:center; }
+  .send-btn .send-txt{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+  .send-btn .send-ico{ display:block; }
+  .chat-form.editing .send-btn .send-ico{ display:none; } .chat-form.editing .send-btn .save-ico{ display:block; }
+}
+</style>
 </head>
 <body>
 <div id="splash" role="status" aria-live="polite">
@@ -4126,6 +4189,7 @@ function viewFakePay(tx){
     catch(e){ err.textContent=(e&&e.message)||'Le faux paiement n\'a pas pu être enregistré.'; app.querySelectorAll('[data-fake]').forEach(x=>x.disabled=false); } });
 }
 const INV_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v10a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9z"/><path d="M9.5 5V4a2.5 2.5 0 0 1 5 0v1"/><path d="M9 13h6v3H9z"/></svg>';   // sac à dos : l'inventaire
+const SEND_SVG='<svg class="send-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.2 20 4.5l-4.3 15-3.6-6.1z"/><path d="M12.1 13.4 20 4.5"/></svg><svg class="save-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 const PALETTE_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>';
 /* ================= Dispo maintenant ================= */
 const DISPO_DUR=[['1',"1 heure"],['2',"2 heures"],['3',"3 heures"],['5',"Toute la soirée"]];
@@ -4793,7 +4857,7 @@ document.addEventListener('click',e=>{ if(e.target.closest('.notif-btn,[data-not
 // Dernier message connu d'une conversation : le dernier message chargé ou, s'il est plus récent, celui annoncé par une notification
 function lastMsg(id){ const m=(S.chats[id]||[]).slice(-1)[0]||null, n=S.notifs.filter(x=>x.type==='message'&&x.from===id).sort((a,b)=>(b.at||0)-(a.at||0))[0];
   if(n&&(!m||(n.at||0)>(m.at||0))){ const t=String(n.text||''), i=t.indexOf(' : '); return {from:id,text:i>=0?t.slice(i+3):t,at:n.at||0}; }
-  return m; }
+  return m&&m.del ? {...m,text:MSG_DEL_TEXT} : m; }
 /* Colonne des conversations (ordinateur seulement) : les mates puis les groupes, le plus récent en haut. key = 'c:<joueur>' ou 'g:<groupe>'. */
 function dmSideInner(key){
   const mates=matesList().sort((a,b)=>{ const la=lastMsg(a.id), lb=lastMsg(b.id); return (lb?lb.at:0)-(la?la.at:0); });
@@ -4853,17 +4917,19 @@ function viewMessages(id){
   snWire();
   dmFit();
 }
-function viewChat(id){
+function viewChat(id){ EDIT=null;
   const p=visible().find(x=>x.id===id);
   if(!p||!isMate(id)){ app.innerHTML=`<div class="wrap page"><div class="empty"><h3>Vous n'êtes pas encore mates</h3><p class="muted">Les messages s'ouvrent une fois la demande de mate acceptée.</p><a class="btn" href="#/messages">Retour aux messages</a></div></div>`; return; }
   S.unread[id]=0; { const seen=S.notifs.filter(n=>!n.read&&n.type==='message'&&n.from===id); seen.forEach(n=>n.read=true); DB.markRead(seen.map(n=>n.id)); } save(); renderNotifBadge();
   app.innerHTML=`<div class="dm-shell">${dmSide('c:'+id)}<div class="wrap page chat-page"><div class="chat-head">${backLink('#/messages','Messages')}<a class="chat-who${plqOn(p,1)}" href="#/joueur/${p.id}">${plq(p)}${avatar(p,44)}<div><b>${esc(p.name)}${modBadge(p)}</b>${isOnline(p)?'<span class="online">En ligne</span>':'<span class="muted" style="font-size:12px">Hors ligne</span>'}</div></a>${callBtns(p)}</div>
     <p class="flame-hint" id="flame-hint"></p>
     <div class="chat-box" id="chatbox"></div>
-    <form class="chat-form" id="chatform"><input type="text" id="chatin" placeholder="Écris un message…" maxlength="500" autocomplete="off">${photoBtn(!minorP(p))}${micBtn()}<button class="btn btn-ac" type="submit">Envoyer</button></form></div></div>`;
+    <form class="chat-form" id="chatform">${stkBtn(!minorP(p))}<input type="text" id="chatin" placeholder="Écris un message…" maxlength="500" autocomplete="off">${photoBtn(!minorP(p))}${micBtn()}<button class="btn btn-ac send-btn" type="submit" aria-label="Envoyer"><span class="send-txt">Envoyer</span>${SEND_SVG}</button></form></div></div>`;
   dmFit(); renderChat(id);
   // Photo : réduite sur l'appareil, puis envoyée comme un message (jamais à un 13-17 ans)
   photoWire(ph=>{ if(minorP(p)) return; const pid=newId(); PHOTOS[pid]=ph.data; const m={from:'me',text:PHOTO_TEXT,at:Date.now(),photo:{id:pid,w:ph.w,h:ph.h}}; (S.chats[id]||(S.chats[id]=[])).push(m); save();
+    DB.sendMessage(id,m).then(()=>{ if(location.hash==='#/messages/'+id) renderChat(id); }); renderChat(id); });
+  stickerWire(st=>{ if(minorP(p)) return; const m={from:'me',text:STICKER_TEXT,at:Date.now(),sticker:st}; (S.chats[id]||(S.chats[id]=[])).push(m); save();
     DB.sendMessage(id,m).then(()=>{ if(location.hash==='#/messages/'+id) renderChat(id); }); renderChat(id); });
   document.querySelectorAll('[data-call]').forEach(b=>b.onclick=()=>startCall(id,b.dataset.call));
   // Message vocal : enregistré puis envoyé comme un message (30 secondes maximum)
@@ -4875,6 +4941,7 @@ function viewChat(id){
   document.getElementById('chatform').addEventListener('submit',e=>{ e.preventDefault(); const i=document.getElementById('chatin'), t=i.value.trim(); if(!t) return;
     if(S.me&&ageGroup(S.me)==='minor'&&hasPhone(t)){ toast('Pour ta sécurité, les numéros de téléphone ne peuvent pas être envoyés ici.'); return; }   // 13-17 ans : pas de numéro dans le chat
     if(minorP(p)&&hasPhone(t)){ toast('Pour la sécurité des 13-17 ans, les numéros de téléphone ne peuvent pas être envoyés ici.'); return; }   // ni de la part d'un adulte vers un 13-17 ans
+    if(submitEdit(t)) return;   // c'était une modification
     i.value='';
     const m={from:'me',text:t,at:Date.now()}; (S.chats[id]||(S.chats[id]=[])).push(m); save(); DB.sendMessage(id,m).then(()=>{ if(location.hash==='#/messages/'+id) renderChat(id); }); renderChat(id);
     if(!AUTH_LIVE && Math.random()<.75) setTimeout(()=>{ const r={from:id,text:pick(CANNED),at:Date.now()}; (S.chats[id]||(S.chats[id]=[])).push(r);
@@ -5026,6 +5093,148 @@ document.addEventListener('click',e=>{ const v=document.getElementById('photo-vi
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const v=document.getElementById('photo-view'); if(v) v.remove(); } });
 window.addEventListener('hashchange',()=>{ const v=document.getElementById('photo-view'); if(v) v.remove(); });
 
+/* ---- Stickers faits maison (v10) ----
+   Chacun crée ses stickers à partir d'une photo ou d'une courte vidéo (comme sur WhatsApp ou TikTok) : on cadre, on choisit une forme, un contour, un texte.
+   Une photo donne un sticker fixe ; une vidéo donne un sticker animé (jusqu'à 3 secondes, 8 images par seconde, rangées côte à côte sur une seule image).
+   Rangement : stickers/{id} = { owner, data, n (nombre d'images), shape ('ci' rond, 'rd' arrondi, 'sq' carré), at }. Le message ne garde que { id, n }.
+   Comme les photos : réservé aux adultes, et seulement dans les conversations sans 13-17 ans (les règles le vérifient aussi). 30 créations par jour au plus.
+   Un sticker reçu peut être ajouté à « mes stickers » (favoris, gardés sur l'appareil). Si son auteur le supprime, il disparaît partout. */
+const STICKER_TEXT='✨ Sticker', STK_RE=/^data:image\/(webp|png|jpeg);base64,/, STK_LIMIT=300000, STK_FPS=8, STK_MAX_FRAMES=24;
+const STK={};   // stickers déjà chargés : id → { data, n, shape } (en mémoire seulement)
+const canSticker = () => !!(window.FileReader&&document.createElement('canvas').getContext) && myGroupNow()==='adult';
+const STK_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 12.5V8a4.5 4.5 0 0 0-4.5-4.5H8A4.5 4.5 0 0 0 3.5 8v8A4.5 4.5 0 0 0 8 20.5h4.5z"/><path d="M12.5 20.5a8 8 0 0 0 8-8h-3.5a4.5 4.5 0 0 0-4.5 4.5z"/><circle cx="9" cy="10" r=".9" fill="currentColor"/><circle cx="15" cy="10" r=".9" fill="currentColor"/><path d="M8.6 14.2c.9.8 2 1.2 3.2 1.1"/></svg>';
+const stkBtn = (ok=true) => canSticker()&&ok ? `<button class="btn mic-btn stk-btn" type="button" id="stkbtn" aria-label="Stickers" title="Stickers">${STK_SVG}</button>` : '';
+const stkFavKey = () => 'coopo_stkfav_'+(S.auth&&S.auth.uid||'local');
+function stkFavs(){ try{ const a=JSON.parse(localStorage.getItem(stkFavKey())||'[]'); return Array.isArray(a)?a.filter(x=>typeof x==='string'&&/^[A-Za-z0-9]{8,40}$/.test(x)).slice(0,60):[]; }catch(e){ return []; } }
+function stkFavSet(a){ try{ localStorage.setItem(stkFavKey(),JSON.stringify(a.slice(0,60))); }catch(e){} }
+// Un sticker dans une bulle (bouton : on peut l'ouvrir en grand et l'ajouter à ses stickers). Chargé quand il arrive à l'écran.
+function stickerBubble(st,mine){ const n=Math.max(1,Math.min(30,+st.n||1));
+  if(myGroupNow()==='minor') return `<span class="stk-msg stk-off" data-ok="1"><span class="ph-wait">Sticker réservé aux adultes</span></span>`;
+  return `<button type="button" class="stk-msg" data-stk="${esc(st.id)}" data-mine="${mine?1:''}" style="--n:${n}" aria-label="Sticker${mine?'':' : appuie pour l\'ajouter à tes stickers'}"></button>`; }
+// Affiche un sticker chargé dans son élément (image fixe, ou images qui défilent pour un sticker animé)
+function stkPaint(el,s){ if(!el) return; if(!s||!STK_RE.test(s.data)){ el.classList.add('stk-gone'); el.innerHTML='<span class="ph-wait">Sticker supprimé</span>'; el.dataset.ok='1'; return; }
+  el.style.setProperty('--n',s.n); el.style.backgroundImage=`url("${s.data}")`; el.classList.toggle('anim',s.n>1); el.classList.add('stk-'+(s.data.startsWith('data:image/jpeg')?s.shape:'free')); el.dataset.ok='1'; }
+let _stkIO=null;
+function stickerWatch(root=document){ const els=root.querySelectorAll('.stk-msg[data-stk]:not([data-ok])'); if(!els.length) return;
+  const load=async el=>{ if(el.dataset.ok) return; el.dataset.ok='1'; stkPaint(el,await DB.loadSticker(el.dataset.stk)); };
+  if(!('IntersectionObserver' in window)){ els.forEach(load); return; }
+  if(!_stkIO) _stkIO=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ _stkIO.unobserve(e.target); load(e.target); } }),{rootMargin:'200px'});
+  els.forEach(el=>{ if(STK[el.dataset.stk]){ stkPaint(el,STK[el.dataset.stk]); } else _stkIO.observe(el); }); }
+
+/* -- Le tiroir à stickers : mes stickers, mes favoris, « Créer » -- */
+let STK_SEND=null;   // envoi du sticker choisi dans la conversation ouverte
+function stickerWire(send){ STK_SEND=send; const b=document.getElementById('stkbtn'); if(b) b.onclick=()=>stickerTray(); }
+async function stickerTray(manage){ if(!canSticker()) return;
+  modal(`<div class="stk-tray"><div class="stk-head"><h3>Stickers</h3><button class="btn btn-ac btn-sm" type="button" data-stk-new>${STK_SVG} Créer</button></div>
+    <div class="stk-grid${manage?' manage':''}" id="stk-grid"><p class="muted">Chargement…</p></div>
+    <div class="dlg-actions"><button class="btn btn-ghost" type="button" data-stk-manage>${manage?'Terminé':'Gérer'}</button><button class="btn btn-ghost" type="button" data-close>Fermer</button></div></div>`, d=>{
+    d.querySelector('[data-stk-new]').onclick=()=>stickerSource();
+    d.querySelector('[data-stk-manage]').onclick=()=>stickerTray(!manage); });
+  const mine=await DB.myStickers(), favs=stkFavs().filter(id=>!mine.some(s=>s.id===id));
+  const grid=document.getElementById('stk-grid'); if(!grid) return;
+  const tile=(id,own)=>`<div class="stk-tile"><button type="button" class="stk-pick" data-stk-send="${esc(id)}" aria-label="Envoyer ce sticker"><span class="stk-msg" data-stk="${esc(id)}"></span></button>${manage?`<button type="button" class="stk-x" data-stk-${own?'del':'unfav'}="${esc(id)}" aria-label="${own?'Supprimer ce sticker':'Retirer de mes stickers'}">×</button>`:''}</div>`;
+  grid.innerHTML = mine.length||favs.length ? `${mine.length?`<p class="stk-cap">Créés par toi</p>${mine.map(s=>tile(s.id,true)).join('')}`:''}${favs.length?`<p class="stk-cap">Ajoutés</p>${favs.map(id=>tile(id,false)).join('')}`:''}`
+    : `<div class="stk-empty"><p><b>Pas encore de sticker</b></p><p class="muted">Crée le tien à partir d'une photo ou d'une courte vidéo.</p></div>`;
+  stickerWatch(grid);
+  grid.querySelectorAll('[data-stk-send]').forEach(b=>b.onclick=async()=>{ if(manage||!STK_SEND) return; const id=b.dataset.stkSend, s=STK[id]||await DB.loadSticker(id);
+    if(!s){ toast("Ce sticker n'existe plus."); stkFavSet(stkFavs().filter(x=>x!==id)); stickerTray(); return; } dlg.close(); STK_SEND({id,n:s.n}); });
+  grid.querySelectorAll('[data-stk-del]').forEach(b=>b.onclick=()=>modal(`<h3>Supprimer ce sticker ?</h3><p class="muted">Il disparaîtra aussi des conversations où tu l'as envoyé, et des stickers de ceux qui l'avaient ajouté.</p>
+      <div class="dlg-actions"><button class="btn btn-ghost" type="button" data-close>Annuler</button><button class="btn btn-danger" type="button" id="stk-del-ok">Supprimer</button></div>`,
+    d2=>d2.querySelector('#stk-del-ok').onclick=async()=>{ d2.querySelector('#stk-del-ok').disabled=true; if(await DB.deleteSticker(b.dataset.stkDel)) toast('Sticker supprimé'); stickerTray(true); }));
+  grid.querySelectorAll('[data-stk-unfav]').forEach(b=>b.onclick=()=>{ stkFavSet(stkFavs().filter(x=>x!==b.dataset.stkUnfav)); stickerTray(true); }); }
+// Un sticker reçu, en grand : l'ajouter à mes stickers
+document.addEventListener('click',e=>{ const el=e.target.closest('.stk-msg[data-stk][data-ok]'); if(!el||el.closest('.stk-tray')||el.classList.contains('stk-gone')) return; const id=el.dataset.stk, s=STK[id]; if(!s) return;
+  const mine=!!el.dataset.mine, fav=stkFavs().includes(id);
+  modal(`<div class="stk-view"><span class="stk-msg stk-big" data-stk="${esc(id)}"></span></div>
+    <div class="dlg-actions">${mine?'':`<button class="btn ${fav?'btn-ghost':'btn-ac'}" type="button" id="stk-fav">${fav?'Retirer de mes stickers':'Ajouter à mes stickers'}</button>`}<button class="btn btn-ghost" type="button" data-close>Fermer</button></div>`, d=>{
+    stkPaint(d.querySelector('.stk-big'),s);
+    d.querySelector('#stk-fav')?.addEventListener('click',()=>{ const a=stkFavs(); stkFavSet(fav?a.filter(x=>x!==id):[id,...a.filter(x=>x!==id)]); toast(fav?'Retiré de tes stickers':'Ajouté à tes stickers'); d.close(); }); }); });
+
+/* -- Créer un sticker : choisir une photo ou une vidéo, puis la cadrer -- */
+function stickerSource(){
+  modal(`<h3>Nouveau sticker</h3><p class="muted">À partir de quoi ?</p>
+    <div class="stk-src"><button class="btn" type="button" data-src="image">${IMG_SVG} Une photo</button><button class="btn" type="button" data-src="video">${VID_SVG} Une vidéo</button></div>
+    <input type="file" id="stk-file" accept="image/jpeg,image/png,image/webp" hidden>
+    <p class="hint">La vidéo devient un sticker animé de 3 secondes au plus, sans le son.</p>
+    <div class="dlg-actions"><button class="btn btn-ghost" type="button" data-stk-back>Retour</button></div>`, d=>{
+    const inp=d.querySelector('#stk-file');
+    d.querySelectorAll('[data-src]').forEach(b=>b.onclick=()=>{ inp.accept=b.dataset.src==='video'?'video/*':'image/jpeg,image/png,image/webp'; inp.click(); });
+    d.querySelector('[data-stk-back]').onclick=()=>stickerTray();
+    inp.onchange=()=>{ const f=inp.files&&inp.files[0]; inp.value=''; if(!f) return;
+      if(/^video\//.test(f.type)) stickerEditor(f,true); else if(/^image\//.test(f.type)) stickerEditor(f,false); else toast("Ce fichier n'est ni une photo ni une vidéo."); }; }); }
+const VID_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="M16 10.5l5-3v9l-5-3"/></svg>';
+// Dessine une image du sticker : la photo (ou l'image de la vidéo) cadrée, découpée selon la forme, avec contour et texte
+function stkDraw(ctx,src,S,o,flat){ const sw=src.videoWidth||src.naturalWidth||1, sh=src.videoHeight||src.naturalHeight||1;
+  const shape=flat?'sq':o.shape, edge=!flat&&o.border&&shape!=='sq', bw=edge?Math.round(S*.045):0, pad=edge?bw/2+1:0, inner=S-2*pad;
+  const path=()=>{ ctx.beginPath(); if(shape==='ci') ctx.arc(S/2,S/2,inner/2,0,Math.PI*2); else if(shape==='rd'){ const r=inner*.22; if(ctx.roundRect) ctx.roundRect(pad,pad,inner,inner,r); else ctx.rect(pad,pad,inner,inner); } else ctx.rect(0,0,S,S); };
+  ctx.save(); path(); ctx.clip();
+  const k=Math.max(S/sw,S/sh)*o.zoom, dw=sw*k, dh=sh*k; ctx.drawImage(src,(S-dw)/2+o.ox*S,(S-dh)/2+o.oy*S,dw,dh); ctx.restore();
+  if(edge){ path(); ctx.lineWidth=bw; ctx.strokeStyle='#fff'; ctx.stroke(); }
+  const t=(o.text||'').trim(); if(t){ let fs=S*.16; ctx.font=`900 ${fs}px "Arial Black","Segoe UI Black",Impact,system-ui,sans-serif`;
+    while(fs>S*.08&&ctx.measureText(t).width>S*.86){ fs-=1; ctx.font=`900 ${fs}px "Arial Black","Segoe UI Black",Impact,system-ui,sans-serif`; }
+    ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.lineJoin='round'; ctx.lineWidth=Math.max(2,fs*.22); ctx.strokeStyle='#111'; const y=S-pad-S*.08;
+    ctx.strokeText(t,S/2,y); ctx.fillStyle='#fff'; ctx.fillText(t,S/2,y); } }
+const stkWebp = () => { try{ const c=document.createElement('canvas'); c.width=c.height=2; return c.toDataURL('image/webp').startsWith('data:image/webp'); }catch(e){ return false; } };
+function stkSeek(v,t){ return new Promise(ok=>{ let done=false; const fin=()=>{ if(done) return; done=true; v.removeEventListener('seeked',fin); ok(); }; v.addEventListener('seeked',fin); setTimeout(fin,1500); try{ v.currentTime=Math.max(0,t); }catch(e){ fin(); } }); }
+async function stickerEditor(file,isVid){
+  const url=URL.createObjectURL(file); let src, dur=0, alive=true, raf=0;
+  try{ if(isVid){ src=document.createElement('video'); src.muted=true; src.playsInline=true; src.setAttribute('playsinline',''); src.preload='auto'; src.src=url;
+      await new Promise((ok,no)=>{ src.onloadeddata=ok; src.onerror=()=>no(new Error('video')); setTimeout(()=>no(new Error('video')),12000); });
+      dur=src.duration; if(!isFinite(dur)||dur<=0) throw new Error('video'); try{ await src.play(); src.pause(); }catch(e){} }
+    else { src=new Image(); src.src=url; await new Promise((ok,no)=>{ src.onload=ok; src.onerror=()=>no(new Error('image')); }); } }
+  catch(e){ URL.revokeObjectURL(url); toast(isVid?"Cette vidéo n'a pas pu être lue. Essaie une vidéo MP4 courte.":"Cette image n'a pas pu être lue."); return; }
+  const lens=[1,2,3].filter(l=>l<=dur+.01), o={zoom:1,ox:0,oy:0,shape:'ci',border:true,text:'',start:0,len:isVid?(lens.length?lens[lens.length-1]:dur):0};
+  modal(`<h3>Nouveau sticker</h3>
+    <div class="stk-ed"><canvas id="stk-cv" width="480" height="480" aria-label="Aperçu du sticker : fais glisser pour placer l'image"></canvas><p class="hint">Fais glisser l'image pour la placer.</p></div>
+    <div class="stk-opts">
+      <div class="field"><label for="stk-zoom">Zoom</label><input type="range" id="stk-zoom" min="1" max="3" step="0.01" value="1"></div>
+      ${isVid?`<div class="field"><label for="stk-start">Début de l'extrait</label><input type="range" id="stk-start" min="0" max="${Math.max(0,dur-o.len).toFixed(2)}" step="0.05" value="0"></div>
+      ${lens.length>1?`<div class="field"><span class="lbl">Durée</span><div class="chips" role="group" aria-label="Durée">${lens.map(l=>`<button type="button" class="chip" data-len="${l}" aria-pressed="${l===o.len}">${l} s</button>`).join('')}</div></div>`:''}`:''}
+      <div class="field"><span class="lbl">Forme</span><div class="chips" role="group" aria-label="Forme">${[['ci','Rond'],['rd','Arrondi'],['sq','Carré']].map(([k,l])=>`<button type="button" class="chip" data-shape="${k}" aria-pressed="${k===o.shape}">${l}</button>`).join('')}</div></div>
+      <label class="stk-check"><input type="checkbox" id="stk-border" checked> Contour blanc</label>
+      <div class="field"><label for="stk-txt">Texte (facultatif)</label><input type="text" id="stk-txt" maxlength="24" placeholder="GG, Let's go…" autocomplete="off"></div>
+    </div>
+    <p class="err" id="stk-err" role="alert"></p>
+    <div class="dlg-actions"><button class="btn btn-ghost" type="button" data-stk-back>Retour</button><button class="btn btn-ac" type="button" id="stk-make">Créer le sticker</button></div>`, d=>{
+    const cv=d.querySelector('#stk-cv'), ctx=cv.getContext('2d'), S=cv.width;
+    const draw=()=>{ ctx.clearRect(0,0,S,S); stkDraw(ctx,src,S,o,false); };
+    const stop=()=>{ alive=false; cancelAnimationFrame(raf); try{ if(isVid) src.pause(); }catch(e){} URL.revokeObjectURL(url); };
+    d.addEventListener('close',stop,{once:true});
+    if(isVid){ const loop=()=>{ if(!alive) return; if(src.currentTime<o.start||src.currentTime>o.start+o.len) try{ src.currentTime=o.start; }catch(e){}
+        draw(); raf=requestAnimationFrame(loop); };
+      src.loop=false; src.currentTime=o.start; src.play().catch(()=>{}); loop(); }
+    else draw();
+    const re=()=>{ if(!isVid) draw(); };
+    d.querySelector('#stk-zoom').oninput=e=>{ o.zoom=+e.target.value; re(); };
+    d.querySelector('#stk-border').onchange=e=>{ o.border=e.target.checked; re(); };
+    d.querySelector('#stk-txt').oninput=e=>{ o.text=e.target.value; re(); };
+    d.querySelectorAll('[data-shape]').forEach(b=>b.onclick=()=>{ o.shape=b.dataset.shape; d.querySelectorAll('[data-shape]').forEach(x=>x.setAttribute('aria-pressed',x===b)); re(); });
+    if(isVid){ const st=d.querySelector('#stk-start');
+      st.oninput=()=>{ o.start=+st.value; try{ src.currentTime=o.start; }catch(e){} };
+      d.querySelectorAll('[data-len]').forEach(b=>b.onclick=()=>{ o.len=Math.min(+b.dataset.len,dur); st.max=Math.max(0,dur-o.len).toFixed(2); if(o.start>+st.max){ o.start=+st.max; st.value=st.max; } d.querySelectorAll('[data-len]').forEach(x=>x.setAttribute('aria-pressed',x===b)); }); }
+    // glisser pour placer l'image (doigt ou souris)
+    let drag=null; cv.addEventListener('pointerdown',e=>{ drag={x:e.clientX,y:e.clientY,ox:o.ox,oy:o.oy}; try{ cv.setPointerCapture(e.pointerId); }catch(er){} });
+    cv.addEventListener('pointermove',e=>{ if(!drag) return; const r=cv.getBoundingClientRect(); o.ox=Math.max(-1,Math.min(1,drag.ox+(e.clientX-drag.x)/r.width)); o.oy=Math.max(-1,Math.min(1,drag.oy+(e.clientY-drag.y)/r.height)); re(); });
+    const up=()=>{ drag=null; }; cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
+    d.querySelector('[data-stk-back]').onclick=()=>stickerSource();
+    d.querySelector('#stk-make').onclick=async()=>{ const b=d.querySelector('#stk-make'), err=d.querySelector('#stk-err'); b.disabled=true; err.textContent=''; alive=false; cancelAnimationFrame(raf);
+      try{ const out=await stickerBuild(src,o,isVid,n=>{ b.textContent=`Création… ${n}`; }); b.textContent='Envoi…';
+        const id=await DB.createSticker(out); if(!id) throw new Error('envoi');
+        STK[id]=out; toast('Sticker créé'); stickerTray(); }
+      catch(e){ console.error(e); err.textContent=e&&e.message==='lourd'?'Ce sticker est trop lourd. Essaie une durée plus courte.':e&&e.message==='limite'?'Tu as déjà créé 30 stickers aujourd\'hui. Reviens demain !':"Le sticker n'a pas pu être créé. Réessaie.";
+        b.disabled=false; b.textContent='Créer le sticker'; if(isVid){ alive=true; src.play().catch(()=>{}); const loop=()=>{ if(!alive) return; if(src.currentTime<o.start||src.currentTime>o.start+o.len) try{ src.currentTime=o.start; }catch(er){} draw(); raf=requestAnimationFrame(loop); }; loop(); } } }; }); }
+// Fabrique l'image finale : 256 px pour une photo ; pour une vidéo, une bande d'images de 160 px côte à côte
+async function stickerBuild(src,o,isVid,progress){ const webp=stkWebp();
+  if(!isVid){ for(const [S,q] of [[256,.86],[256,.7],[200,.62]]){ const c=document.createElement('canvas'); c.width=c.height=S; stkDraw(c.getContext('2d'),src,S,o,false);
+      const data=webp?c.toDataURL('image/webp',q):c.toDataURL('image/png'); if(data.length<=STK_LIMIT&&STK_RE.test(data)) return {data,n:1,shape:o.shape}; }
+    throw new Error('lourd'); }
+  const n=Math.max(2,Math.min(STK_MAX_FRAMES,Math.round(o.len*STK_FPS))); src.pause();
+  for(const [S,q] of [[160,.72],[128,.62],[112,.5]]){ const strip=document.createElement('canvas'); strip.width=S*n; strip.height=S; const sx=strip.getContext('2d'), f=document.createElement('canvas'); f.width=f.height=S; const fx=f.getContext('2d');
+    if(!webp){ sx.fillStyle='#fff'; sx.fillRect(0,0,strip.width,S); }   // sans WebP (anciens iPhone) : JPEG sans transparence, la forme est appliquée à l'affichage
+    for(let i=0;i<n;i++){ await stkSeek(src,o.start+i/STK_FPS); fx.clearRect(0,0,S,S); stkDraw(fx,src,S,o,!webp); sx.drawImage(f,i*S,0); progress&&progress(`${i+1}/${n}`); }
+    const data=webp?strip.toDataURL('image/webp',q):strip.toDataURL('image/jpeg',q); if(data.length<=STK_LIMIT&&STK_RE.test(data)) return {data,n,shape:o.shape}; }
+  throw new Error('lourd'); }
+
 /* ---- Messages vocaux ----
    Le son est enregistré par le téléphone (30 secondes maximum), puis rangé à part du message :
    chats/{paire}/voices/{id} ou groups/{groupe}/voices/{id} = { from, data, dur, at }.
@@ -5122,9 +5331,61 @@ const hasPhone = t => /(?:\+|\b00)[\s.\-]?\d(?:[\s.\-]?\d){7,14}\b/.test(t) || /
 const hasLink = t => /(?:https?:\/\/|www\.)\S+|\b[a-z0-9-]+\.(?:com|net|org|io|gg|me|ly|xyz|app|link|ci|fr|tk)\b/i.test(t);
 const msgWarn = m => m.from==='me' ? '' : hasPhone(m.text) ? '<em class="bubble-warn">Prudence : ne partage ton numéro qu\'avec quelqu\'un que tu connais vraiment.</em>'
   : hasLink(m.text) ? '<em class="bubble-warn">Prudence avec les liens : ne saisis jamais ton mot de passe sur un site inconnu.</em>' : '';
+/* ---- Modifier ou supprimer ses messages (v10) ----
+   Seul l'auteur modifie un message écrit, ou supprime n'importe lequel de ses messages. Un message supprimé reste à sa place : « Message supprimé ».
+   Les anciennes versions restent rangées dans le message (hist) : la modération peut les lire si la conversation est signalée (voir les règles v10).
+   Dans un groupe, le créateur et les modérateurs peuvent toujours effacer le message d'un autre (« Supprimer », comme avant). */
+let EDIT=null;   // le message en cours de modification : { kind:'c' (privé) | 'g' (groupe), owner: le mate ou le groupe, id, text }
+const MSG_DEL_TEXT='Message supprimé';
+const msgList = (kind,owner) => kind==='g' ? (GMSGS[owner]||[]) : (S.chats[owner]||[]);
+const msgFind = (kind,owner,mid) => msgList(kind,owner).find(m=>m.id===mid);
+const msgEditable = m => !!m && !m.del && !m.voice && !m.photo && !m.sticker;
+const MORE_SVG='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5.5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="18.5" cy="12" r="1.9"/></svg>';
+// le contenu d'une bulle
+function msgBody(m,kind,owner,mine){
+  if(m.del) return `<span class="msg-del">${MSG_DEL_TEXT}</span>`;
+  if(m.voice) return voiceBubble(m.voice,kind,owner);
+  if(m.photo) return photoBubble(m.photo,kind,owner);
+  if(m.sticker) return stickerBubble(m.sticker,mine);
+  return `<span>${esc(m.text)}</span>${mine?'':msgWarn({from:m.from,text:m.text})}`; }
+// le bas d'une bulle : l'heure, « modifié », et sur mes messages le bouton d'options
+const msgMeta = (m,mine,kind,owner) => `${ago(m.at)}${m.edited&&!m.del?' · modifié':''}${mine&&m.id&&!m.del?`<button type="button" class="msg-more" data-mm="${esc(m.id)}" data-mk="${kind}" data-mo="${esc(owner)}" aria-label="Modifier ou supprimer ce message" title="Options du message">${MORE_SVG}</button>`:''}`;
+function msgMenu(kind,owner,mid){ const m=msgFind(kind,owner,mid); if(!m||m.del||!m.id) return;
+  const what=m.voice?'Message vocal':m.photo?'Photo':m.sticker?'Sticker':`« ${esc(m.text.length>140?m.text.slice(0,140)+'…':m.text)} »`;
+  modal(`<h3>Ton message</h3><p class="muted msg-quote">${what}</p>
+    <div class="dlg-actions msg-acts">${msgEditable(m)?'<button class="btn" type="button" data-mm-copy>Copier</button><button class="btn" type="button" data-mm-edit>Modifier</button>':''}<button class="btn btn-danger" type="button" data-mm-del>Supprimer</button><button class="btn btn-ghost" type="button" data-close>Annuler</button></div>`, d=>{
+    d.querySelector('[data-mm-edit]')?.addEventListener('click',()=>{ d.close(); startEdit(kind,owner,m); });
+    d.querySelector('[data-mm-copy]')?.addEventListener('click',async()=>{ d.close(); try{ await navigator.clipboard.writeText(m.text); toast('Message copié'); }catch(e){ toast("Impossible de copier ici."); } });
+    d.querySelector('[data-mm-del]').addEventListener('click',()=>modal(`<h3>Supprimer ce message ?</h3><p class="muted">Il sera remplacé par « ${MSG_DEL_TEXT} » pour tout le monde. On ne peut pas revenir en arrière.</p>
+      <div class="dlg-actions"><button class="btn btn-ghost" type="button" data-close>Annuler</button><button class="btn btn-danger" type="button" id="mm-del-ok">Supprimer</button></div>`,
+      d2=>d2.querySelector('#mm-del-ok').addEventListener('click',()=>{ d2.close(); if(EDIT&&EDIT.id===m.id) endEdit(true); DB.deleteMessage(kind,owner,m.id); }))); }); }
+// Modifier : le texte revient dans la zone d'écriture, avec un bandeau « Modifier le message · Annuler »
+function startEdit(kind,owner,m){ const i=document.getElementById('chatin'), f=document.getElementById('chatform'); if(!i||!f||!msgEditable(m)) return;
+  EDIT={kind,owner,id:m.id,text:m.text};
+  let bar=document.getElementById('edit-bar'); if(!bar){ bar=document.createElement('div'); bar.id='edit-bar'; bar.className='edit-bar'; bar.setAttribute('role','status'); f.before(bar); }
+  bar.innerHTML=`<span><b>Modifier le message</b><small>${esc(m.text.length>90?m.text.slice(0,90)+'…':m.text)}</small></span><button type="button" class="btn btn-ghost btn-sm" data-edit-cancel>Annuler</button>`;
+  f.classList.add('editing'); const sb=f.querySelector('button[type="submit"]'); if(sb){ const t=sb.querySelector('.send-txt'); if(t) t.textContent='Enregistrer'; else sb.textContent='Enregistrer'; sb.setAttribute('aria-label','Enregistrer'); }
+  i.value=m.text; i.focus(); try{ i.setSelectionRange(i.value.length,i.value.length); }catch(e){} }
+function endEdit(clear){ EDIT=null; document.getElementById('edit-bar')?.remove(); const f=document.getElementById('chatform');
+  if(f){ f.classList.remove('editing'); const sb=f.querySelector('button[type="submit"]'); if(sb){ const t=sb.querySelector('.send-txt'); if(t) t.textContent='Envoyer'; else sb.textContent='Envoyer'; sb.setAttribute('aria-label','Envoyer'); } }
+  if(clear){ const i=document.getElementById('chatin'); if(i) i.value=''; } }
+// Le message en cours de modification est enregistré (appelé par l'envoi, après les contrôles habituels) : true si c'était une modification
+function submitEdit(t){ if(!EDIT) return false; const e=EDIT; endEdit(true); if(t!==e.text) DB.editMessage(e.kind,e.owner,e.id,t); return true; }
+{ let lpT=0, lpX=0, lpY=0, lpAt=0;   // appui long sur un de mes messages (téléphone) ou clic droit (ordinateur) : le menu du message
+  const open=b=>{ const [k,o,id]=b.dataset.own.split('|'); lpAt=Date.now(); msgMenu(k,o,id); };
+  document.addEventListener('pointerdown',e=>{ const b=e.target.closest('.bubble[data-own]'); clearTimeout(lpT); if(!b||e.button>0||e.target.closest('button,a,audio,input')) return; lpX=e.clientX; lpY=e.clientY; lpT=setTimeout(()=>open(b),480); });
+  const stop=()=>clearTimeout(lpT);
+  document.addEventListener('pointerup',stop); document.addEventListener('pointercancel',stop);
+  document.addEventListener('pointermove',e=>{ if(Math.abs(e.clientX-lpX)+Math.abs(e.clientY-lpY)>12) stop(); },{passive:true});
+  document.addEventListener('contextmenu',e=>{ const b=e.target.closest('.bubble[data-own]'); if(!b) return; e.preventDefault(); stop(); if(Date.now()-lpAt>900) open(b); });
+  document.addEventListener('click',e=>{ const mm=e.target.closest('[data-mm]'); if(mm){ msgMenu(mm.dataset.mk,mm.dataset.mo,mm.dataset.mm); return; }
+    if(e.target.closest('[data-edit-cancel]')){ endEdit(true); document.getElementById('chatin')?.focus(); } });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&EDIT&&e.target&&e.target.id==='chatin'){ e.preventDefault(); endEdit(true); } });
+  addEventListener('hashchange',()=>{ EDIT=null; }); }
 function renderChat(id){
-  const box=document.getElementById('chatbox'); if(!box) return; const msgs=S.chats[id]||[]; dmRefresh(); setTimeout(photoWatch,0);
-  box.innerHTML = msgs.length ? msgs.map(m=>`<div class="bubble ${m.from==='me'?'me':''}">${m.voice?voiceBubble(m.voice,'c',id):m.photo?photoBubble(m.photo,'c',id):`<span>${esc(m.text)}</span>${msgWarn(m)}`}<small>${ago(m.at)}</small></div>`).join('')
+  const box=document.getElementById('chatbox'); if(!box) return; const msgs=S.chats[id]||[]; dmRefresh(); setTimeout(photoWatch,0); setTimeout(stickerWatch,0);
+  box.innerHTML = msgs.length ? msgs.map(m=>{ const mine=m.from==='me';
+      return `<div class="bubble${mine?' me':''}${m.del?' del':''}"${mine&&m.id&&!m.del?` data-own="c|${esc(id)}|${esc(m.id)}"`:''}>${msgBody(m,'c',id,mine)}<small>${msgMeta(m,mine,'c',id)}</small></div>`; }).join('')
     : `<div class="chat-empty"><p class="muted">Première partie ensemble ? Propose un créneau 🎮</p><div class="chips">${QUICK_MSGS.map(t=>`<button type="button" class="chip" data-quick="${esc(t)}">${esc(t)}</button>`).join('')}</div></div>`;
   box.scrollTop=box.scrollHeight;
   { const p=PLAYERS.find(x=>x.id===id), fh=document.getElementById('flame-hint'); if(fh) fh.innerHTML=flameHint(id,p?p.name:'Ton mate'); }
@@ -5218,6 +5479,10 @@ let GROUPS=[];   // groupes visibles : les miens, ceux où je suis invité, les 
 const gHasMinor = g => !!g && (g.members||[]).some(u=>{ if(u===myId()) return false; const p=gPlayer(u); return !!p&&minorP(p); });
 const normG = g => { ['mods','members','invited','kicked'].forEach(k=>{ if(!Array.isArray(g[k])) g[k]=[]; }); g.name=String(g.name||'Groupe'); g.private=!!g.private; return g; };
 const tsMs = v => v&&typeof v.toMillis==='function' ? v.toMillis() : (+v||0);
+// v10 — ce qu'un message peut porter en plus : anciennes versions, date de modification, suppression, sticker
+function msgExtra(o,m){ if(Array.isArray(m.hist)&&m.hist.length) o.hist=m.hist.filter(x=>typeof x==='string').slice(-20);
+  if(m.edited) o.edited=tsMs(m.edited)||1; if(m.del===true) o.del=true;
+  if(m.sticker&&typeof m.sticker.id==='string'&&/^[A-Za-z0-9]{8,40}$/.test(m.sticker.id)) o.sticker={id:m.sticker.id,n:Math.max(1,Math.min(30,+m.sticker.n||1))}; return o; }
 const gById = id => GROUPS.find(g=>g.id===id);
 const gIn = g => !!g && g.members.includes(myId());
 const gRole = (g,uid) => g.owner===uid?'admin':(g.mods||[]).includes(uid)?'mod':'';
@@ -5330,7 +5595,7 @@ function groupFormMates(v){
       d.close(); toast(!picks.length?'Groupe créé':n===picks.length?`Groupe créé · ${n} mate${n>1?'s':''} invité${n>1?'s':''}`:`Groupe créé · ${n} invitation${n>1?'s':''} sur ${picks.length} envoyée${n>1?'s':''}`,3500);
       location.hash='#/groupe/'+id; }; }); }
 // La page d'un groupe : discussion en temps réel (sans id : la page de l'onglet Groupes)
-function viewGroup(id){
+function viewGroup(id){ EDIT=null;
   if(!id||id==='nouveau') return viewGroupsHome(id==='nouveau');
   if(dataPending()) return loadingView('Groupe');
   if(!S.me) return needProfile('Groupes');
@@ -5347,25 +5612,27 @@ function viewGroup(id){
   app.innerHTML=`<div class="dm-shell g-shell">${gSide('g:'+id)}<div class="wrap page chat-page"><div class="chat-head">${backLink('#/groupe','Groupes')}<button class="chat-who g-who" type="button" id="ginfo">${gAvatar(g,44)}<div><b>${esc(g.name)}</b><span class="muted" style="font-size:12px">${g.members.length} membre${g.members.length>1?'s':''} · infos</span></div></button>
       ${g.members.length<GROUP_MAX?`<div class="chat-calls"><button class="btn btn-ac g-add-btn" type="button" id="g-add" aria-label="Ajouter des mates" title="Ajouter des mates">${ADDMATE_SVG}<span>Ajouter des mates</span></button></div>`:''}</div>
     <div class="chat-box" id="chatbox"><p class="muted" style="margin:auto">Chargement des messages…</p></div>
-    <form class="chat-form" id="chatform"><input type="text" id="chatin" placeholder="Écris au groupe…" maxlength="500" autocomplete="off">${photoBtn(!gHasMinor(g))}${micBtn()}<button class="btn btn-ac" type="submit">Envoyer</button></form></div></div>`;
+    <form class="chat-form" id="chatform">${stkBtn(!gHasMinor(g))}<input type="text" id="chatin" placeholder="Écris au groupe…" maxlength="500" autocomplete="off">${photoBtn(!gHasMinor(g))}${micBtn()}<button class="btn btn-ac send-btn" type="submit" aria-label="Envoyer"><span class="send-txt">Envoyer</span>${SEND_SVG}</button></form></div></div>`;
   dmFit(); document.getElementById('ginfo').onclick=()=>groupInfo(id);
   document.getElementById('g-add')?.addEventListener('click',()=>groupInvite(id));
   photoWire(ph=>{ if(gHasMinor(gById(id))){ toast('Pas de photo dans un groupe où il y a des 13-17 ans.',3500); document.getElementById('photobtn')?.remove(); return; }
     const pid=newId(); PHOTOS[pid]=ph.data; DB.sendGroupMessage(id,PHOTO_TEXT,null,{id:pid,w:ph.w,h:ph.h}); });
   document.getElementById('micbtn')?.addEventListener('click',()=>recordVoice(v=>{ const vid=newId(); VOICES[vid]=v.data; DB.sendGroupMessage(id,VOICE_TEXT,{id:vid,dur:v.dur,...(v.w?{w:v.w}:{})}); }));
+  stickerWire(st=>{ if(gHasMinor(gById(id))){ toast('Pas de sticker dans un groupe où il y a des 13-17 ans.',3500); document.getElementById('stkbtn')?.remove(); return; } DB.sendGroupMessage(id,STICKER_TEXT,null,null,st); });
   try{ const cb=document.getElementById('chatbox'); if(cb&&'ResizeObserver' in window) new ResizeObserver(()=>{ cb.scrollTop=cb.scrollHeight; }).observe(cb); }catch(e){}
   document.getElementById('chatform').addEventListener('submit',e=>{ e.preventDefault(); const i=document.getElementById('chatin'), t=i.value.trim(); if(!t) return;
     if(myGroupNow()==='minor'&&hasPhone(t)){ toast('Pour ta sécurité, les numéros de téléphone ne peuvent pas être envoyés ici.'); return; }
     if(gHasMinor(gById(id))&&hasPhone(t)){ toast('Il y a des 13-17 ans dans ce groupe : les numéros de téléphone ne peuvent pas être envoyés ici.',3500); return; }
+    if(submitEdit(t)) return;   // c'était une modification
     i.value=''; DB.sendGroupMessage(id,t); });
-  DB.fetchPlayers(g.members).then(ch=>{ if(location.hash!=='#/groupe/'+id) return; if(gHasMinor(gById(id))) document.getElementById('photobtn')?.remove(); if(ch) renderGroupChat(id); }).catch(()=>{});
+  DB.fetchPlayers(g.members).then(ch=>{ if(location.hash!=='#/groupe/'+id) return; if(gHasMinor(gById(id))){ document.getElementById('photobtn')?.remove(); document.getElementById('stkbtn')?.remove(); } if(ch) renderGroupChat(id); }).catch(()=>{});
   DB.listenGroup(id,()=>{ if(location.hash==='#/groupe/'+id){ (S.gseen=S.gseen||{})[id]=Date.now(); renderGroupChat(id); } });
 }
 let GMSGS={};   // messages du groupe ouvert
-function renderGroupChat(id){ const box=document.getElementById('chatbox'), g=gById(id); if(!box||!g) return; setTimeout(photoWatch,0); const me=myId(), msgs=(GMSGS[id]||[]).filter(m=>!S.blocked.includes(m.from)), canDel=gCanMod(g);
+function renderGroupChat(id){ const box=document.getElementById('chatbox'), g=gById(id); if(!box||!g) return; setTimeout(photoWatch,0); setTimeout(stickerWatch,0); const me=myId(), msgs=(GMSGS[id]||[]).filter(m=>!S.blocked.includes(m.from)), canDel=gCanMod(g);
   box.innerHTML = msgs.length ? msgs.map((m,k)=>{ const mine=m.from===me, p=gPlayer(m.from), same=k>0&&msgs[k-1].from===m.from&&m.at-msgs[k-1].at<5*60e3, role=gRole(g,m.from);
       return `<div class="gmsg${mine?' me':''}${same?' same':''}">${mine?'':(same?'<i class="g-gap"></i>':(p?`<a href="#/joueur/${esc(m.from)}">${avatar(p,32)}</a>`:'<span class="av" style="width:32px;height:32px;--h:220">?</span>'))}<div>${same||mine?'':`<small class="g-from">${p?np(p):'Ancien membre'}${ROLE_TAG[role]||''}</small>`}
-        <div class="bubble ${mine?'me':''}">${m.voice?voiceBubble(m.voice,'g',id):m.photo?photoBubble(m.photo,'g',id):`<span>${esc(m.text)}</span>${mine?'':msgWarn({from:m.from,text:m.text})}`}<small>${ago(m.at)}${(canDel||mine)&&m.id?` · <button type="button" class="g-del" data-gdel="${esc(m.id)}">Supprimer</button>`:''}</small></div></div></div>`; }).join('')
+        <div class="bubble${mine?' me':''}${m.del?' del':''}"${mine&&m.id&&!m.del?` data-own="g|${esc(id)}|${esc(m.id)}"`:''}>${msgBody(m,'g',id,mine)}<small>${msgMeta(m,mine,'g',id)}${canDel&&!mine&&m.id?` · <button type="button" class="g-del" data-gdel="${esc(m.id)}">Supprimer</button>`:''}</small></div></div></div>`; }).join('')
     : `<div class="chat-empty"><p class="muted">Le groupe est tout neuf. ${g.members.length<2?'Ajoute tes mates, puis lance la discussion 👋':'Lance la discussion 👋'}</p>${g.members.length<2&&g.members.length<GROUP_MAX?`<button class="btn btn-ac" type="button" data-g-add>${ADDMATE_SVG} Ajouter des mates</button>`:''}${(g.invited||[]).length?`<p class="muted">${g.invited.length} invitation${g.invited.length>1?'s':''} en attente.</p>`:''}</div>`;
   box.scrollTop=box.scrollHeight;
   box.querySelector('[data-g-add]')?.addEventListener('click',()=>groupInvite(id));
@@ -5696,7 +5963,7 @@ function viewLegal(kind){
     :`
     <h3>1. Données collectées</h3><p>Pour créer ton compte : e-mail, pseudo, date de naissance, et, si tu utilises Google, ton nom et ta photo Google. Pour ton profil : jeux, pseudos et rangs en jeu, horaires, jours, style, plateformes, pays, langues. Coopô ne te demande aucun numéro de téléphone ni pseudo d'un autre réseau ; ceux qui avaient été enregistrés avant ont été effacés. Pour la communauté : tes annonces et tes inscriptions aux tournois. Pour le fonctionnement : demandes de mate, messages, signalements, blocages, notifications, ton statut « en ligne » et l'heure de ta dernière visite, ton avis « tu rejouerais avec lui ? » sur un joueur, et, si tu es venu par un lien de parrainage, le pseudo de ton parrain. Si tu nous écris par le formulaire de contact : ton message et l'e-mail que tu indiques.</p>
     <h3>2. Ce qui est visible</h3><p>Les autres utilisateurs voient uniquement ton pseudo, ton avatar, tes jeux et tes habitudes de jeu. Ton statut « en ligne » et le moment de ta dernière visite sont visibles si tu ne les as pas désactivés dans les paramètres. Tes avis sur les autres joueurs ne leur sont pas montrés. Ton e-mail, ta date de naissance et ton âge exact ne sont jamais affichés. Ton e-mail reste uniquement dans le service de connexion (Firebase Authentication) : il n'est pas recopié dans la base de données du site. Tes messages privés ne sont lisibles que par toi et ton mate ; si tu signales une conversation, les derniers messages sont joints au signalement et la modération peut consulter cette conversation, uniquement pour traiter le signalement.</p>
-    <h3>3. Utilisation</h3><p>Les données servent à calculer les compatibilités, à faire fonctionner les demandes de mate, les messages et les groupes, à protéger les 13-17 ans et à assurer la modération. Aucune donnée n'est vendue. Aucune publicité ciblée. Messages privés, écrits, vocaux ou photos : seuls toi et ton mate les voyez. Les appels vocaux et vidéo passent directement entre vos deux appareils (parfois par un relais technique) et ne sont jamais enregistrés ; la modération n'y accède que si l'un de vous signale la conversation. Groupes : les messages sont lus par les membres du groupe, et la modération de Coopô peut les consulter et les supprimer pour protéger les joueurs. Flammes : Coopô enregistre seulement les jours où vous vous êtes écrit, pas le contenu.</p>
+    <h3>3. Utilisation</h3><p>Les données servent à calculer les compatibilités, à faire fonctionner les demandes de mate, les messages et les groupes, à protéger les 13-17 ans et à assurer la modération. Aucune donnée n'est vendue. Aucune publicité ciblée. Messages privés, écrits, vocaux ou photos : seuls toi et ton mate les voyez. Les appels vocaux et vidéo passent directement entre vos deux appareils (parfois par un relais technique) et ne sont jamais enregistrés ; la modération n'y accède que si l'un de vous signale la conversation. Groupes : les messages sont lus par les membres du groupe, et la modération de Coopô peut les consulter et les supprimer pour protéger les joueurs. Flammes : Coopô enregistre seulement les jours où vous vous êtes écrit, pas le contenu. Message modifié ou supprimé : il reste marqué « modifié » ou « Message supprimé » ; son contenu d'avant (texte, photo ou vocal) reste enregistré avec lui, et la modération ne le lit que si la conversation est signalée (dans un groupe : pour protéger les joueurs). Stickers : ceux que tu crées à partir de tes photos ou vidéos sont enregistrés sur ton compte ; les adultes à qui tu les envoies peuvent les voir et les ajouter à leurs stickers. Si tu supprimes un sticker, il disparaît partout.</p>
     <h3>4. Hébergement</h3><p>Les données sont stockées sur Firebase, un service de Google Cloud. Elles sont protégées par des règles d'accès : ton e-mail et ta date de naissance ne sont lisibles que par toi et par la modération.</p>
     <h3>5. Conservation</h3><p>Les données sont conservées tant que le compte existe, puis supprimées. Les messages que tu as envoyés restent visibles par les mates qui les ont reçus. Les signalements peuvent être conservés anonymisés pour la sécurité du service.</p>
     <h3>6. Tes droits</h3><p>Tu peux consulter, modifier et supprimer tes données depuis ton compte, ou en nous écrivant via le formulaire <a href="#/contact">Nous écrire</a>. Les utilisateurs mineurs peuvent exercer ces droits avec un parent ou tuteur. En Côte d'Ivoire, tu peux aussi saisir l'ARTCI, l'autorité chargée de la protection des données personnelles.</p>
@@ -5924,7 +6191,7 @@ function viewAdmin(){
     d=>d.querySelector('#bk').onclick=()=>{ const id=b.dataset.ban; S.banned.push(id); if(!S.hidden.includes(id)) S.hidden.push(id); Object.assign(pOf(id),{banned:true,hidden:true}); DB.closeReports(id); S.reports.forEach(r=>{ if(r.id===id) r.status='done'; }); save(); DB.adminBan(id,true); d.close(); viewAdmin(); }));
   app.querySelectorAll('[data-unban]').forEach(b=>b.onclick=()=>{ const id=b.dataset.unban; S.banned=S.banned.filter(x=>x!==id); S.hidden=S.hidden.filter(x=>x!==id); Object.assign(pOf(id),{banned:false,hidden:false}); save(); DB.adminBan(id,false); viewAdmin(); });
   app.querySelectorAll('[data-chat-by]').forEach(b=>b.onclick=async()=>{ const box=b.nextElementSibling; box.textContent='Chargement…'; const l=await DB.loadReportedChat(b.dataset.chatBy,b.dataset.chatTarget);
-    box.innerHTML = l===null ? '<p class="muted">Conversation non accessible.</p>' : l.length ? l.map(m=>`<p class="${m.fromTarget?'by-target':'by-rep'}"><b>${m.fromTarget?'Joueur signalé':'Signaleur'} :</b> ${esc(m.text)}</p>`).join('') : '<p class="muted">Aucun message.</p>'; });
+    box.innerHTML = l===null ? '<p class="muted">Conversation non accessible.</p>' : l.length ? l.map(m=>`<p class="${m.fromTarget?'by-target':'by-rep'}"><b>${m.fromTarget?'Joueur signalé':'Signaleur'} :</b> ${m.del?'<i>(supprimé par son auteur)</i> ':''}${esc(m.text)}${m.hist.length?`<br><small class="muted">Modifié. Avant : ${m.hist.map(h=>'« '+esc(h)+' »').join(', puis ')}</small>`:''}</p>`).join('') : '<p class="muted">Aucun message.</p>'; });
   app.querySelectorAll('[data-done]').forEach(b=>b.onclick=()=>{ DB.closeReports(b.dataset.done); S.reports.forEach(r=>{ if(r.id===b.dataset.done) r.status='done'; }); save(); viewAdmin(); });
   // chercher un joueur parmi ceux chargés (profils visibles, signalés, sanctionnés)
   const q=document.getElementById('adm-q'), res=document.getElementById('adm-res');
@@ -6129,13 +6396,13 @@ const DB = {
   async deleteRequest(r){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ await this.db.collection('requests').doc(`${this.toUid(r.from)}_${this.toUid(r.to)}`).delete(); }catch(e){ console.error(e); } },
   async saveBlock(id,on){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ const ref=this.db.collection('blocks').doc(this.uid()).collection('list').doc(id); on?await ref.set({at:Date.now()}):await ref.delete(); }catch(e){ console.error(e); } },
   async saveReport(rep){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; const db=this.db;
-    try{ const msgs=(S.chats[rep.id]||[]).slice(-10).map(m=>({mine:m.from==='me',text:String(m.text||'').slice(0,300),at:m.at||0}));
+    try{ const msgs=(S.chats[rep.id]||[]).slice(-10).map(m=>({mine:m.from==='me',text:((m.del?'[supprimé] ':'')+(m.hist&&m.hist.length?`[modifié, avant : « ${m.hist.join(' » puis « ')} »] `:'')+String(m.text||'')).slice(0,300),at:m.at||0}));
       const data={target:rep.id,by:this.uid(),reason:rep.reason,details:rep.details||'',at:rep.at,status:'open'}; if(msgs.length) data.messages=msgs;
       await db.collection('reports').add(data);
       if(msgs.length) await db.collection('reportedChats').doc(this.pairId(rep.id)).set({by:this.uid(),target:rep.id,at:Date.now()});   // autorise la modération à lire cette conversation
     }catch(e){ console.error(e); } },
   async loadReportedChat(by,target){ if(!this.live) return []; try{ const id=[by,target].sort().join('_'); const q=await this.db.collection('chats').doc(id).collection('messages').orderBy('at','desc').limit(30).get();
-      const out=[]; q.forEach(d=>{ const m=d.data(); out.push({fromTarget:m.from===target,text:m.text,at:m.at}); }); return out.reverse(); }catch(e){ console.error(e); return null; } },
+      const out=[]; q.forEach(d=>{ const m=d.data(); out.push({fromTarget:m.from===target,text:m.text,at:m.at,del:m.del===true,hist:Array.isArray(m.hist)?m.hist.filter(x=>typeof x==='string'):[]}); }); return out.reverse(); }catch(e){ console.error(e); return null; } },
   // Flamme : ce que mon message d'aujourd'hui change dans streaks/{paire} (rien si j'ai déjà écrit aujourd'hui)
   streakData(id,shift){ const t=dayNow()+(shift||0), me=this.uid(), cur=(S.streaks||{})[id]||{}, last={...(cur.last||{})}; if(last[me]===t) return null;
     last[me]=t; let both=cur.both||0, count=cur.count||0;
@@ -6143,7 +6410,7 @@ const DB = {
     return { members:[me,id].sort(), last, both, count }; },
   async sendMessage(id,m){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; const db=this.db;
     try{ const F=firebase.firestore.FieldValue, pair=this.pairId(id);
-      const mk=st=>{ const b=db.batch(), mref=db.collection('chats').doc(pair).collection('messages').doc(); b.set(mref,{from:this.uid(),text:m.text,at:m.at,...(m.voice?{voice:m.voice}:{}),...(m.photo?{photo:m.photo}:{})});
+      const mk=st=>{ const b=db.batch(), mref=db.collection('chats').doc(pair).collection('messages').doc(); b.set(mref,{from:this.uid(),text:m.text,at:m.at,...(m.voice?{voice:m.voice}:{}),...(m.photo?{photo:m.photo}:{}),...(m.sticker?{sticker:m.sticker}:{})});
         if(m.photo) b.set(db.collection('chats').doc(pair).collection('photos').doc(m.photo.id),{from:this.uid(),data:PHOTOS[m.photo.id]||'',w:m.photo.w,h:m.photo.h,at:m.at});   // la photo part dans le même envoi que le message
         if(m.voice) b.set(db.collection('chats').doc(pair).collection('voices').doc(m.voice.id),{from:this.uid(),data:VOICES[m.voice.id]||'',dur:m.voice.dur,at:m.at});   // le son part dans le même envoi que le message
         if(st) st.msg=mref.id;   // la flamme cite le message envoyé dans le même lot : sans vrai message, les règles la refusent
@@ -6161,7 +6428,7 @@ const DB = {
       if(!this._lastNotifTo||this._lastNotifTo[id]==null||Date.now()-this._lastNotifTo[id]>60000){ (this._lastNotifTo=this._lastNotifTo||{})[id]=Date.now(); await this.saveNotif(id,{type:'message',from:'me',text:`${S.me.name} : ${m.text.slice(0,80)}`}); }
     }catch(e){ console.error(e); toast(String(e&&e.code).includes('permission')?'Doucement : attends une seconde entre deux messages.':"Le message n'est pas parti, réessaie."); } },
   listenChat(id,cb){ if(!this.live) return; this.stopChat();   // les 200 derniers messages (et plus les 200 premiers)
-    this._chatUnsub=this.db.collection('chats').doc(this.pairId(id)).collection('messages').orderBy('at').limitToLast(200).onSnapshot(snap=>{ S.chats[id]=[]; snap.forEach(d=>{ const m=d.data(); const o={from:this.fromUid(m.from),text:m.text,at:m.at}; if(m.voice&&m.voice.id){ o.voice={id:String(m.voice.id),dur:+m.voice.dur||0}; if(VW_RE.test(String(m.voice.w||''))) o.voice.w=m.voice.w; } if(m.photo&&m.photo.id) o.photo={id:String(m.photo.id),w:+m.photo.w||4,h:+m.photo.h||3}; S.chats[id].push(o); }); save(); cb(); },e=>console.error(e)); },
+    this._chatUnsub=this.db.collection('chats').doc(this.pairId(id)).collection('messages').orderBy('at').limitToLast(200).onSnapshot(snap=>{ S.chats[id]=[]; snap.forEach(d=>{ const m=d.data(); const o={id:d.id,from:this.fromUid(m.from),text:m.text,at:m.at}; msgExtra(o,m); if(m.voice&&m.voice.id){ o.voice={id:String(m.voice.id),dur:+m.voice.dur||0}; if(VW_RE.test(String(m.voice.w||''))) o.voice.w=m.voice.w; } if(m.photo&&m.photo.id) o.photo={id:String(m.photo.id),w:+m.photo.w||4,h:+m.photo.h||3}; S.chats[id].push(o); }); save(); cb(); },e=>console.error(e)); },
   // Image d'un message photo : en mémoire si elle a déjà été vue, sinon téléchargée
   async loadPhoto(kind,owner,pid){ if(PHOTOS[pid]) return PHOTOS[pid]; if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return null;
     try{ const base=kind==='g'?this.db.collection('groups').doc(owner):this.db.collection('chats').doc(this.pairId(owner)); const d=await base.collection('photos').doc(pid).get();
@@ -6212,7 +6479,7 @@ const DB = {
         try{ for(let k=0;k<40;k++){ const q=await ref.collection('photos').limit(4).get(); if(q.empty) break; const b=this.db.batch(); q.forEach(x=>b.delete(x.ref)); await b.commit(); } }catch(e){ console.error(e); }   // les photos
         await ref.delete(); }catch(e){ console.error(e); toast("Le groupe n'a pas pu être supprimé."); return false; } }
     GROUPS=GROUPS.filter(g=>g.id!==id); delete GMSGS[id]; return true; },
-  async sendGroupMessage(id,text,voice,photo){ const m={from:myId(),text,at:Date.now()}; if(voice) m.voice=voice; if(photo) m.photo=photo;
+  async sendGroupMessage(id,text,voice,photo,sticker){ const m={from:myId(),text,at:Date.now()}; if(voice) m.voice=voice; if(photo) m.photo=photo; if(sticker) m.sticker=sticker;
     if(!AUTH_LIVE){ (GMSGS[id]=GMSGS[id]||[]).push({...m,id:'l'+m.at}); renderGroupChat(id); return; }
     if(!this.live&&!(await this.ready())) return; const db=this.db, F=firebase.firestore.FieldValue, ref=db.collection('groups').doc(id);
     try{ const mk=()=>{ const b=db.batch(); b.set(ref.collection('messages').doc(),m); if(voice) b.set(ref.collection('voices').doc(voice.id),{from:m.from,data:VOICES[voice.id]||'',dur:voice.dur,at:m.at});
@@ -6222,11 +6489,56 @@ const DB = {
       catch(e){ if(!(m.voice&&m.voice.w&&String(e&&e.code).includes('permission'))) throw e; m.voice={id:m.voice.id,dur:m.voice.dur}; await mk().commit(); }   // ondes refusées (anciennes règles) : le vocal part sans elles
       const g=gById(id); if(g&&Date.now()-tsMs(g.lastAt)>5*60e3){ g.lastAt=Date.now(); ref.update({lastAt:F.serverTimestamp()}).catch(e=>console.error(e)); }   // « nouveaux messages » pour les autres membres, au plus une écriture toutes les 5 minutes
     }catch(e){ console.error(e); toast(String(e&&e.code).includes('permission')?"Message refusé : attends une seconde, ou tu n'es plus membre de ce groupe.":"Le message n'est pas parti, réessaie."); } },
+  // v10 — stickers : mes stickers (liste gardée sur l'appareil, rafraîchie chaque semaine), un sticker par son identifiant, créer, supprimer
+  stkIdxKey(){ return 'coopo_stkmine_'+this.uid(); },
+  async myStickers(force){ if(!AUTH_LIVE) return Object.keys(STK).filter(k=>STK[k].mine).map(id=>({id,n:STK[id].n}));
+    if(!this.live&&!(await this.ready())) return [];
+    try{ const c=JSON.parse(localStorage.getItem(this.stkIdxKey())||'null'); if(!force&&c&&Array.isArray(c.list)&&Date.now()-c.at<7*864e5) return c.list; }catch(e){}
+    try{ const q=await this.db.collection('stickers').where('owner','==',this.uid()).limit(60).get(); const list=[];
+      q.forEach(d=>{ const x=d.data(); if(STK_RE.test(String(x.data||''))) STK[d.id]={data:x.data,n:Math.max(1,Math.min(30,+x.n||1)),shape:['ci','rd','sq'].includes(x.shape)?x.shape:'sq'}; list.push({id:d.id,n:+x.n||1,at:tsMs(x.at)}); });
+      list.sort((a,b)=>b.at-a.at); try{ localStorage.setItem(this.stkIdxKey(),JSON.stringify({at:Date.now(),list})); }catch(e){} return list; }
+    catch(e){ console.error(e); return []; } },
+  stkIdxEdit(fn){ try{ const c=JSON.parse(localStorage.getItem(this.stkIdxKey())||'null'); if(c&&Array.isArray(c.list)){ c.list=fn(c.list); localStorage.setItem(this.stkIdxKey(),JSON.stringify(c)); } }catch(e){} },
+  async loadSticker(id){ if(STK[id]) return STK[id]; if(!AUTH_LIVE) return null; if(!this.live&&!(await this.ready())) return null;
+    try{ const d=await this.db.collection('stickers').doc(id).get(); if(!d.exists) return null; const x=d.data(); if(!STK_RE.test(String(x.data||''))) return null;
+      const ks=Object.keys(STK); if(ks.length>80) ks.slice(0,40).forEach(k=>delete STK[k]);
+      return STK[id]={data:x.data,n:Math.max(1,Math.min(30,+x.n||1)),shape:['ci','rd','sq'].includes(x.shape)?x.shape:'sq'}; }
+    catch(e){ console.error(e); return null; } },
+  async createSticker(st){ const id=newId();
+    if(!AUTH_LIVE){ STK[id]={...st,mine:true}; return id; }
+    if(!this.live&&!(await this.ready())) return null;
+    const db=this.db, lim=db.collection('limits').doc(this.uid()), F=firebase.firestore.FieldValue;
+    let before={}; try{ const l=await lim.get(); before=l.exists?l.data():{}; }catch(e){}
+    for(const sh of [0,1,-1]){ const day=Math.floor(Date.now()/864e5)+sh, count=(before.stkDay===day?(+before.stkCount||0):0)+1;
+      if(count>30) throw new Error('limite');
+      const b=db.batch(); b.set(db.collection('stickers').doc(id),{owner:this.uid(),data:st.data,n:st.n,shape:st.shape,at:F.serverTimestamp()}); b.set(lim,{stkDay:day,stkCount:count},{merge:true});
+      try{ await b.commit(); this.stkIdxEdit(l=>[{id,n:st.n,at:Date.now()},...l]); return id; }
+      catch(e){ if(!String(e&&e.code).includes('permission')) throw e; } }   // jour du serveur différent de celui du téléphone (minuit) : on réessaie avec le jour voisin
+    throw new Error('refus'); },
+  async deleteSticker(id){ if(!AUTH_LIVE){ delete STK[id]; return true; } if(!this.live&&!(await this.ready())) return false;
+    try{ await this.db.collection('stickers').doc(id).delete(); delete STK[id]; this.stkIdxEdit(l=>l.filter(x=>x.id!==id)); return true; }
+    catch(e){ console.error(e); toast("Le sticker n'a pas pu être supprimé."); return false; } },
+  // v10 — modifier ou supprimer son message (privé : kind 'c', owner = le mate ; groupe : kind 'g', owner = le groupe)
+  msgRef(kind,owner,mid){ return kind==='g' ? this.db.collection('groups').doc(owner).collection('messages').doc(mid) : this.db.collection('chats').doc(this.pairId(owner)).collection('messages').doc(mid); },
+  msgLocal(kind,owner,fn){ const m=fn(); if(!m) return; if(kind==='g'){ if(location.hash==='#/groupe/'+owner) renderGroupChat(owner); } else { save(); if(location.hash==='#/messages/'+owner) renderChat(owner); } },
+  async editMessage(kind,owner,mid,text){ const m=msgFind(kind,owner,mid); if(!msgEditable(m)) return;
+    const hist=[...(m.hist||[]),m.text]; if(hist.length>20){ toast('Ce message a déjà été modifié trop de fois.'); return; }
+    const apply=()=>this.msgLocal(kind,owner,()=>{ const x=msgFind(kind,owner,mid); if(x){ x.hist=hist; x.text=text; x.edited=Date.now(); } return x; });
+    if(!AUTH_LIVE){ apply(); return; }
+    if(!this.live&&!(await this.ready())) return;
+    try{ await this.msgRef(kind,owner,mid).update({text,hist,edited:firebase.firestore.FieldValue.serverTimestamp()}); apply(); }
+    catch(e){ console.error(e); toast(String(e&&e.code).includes('permission')?"Ce message ne peut pas être modifié.":"La modification n'est pas partie, réessaie."); } },
+  async deleteMessage(kind,owner,mid){ const m=msgFind(kind,owner,mid); if(!m||m.del) return;
+    const apply=()=>this.msgLocal(kind,owner,()=>{ const x=msgFind(kind,owner,mid); if(x){ x.del=true; x.edited=Date.now(); } return x; });
+    if(!AUTH_LIVE){ apply(); return; }
+    if(!this.live&&!(await this.ready())) return;
+    try{ await this.msgRef(kind,owner,mid).update({del:true,edited:firebase.firestore.FieldValue.serverTimestamp()}); apply(); }
+    catch(e){ console.error(e); toast("Le message n'a pas pu être supprimé."); } },
   deleteGroupMessage(id,mid){ if(!this.live) { GMSGS[id]=(GMSGS[id]||[]).filter(m=>m.id!==mid); renderGroupChat(id); return; } const gm=(GMSGS[id]||[]).find(m=>m.id===mid); if(gm&&gm.voice) this.db.collection('groups').doc(id).collection('voices').doc(gm.voice.id).delete().catch(e=>console.error(e));   // le son part avec le message
     if(gm&&gm.photo) this.db.collection('groups').doc(id).collection('photos').doc(gm.photo.id).delete().catch(e=>console.error(e));   // la photo aussi
     this.db.collection('groups').doc(id).collection('messages').doc(mid).delete().catch(e=>{ console.error(e); toast("Le message n'a pas pu être supprimé."); }); },
   listenGroup(id,cb){ this.stopGroup(); if(!this.live){ cb(); return; }   // les 100 derniers messages, en temps réel
-    this._groupUnsub=this.db.collection('groups').doc(id).collection('messages').orderBy('at').limitToLast(100).onSnapshot(snap=>{ GMSGS[id]=[]; snap.forEach(x=>{ const m=x.data(); const o={id:x.id,from:m.from,text:m.text,at:m.at}; if(m.voice&&m.voice.id){ o.voice={id:String(m.voice.id),dur:+m.voice.dur||0}; if(VW_RE.test(String(m.voice.w||''))) o.voice.w=m.voice.w; } if(m.photo&&m.photo.id) o.photo={id:String(m.photo.id),w:+m.photo.w||4,h:+m.photo.h||3}; GMSGS[id].push(o); }); cb(); },
+    this._groupUnsub=this.db.collection('groups').doc(id).collection('messages').orderBy('at').limitToLast(100).onSnapshot(snap=>{ GMSGS[id]=[]; snap.forEach(x=>{ const m=x.data(); const o={id:x.id,from:m.from,text:m.text,at:m.at}; msgExtra(o,m); if(m.voice&&m.voice.id){ o.voice={id:String(m.voice.id),dur:+m.voice.dur||0}; if(VW_RE.test(String(m.voice.w||''))) o.voice.w=m.voice.w; } if(m.photo&&m.photo.id) o.photo={id:String(m.photo.id),w:+m.photo.w||4,h:+m.photo.h||3}; GMSGS[id].push(o); }); cb(); },
       e=>{ console.error(e); this.stopGroup(); this.loadGroups(true).then(()=>{ if(location.hash==='#/groupe/'+id) route(); }); }); },   // plus le droit de lire (retiré du groupe, groupe supprimé) : on recharge la liste
   stopGroup(){ if(this._groupUnsub){ try{ this._groupUnsub(); }catch(e){} this._groupUnsub=null; } },
   async saveNotif(toId,n){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ await this.db.collection('notifications').doc(this.toUid(toId)).collection('items').add({...n,from:this.toUid(n.from),at:Date.now(),read:false}); }catch(e){ console.error(e); } },
