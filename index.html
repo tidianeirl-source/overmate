@@ -4521,8 +4521,8 @@ function lastMsg(id){ const m=(S.chats[id]||[]).slice(-1)[0]||null, n=S.notifs.f
 /* Colonne des conversations (ordinateur seulement) : les mates puis les groupes, le plus récent en haut. key = 'c:<joueur>' ou 'g:<groupe>'. */
 function dmSideInner(key){
   const mates=matesList().sort((a,b)=>{ const la=lastMsg(a.id), lb=lastMsg(b.id); return (lb?lb.at:0)-(la?la.at:0); });
-  return `<h3>Messages privés</h3>${mates.length?mates.map(p=>{ const last=lastMsg(p.id), u=S.unread[p.id]||0;
-      return `<a class="dm-row${key==='c:'+p.id?' on':''}${u?' unread':''}${plqOn(p)}" href="#/messages/${p.id}"${key==='c:'+p.id?' aria-current="page"':''}>${plq(p)}${avatar(p,36)}<div><b><span>${esc(p.name)}</span>${isOnline(p)?'<span class="online"></span>':''}</b><span class="muted">${last?esc((last.from==='me'?'Toi : ':'')+last.text):'Dis bonjour 👋'}</span></div>${u?`<span class="badge static">${u}</span>`:''}</a>`; }).join(''):'<p class="muted dm-none">Pas encore de mates.</p>'}`; }
+  return `<h3>Messages privés</h3>${mates.length?mates.map((p,i)=>{ const last=lastMsg(p.id), u=S.unread[p.id]||0;   // les plaques des 12 premières lignes sont animées (au-delà : au survol)
+      return `<a class="dm-row${key==='c:'+p.id?' on':''}${u?' unread':''}${plqOn(p,i<12)}" href="#/messages/${p.id}"${key==='c:'+p.id?' aria-current="page"':''}>${plq(p)}${avatar(p,36)}<div><b><span>${esc(p.name)}</span>${isOnline(p)?'<span class="online"></span>':''}</b><span class="muted">${last?esc((last.from==='me'?'Toi : ':'')+last.text):'Dis bonjour 👋'}</span></div>${u?`<span class="badge static">${u}</span>`:''}</a>`; }).join(''):'<p class="muted dm-none">Pas encore de mates.</p>'}`; }
 // Les groupes dans la colonne de gauche du site (ordinateur) : un rond par groupe, puis « + »
 function railGroups(){ if(!S.auth||!S.me) return ''; const m=location.hash.match(/^#\/groupe\/([^/?]+)/), cur=m?decodeURIComponent(m[1]):'';
   const groups=GROUPS.filter(gIn).sort((a,b)=>tsMs(b.lastAt||b.at)-tsMs(a.lastAt||a.at));
