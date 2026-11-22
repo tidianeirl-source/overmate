@@ -3719,7 +3719,8 @@ function pondTopSVG(){
    - « live » (mode normal) : canevas fixe, plein écran. Sur téléphone, il s'arrête dès qu'on descend dans la page (on ne voit plus l'eau : on économise la batterie).
    - « eco » (mode léger) : 3 carpes seulement, dans la bande du haut de page (le canevas défile avec elle), 30 images par seconde, sans ombres floues.
    - « still » (« réduire les animations » demandé par l'appareil, ou appareil qui peine) : 2 ou 3 carpes immobiles en haut de page, dessinées une seule fois.
-   Si l'appareil peine (moins de 24 images par seconde), on allège : ombres nettes, puis moins de carpes, puis l'image fixe. */
+   Si l'appareil peine (moins de 24 images par seconde pendant plusieurs secondes, page au premier plan), on allège : ombres nettes, puis moins de carpes, puis l'image fixe.
+   Quand la page revient au premier plan, on redonne sa chance à l'animation (3 fois au plus). */
 const POND=(()=>{
   const TAU=Math.PI*2, NB=11, NT=4, N=NB+NT;                      // points de la colonne : 11 pour le corps, 4 pour la queue
   const PROF=[.5,.82,.96,1,.97,.89,.76,.6,.44,.31,.22];           // largeur du corps, du museau à la base de la queue
@@ -3743,7 +3744,7 @@ const POND=(()=>{
   ];
   const ORDER=[0,5,2,1,4,3,6], SIZES=[1,.8,.9,.7,.84,.62,.74];
   const BX=new Float32Array(32), BY=new Float32Array(32);         // points de contrôle du tracé en cours (réutilisés : aucune allocation à chaque image)
-  let cv=null, ctx=null, W=0, H=0, dpr=1, fish=[], rings=[], raf=0, on=false, kind='', band=false, last=0, q=0, ema=16, nf=0, hideT=0, bound=false, drawn=0, rsT=0, touch=false, calm=null;   // kind : '' (rien), 'live', 'eco' ou 'still' · band : le canevas est la bande du haut de page (il défile avec elle) et non l'écran entier
+  let cv=null, ctx=null, W=0, H=0, dpr=1, fish=[], rings=[], raf=0, on=false, kind='', band=false, last=0, q=0, nf=0, ns=0, began=0, away=false, lives=3, hideT=0, bound=false, drawn=0, rsT=0, touch=false, calm=null;   // kind : '' (rien), 'live', 'eco' ou 'still' · band : le canevas est la bande du haut de page (il défile avec elle) et non l'écran entier
   const ptr={ x:0, y:0, at:-1e9, hit:-1e9 };
   // Y a-t-il quelque chose d'opaque (carte, bouton, barre) à cet endroit ? On remonte de l'élément jusqu'à la page.
   function dry(el){
@@ -3860,11 +3861,15 @@ const POND=(()=>{
   }
   // Une image d'animation. 60 par seconde au plus quand on joue avec les carpes ; 30 suffisent quand personne ne touche l'eau, et en mode léger.
   function frame(t){ raf=0; if(!on) return; const gap=t-last; last=t;
-    if(gap<250){ ema+=(gap-ema)*.06; if(++nf>150&&ema>42){ nf=0; ema=16; ease(); if(!on) return; } }   // l'appareil peine (moins de 24 images par seconde) : on allège
+    // L'appareil peine-t-il ? Sur 150 images, plus de 6 sur 10 arrivent en retard (moins de 24 par seconde) : on allège. On ne juge que si la page est restée
+    // au premier plan (en arrière-plan, le navigateur la ralentit exprès : ce n'est pas l'appareil qui peine), et pas pendant les 3 premières secondes (chargement).
+    if(gap<250&&t-began>3000){ nf++; if(gap>42) ns++; if(nf>=150){ const slow=ns>nf*.6&&!away&&document.hasFocus(); nf=ns=0; away=false; if(slow){ ease(); if(!on) return; } } }
     raf=requestAnimationFrame(frame);
     const since=t-drawn; if(since<(kind==='eco'||(t-ptr.at>7000&&!rings.length)?28:10)) return;   // trop tôt pour redessiner
     drawn=t; const dt=clamp(since/1000,.001,.05);
     for(const f of fish) step(f,dt,t); paint(t); }
+  // De retour au premier plan après un allègement : on redonne sa chance à l'animation. 3 fois au plus : un appareil vraiment trop lent finit sur l'image fixe.
+  function revive(){ nf=ns=0; away=false; if(S.skin==='ocean'&&q>0&&lives>0){ lives--; q=Math.max(0,q-2); fish=[]; began=performance.now(); sync(true); } }
   function ease(){ q=kind==='eco'?3:q+1; if(q===2){ size(true); fish.splice(0,Math.min(2,Math.max(0,fish.length-3))); } else if(q>=3) drawStill(); }
   function size(force){ const w=vw(), h=band?bandH():innerHeight;
     let d=Math.min(window.devicePixelRatio||1,kind==='still'?2:q>=2?1:(touch||band)?1.5:2); d=Math.max(.75,Math.min(d,Math.sqrt(4e6/(w*h||1))));   // jamais plus de 4 millions de points à redessiner (très grands écrans)
@@ -3877,14 +3882,15 @@ const POND=(()=>{
     else { fish=[G,O,K]; pose(K,W*.56,42,Math.PI*1.03,.03); pose(O,W*.705,84,-.2,.02); pose(G,W*.955,78,2.4,.03); }
     fish.forEach(f=>{ f.ph=1.1; f.amp=.9; }); paint(0); cv.classList.add('on'); }
   function start(k){ clearTimeout(hideT); hideT=0; const fresh=kind!==k||!fish.length; layout(k); size(fresh); if(fresh) populate(); cv.classList.add('on');
-    if(!on){ on=true; last=drawn=performance.now(); nf=0; ema=16; if(!raf) raf=requestAnimationFrame(frame); } }
+    if(!on){ on=true; last=drawn=began=performance.now(); nf=ns=0; if(!raf) raf=requestAnimationFrame(frame); } }
   function pause(){ if(!on||hideT) return; cv.classList.remove('on'); hideT=setTimeout(()=>{ hideT=0; halt(); },650); }   // on laisse le fondu se terminer, puis on arrête tout
   function bind(){ if(bound) return; bound=true;
     const mq=()=>{ try{ touch=matchMedia('(pointer:coarse)').matches; }catch(e){ touch=false; } }; mq();
     const at=e=>{ const y=band?e.clientY+scrollY:e.clientY; if((band&&y>H*.8)||!wet(e.target)) return false; ptr.x=e.clientX; ptr.y=y; ptr.at=performance.now(); return true; };
     addEventListener('pointermove',e=>{ if(on) at(e); },{passive:true});
     addEventListener('pointerdown',e=>{ if(on&&at(e)){ ptr.hit=ptr.at; if(rings.length<5) rings.push({x:ptr.x,y:ptr.y,t:ptr.at}); } },{passive:true});
-    document.addEventListener('visibilitychange',sync);
+    document.addEventListener('visibilitychange',()=>{ if(!document.hidden) revive(); sync(); });
+    addEventListener('blur',()=>{ away=true; }); addEventListener('focus',revive);
     addEventListener('hashchange',()=>setTimeout(sync,80));
     addEventListener('resize',()=>{ clearTimeout(rsT); rsT=setTimeout(()=>{ mq(); sync(true); },140); });
     try{ calm=matchMedia('(prefers-reduced-motion: reduce)'); calm.addEventListener('change',sync); }catch(e){} }
