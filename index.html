@@ -440,15 +440,7 @@ html[data-skin="sombre"]{
   --title:#fff; --title-shadow:0 0 30px rgba(255,77,141,.55);
   color-scheme:dark;
 }
-/* --- Océan --- */
-html[data-skin="ocean"]{
-  --frame:#2F7FD8; --frame-bg:#2F7FD8;
-  --bg:#FFFFFF; --s1:#F2F8FF; --s2:#DDEBFF; --line:#C2DAF7; --tx:#10284A; --mu:#56708F;
-  --pk:#1F6FD1; --pk2:#1858A8; --on-pk:#fff;
-  --fd:'Chakra Petch',sans-serif; --fdw:700; --fb:'Sora','Segoe UI',sans-serif; --case:none;
-  --art-bg:#1E86D6; --art-tint:linear-gradient(200deg,transparent 55%,rgba(5,30,80,.35));
-  --title-shadow:0 2px 20px rgba(10,40,90,.5);
-}
+/* --- Océan : tout le thème est dans le bloc « coopo-ocean », plus bas --- */
 /* --- Menthe --- */
 html[data-skin="menthe"]{
   --frame:#2FAE87; --frame-bg:#2FAE87;
@@ -526,15 +518,7 @@ html[data-skin="samurai"] .float-match{ border:2px solid var(--pk); }
 @keyframes wind{ from{ transform:translateX(-300px); opacity:0; } 20%{ opacity:.6; } 80%{ opacity:.6; } to{ transform:translateX(900px); opacity:0; } }
 .redsun{ transform-box:fill-box; transform-origin:center; animation:mp 7s ease-in-out infinite; }
 
-/* Scènes océan / nuit / menthe */
-.ray{ transform-box:fill-box; transform-origin:50% 0; animation:ray 7s ease-in-out infinite alternate; animation-delay:calc(var(--rd) * -1); }
-@keyframes ray{ to{ transform:rotate(4deg) scaleX(1.15); opacity:.18; } }
-.wave{ animation:waveMove 9s linear infinite; } .wave.w2{ animation-duration:13s; animation-direction:reverse; }
-@keyframes waveMove{ to{ transform:translateX(300px); } }
-.fish{ animation:swim var(--sd) linear infinite; animation-delay:calc(var(--sl) * -1); }
-@keyframes swim{ from{ transform:translate(-320px,var(--fy,0)); } to{ transform:translate(1400px,var(--fy,0)); } }
-.bub2{ animation:bub2 var(--bd) ease-in infinite; animation-delay:calc(var(--bl) * -1); }
-@keyframes bub2{ 0%{ transform:translate(0,0); opacity:0; } 10%{ opacity:.7; } 100%{ transform:translate(var(--bx),-700px); opacity:0; } }
+/* Scènes nuit / menthe (l'ancien dessin de l'océan — rayons, vagues, bancs de poissons, bulles — a été remplacé par la mare : voir « coopo-ocean ») */
 
 .flap{ transform-box:fill-box; transform-origin:100% 50%; animation:flap .5s ease-in-out infinite alternate; }
 .flap.r{ transform-origin:0 50%; animation-name:flapR; }
@@ -996,10 +980,6 @@ dialog[open]::backdrop{ animation:fade .25s ease; }
 #fx .dot{ top:auto; bottom:-10px; width:var(--w); height:var(--w); border-radius:50%; background:var(--c); box-shadow:0 0 10px var(--c); opacity:0;
   animation:fxRise var(--dur) linear infinite; animation-delay:calc(var(--dl) * -1); }
 @keyframes fxRise{ 0%{ opacity:0; transform:translate(0,0); } 10%{ opacity:.8; } 85%{ opacity:.5; } 100%{ opacity:0; transform:translate(var(--dx),-110vh); } }
-#fx .bub{ top:auto; bottom:-30px; width:var(--w); height:var(--w); border-radius:50%; border:1.5px solid var(--c); opacity:0;
-  background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.8),transparent 40%);
-  animation:fxBub var(--dur) ease-in infinite; animation-delay:calc(var(--dl) * -1); }
-@keyframes fxBub{ 0%{ transform:translate(0,0); opacity:0; } 10%{ opacity:.6; } 50%{ transform:translate(calc(var(--dx) * .5),-55vh); } 90%{ opacity:.5; } 100%{ transform:translate(var(--dx),-115vh); opacity:0; } }
 
 /* Transitions entre les pages */
 #wipe{ position:fixed; inset:0; z-index:45; pointer-events:none; }
@@ -1022,8 +1002,6 @@ html[data-skin="samurai"] .page-in{ animation:pageCut .6s cubic-bezier(.7,0,.2,1
 html[data-skin="sombre-v1"] .page-in{ animation:pageGlitch .5s steps(1) both; }
 @keyframes pageGlitch{ 0%{ opacity:0; } 15%{ opacity:1; transform:translateX(-10px); clip-path:inset(8% 0 62% 0); filter:hue-rotate(80deg); }
   30%{ transform:translateX(8px); clip-path:inset(48% 0 18% 0); } 45%{ transform:translateX(-4px); clip-path:inset(0 0 0 0); filter:none; } 60%,100%{ transform:none; opacity:1; } }
-html[data-skin="ocean"] .page-in{ animation:pageWave .7s cubic-bezier(.2,.8,.2,1) both; }
-@keyframes pageWave{ from{ opacity:0; transform:translateY(40px); clip-path:inset(30% 0 0 0 round 60px); } to{ clip-path:inset(0 0 0 0 round 0); } }
 
 /* Titres animés */
 html:is([data-skin="defaut"],[data-skin="sombre"]) .page-head h2::after, html[data-skin="menthe"] .page-head h2::after{
@@ -1039,9 +1017,6 @@ html[data-skin="esth"] h2{ background:linear-gradient(90deg,#6F4FE0,#D94F96,#2E9
 @keyframes shimmer{ to{ background-position:300% 0; } }
 html[data-skin="sombre-v1"] h2{ text-shadow:0 0 14px rgba(255,77,141,.65); animation:neon 5s steps(1) infinite; }
 @keyframes neon{ 0%,18%,22%,60%,63%,100%{ opacity:1; } 20%,61.5%{ opacity:.4; } }
-html[data-skin="ocean"] :is(.page-head h2,.home-grid h2,.bl h2){ width:fit-content; padding-bottom:12px; animation:waveX 2s linear infinite;
-  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='8'><path d='M0 4 Q10 0 20 4 T40 4' fill='none' stroke='%231F6FD1' stroke-width='2.5'/></svg>") 0 100%/40px 8px repeat-x; }
-@keyframes waveX{ to{ background-position:40px 100%; } }
 html[data-skin="soft"] :is(.page-head h2,.home-grid h2,.bl h2){ animation:softIn .8s cubic-bezier(.3,1.6,.5,1) .2s both; }
 @keyframes softIn{ from{ transform:translateY(14px) scale(.94); opacity:0; } }
 
@@ -1466,7 +1441,6 @@ html.lite *, html.lite *::before, html.lite *::after{ animation-duration:.01ms !
 } }
 /* Thèmes clairs : même logique partout — page légèrement teintée, cartes blanches */
 html[data-skin="soft"]{ --bg:#FFF5F9; --s1:#FFFFFF; --s2:#FCE3ED; --field:#FFFFFF; --glass-solid:#FFFFFF; --mu:#7C4B64; --pk2:#A92B64; }
-html[data-skin="ocean"]{ --bg:#F1F7FF; --s1:#FFFFFF; --s2:#DDEBFF; --field:#FFFFFF; --glass:rgba(255,255,255,.9); --glass-solid:#FFFFFF; --mu:#435E7D; }
 html[data-skin="menthe"]{ --bg:#F0FAF6; --s1:#FFFFFF; --s2:#D9F3E9; --field:#FFFFFF; --glass:rgba(255,255,255,.9); --glass-solid:#FFFFFF; --mu:#3A6354; }
 /* texte secondaire un peu plus foncé là où la marge de contraste était mince : il reste lisible sur le fond décoré */
 html[data-skin="lofi"]{ --mu:#46607A; }
@@ -1560,7 +1534,7 @@ h1,h2,h3,.btn{ text-wrap:balance; }
 .mh{ position:relative; isolation:isolate; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; gap:18px; min-height:232px; margin:-14px -14px 0; padding:14px 18px 20px; color:#fff; background:var(--art-bg,var(--pk)); border-radius:0 0 28px 28px; }
 .mh{ --scrim:10,6,36; }   /* couleur du halo sous le bonjour */
 html[data-skin="samurai"] .mh{ --scrim:46,8,16; } html[data-skin="soft"] .mh{ --scrim:104,20,60; } html[data-skin="lofi"] .mh{ --scrim:8,44,84; } html[data-skin="esth"] .mh{ --scrim:52,26,104; }
-html[data-skin="ocean"] .mh{ --scrim:4,28,68; } html[data-skin="menthe"] .mh{ --scrim:4,56,42; } html[data-skin="prunier"] .mh{ --scrim:44,6,34; }
+html[data-skin="menthe"] .mh{ --scrim:4,56,42; } html[data-skin="prunier"] .mh{ --scrim:44,6,34; }
 .mh :focus-visible{ outline-color:#fff; }
 .mh-hello{ margin:0; font-weight:600; font-size:15px; color:#fff; text-shadow:0 0 2px rgba(var(--scrim),.9),0 1px 10px rgba(var(--scrim),.85),0 0 22px rgba(var(--scrim),.7); }
 .mh-body h1{ margin:2px 0 0; font:var(--fdw) clamp(30px,8vw,48px)/1.04 var(--fd); color:#fff; text-transform:var(--case); letter-spacing:-.01em; text-shadow:0 0 3px rgba(var(--scrim),.85),0 2px 16px rgba(var(--scrim),.8),0 0 34px rgba(var(--scrim),.6); overflow-wrap:anywhere; }
@@ -1680,7 +1654,6 @@ html[data-skin="samurai"]{ --scrim:150,20,40; --scrim2:92,10,24; --w-top:58,10,1
 html[data-skin="soft"]{ --scrim:170,54,106; --scrim2:112,30,70; --w-top:92,22,56; --w-v:.5; --w-sh:.8; --cta-b:#FFFFFF; --cta-t:#A92B64; }
 html[data-skin="lofi"]{ --scrim:38,110,46; --scrim2:20,70,34; --w-top:12,58,104; --w-v:.5; --w-sh:.8; --cta-b:#FFFFFF; --cta-t:#155E92; }
 html[data-skin="esth"]{ --scrim:94,74,200; --scrim2:60,42,144; --w-top:58,36,120; --w-v:.5; --w-sh:.8; --cta-b:#FFFFFF; --cta-t:#5A3EC8; }
-html[data-skin="ocean"]{ --scrim:11,62,138; --scrim2:5,24,66; --w-top:6,40,96; --cta-b:#FFFFFF; --cta-t:#1858A8; }
 html[data-skin="menthe"]{ --scrim:14,108,80; --scrim2:8,72,54; --w-top:8,64,50; --w-v:.56; --w-sh:.8; --cta-b:#FFFFFF; --cta-t:#0E6E54; }
 html[data-skin="prunier"]{ --scrim:112,8,28; --scrim2:60,3,14; --w-top:70,4,18; --w-v:.46; --w-sh:.86; --cta-b:#FFFFFF; --cta-t:#9E0C22; }   /* le dessin est une photo de fleurs claires : voile plus dense */
 @media (min-width:861px){ html{ --w-h:clamp(380px,64vh,640px); } }
@@ -1755,7 +1728,6 @@ html[data-skin="samurai"]{ --sp-a:244,236,225; --sp-b:255,104,124; }
 html[data-skin="soft"]{ --sp-a:255,214,232; --sp-b:255,134,190; }
 html[data-skin="lofi"]{ --sp-a:255,218,110; --sp-b:126,204,255; }
 html[data-skin="esth"]{ --sp-a:255,214,242; --sp-b:184,164,255; }
-html[data-skin="ocean"]{ --sp-a:150,236,255; --sp-b:84,170,255; }
 html[data-skin="menthe"]{ --sp-a:196,255,226; --sp-b:84,222,168; }
 html[data-skin="prunier"]{ --sp-a:255,200,212; --sp-b:255,104,130; }
 html.sp-quick{ --land:.36s; }   /* déjà vu dans cette session (page rechargée) : la planète apparaît directement à sa place */
@@ -1928,7 +1900,6 @@ html[data-skin] body .chat-who :is(b,.muted,.online){ text-shadow:none; }
 html[data-skin] body .page-head h2{ animation:none; background:none; -webkit-background-clip:border-box; background-clip:border-box; }
 html:is([data-skin="defaut"],[data-skin="sombre"]) .page-head h2::after{ color:#D4FF3F; text-shadow:none; }
 html[data-skin="menthe"] .page-head h2::after{ color:#F3EDA8; text-shadow:none; }
-html[data-skin="ocean"] body .page-head h2{ padding-bottom:12px; background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='8'><path d='M0 4 Q10 0 20 4 T40 4' fill='none' stroke='%239FD8FF' stroke-width='2.5'/></svg>") 0 100%/40px 8px repeat-x; animation:waveX 2s linear infinite; }
 .wrap.page > h3 .online::before{ box-shadow:0 0 0 2px rgba(255,255,255,.9); }
 /* ---- Blocs qui étaient teintés et transparents : sur le décor, ils deviennent une vraie surface ou un verre sombre ---- */
 .dispo-me{ background:var(--s1); border:1px solid var(--hair); box-shadow:var(--e1); margin-bottom:0; }
@@ -2387,6 +2358,57 @@ html.lite .flame.warn, html.lite .flame-big{ animation:none; }
 .adm-done > summary{ cursor:pointer; margin:12px 0; font-weight:700; }
 @media (max-width:600px){ .adm-sanc .admin-head{ grid-template-columns:44px minmax(0,1fr); } .adm-sanc .admin-head .nact{ grid-column:1 / -1; } }   /* téléphone : le bouton passe sous le nom */
 </style>
+<style id="coopo-ocean">
+/* ==== Thème Océan : une mare vue de dessus ====
+   Eau bleu profond (plus claire au centre), nénuphars et fleurs de lotus, carpes koï qui suivent le doigt (voir POND dans le script).
+   Cartes blanches posées sur l'eau, boutons vert nénuphar, titres blancs arrondis.
+   Trois couches, de bas en haut : #world (l'eau), #koi (les carpes), #world-top (les nénuphars : les carpes passent dessous). */
+html[data-skin="ocean"]{
+  --frame:#083457; --frame-bg:#083457;
+  --bg:#F2F8FA; --s1:#FFFFFF; --s2:#E1EFF4; --line:#C5DBE4; --tx:#0A2A3F; --mu:#48657A;
+  --pk:#0B8452; --pk2:#086B42; --on-pk:#FFFFFF;
+  --hi:#0B8452; --mid:#C68A0C; --warm:#E2641C; --lo:#D63A4A;
+  --field:#FFFFFF; --glass:rgba(255,255,255,.92); --glass-solid:#FFFFFF;
+  --fd:'Fredoka','Trebuchet MS',sans-serif; --fdw:600; --fb:'Nunito','Segoe UI',sans-serif; --case:none;
+  --r:24px; --rf:28px; --rc:20px; --ri:12px;
+  --art-bg:#0A4470; --art-tint:none;
+  --title:#FFFFFF; --title-shadow:0 2px 18px rgba(3,24,44,.5);
+  /* le monde : eau de surface en haut de page, eau profonde en bas ; voile léger (le texte blanc se lit déjà bien sur l'eau sombre) */
+  --scrim:8,52,87; --scrim2:4,24,44; --w-top:4,30,52; --w-v:.08; --w-sh:.36;
+  /* contour bleu nuit serré autour du texte blanc : invisible sur l'eau sombre, il garde le texte lisible quand une carpe claire passe dessous */
+  --w-halo:0 0 1px rgb(3,24,44),0 0 2px rgb(3,24,44),0 1px 4px rgba(3,24,44,.95),0 0 9px rgba(3,24,44,.8),0 0 18px rgba(3,24,44,.45);
+  --cta-b:#3EE08D; --cta-t:#04263B;   /* bouton principal posé sur l'eau : vert vif, texte bleu nuit */
+  --sp-a:150,240,196; --sp-b:255,160,198;
+  --e1:0 1px 2px rgba(3,24,44,.12), 0 12px 26px -16px rgba(3,24,44,.6);   /* cartes : ombre bleu nuit, comme posées au-dessus de l'eau */
+  --e2:0 2px 6px rgba(3,24,44,.16), 0 22px 44px -20px rgba(3,24,44,.66);
+  color-scheme:light;
+}
+html[data-skin="ocean"] .mh{ --scrim:3,24,44; }
+/* changement de page : court et doux (on change de page des dizaines de fois par jour) */
+html[data-skin="ocean"] .page-in{ animation:pondIn .28s cubic-bezier(.23,1,.32,1) both; }
+@keyframes pondIn{ from{ opacity:0; transform:translateY(10px); } }
+/* une petite fleur de lotus après les titres */
+html[data-skin="ocean"] .page-head h2::after{ content:''; display:inline-block; width:.62em; height:.62em; margin-left:.3em; vertical-align:-.03em;
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -12 24 24'><g fill='%23FF7FB0'><ellipse rx='3' ry='5.6' cy='-5.2'/><ellipse rx='3' ry='5.6' cy='-5.2' transform='rotate(45)'/><ellipse rx='3' ry='5.6' cy='-5.2' transform='rotate(90)'/><ellipse rx='3' ry='5.6' cy='-5.2' transform='rotate(135)'/><ellipse rx='3' ry='5.6' cy='-5.2' transform='rotate(180)'/><ellipse rx='3' ry='5.6' cy='-5.2' transform='rotate(225)'/><ellipse rx='3' ry='5.6' cy='-5.2' transform='rotate(270)'/><ellipse rx='3' ry='5.6' cy='-5.2' transform='rotate(315)'/></g><g fill='%23FFC9DD'><ellipse rx='2.1' ry='3.8' cy='-3' transform='rotate(22.5)'/><ellipse rx='2.1' ry='3.8' cy='-3' transform='rotate(82.5)'/><ellipse rx='2.1' ry='3.8' cy='-3' transform='rotate(142.5)'/><ellipse rx='2.1' ry='3.8' cy='-3' transform='rotate(202.5)'/><ellipse rx='2.1' ry='3.8' cy='-3' transform='rotate(262.5)'/><ellipse rx='2.1' ry='3.8' cy='-3' transform='rotate(322.5)'/></g><circle r='2.3' fill='%23FFD25A'/></svg>") center/contain no-repeat; filter:drop-shadow(0 1px 3px rgba(3,24,44,.5)); }
+/* les carpes (canevas) et la couche des nénuphars : seulement dans ce thème */
+#koi{ position:fixed; left:0; top:0; width:100%; height:100%; z-index:0; pointer-events:none; display:none; opacity:0; transition:opacity .6s ease; }
+html[data-skin="ocean"] #koi{ display:block; }
+html[data-skin="ocean"] #koi.on{ opacity:1; }
+/* mode léger ou « réduire les animations » : le canevas n'est plus l'écran entier mais la bande du haut de page ; il défile avec elle et se fond dans l'eau comme le dessin */
+#koi.band{ position:absolute; height:var(--w-h);
+  -webkit-mask-image:linear-gradient(#000 0,#000 52%,transparent 100%); mask-image:linear-gradient(#000 0,#000 52%,transparent 100%); }
+#world-top{ position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; display:none; }
+html.world-par #world-top{ position:fixed; }
+html[data-skin="ocean"] #world-top{ display:block; }
+#world-top .w-cam{ -webkit-mask-image:none; mask-image:none; }
+#world-top .w-cam::after{ display:none; }
+#world-top .w-art{ background:none; }
+/* les feuilles bougent à peine, seulement sur les appareils puissants et en haut de page */
+.pd-bob{ animation:pdBob var(--d,11s) ease-in-out infinite alternate; animation-delay:calc(var(--dl,0s) * -1); }
+@keyframes pdBob{ from{ transform:rotate(-1.4deg); } to{ transform:rotate(1.6deg) translate(1.5px,1px); } }
+html:not(.world-live) #world-top .pd-bob{ animation:none !important; }
+html.world-live.scrolled #world-top .pd-bob{ animation-play-state:paused !important; }
+</style>
 </head>
 <body>
 <div id="splash" role="status" aria-live="polite">
@@ -2414,6 +2436,9 @@ if(b)b.addEventListener('animationend',function(e){if(e.target===b){clearTimeout
 window.splashArm();
 setTimeout(function(){try{if(SPLASH.armed)return;}catch(e){}if(!s)return;s.classList.add('out');r.classList.remove('splash-on');setTimeout(function(){s.classList.add('gone');},900);},12000);})();</script>
 <div id="world" aria-hidden="true"><div class="w-cam"><div class="w-art" id="w-art"></div></div></div>
+<!-- thème Océan : les carpes nagent sur ce canevas, entre l'eau (#world) et les nénuphars (#world-top). Vides et cachés dans les autres thèmes. -->
+<canvas id="koi" aria-hidden="true"></canvas>
+<div id="world-top" aria-hidden="true"><div class="w-cam"><div class="w-art" id="w-art-top"></div></div></div>
 
 <div class="frame">
 <div class="orbs" aria-hidden="true"></div>
@@ -3416,8 +3441,7 @@ const FX = {
             particles:{ kind:'sparkle', chars:['✦','✧','⋆'], colors:['#FFFFFF','#FFC2DF','#BFF0E0'], n:16, dmin:3, dmax:6 }, click:'sparkles' },
   sombre: { orbs:['#7C5CFF','#5B3FE8','#C8FF4D'], orbO:.3,
             particles:{ kind:'sparkle', chars:['✦','✺'], colors:['#B4A1FF','#C8FF4D'], n:10, dmin:4, dmax:7 }, click:'ripple' },
-  ocean:  { orbs:['#5FB0FF','#1F6FD1','#9FD8FF'], orbO:.25,
-            particles:{ kind:'bubble', colors:['#BFE6FF','#FFFFFF'], n:14, dmin:10, dmax:18 }, click:'ripple' },
+  ocean:  { particles:{ kind:'dot', colors:['#8FF0C6','#BFF3FF','#FFC2DA'], n:14, dmin:18, dmax:30 }, click:'ripple' },   // points lumineux qui dérivent sur l'eau (les carpes : voir POND)
   menthe: { orbs:['#7EDDBB','#C7F25B','#128A6A'], orbO:.3,
             particles:{ kind:'leaf', colors:['#9FEFCB','#D8F7A0','#FFFFFF'], n:11, dmin:11, dmax:18 }, click:'ripple' },
   prunier:{ orbs:['#FF6B7A','#C8102E','#FFD9DD'], orbO:.16,
@@ -3446,7 +3470,6 @@ function buildFx(){
     if(p.kind==='petal'||p.kind==='leaf') h+=`<i class="p ${p.kind}" style="${st};--w:${rand(9,15)|0}px"></i>`;
     else if(p.kind==='sparkle') h+=`<i class="p spk" style="${st};--t:${rand(6,94).toFixed(1)}%;--w:${rand(10,22)|0}px">${pick(p.chars)}</i>`;
     else if(p.kind==='dot') h+=`<i class="p dot" style="${st};--w:${rand(2,5).toFixed(1)}px"></i>`;
-    else if(p.kind==='bubble') h+=`<i class="p bub" style="${st};--w:${rand(8,22)|0}px"></i>`;
   }
   fx.innerHTML=h;
 }
@@ -3538,10 +3561,11 @@ function coopoSceneHTML(){
 const WORLD_VIEW = {
   defaut:{ f:[1210,255], t:[.56,.12], zoom:1.25, tw:[.5,.1] }, sombre:{ f:[1210,255], t:[.56,.12], zoom:1.25, tw:[.5,.1] },
   samurai:{ f:[590,230], t:[.62,.36] }, soft:{ f:[600,300], t:[.5,.5] }, lofi:{ f:[900,160], t:[.6,.3] }, esth:{ f:[500,275], t:[.66,.42] },
-  ocean:{ f:[100,330], t:[.2,.5], flip:true }, menthe:{ f:[960,115], t:[.72,.24] }, prunier:{ f:[680,330], t:[.64,.5] },
+  ocean:{ f:[1040,60], t:[.833,.1] }, menthe:{ f:[960,115], t:[.72,.24] }, prunier:{ f:[680,330], t:[.64,.5] },   // Océan : les nénuphars dans le coin en haut à droite
 };
-function frameWorld(){
-  const el=document.getElementById('w-art'); if(!el) return; const W=el.clientWidth, H=el.clientHeight; if(!W||!H) return;
+function frameWorld(){ ['w-art','w-art-top'].forEach(frameArt); }   // le dessin, et la couche du dessus (les nénuphars du thème Océan) cadrée pareil
+function frameArt(artId){
+  const el=document.getElementById(artId); if(!el) return; const W=el.clientWidth, H=el.clientHeight; if(!W||!H) return;
   const v=WORLD_VIEW[el.dataset.skin]||{f:[600,320],t:[.5,.5]}, wide=W>H*1.5, t=(wide&&v.tw)||v.t, zoom=wide?(v.zoomw||1):(v.zoom||1);
   el.querySelectorAll(':scope > svg, :scope > .cscene > svg').forEach(svg=>{
     let vb=svg.dataset.vb; if(!vb){ vb=svg.getAttribute('viewBox'); if(!vb) return; svg.dataset.vb=vb; }
@@ -3582,10 +3606,12 @@ function groundSVG(id,W){
     let g=''; for(let k=1;k<=7;k++){ const y=hy+Math.pow(k/7,1.8)*(H-hy); g+=`M0 ${n0(y)}H${W}`; } for(let i=-18;i<=18;i++) g+=`M${n0(W/2)} ${hy}L${n0(W/2+i*130)} ${H}`;
     s+=`<path d="${g}" stroke="${lt(.34)}" stroke-width="1.4" fill="none"/>`;
   } else if(id==='ocean'){
-    s+=hill(240,16,dk(.2));
-    for(let i=0;i<cnt(34);i++){ const x=R()*W, h=50+R()*120, w=5+R()*6; s+=`<path d="M${n0(x)} ${H}c-16-${n0(h*.33)} 16-${n0(h*.66)} 0-${n0(h)}" fill="none" stroke="${i%3?'rgba(20,150,120,.5)':dk(.3)}" stroke-width="${n0(w)}" stroke-linecap="round"/>`; }
-    for(let i=0;i<cnt(16);i++) s+=`<circle cx="${n0(R()*W)}" cy="${n0(205+R()*80)}" r="${(2+R()*5).toFixed(1)}" fill="none" stroke="${lt(.36)}" stroke-width="1.4"/>`;
-    s+=`<path d="M0 ${H}L0 292Q${n0(W*.25)} 270 ${n0(W*.5)} 286T${W} 280L${W} ${H}Z" fill="#D9C48F" opacity=".72"/>`;
+    // le bord de la mare, vu de dessus : galets sombres au fond, nénuphars en surface, un ou deux lotus (le clair reste en bas)
+    s+=`<defs>${pondDefs('gp')}</defs>`;
+    for(let i=0;i<cnt(16);i++){ const x=R()*W, y=262+R()*56; s+=`<ellipse cx="${n0(x)}" cy="${n0(y)}" rx="${n0(22+R()*40)}" ry="${n0(12+R()*16)}" transform="rotate(${n0(R()*40-20)} ${n0(x)} ${n0(y)})" fill="${dk(.16+R()*.14)}"/>`; }
+    const np=cnt(10); for(let i=0;i<np;i++) s+=padSVG(n0((i+.2+R()*.6)/np*W), n0(216+R()*78), Math.round(13+R()*24), n0(R()*360), i%3, 'gp');   // un par tranche de largeur : ils ne se chevauchent pas
+    s+=lotusSVG(n0(W*(.16+R()*.1)), 268, 15, 20, 'gp')+(W>700?lotusSVG(n0(W*(.72+R()*.1)), 254, 12, -15, 'gp'):'');
+    for(let i=0;i<cnt(14);i++) s+=`<circle cx="${n0(R()*W)}" cy="${n0(205+R()*100)}" r="${(1.4+R()*1.8).toFixed(1)}" fill="#9FF3D2" opacity="${(.3+R()*.45).toFixed(2)}"/>`;
   } else if(id==='menthe'){
     s+=hill(170,20,lt(.05))+hill(216,18,dk(.12))+hill(262,12,dk(.2));
     const leaf=(x,y,k,r)=>`<g transform="translate(${n0(x)} ${n0(y)}) rotate(${n0(r)}) scale(${k.toFixed(2)})"><path d="M0 0C14-22 44-22 58 0C44 22 14 22 0 0Z" fill="rgba(140,235,190,.36)"/><path d="M4 0H52" stroke="${dk(.2)}" stroke-width="1.6"/></g>`;
@@ -3603,7 +3629,10 @@ function buildWorld(){
   const el=document.getElementById('w-art'); if(!el) return;
   const id=SKINS[S.skin]?S.skin:'defaut'; if(el.dataset.skin===id) return;
   el.dataset.skin=id;
-  try{ el.innerHTML = (id==='defaut'||id==='sombre') ? coopoSceneHTML() : SKINS[id].art(); frameWorld(); }catch(e){ console.error(e); el.innerHTML=''; }
+  const top=document.getElementById('w-art-top');   // couche posée au-dessus du dessin (thème Océan : les nénuphars, sous lesquels passent les carpes) ; vide ailleurs
+  try{ el.innerHTML = (id==='defaut'||id==='sombre') ? coopoSceneHTML() : SKINS[id].art();
+    if(top){ top.dataset.skin=id; top.innerHTML = SKINS[id].artTop ? SKINS[id].artTop() : ''; }
+    frameWorld(); }catch(e){ console.error(e); el.innerHTML=''; if(top) top.innerHTML=''; }
   buildGround(); worldLive(); worldScroll(true);
   document.documentElement.classList.add('world-on');
 }
@@ -3611,38 +3640,266 @@ function buildWorld(){
 // Quand on fait défiler la page, la « caméra » monte dans le décor et avance un peu (coupé en mode léger).
 // Thèmes Coopô et Sombre : le dessin est fait de plusieurs plans, chacun bouge à sa vitesse (le ciel presque pas, l'herbe du premier plan plus vite).
 const WORLD_LAYERS={ 'cs-sky':[.22,0], 'cs-far':[.15,0], 'cs-mid':[.08,0], 'cs-near':[.03,0], 'cs-front':[-.1,.0004] };
-let _wLast=-1, _wTick=false, _wH=0, _wLayers=null;
+let _wLast=-1, _wTick=false, _wH=0, _wLayers=null, _wCam2=null;
 function worldScroll(force){
   _wTick=false; const w=document.getElementById('world'); if(!w) return;
   const r=document.documentElement, y=window.scrollY; r.classList.toggle('scrolled', y>10);
   const par=!reduced(); if(r.classList.contains('world-par')!==par) r.classList.toggle('world-par',par);
-  const cam=w.firstElementChild; if(force||!_wH){ _wH=(cam&&cam.offsetHeight)||400; _wLayers=[...w.querySelectorAll('.cs-l')].map(l=>[l,WORLD_LAYERS[[...l.classList].find(c=>WORLD_LAYERS[c])]]).filter(x=>x[1]); }
+  const cam=w.firstElementChild; if(force||!_wH){ _wH=(cam&&cam.offsetHeight)||400; _wLayers=[...w.querySelectorAll('.cs-l')].map(l=>[l,WORLD_LAYERS[[...l.classList].find(c=>WORLD_LAYERS[c])]]).filter(x=>x[1]); _wCam2=document.querySelector('#world-top > .w-cam'); }
+  POND.sync();   // thème Océan : les carpes ne nagent que lorsqu'on voit l'eau, et s'arrêtent dans les autres thèmes (appelée ici car on passe par cette fonction à chaque changement de thème, de mode léger, de taille et de défilement)
   // la caméra descend deux fois moins vite que la page, jusqu'à ce que le dessin soit sorti de l'écran : ensuite on est « dans » le monde
   const sy=par?Math.min(Math.max(y,0),_wH*2.4):0; if(sy===_wLast&&!force) return; _wLast=sy;
   const z=Math.min(sy,600);
   if(cam) cam.style.transform=sy?`translate3d(0,${(-sy*.5).toFixed(1)}px,0) scale(${(1+z*.00028).toFixed(4)})`:'';
+  if(_wCam2&&S.skin==='ocean') _wCam2.style.transform=cam?cam.style.transform:'';   // la couche du dessus (nénuphars) suit la même caméra
   _wLayers.forEach(([l,k])=>{ l.style.transform=z?`translate3d(0,${(z*k[0]).toFixed(1)}px,0)`+(k[1]?` scale(${(1+z*k[1]).toFixed(4)})`:''):''; });
 }
 window.addEventListener('scroll',()=>{ if(!_wTick){ _wTick=true; requestAnimationFrame(()=>worldScroll()); } },{passive:true});
 // Appareil puissant (ordinateur, iPhone, Android avec beaucoup de mémoire) : le dessin lui-même est animé en haut de page
 const WORLD_FAST=(()=>{ try{ const m=navigator.deviceMemory; return m ? m>=8 : (navigator.hardwareConcurrency||4)>=4; }catch(e){ return false; } })();
 function worldLive(){ document.documentElement.classList.toggle('world-live', WORLD_FAST && !reduced()); }
-/* ---- Illustrations : océan, nuit, menthe ---- */
-function oceanSVG(){
-  const R=rng(31); let fish='', bub='', weed='', rays='';
-  for(let i=0;i<5;i++) rays+=`<polygon class="ray" style="--rd:${(R()*6).toFixed(1)}s" points="${200+i*200},0 ${150+i*200},640 ${330+i*200},640" fill="#BFF0FF" opacity=".10"/>`;
-  const fishP=(x,y,s,c)=>`<g transform="translate(${x} ${y}) scale(${s})"><path d="M0 0c14-14 36-14 50 0c-14 14-36 14-50 0z" fill="${c}"/><path d="M48 0l16-12v24z" fill="${c}"/><circle cx="12" cy="-3" r="2.2" fill="#0B3E8A"/></g>`;
-  for(let i=0;i<4;i++){ const y=180+i*90+R()*40|0, c=['#FFD166','#FF8C69','#C8FF4D','#FFFFFF'][i]; let g='';
-    for(let j=0;j<5+(R()*4|0);j++) g+=fishP(R()*160|0,(R()*70-35)|0,.7+R()*.5,c);
-    fish+=`<g transform="translate(0 ${y})"><g class="fish" style="--sd:${(26+R()*18).toFixed(0)}s;--sl:${(R()*30).toFixed(0)}s">${g}</g></g>`; }
-  for(let i=0;i<22;i++) bub+=`<circle class="bub2" cx="${R()*1200|0}" cy="640" r="${(2+R()*6).toFixed(1)}" fill="none" stroke="#DFF6FF" stroke-width="1.5" opacity=".7" style="--bd:${(6+R()*8).toFixed(1)}s;--bl:${(R()*10).toFixed(1)}s;--bx:${(R()*60-30)|0}px"/>`;
-  for(let i=0;i<16;i++){ const x=40+i*76+R()*30|0, h=90+R()*120|0; weed+=`<path class="sway" style="--sd:${(R()*5).toFixed(1)}s" d="M${x} 640c-20-${h*.3} 20-${h*.6} 0-${h}" fill="none" stroke="${i%2?'#0F7A5A':'#19A077'}" stroke-width="${8+R()*6|0}" stroke-linecap="round"/>`; }
-  return svgWrap(`<rect width="1200" height="640" fill="url(#osea)"/>${rays}
-    <path class="wave" d="M-200 40c50-18 100-18 150 0s100 18 150 0s100-18 150 0s100 18 150 0s100-18 150 0s100 18 150 0s100-18 150 0s100 18 150 0s100-18 150 0s100 18 150 0v-60H-200z" fill="#DFF6FF" opacity=".55"/>
-    <path class="wave w2" d="M-200 62c50-16 100-16 150 0s100 16 150 0s100-16 150 0s100 16 150 0s100-16 150 0s100 16 150 0s100-16 150 0s100 16 150 0s100-16 150 0s100 16 150 0v-80H-200z" fill="#8FDCFF" opacity=".35"/>
-    ${fish}${bub}<ellipse cx="600" cy="660" rx="760" ry="60" fill="#E8D7A6"/>${weed}`,
-    `<linearGradient id="osea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4FC3F7"/><stop offset=".45" stop-color="#1E86D6"/><stop offset="1" stop-color="#083A80"/></linearGradient>`);
+/* ---- Illustration : Océan (une mare vue de dessus) ----
+   pondSVG : l'eau (lumière vers le centre, reflets, ombre des feuilles au fond, points lumineux)
+   pondTopSVG : les nénuphars et les lotus, posés AU-DESSUS des carpes (voir POND) : elles passent dessous.
+   Tout est placé à droite : la gauche reste calme pour le bonjour et les titres. */
+const POND_PADS=[ [1040,54,70,205,0],[1120,168,48,330,1],[931,29,26,120,2],[1062,238,38,80,1],[905,96,19,250,0],[1168,300,36,150,2],[520,34,18,20,1] ];   // x, y, rayon, sens de l'encoche, teinte
+const POND_LOTUS=[ [992,104,22,12],[1126,236,14,-30] ];   // x, y, taille, rotation
+// dégradés des feuilles (3 teintes) et des pétales ; gid : préfixe, pour que le décor et le bas de page aient chacun les leurs
+const pondDefs = gid => [['#4ACB82','#27A866','#1A8C54'],['#33B074','#1E9160','#13744A'],['#7BD77F','#49B96A','#2F9A58']].map((c,i)=>
+    `<radialGradient id="${gid}${i}"><stop offset="0" stop-color="${c[0]}"/><stop offset=".62" stop-color="${c[1]}"/><stop offset="1" stop-color="${c[2]}"/></radialGradient>`).join('')
+  +`<linearGradient id="${gid}p" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#FF5F9B"/><stop offset=".55" stop-color="#FF8DB8"/><stop offset="1" stop-color="#FFD3E2"/></linearGradient>`;
+// Un nénuphar vu de dessus : un disque vert avec une encoche, ses nervures, un reflet en haut à gauche et un bord sombre en bas à droite. bob : [durée, décalage] du léger balancement
+function padSVG(x,y,r,rot,tone,gid,bob){
+  const a=.2, c=(Math.cos(a)*r).toFixed(1), s=(Math.sin(a)*r).toFixed(1), f=n=>n.toFixed(1); let v='';
+  for(let k=1;k<9;k++){ const t=a+k*(Math.PI*2-2*a)/9; v+=`M0 0L${f(Math.cos(t)*r*.9)} ${f(Math.sin(t)*r*.9)}`; }
+  return `<g transform="translate(${x} ${y})"><g${bob?` class="pd-bob" style="--d:${bob[0]}s;--dl:${bob[1]}s"`:''}>
+    <g transform="rotate(${rot})"><path d="M0 0L${c} ${s}A${r} ${r} 0 1 1 ${c} -${s}Z" fill="url(#${gid}${tone})"/><path d="${v}" stroke="rgba(255,255,255,.16)" stroke-width="${f(Math.max(1,r*.022))}" fill="none" stroke-linecap="round"/></g>
+    <path d="M${f(-r*.94)} ${f(-r*.16)}A${f(r*.95)} ${f(r*.95)} 0 0 1 ${f(-r*.16)} ${f(-r*.94)}" stroke="rgba(255,255,255,.34)" stroke-width="${f(Math.max(1.2,r*.035))}" fill="none" stroke-linecap="round"/>
+    <path d="M${f(r*.94)} ${f(r*.16)}A${f(r*.95)} ${f(r*.95)} 0 0 1 ${f(r*.16)} ${f(r*.94)}" stroke="rgba(3,40,30,.2)" stroke-width="${f(Math.max(1.2,r*.04))}" fill="none" stroke-linecap="round"/>
+    <circle r="${f(Math.max(1.2,r*.045))}" fill="rgba(255,255,255,.32)"/></g></g>`;
 }
+// Une fleur de lotus vue de dessus : deux rangs de pétales roses, un cœur jaune, et son ombre
+function lotusSVG(x,y,r,rot,gid){
+  const f=n=>n.toFixed(1); let o='', i='';
+  for(let k=0;k<8;k++) o+=`<ellipse rx="${f(r*.3)}" ry="${f(r*.56)}" cy="${f(-r*.5)}" transform="rotate(${k*45})"/>`;
+  for(let k=0;k<6;k++) i+=`<ellipse rx="${f(r*.22)}" ry="${f(r*.4)}" cy="${f(-r*.3)}" transform="rotate(${k*60+30})"/>`;
+  return `<g transform="translate(${x} ${y})"><circle cx="${f(r*.12)}" cy="${f(r*.16)}" r="${f(r*1.02)}" fill="rgba(2,30,40,.24)"/>
+    <g transform="rotate(${rot})"><g fill="url(#${gid}p)" stroke="rgba(200,50,110,.28)" stroke-width=".6">${o}</g><g fill="#FFDCE8" stroke="rgba(225,90,140,.3)" stroke-width=".5">${i}</g>
+    <circle r="${f(r*.2)}" fill="#FFD25A" stroke="#F0A52B" stroke-width="${f(r*.05)}"/></g></g>`;
+}
+function pondSVG(){
+  const R=rng(41), f=n=>n.toFixed(0); let glow='', lines='', sh='', dots='';
+  // reflets : de longues taches de lumière, presque à plat
+  for(let i=0;i<10;i++){ const x=R()*1200, y=30+R()*560, rx=110+R()*230, ry=7+R()*15; glow+=`<ellipse cx="${f(x)}" cy="${f(y)}" rx="${f(rx)}" ry="${f(ry)}" fill="url(#pwl)" opacity="${(.35+R()*.5).toFixed(2)}" transform="rotate(${(R()*14-7).toFixed(1)} ${f(x)} ${f(y)})"/>`; }
+  // rides fines à la surface
+  for(let i=0;i<8;i++){ const x=R()*1000, y=50+R()*520, w=150+R()*260; lines+=`<path d="M${f(x)} ${f(y)}q${f(w*.25)} ${f(-5-R()*8)} ${f(w*.5)} 0t${f(w*.5)} 0" fill="none" stroke="rgba(190,236,255,.1)" stroke-width="${(1.4+R()*2).toFixed(1)}" stroke-linecap="round"/>`; }
+  // l'ombre des feuilles et des fleurs, au fond de l'eau
+  POND_PADS.forEach(([x,y,r])=>{ sh+=`<circle cx="${f(x+r*.22)}" cy="${f(y+r*.3)}" r="${f(r*1.12)}" fill="url(#pws)"/>`; });
+  POND_LOTUS.forEach(([x,y,r])=>{ sh+=`<circle cx="${f(x+r*.3)}" cy="${f(y+r*.4)}" r="${f(r*1.2)}" fill="url(#pws)"/>`; });
+  // points lumineux
+  for(let i=0;i<36;i++) dots+=`<circle cx="${f(R()*1200)}" cy="${f(R()*640)}" r="${(1+R()*2.2).toFixed(1)}" fill="${i%5?'#9FF3D2':'#DDFBFF'}" opacity="${(.25+R()*.5).toFixed(2)}"/>`;
+  return svgWrap(`<rect width="1200" height="640" fill="url(#pw)"/>${glow}${lines}${sh}${dots}`,
+    `<radialGradient id="pw" cx="68%" cy="38%" r="82%"><stop offset="0" stop-color="#2393BB"/><stop offset=".26" stop-color="#16729E"/><stop offset=".58" stop-color="#0C4C7A"/><stop offset="1" stop-color="#083457"/></radialGradient>
+     <radialGradient id="pwl"><stop offset="0" stop-color="#D8F6FF" stop-opacity=".2"/><stop offset="1" stop-color="#D8F6FF" stop-opacity="0"/></radialGradient>
+     <radialGradient id="pws"><stop offset="0" stop-color="#021C30" stop-opacity=".42"/><stop offset=".7" stop-color="#021C30" stop-opacity=".3"/><stop offset="1" stop-color="#021C30" stop-opacity="0"/></radialGradient>`);
+}
+function pondTopSVG(){
+  const R=rng(53); let s='';
+  [[1004,152,4],[989,163,3],[1152,112,4],[884,58,3.5],[1092,98,3],[1034,292,4],[944,182,3],[1142,262,3.5],[560,60,3]].forEach(([x,y,r])=>{ s+=`<circle cx="${x}" cy="${y}" r="${r}" fill="#5FD489" opacity=".85"/>`; });   // lentilles d'eau
+  POND_PADS.forEach(([x,y,r,rot,tone])=>{ s+=padSVG(x,y,r,rot,tone,'pl',[(9+R()*6).toFixed(1),(R()*9).toFixed(1)]); });
+  s+=`<g transform="translate(960 66) rotate(-25)"><ellipse rx="6" ry="9.5" fill="url(#plp)" stroke="rgba(200,50,110,.3)" stroke-width=".6"/><path d="M0 -9.5V9.5" stroke="rgba(200,50,110,.35)" stroke-width=".8"/></g>`;   // un bouton de fleur
+  POND_LOTUS.forEach(([x,y,r,rot])=>{ s+=lotusSVG(x,y,r,rot,'pl'); });
+  return svgWrap(s, pondDefs('pl'));
+}
+/* ---- Les carpes koï du thème Océan ----
+   Dessinées et animées sur le canevas #koi, posé entre l'eau et les nénuphars.
+   Elles nagent seules. Quand le doigt ou la souris passe sur l'eau (pas sur une carte ni un bouton), elles viennent et tournent autour, puis repartent.
+   Un appui sur l'eau fait un rond et les attire plus vite.
+   Trois façons de les afficher (voir sync) :
+   - « live » (mode normal) : canevas fixe, plein écran. Sur téléphone, il s'arrête dès qu'on descend dans la page (on ne voit plus l'eau : on économise la batterie).
+   - « eco » (mode léger) : 3 carpes seulement, dans la bande du haut de page (le canevas défile avec elle), 30 images par seconde, sans ombres floues.
+   - « still » (« réduire les animations » demandé par l'appareil, ou appareil qui peine) : 2 ou 3 carpes immobiles en haut de page, dessinées une seule fois.
+   Si l'appareil peine (moins de 24 images par seconde), on allège : ombres nettes, puis moins de carpes, puis l'image fixe. */
+const POND=(()=>{
+  const TAU=Math.PI*2, NB=11, NT=4, N=NB+NT;                      // points de la colonne : 11 pour le corps, 4 pour la queue
+  const PROF=[.5,.82,.96,1,.97,.89,.76,.6,.44,.31,.22];           // largeur du corps, du museau à la base de la queue
+  const TW=[0,.42,.8,1,.9];                                       // largeur de la nageoire de la queue
+  const AMP=[], PHS=[]; for(let i=0;i<N;i++){ const s=i/(NB-1); AMP.push(.012+.05*Math.pow(s,2.2)); PHS.push(5*s); }   // l'ondulation grandit vers la queue
+  const WATER='#0F5E8A';
+  const rnd=(a,b)=>a+Math.random()*(b-a), clamp=(v,a,b)=>v<a?a:v>b?b:v;
+  const turnTo=(a,b)=>{ let d=(b-a)%TAU; if(d>Math.PI) d-=TAU; else if(d<-Math.PI) d+=TAU; return d; };
+  const ch=(h,i)=>parseInt(h.slice(i,i+2),16);
+  const mix=(h,g,t)=>'#'+[1,3,5].map(i=>Math.round(ch(h,i)+(ch(g,i)-ch(h,i))*t).toString(16).padStart(2,'0')).join('');
+  const rgba=(h,a)=>`rgba(${ch(h,1)},${ch(h,3)},${ch(h,5)},${a})`;
+  // Variétés. pats : taches [place le long du corps (0 museau, 1 queue), côté (-1 à 1), taille, couleur]
+  const KINDS=[
+    { base:'#FBF4EA', fin:'#FFF8EF', pats:[[.1,.05,.105,'#E8431C'],[.36,-.4,.125,'#E8431C'],[.44,.45,.08,'#EE5B24'],[.68,.1,.105,'#E8431C'],[.88,-.25,.055,'#EE5B24']] },   // kohaku : blanc et rouge
+    { base:'#FAF2E6', fin:'#FFF6EA', pats:[[.14,.1,.1,'#E6461F'],[.5,-.15,.13,'#E6461F'],[.3,.6,.04,'#1D1C23'],[.62,.5,.045,'#1D1C23'],[.8,-.45,.035,'#1D1C23']] },         // sanke : blanc, rouge, points noirs
+    { base:'#F7A91B', fin:'#FFCB62', pats:[[.3,0,.09,'#FFC64D'],[.62,0,.07,'#FFC64D']] },                                                                                 // ogon : doré
+    { base:'#FCF7EF', fin:'#FFFAF2', pats:[[.1,0,.082,'#E2381B']] },                                                                                                      // tancho : blanc, rond rouge sur la tête
+    { base:'#25242D', fin:'#55545F', pats:[[.13,.25,.1,'#EA4B20'],[.4,-.35,.115,'#F6EFE4'],[.62,.3,.1,'#EA4B20'],[.85,-.1,.06,'#F6EFE4']], dark:true },                   // showa : noir, rouge, blanc
+    { base:'#FF7B1E', fin:'#FFB56E', pats:[[.3,0,.1,'#FF9C40']], fat:1.22, tail:1.45, twin:true, len:.72 },                                                               // poisson rouge : rond, grande queue double
+    { base:'#F6EFE6', fin:'#FFF6EC', pats:[[.2,-.3,.11,'#F08A1D'],[.52,.3,.12,'#F08A1D'],[.8,-.1,.06,'#F08A1D']] },                                                       // blanc et orange
+  ];
+  const ORDER=[0,5,2,1,4,3,6], SIZES=[1,.8,.9,.7,.84,.62,.74];
+  const BX=new Float32Array(32), BY=new Float32Array(32);         // points de contrôle du tracé en cours (réutilisés : aucune allocation à chaque image)
+  let cv=null, ctx=null, W=0, H=0, dpr=1, fish=[], rings=[], raf=0, on=false, kind='', band=false, last=0, q=0, ema=16, nf=0, hideT=0, bound=false, drawn=0, rsT=0, touch=false, calm=null;   // kind : '' (rien), 'live', 'eco' ou 'still' · band : le canevas est la bande du haut de page (il défile avec elle) et non l'écran entier
+  const ptr={ x:0, y:0, at:-1e9, hit:-1e9 };
+  // Y a-t-il quelque chose d'opaque (carte, bouton, barre) à cet endroit ? On remonte de l'élément jusqu'à la page.
+  function dry(el){
+    for(let n=el; n&&n.nodeType===1&&n!==document.body&&n!==document.documentElement; n=n.parentElement){ const cs=getComputedStyle(n), bg=cs.backgroundColor, m=/^rgba?\(([^)]+)\)$/.exec(bg);
+      const a=m?(p=>p.length>3?parseFloat(p[3]):1)(m[1].split(/[,/]/)):(bg&&bg!=='transparent'?1:0);
+      if(a>.2||cs.backgroundImage!=='none') return true; }
+    return false; }
+  // Le doigt est-il sur l'eau ? On ne recalcule que lorsque l'élément survolé change.
+  let wetEl=null, wetOk=true;
+  const wet=el=>{ if(el!==wetEl){ wetEl=el; wetOk=!dry(el); } return wetOk; };
+  // Ce point de l'écran : 0 = une carte ou un bouton · 1 = de l'eau avec du texte ou une icône dessus · 2 = de l'eau libre
+  function water(x,y){ const el=document.elementFromPoint(x,band?y-scrollY:y); if(!el||dry(el)) return 0;
+    if(el.ownerSVGElement||/^(svg|img|canvas|video|input|select|textarea|button|a)$/i.test(el.tagName)) return 1;
+    for(let n=el.firstChild;n;n=n.nextSibling) if(n.nodeType===3&&n.nodeValue.trim()) return 1;
+    return 2; }
+  const bandH=()=>{ if(_wH) return _wH; const c=document.querySelector('#world > .w-cam'); return (c&&c.offsetHeight)||400; };
+  const vw=()=>document.documentElement.clientWidth||innerWidth;
+  const longest=()=>clamp(W*.07,Math.min(66,W*.185),110);   // longueur de la plus grande carpe, selon la largeur de l'écran
+
+  function make(K,len){
+    const Lb=len*(K.len||1), depth=clamp((92-Lb)/92,0,.6), tint=c=>mix(c,WATER,depth*.3);
+    const f={ K, Lb, hw:Lb*.128*(K.fat||1), tw:Lb*.17*(K.tail||1), depth, x:0, y:0, dir:0, v:0, ph:rnd(0,TAU), turn:0, amp:1, tx:0, ty:0, next:0,
+      orbR:40, spin:1, cruise:rnd(26,36)*(.7+Lb/170), seg:[],
+      px:new Float32Array(N), py:new Float32Array(N), dx:new Float32Array(N), dy:new Float32Array(N), nx:new Float32Array(N), ny:new Float32Array(N),
+      base:tint(K.base), fin:rgba(tint(K.fin),.62), ray:rgba(tint(K.base),.5), pats:K.pats.map(p=>({ i:p[0]*(NB-1), s:p[1], r:p[2]*Lb, c:tint(p[3]) })) };
+    const s=Lb/(NB-1), t=Lb*.36*(K.tail||1)/NT; for(let i=0;i<N;i++) f.seg.push(i<NB?s:t);
+    return f;
+  }
+  // pose une carpe : la tête en (x, y), le corps derrière elle, légèrement courbé
+  function pose(f,x,y,dir,bend){ f.x=x; f.y=y; f.dir=dir; let a=dir+Math.PI; f.px[0]=x; f.py[0]=y;
+    for(let i=1;i<N;i++){ a+=bend||0; f.px[i]=f.px[i-1]+Math.cos(a)*f.seg[i]; f.py[i]=f.py[i-1]+Math.sin(a)*f.seg[i]; } }
+  // un nouveau but de promenade : de préférence dans de l'eau libre (ni carte ni texte), le plus souvent dans le haut de l'écran
+  function wander(f,now){ const m=40, top=band?H*.5:Math.max(m+60,Math.min(H*.46,340)), low=band?H*.56:H-m; let bx=W/2, by=top/2, best=-1;
+    for(let k=0;k<7&&best<2;k++){ const x=rnd(m,W-m), y=Math.random()<.68?rnd(m,top):rnd(m,low); let s=water(x,y);
+      if(s===2&&!(water(x-34,y)===2&&water(x+34,y)===2&&water(x,y-34)===2&&water(x,y+34)===2)) s=1.5;   // trop près d'une carte ou d'un texte
+      if(s>best){ best=s; bx=x; by=y; } }
+    f.tx=bx; f.ty=by; f.next=now+rnd(4200,9500); }
+  function populate(){
+    const n=kind==='eco'?3:(W<520?5:W<1100?6:7)-(q>=2?2:0), base=longest(), now=performance.now(), top=band?H*.5:Math.max(170,Math.min(H*.5,360)); fish=[];
+    for(let i=0;i<n;i++){ const f=make(KINDS[ORDER[i%ORDER.length]],base*SIZES[i%SIZES.length]);   // elles sont déjà là, en haut de l'écran : le canevas apparaît en fondu
+      pose(f,rnd(W*.06,W*.94),rnd(24,top),rnd(0,TAU),rnd(-.05,.05)); f.v=f.cruise; wander(f,now); fish.push(f); }
+    fish.sort((a,b)=>a.Lb-b.Lb);   // les petites d'abord : elles sont plus au fond
+    fish.forEach((f,i)=>{ f.orbR=34+i*base*.3; f.spin=i%2?-1:1; });   // autour du doigt : chacune son cercle, une sur deux dans l'autre sens
+  }
+  function step(f,dt,now){
+    const follow=now-ptr.at<6000, hot=now-ptr.hit<1400; let hx, hy, vd=f.cruise;
+    if(follow){ const ex=ptr.x-f.x, ey=ptr.y-f.y, d=Math.hypot(ex,ey)||1, over=d-f.orbR;
+      if(over>90){ hx=ex/d; hy=ey/d; }   // loin du doigt : droit dessus
+      else { const k=clamp(over/f.orbR*1.6,-1,1.6); hx=ey/d*f.spin+ex/d*k; hy=-ex/d*f.spin+ey/d*k; }   // tout près : en rond autour, en revenant vers son cercle
+      vd=f.cruise*clamp(1.5+over/55,1.5,hot?6:4.2); }   // vite quand on est loin, on ralentit en arrivant
+    else { if(now>f.next||Math.hypot(f.tx-f.x,f.ty-f.y)<30||f.x<-90||f.x>W+90||f.y<-90||f.y>H+90) wander(f,now);
+      const ex=f.tx-f.x, ey=f.ty-f.y, d=Math.hypot(ex,ey)||1; hx=ex/d; hy=ey/d; }
+    let sx=0, sy=0;   // on s'écarte des voisines trop proches
+    for(const o of fish){ if(o===f) continue; const ex=f.x-o.x, ey=f.y-o.y, d=Math.hypot(ex,ey), r=(f.Lb+o.Lb)*.55; if(d<r&&d>.01){ const w=(r-d)/r; sx+=ex/d*w; sy+=ey/d*w; } }
+    const d=turnTo(f.dir,Math.atan2(hy+sy*1.8,hx+sx*1.8)), agile=(follow?2.6:1.4)*(hot?1.5:1)*(.55+42/Math.max(42,f.Lb));
+    const st=clamp(d,-agile*dt,agile*dt); f.dir+=st; f.turn+=(st/dt-f.turn)*Math.min(1,dt*6);
+    vd*=1-Math.min(.45,Math.abs(d)*.25);                         // on ralentit dans les virages serrés
+    f.v+=(vd-f.v)*Math.min(1,dt*(vd>f.v?2.4:1.1));               // on accélère vite, on se laisse glisser pour ralentir
+    f.x+=Math.cos(f.dir)*f.v*dt; f.y+=Math.sin(f.dir)*f.v*dt;
+    f.ph+=dt*(5+f.v*.08*(90/f.Lb)); f.amp+=(.55+Math.min(1.2,f.v/f.cruise*.42)-f.amp)*Math.min(1,dt*3);
+    const px=f.px, py=f.py; px[0]=f.x; py[0]=f.y;   // le corps suit la tête, comme une chaîne
+    for(let i=1;i<N;i++){ const ax=px[i]-px[i-1], ay=py[i]-py[i-1], m=Math.hypot(ax,ay)||1; px[i]=px[i-1]+ax/m*f.seg[i]; py[i]=py[i-1]+ay/m*f.seg[i]; }
+  }
+  // la forme du moment : la colonne ondule, puis on calcule la perpendiculaire en chaque point
+  function geom(f){ const px=f.px, py=f.py, dx=f.dx, dy=f.dy, nx=f.nx, ny=f.ny, A=f.Lb*f.amp;
+    for(let i=0;i<N;i++){ const a=i?i-1:0, b=i<N-1?i+1:i; let tx=px[a]-px[b], ty=py[a]-py[b]; const m=Math.hypot(tx,ty)||1, w=A*AMP[i]*Math.sin(f.ph-PHS[i]); dx[i]=px[i]-ty/m*w; dy[i]=py[i]+tx/m*w; }
+    for(let i=0;i<N;i++){ const a=i?i-1:0, b=i<N-1?i+1:i, tx=dx[a]-dx[b], ty=dy[a]-dy[b], m=Math.hypot(tx,ty)||1; nx[i]=-ty/m; ny[i]=tx/m; } }
+  // tracé fermé et lisse, qui passe près des points de contrôle
+  function loop(c,m){ c.moveTo((BX[m-1]+BX[0])/2,(BY[m-1]+BY[0])/2); for(let j=0;j<m;j++){ const k=(j+1)%m; c.quadraticCurveTo(BX[j],BY[j],(BX[j]+BX[k])/2,(BY[j]+BY[k])/2); } c.closePath(); }
+  function pathBody(c,f){ const dx=f.dx, dy=f.dy, nx=f.nx, ny=f.ny, h0=f.hw*PROF[0]*1.15; let m=0;
+    BX[m]=dx[0]+ny[0]*h0; BY[m++]=dy[0]-nx[0]*h0;   // le museau
+    for(let i=0;i<NB;i++){ const w=f.hw*PROF[i]; BX[m]=dx[i]+nx[i]*w; BY[m++]=dy[i]+ny[i]*w; }
+    for(let i=NB-1;i>=0;i--){ const w=f.hw*PROF[i]; BX[m]=dx[i]-nx[i]*w; BY[m++]=dy[i]-ny[i]*w; }
+    c.beginPath(); loop(c,m); }
+  // la nageoire de la queue (side 0), ou l'un des deux voiles d'une queue double (side 1 ou -1)
+  function pathTail(c,f,side){ const dx=f.dx, dy=f.dy, nx=f.nx, ny=f.ny, b=NB-1, tw=f.tw*(side?.62:1); let m=0;
+    for(let j=0;j<=NT;j++){ const i=b+j, w=j?tw*TW[j]:f.hw*PROF[b], o=side*f.tw*.5*TW[j]; BX[m]=dx[i]+nx[i]*(o+w); BY[m++]=dy[i]+ny[i]*(o+w); }
+    BX[m]=dx[N-2]+nx[N-2]*side*f.tw*.42; BY[m++]=dy[N-2]+ny[N-2]*side*f.tw*.42;   // l'échancrure
+    for(let j=NT;j>=0;j--){ const i=b+j, w=j?tw*TW[j]:f.hw*PROF[b], o=side*f.tw*.5*TW[j]; BX[m]=dx[i]+nx[i]*(o-w); BY[m++]=dy[i]+ny[i]*(o-w); }
+    c.beginPath(); loop(c,m); }
+  // une nageoire du flanc : attachée au point i, tournée vers l'arrière et l'extérieur (th : son ouverture)
+  function pathFin(c,f,i,side,len,th){ const ox=f.nx[i]*side, oy=f.ny[i]*side, bx=-f.ny[i], by=f.nx[i], hw=f.hw*PROF[i]*.8, X=f.dx[i]+ox*hw, Y=f.dy[i]+oy*hw;
+    const c0=Math.cos(th), s0=Math.sin(th), c1=Math.cos(th+.6), s1=Math.sin(th+.6), c2=Math.cos(th-.4), s2=Math.sin(th-.4);
+    c.beginPath(); c.moveTo(X,Y);
+    c.quadraticCurveTo(X+(c1*bx+s1*ox)*len*.72,Y+(c1*by+s1*oy)*len*.72,X+(c0*bx+s0*ox)*len,Y+(c0*by+s0*oy)*len);
+    c.quadraticCurveTo(X+(c2*bx+s2*ox)*len*.5,Y+(c2*by+s2*oy)*len*.5,X,Y); }
+  function drawFish(f){ const c=ctx, dx=f.dx, dy=f.dy, nx=f.nx, ny=f.ny, L=f.Lb, dk=f.K.dark, flap=.14*Math.sin(f.ph*.5), tr=clamp(f.turn*.2,-.45,.45);
+    c.fillStyle=f.fin;   // les nageoires, sous le corps
+    pathFin(c,f,3,1,L*.27,.92+flap+tr); c.fill(); pathFin(c,f,3,-1,L*.27,.92+flap-tr); c.fill();
+    pathFin(c,f,6,1,L*.15,1.1+flap*.6); c.fill(); pathFin(c,f,6,-1,L*.15,1.1+flap*.6); c.fill();
+    if(f.K.twin){ pathTail(c,f,1); c.fill(); pathTail(c,f,-1); c.fill(); } else { pathTail(c,f,0); c.fill(); }
+    c.strokeStyle=f.ray; c.lineWidth=.7; c.beginPath();   // les rayons de la queue
+    for(let k=-1;k<=1;k++){ c.moveTo(dx[NB-1],dy[NB-1]); c.lineTo(dx[N-1]+nx[N-1]*k*f.tw*.55,dy[N-1]+ny[N-1]*k*f.tw*.55); } c.stroke();
+    c.save(); pathBody(c,f); c.fillStyle=f.base; c.fill(); c.clip();   // le corps, puis ses taches (elles ne dépassent pas)
+    for(const p of f.pats){ const i=p.i|0, j=Math.min(NB-1,i+1), t=p.i-i, o=f.hw*(PROF[i]+(PROF[j]-PROF[i])*t)*.8*p.s;
+      c.beginPath(); c.ellipse(dx[i]+(dx[j]-dx[i])*t+nx[i]*o,dy[i]+(dy[j]-dy[i])*t+ny[i]*o,p.r*1.3,p.r*.92,Math.atan2(-nx[i],ny[i]),0,TAU); c.fillStyle=p.c; c.fill(); }
+    pathBody(c,f); c.lineWidth=f.hw*.5; c.strokeStyle=dk?'rgba(0,0,0,.25)':'rgba(70,30,10,.13)'; c.stroke();   // un bord un peu plus sombre : le corps est rond
+    c.beginPath(); c.moveTo(dx[1],dy[1]); for(let i=2;i<8;i++) c.lineTo(dx[i],dy[i]); c.lineWidth=f.hw*.4; c.lineCap='round'; c.strokeStyle=dk?'rgba(255,255,255,.1)':'rgba(255,255,255,.22)'; c.stroke();   // le reflet sur le dos
+    c.restore();
+    c.beginPath(); c.moveTo(dx[3],dy[3]); for(let i=4;i<8;i++) c.lineTo(dx[i],dy[i]); c.lineWidth=Math.max(1,f.hw*.13); c.lineCap='round'; c.strokeStyle=dk?'rgba(255,255,255,.16)':'rgba(40,24,18,.2)'; c.stroke();   // la nageoire du dos, vue de dessus : un trait
+    const ex=dx[0]+(dx[1]-dx[0])*.3, ey=dy[0]+(dy[1]-dy[0])*.3, ew=f.hw*PROF[0]*.84, er=Math.max(.9,L*.017);   // les yeux
+    c.fillStyle=dk?'#F4EFE6':'#10151B'; c.beginPath(); c.arc(ex+nx[0]*ew,ey+ny[0]*ew,er,0,TAU); c.moveTo(ex-nx[0]*ew+er,ey-ny[0]*ew); c.arc(ex-nx[0]*ew,ey-ny[0]*ew,er,0,TAU); c.fill();
+  }
+  function paint(now){ const c=ctx; c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,W,H);
+    for(const f of fish) geom(f);
+    c.fillStyle='rgba(2,18,34,.2)'; if(q<1&&kind==='live'&&!touch){ c.shadowColor='rgba(2,18,34,.32)'; c.shadowBlur=7*dpr; }   // les ombres au fond de l'eau, sous toutes les carpes (floues sur ordinateur seulement : le flou coûte cher sur téléphone)
+    for(const f of fish){ const o=f.Lb*(.1+.08*(1-f.depth)); c.save(); c.translate(o*.7,o); pathBody(c,f); c.fill(); pathTail(c,f,0); c.fill(); c.restore(); }
+    c.shadowColor='transparent'; c.shadowBlur=0;
+    for(const f of fish) drawFish(f);
+    for(let i=rings.length-1;i>=0;i--){ const r=rings[i]; let alive=false;   // les ronds dans l'eau, là où on a appuyé
+      for(let k=0;k<2;k++){ const a=(now-r.t-k*170)/1100; if(a<0){ alive=true; continue; } if(a>=1) continue; alive=true;
+        c.beginPath(); c.arc(r.x,r.y,9+62*(1-Math.pow(1-a,3)),0,TAU); c.lineWidth=1.6; c.strokeStyle=`rgba(214,244,255,${(.5*(1-a)).toFixed(3)})`; c.stroke(); }
+      if(!alive) rings.splice(i,1); }
+  }
+  // Une image d'animation. 60 par seconde au plus quand on joue avec les carpes ; 30 suffisent quand personne ne touche l'eau, et en mode léger.
+  function frame(t){ raf=0; if(!on) return; const gap=t-last; last=t;
+    if(gap<250){ ema+=(gap-ema)*.06; if(++nf>150&&ema>42){ nf=0; ema=16; ease(); if(!on) return; } }   // l'appareil peine (moins de 24 images par seconde) : on allège
+    raf=requestAnimationFrame(frame);
+    const since=t-drawn; if(since<(kind==='eco'||(t-ptr.at>7000&&!rings.length)?28:10)) return;   // trop tôt pour redessiner
+    drawn=t; const dt=clamp(since/1000,.001,.05);
+    for(const f of fish) step(f,dt,t); paint(t); }
+  function ease(){ q=kind==='eco'?3:q+1; if(q===2){ size(true); fish.splice(0,Math.min(2,Math.max(0,fish.length-3))); } else if(q>=3) drawStill(); }
+  function size(force){ const w=vw(), h=band?bandH():innerHeight;
+    let d=Math.min(window.devicePixelRatio||1,kind==='still'?2:q>=2?1:(touch||band)?1.5:2); d=Math.max(.75,Math.min(d,Math.sqrt(4e6/(w*h||1))));   // jamais plus de 4 millions de points à redessiner (très grands écrans)
+    if(!force&&w===W&&h===H&&d===dpr) return false; W=w; H=h; dpr=d; cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr); return true; }
+  function halt(){ on=false; clearTimeout(hideT); hideT=0; if(raf) cancelAnimationFrame(raf); raf=0; }
+  function layout(k){ kind=k; band=k!=='live'; cv.classList.toggle('band',band); }
+  // l'image fixe. Les carpes sont posées là où il n'y a jamais de texte : tout en haut, entre les titres et les nénuphars (une partie du corps dessous).
+  function drawStill(){ halt(); layout('still'); size(true); rings.length=0; const base=longest(), G=make(KINDS[5],base*.8), O=make(KINDS[2],base*.9), K=make(KINDS[0],base);
+    if(W<700){ fish=[O,K]; pose(K,W*.6,20,Math.PI*1.02,.03); pose(O,W*.8,H*.5,-2.2,-.05); }   // téléphone : une qui sort de sous le grand nénuphar, une à droite du bonjour
+    else { fish=[G,O,K]; pose(K,W*.56,42,Math.PI*1.03,.03); pose(O,W*.705,84,-.2,.02); pose(G,W*.955,78,2.4,.03); }
+    fish.forEach(f=>{ f.ph=1.1; f.amp=.9; }); paint(0); cv.classList.add('on'); }
+  function start(k){ clearTimeout(hideT); hideT=0; const fresh=kind!==k||!fish.length; layout(k); size(fresh); if(fresh) populate(); cv.classList.add('on');
+    if(!on){ on=true; last=drawn=performance.now(); nf=0; ema=16; if(!raf) raf=requestAnimationFrame(frame); } }
+  function pause(){ if(!on||hideT) return; cv.classList.remove('on'); hideT=setTimeout(()=>{ hideT=0; halt(); },650); }   // on laisse le fondu se terminer, puis on arrête tout
+  function bind(){ if(bound) return; bound=true;
+    const mq=()=>{ try{ touch=matchMedia('(pointer:coarse)').matches; }catch(e){ touch=false; } }; mq();
+    const at=e=>{ const y=band?e.clientY+scrollY:e.clientY; if((band&&y>H*.8)||!wet(e.target)) return false; ptr.x=e.clientX; ptr.y=y; ptr.at=performance.now(); return true; };
+    addEventListener('pointermove',e=>{ if(on) at(e); },{passive:true});
+    addEventListener('pointerdown',e=>{ if(on&&at(e)){ ptr.hit=ptr.at; if(rings.length<5) rings.push({x:ptr.x,y:ptr.y,t:ptr.at}); } },{passive:true});
+    document.addEventListener('visibilitychange',sync);
+    addEventListener('hashchange',()=>setTimeout(sync,80));
+    addEventListener('resize',()=>{ clearTimeout(rsT); rsT=setTimeout(()=>{ mq(); sync(true); },140); });
+    try{ calm=matchMedia('(prefers-reduced-motion: reduce)'); calm.addEventListener('change',sync); }catch(e){} }
+  // À appeler quand le thème, le mode léger, la page ou le défilement changent : met les carpes dans le bon état (ne lève jamais d'erreur).
+  // resized : la fenêtre a changé de taille. Appelée à chaque défilement : quand rien ne change, elle ne touche à rien.
+  function sync(resized){ try{
+      if(S.skin!=='ocean'){ if(on||kind||hideT){ halt(); kind=''; fish=[]; if(cv){ cv.classList.remove('on'); if(ctx){ ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,cv.width,cv.height); } } } return; }
+      if(!cv){ cv=document.getElementById('koi'); ctx=cv&&cv.getContext('2d'); if(!ctx){ cv=null; return; } } bind();
+      if(q>=3||(calm&&calm.matches)){ if(kind!=='still'||(resized&&(W!==vw()||H!==bandH()))) drawStill(); return; }
+      const k=liteOn()?'eco':'live', narrow=innerWidth<1000;
+      if(document.hidden || ((k==='eco'||narrow)&&scrollY>bandH()*.9) || (narrow&&document.querySelector('.chat-page'))) pause();
+      else if(!on||hideT||kind!==k||resized) start(k);
+    }catch(e){ console.error(e); } }
+  return { sync, ptr, get running(){ return on; }, get kind(){ return kind; }, get fish(){ return fish; }, get level(){ return q; } };
+})();
 /* ---- Illustration : Prunier (fleurs blanches sur rouge profond) ---- */
 function prunierSVG(){
   const PR_W=Math.min(2000,Math.max(800,Math.ceil(innerWidth*Math.min(window.devicePixelRatio||1,2)/400)*400));   // largeur de la photo adaptée à l'écran
@@ -3740,7 +3997,7 @@ const SKINS = {
   lofi:  {label:'Lo-fi',      desc:'Ciel d\'été, nuages et herbes au vent', sw:['#1F86C2','#FFFFFF','#6CBF3A'], art:lofiSVG},
   esth:  {label:'Esthétique', desc:'Pastels et soleil rétro',          sw:['#C9B8FF','#FCFAFF','#8A6CF0'], art:esthSVG},
   sombre:{label:'Sombre',     desc:'La version nuit du thème officiel',             sw:['#0C0A14','#16131F','#D4FF3F'], art:shapesSVG},
-  ocean: {label:'Océan',      desc:'Fond marin, poissons et bulles',             sw:['#2F7FD8','#FFFFFF','#1F6FD1'], art:oceanSVG},
+  ocean: {label:'Océan',      desc:'Nénuphars et carpes koï qui te suivent',     sw:['#0A3D62','#FFFFFF','#0B8452'], art:pondSVG, artTop:pondTopSVG},
   menthe:{label:'Menthe',     desc:'Collines, brume et papillons',             sw:['#2FAE87','#FFFFFF','#128A6A'], art:mintSVG},
   prunier:{label:'Prunier',    desc:'Fleurs de prunier sur rouge profond', sw:['#C8102E','#FFFFFF','#2A1210'], art:prunierSVG},
 };
@@ -3903,7 +4160,7 @@ function buy(item){ const inf=itemInfo(item); if(!inf) return;
 /* ---- La page Boutique ---- */
 const SHOP_TABS=[['themes','Thèmes'],['plaques','Plaques'],['packs','Packs'],['objets','Mes objets']];
 const shopTag = t => t?`<span class="shop-tag${t==='Édition limitée'?' rare':''}">${t}</span>`:'';
-const SKIN_TAGS={ prunier:'Nouveau', ocean:'Populaire', samurai:'Populaire' };
+const SKIN_TAGS={ prunier:'Nouveau', ocean:'Nouveau', samurai:'Populaire' };
 function themeCard(id){ const t=SKINS[id], paid=PAID_SKINS.includes(id), own=canUseSkin(id), on=(S.skinWanted||S.skin)===id&&!_preview;
   const prev=`<div class="shop-prev shop-prev-th" style="--a:${t.sw[0]};--b:${t.sw[1]};--c2:${t.sw[2]}"><div class="th-mock"><i></i><i></i><i></i><b></b></div></div>`;
   const act = own ? (on?'<button class="btn btn-sm" disabled>Actif</button>':`<button class="btn btn-sm btn-ac" data-use-skin="${id}">Utiliser</button>`)
@@ -4164,8 +4421,8 @@ document.addEventListener('click',async e=>{ if(!e.target.closest('#install-app'
 try{ if('serviceWorker' in navigator && location.protocol==='https:' && !/claude|claudeusercontent/.test(location.hostname)) addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{})); }catch(e){}
 
 /* ---- Retour de paiement ---- */
-const FONT_SPECS={"Zen Dots": "Zen+Dots", "Quicksand": "Quicksand:wght@500;600;700", "Righteous": "Righteous", "Nunito": "Nunito:wght@500;700", "Zen Maru Gothic": "Zen+Maru+Gothic:wght@500;700", "Syne": "Syne:wght@600;700;800", "DM Sans": "DM+Sans:wght@500;700", "Chakra Petch": "Chakra+Petch:wght@500;600;700", "Sora": "Sora:wght@500;600", "Outfit": "Outfit:wght@600;700", "Inter": "Inter:wght@400;500;600;700", "Anton": "Anton", "Source Sans 3": "Source+Sans+3:wght@400;600;700", "Noto Serif JP": "Noto+Serif+JP:wght@700", "Shippori Mincho B1": "Shippori+Mincho+B1:wght@700;800", "Zen Kaku Gothic New": "Zen+Kaku+Gothic+New:wght@400;500;700"};
-const SKIN_FONTS={"soft": ["Zen Dots", "Quicksand"], "lofi": ["Zen Maru Gothic", "Nunito"], "esth": ["Syne", "DM Sans"], "sombre": ["Outfit", "Inter"], "ocean": ["Chakra Petch", "Sora"], "menthe": ["Chakra Petch", "Sora"], "defaut": ["Outfit", "Inter"], "samurai": ["Anton", "Source Sans 3", "Noto Serif JP"], "prunier": ["Shippori Mincho B1", "Zen Kaku Gothic New"]};
+const FONT_SPECS={"Zen Dots": "Zen+Dots", "Quicksand": "Quicksand:wght@500;600;700", "Righteous": "Righteous", "Nunito": "Nunito:wght@500;700", "Zen Maru Gothic": "Zen+Maru+Gothic:wght@500;700", "Syne": "Syne:wght@600;700;800", "DM Sans": "DM+Sans:wght@500;700", "Chakra Petch": "Chakra+Petch:wght@500;600;700", "Sora": "Sora:wght@500;600", "Outfit": "Outfit:wght@600;700", "Inter": "Inter:wght@400;500;600;700", "Anton": "Anton", "Source Sans 3": "Source+Sans+3:wght@400;600;700", "Noto Serif JP": "Noto+Serif+JP:wght@700", "Shippori Mincho B1": "Shippori+Mincho+B1:wght@700;800", "Zen Kaku Gothic New": "Zen+Kaku+Gothic+New:wght@400;500;700", "Fredoka": "Fredoka:wght@500;600;700"};
+const SKIN_FONTS={"soft": ["Zen Dots", "Quicksand"], "lofi": ["Zen Maru Gothic", "Nunito"], "esth": ["Syne", "DM Sans"], "sombre": ["Outfit", "Inter"], "ocean": ["Fredoka", "Nunito"], "menthe": ["Chakra Petch", "Sora"], "defaut": ["Outfit", "Inter"], "samurai": ["Anton", "Source Sans 3", "Noto Serif JP"], "prunier": ["Shippori Mincho B1", "Zen Kaku Gothic New"]};
 const _fontsLoaded=new Set();
 function loadSkinFonts(id){ const list=(SKIN_FONTS[id]||[]).filter(f=>FONT_SPECS[f]&&!_fontsLoaded.has(f)); if(!list.length) return;
   list.forEach(f=>_fontsLoaded.add(f)); const l=document.createElement('link'); l.rel='stylesheet';
