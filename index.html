@@ -441,15 +441,6 @@ html[data-skin="sombre"]{
   color-scheme:dark;
 }
 /* --- Océan : tout le thème est dans le bloc « coopo-ocean », plus bas --- */
-/* --- Menthe --- */
-html[data-skin="menthe"]{
-  --frame:#2FAE87; --frame-bg:#2FAE87;
-  --bg:#FFFFFF; --s1:#F1FBF7; --s2:#D9F3E9; --line:#BFE6D6; --tx:#0F3A2D; --mu:#4B7666;
-  --pk:#118365; --pk2:#0E6E54; --on-pk:#fff; --hi:#0F8F66;
-  --fd:'Chakra Petch',sans-serif; --fdw:700; --fb:'Sora','Segoe UI',sans-serif; --case:none;
-  --art-bg:#EAFBF4; --art-tint:none;
-  --title:#0E6B4F; --title-shadow:0 2px 14px rgba(255,255,255,.8);
-}
 
 /* --- Défaut (thème par défaut) --- */
 html[data-skin="defaut"]{
@@ -518,7 +509,6 @@ html[data-skin="samurai"] .float-match{ border:2px solid var(--pk); }
 @keyframes wind{ from{ transform:translateX(-300px); opacity:0; } 20%{ opacity:.6; } 80%{ opacity:.6; } to{ transform:translateX(900px); opacity:0; } }
 .redsun{ transform-box:fill-box; transform-origin:center; animation:mp 7s ease-in-out infinite; }
 
-/* Scènes nuit / menthe (l'ancien dessin de l'océan — rayons, vagues, bancs de poissons, bulles — a été remplacé par la mare : voir « coopo-ocean ») */
 
 .flap{ transform-box:fill-box; transform-origin:100% 50%; animation:flap .5s ease-in-out infinite alternate; }
 .flap.r{ transform-origin:0 50%; animation-name:flapR; }
@@ -991,7 +981,7 @@ dialog[open]::backdrop{ animation:fade .25s ease; }
 #wipe.panels i:nth-child(1){ left:-5%; } #wipe.panels i:nth-child(2){ left:30%; } #wipe.panels i:nth-child(3){ left:65%; }
 @keyframes panelOut{ to{ transform:skewX(-8deg) translateY(-112%); } }
 
-html:is([data-skin="defaut"],[data-skin="sombre"]) .page-in, html[data-skin="lofi"] .page-in, html[data-skin="menthe"] .page-in{ animation:pageBlur .65s cubic-bezier(.2,.8,.2,1) both; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .page-in, html[data-skin="lofi"] .page-in{ animation:pageBlur .65s cubic-bezier(.2,.8,.2,1) both; }
 @keyframes pageBlur{ from{ opacity:0; filter:blur(14px); transform:translateY(12px) scale(.99); } }
 html[data-skin="soft"] .page-in{ animation:pageBloom .6s cubic-bezier(.3,1.4,.5,1) both; }
 @keyframes pageBloom{ from{ opacity:0; transform:scale(.94); } }
@@ -1004,7 +994,7 @@ html[data-skin="sombre-v1"] .page-in{ animation:pageGlitch .5s steps(1) both; }
   30%{ transform:translateX(8px); clip-path:inset(48% 0 18% 0); } 45%{ transform:translateX(-4px); clip-path:inset(0 0 0 0); filter:none; } 60%,100%{ transform:none; opacity:1; } }
 
 /* Titres animés */
-html:is([data-skin="defaut"],[data-skin="sombre"]) .page-head h2::after, html[data-skin="menthe"] .page-head h2::after{
+html:is([data-skin="defaut"],[data-skin="sombre"]) .page-head h2::after{
   content:'✺'; display:inline-block; margin-left:.3em; font-size:.55em; vertical-align:middle; color:var(--pk); animation:spin 7s linear infinite; }
 html[data-skin="samurai"] :is(.page-head h2,.home-grid h2,.bl h2){ position:relative; isolation:isolate; width:fit-content; padding-bottom:6px; }
 html[data-skin="samurai"] :is(.page-head h2,.home-grid h2,.bl h2)::after{ content:''; position:absolute; left:-4px; right:-12px; bottom:-2px; height:9px; z-index:-1;
@@ -1257,30 +1247,10 @@ html:not([data-skin="defaut"]) .hero2 .art{ animation:none !important; clip-path
   html:not([data-skin="defaut"]) body .hero2 .float-match{ top:96px; bottom:auto; }
 }
 </style>
-<script>/* thème de la dernière visite, appliqué avant l'affichage ; mode léger et écran d'ouverture court (déjà vu dans cette session) décidés dès le premier affichage */try{var _s=JSON.parse(localStorage.getItem('matematch.v1')||'null');var _k=_s&&_s.auth&&(_s.skinOk||_s.skin);if(_k&&_k!=='awale')document.documentElement.setAttribute('data-skin',_k);}catch(e){}(function(r){r.classList.add('splash-on');try{var n=navigator,l=(typeof _s!=='undefined'&&_s&&typeof _s.lite==='boolean')?_s.lite:!!((n.deviceMemory&&n.deviceMemory<=2)||(n.hardwareConcurrency&&n.hardwareConcurrency<=2)||(n.connection&&n.connection.saveData));if(l)r.classList.add('lite');if(sessionStorage.getItem('coopo_splash'))r.classList.add('sp-quick');}catch(e){}})(document.documentElement);</script>
+<script>/* thème de la dernière visite, appliqué avant l'affichage ; mode léger et écran d'ouverture court (déjà vu dans cette session) décidés dès le premier affichage */try{var _s=JSON.parse(localStorage.getItem('matematch.v1')||'null');var _k=_s&&_s.auth&&(_s.skinOk||_s.skin);if(_k&&!/^(awale|menthe|prunier)$/.test(_k))document.documentElement.setAttribute('data-skin',_k);}catch(e){}(function(r){r.classList.add('splash-on');try{var n=navigator,l=(typeof _s!=='undefined'&&_s&&typeof _s.lite==='boolean')?_s.lite:!!((n.deviceMemory&&n.deviceMemory<=2)||(n.hardwareConcurrency&&n.hardwareConcurrency<=2)||(n.connection&&n.connection.saveData));if(l)r.classList.add('lite');if(sessionStorage.getItem('coopo_splash'))r.classList.add('sp-quick');}catch(e){}})(document.documentElement);</script>
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js">
 <link rel="preload" as="script" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js">
-<style id="coopo-prunier">
-/* --- Prunier : fleurs blanches sur rouge profond --- */
-html[data-skin="prunier"]{
-  --frame:#6E0816; --frame-bg:#6E0816;
-  --bg:#FFF8F6; --s1:#FFFFFF; --s2:#FBE9EA; --line:#F1CFD3; --tx:#2B0B10; --mu:#7A4A50;
-  --pk:#C8102E; --pk2:#9E0C22; --on-pk:#FFFFFF; --hi:#C8102E;
-  --field:#FFFFFF; --glass:rgba(255,255,255,.9); --glass-solid:#FFFFFF;
-  --fd:'Shippori Mincho B1',serif; --fdw:800; --fb:'Zen Kaku Gothic New','Segoe UI',sans-serif; --case:none;
-  --art-bg:#C8102E; --art-tint:none;
-  --title:#FFFFFF; --title-shadow:0 2px 24px rgba(60,0,10,.45);
-  color-scheme:light;
-}
-.pr-fall{ transform:translate(var(--x),-40px); animation:prFall var(--dd) linear infinite; animation-delay:calc(var(--dl) * -1); }
-@keyframes prFall{ 0%{ transform:translate(var(--x),-40px) rotate(0deg); } 50%{ transform:translate(calc(var(--x) + var(--sw)),320px) rotate(170deg); } 100%{ transform:translate(var(--x),700px) rotate(340deg); } }
-.pr-sway{ transform-origin:690px 340px; animation:prSway 7s ease-in-out infinite; }
-@keyframes prSway{ 50%{ transform:rotate(1.4deg); } }
-/* vraie photo (Kevin Martin Jose, licence Unsplash) ; le dessin reste dessous si la photo ne charge pas */
-html[data-skin="prunier"] .hero-title .brand-o{ color:#FFD9DD; -webkit-text-fill-color:#FFD9DD; }
-@media (prefers-reduced-motion:reduce){ .pr-fall, .pr-sway{ animation:none; } .pr-fall{ display:none; } }
-</style>
 <style id="coopo-fullwidth">
 /* ==== Page pleine largeur : plus de bandes de couleur sur les côtés ==== */
 html body .frame{ width:100%; max-width:none; margin:0; border-radius:0; box-shadow:none; min-height:100vh; min-height:100svh;
@@ -1441,7 +1411,6 @@ html.lite *, html.lite *::before, html.lite *::after{ animation-duration:.01ms !
 } }
 /* Thèmes clairs : même logique partout — page légèrement teintée, cartes blanches */
 html[data-skin="soft"]{ --bg:#FFF5F9; --s1:#FFFFFF; --s2:#FCE3ED; --field:#FFFFFF; --glass-solid:#FFFFFF; --mu:#7C4B64; --pk2:#A92B64; }
-html[data-skin="menthe"]{ --bg:#F0FAF6; --s1:#FFFFFF; --s2:#D9F3E9; --field:#FFFFFF; --glass:rgba(255,255,255,.9); --glass-solid:#FFFFFF; --mu:#3A6354; }
 /* texte secondaire un peu plus foncé là où la marge de contraste était mince : il reste lisible sur le fond décoré */
 html[data-skin="lofi"]{ --mu:#46607A; }
 html[data-skin="esth"]{ --mu:#5F5889; }
@@ -1534,7 +1503,6 @@ h1,h2,h3,.btn{ text-wrap:balance; }
 .mh{ position:relative; isolation:isolate; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; gap:18px; min-height:232px; margin:-14px -14px 0; padding:14px 18px 20px; color:#fff; background:var(--art-bg,var(--pk)); border-radius:0 0 28px 28px; }
 .mh{ --scrim:10,6,36; }   /* couleur du halo sous le bonjour */
 html[data-skin="samurai"] .mh{ --scrim:46,8,16; } html[data-skin="soft"] .mh{ --scrim:104,20,60; } html[data-skin="lofi"] .mh{ --scrim:8,44,84; } html[data-skin="esth"] .mh{ --scrim:52,26,104; }
-html[data-skin="menthe"] .mh{ --scrim:4,56,42; } html[data-skin="prunier"] .mh{ --scrim:44,6,34; }
 .mh :focus-visible{ outline-color:#fff; }
 .mh-hello{ margin:0; font-weight:600; font-size:15px; color:#fff; text-shadow:0 0 2px rgba(var(--scrim),.9),0 1px 10px rgba(var(--scrim),.85),0 0 22px rgba(var(--scrim),.7); }
 .mh-body h1{ margin:2px 0 0; font:var(--fdw) clamp(30px,8vw,48px)/1.04 var(--fd); color:#fff; text-transform:var(--case); letter-spacing:-.01em; text-shadow:0 0 3px rgba(var(--scrim),.85),0 2px 16px rgba(var(--scrim),.8),0 0 34px rgba(var(--scrim),.6); overflow-wrap:anywhere; }
@@ -1654,8 +1622,6 @@ html[data-skin="samurai"]{ --scrim:150,20,40; --scrim2:92,10,24; --w-top:58,10,1
 html[data-skin="soft"]{ --scrim:170,54,106; --scrim2:112,30,70; --w-top:92,22,56; --w-v:.5; --w-sh:.8; --cta-b:#FFFFFF; --cta-t:#A92B64; }
 html[data-skin="lofi"]{ --scrim:38,110,46; --scrim2:20,70,34; --w-top:12,58,104; --w-v:.5; --w-sh:.8; --cta-b:#FFFFFF; --cta-t:#155E92; }
 html[data-skin="esth"]{ --scrim:94,74,200; --scrim2:60,42,144; --w-top:58,36,120; --w-v:.5; --w-sh:.8; --cta-b:#FFFFFF; --cta-t:#5A3EC8; }
-html[data-skin="menthe"]{ --scrim:14,108,80; --scrim2:8,72,54; --w-top:8,64,50; --w-v:.56; --w-sh:.8; --cta-b:#FFFFFF; --cta-t:#0E6E54; }
-html[data-skin="prunier"]{ --scrim:112,8,28; --scrim2:60,3,14; --w-top:70,4,18; --w-v:.46; --w-sh:.86; --cta-b:#FFFFFF; --cta-t:#9E0C22; }   /* le dessin est une photo de fleurs claires : voile plus dense */
 @media (min-width:861px){ html{ --w-h:clamp(380px,64vh,640px); } }
 /* la couleur du monde court sur toute la hauteur de la page : on « descend » dans le thème */
 html[data-skin]{ min-height:100%; background:rgb(var(--scrim2)) linear-gradient(180deg,rgb(var(--scrim)) 0,rgb(var(--scrim)) 320px,rgb(var(--scrim2)) 100%) no-repeat; }
@@ -1728,8 +1694,6 @@ html[data-skin="samurai"]{ --sp-a:244,236,225; --sp-b:255,104,124; }
 html[data-skin="soft"]{ --sp-a:255,214,232; --sp-b:255,134,190; }
 html[data-skin="lofi"]{ --sp-a:255,218,110; --sp-b:126,204,255; }
 html[data-skin="esth"]{ --sp-a:255,214,242; --sp-b:184,164,255; }
-html[data-skin="menthe"]{ --sp-a:196,255,226; --sp-b:84,222,168; }
-html[data-skin="prunier"]{ --sp-a:255,200,212; --sp-b:255,104,130; }
 html.sp-quick{ --land:.36s; }   /* déjà vu dans cette session (page rechargée) : la planète apparaît directement à sa place */
 #splash{ --fs:120px; position:fixed; inset:0; z-index:10050; overflow:hidden; color:#fff; text-align:center; }
 @media (min-width:861px){ #splash{ --fs:150px; } }
@@ -1899,7 +1863,6 @@ html[data-skin] body .chat-who :is(b,.muted,.online){ text-shadow:none; }
 /* ---- Petits ornements des titres, recolorés pour le décor ---- */
 html[data-skin] body .page-head h2{ animation:none; background:none; -webkit-background-clip:border-box; background-clip:border-box; }
 html:is([data-skin="defaut"],[data-skin="sombre"]) .page-head h2::after{ color:#D4FF3F; text-shadow:none; }
-html[data-skin="menthe"] .page-head h2::after{ color:#F3EDA8; text-shadow:none; }
 .wrap.page > h3 .online::before{ box-shadow:0 0 0 2px rgba(255,255,255,.9); }
 /* ---- Blocs qui étaient teintés et transparents : sur le décor, ils deviennent une vraie surface ou un verre sombre ---- */
 .dispo-me{ background:var(--s1); border:1px solid var(--hair); box-shadow:var(--e1); margin-bottom:0; }
@@ -2846,8 +2809,8 @@ function viewProfileHub(){
   </div>`;
 }
 // Petit mot d'explication pour ceux qui avaient le thème Awalé (affiché une seule fois)
-function retiredNotice(){ if(!S.retiredMsg) return; S.retiredMsg=false; save();
-  setTimeout(()=>modal(`<h3>Le thème Awalé a été retiré</h3><p class="muted">Coopô fait le ménage dans ses thèmes : Awalé n'est plus disponible, et ton compte est repassé au thème Coopô.</p>
+function retiredNotice(){ if(!S.retiredMsg) return; const nm=esc(typeof S.retiredMsg==='string'?S.retiredMsg:'Awalé'); S.retiredMsg=false; save();
+  setTimeout(()=>modal(`<h3>Le thème ${nm} a été retiré</h3><p class="muted">Coopô fait le ménage dans ses thèmes : ${nm} n'est plus disponible, et ton compte est repassé au thème Coopô.</p>
     <div class="dlg-actions"><button class="btn btn-ghost" data-close>Fermer</button><a class="btn btn-ac" href="#/boutique/themes" data-close>Voir les thèmes</a></div>`),1600); }
 function previewProfile(){ modal(`<h3>Ton profil public</h3><p class="muted">Ce que les autres joueurs voient.</p><div style="margin-top:16px">${matchCard({p:publicMe(),c:null})}</div>
     <p class="hint" style="margin-top:12px">Pseudos en jeu : ${S.privacy.tags?'visibles':'masqués'}</p><div class="dlg-actions"><button class="btn" data-close>Fermer</button></div>`); }
@@ -3442,10 +3405,6 @@ const FX = {
   sombre: { orbs:['#7C5CFF','#5B3FE8','#C8FF4D'], orbO:.3,
             particles:{ kind:'sparkle', chars:['✦','✺'], colors:['#B4A1FF','#C8FF4D'], n:10, dmin:4, dmax:7 }, click:'ripple' },
   ocean:  { particles:{ kind:'dot', colors:['#8FF0C6','#BFF3FF','#FFC2DA'], n:14, dmin:18, dmax:30 }, click:'ripple' },   // points lumineux qui dérivent sur l'eau (les carpes : voir POND)
-  menthe: { orbs:['#7EDDBB','#C7F25B','#128A6A'], orbO:.3,
-            particles:{ kind:'leaf', colors:['#9FEFCB','#D8F7A0','#FFFFFF'], n:11, dmin:11, dmax:18 }, click:'ripple' },
-  prunier:{ orbs:['#FF6B7A','#C8102E','#FFD9DD'], orbO:.16,
-            particles:{ kind:'petal', colors:['#FFFFFF','#F7D6DA'], n:8, dmin:12, dmax:19 }, click:'ink' },
 };
 // Mode léger : coupe les halos, particules et effets au clic. Activé d'office sur les appareils modestes ou en économie de données ; le joueur peut le changer dans les Paramètres.
 const LOW_END = (()=>{ try{ return (navigator.deviceMemory&&navigator.deviceMemory<=2) || (navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=2) || !!(navigator.connection&&navigator.connection.saveData); }catch(e){ return false; } })();
@@ -3561,7 +3520,7 @@ function coopoSceneHTML(){
 const WORLD_VIEW = {
   defaut:{ f:[1210,255], t:[.56,.12], zoom:1.25, tw:[.5,.1] }, sombre:{ f:[1210,255], t:[.56,.12], zoom:1.25, tw:[.5,.1] },
   samurai:{ f:[590,230], t:[.62,.36] }, soft:{ f:[600,300], t:[.5,.5] }, lofi:{ f:[900,160], t:[.6,.3] }, esth:{ f:[500,275], t:[.66,.42] },
-  ocean:{ f:[1040,60], t:[.833,.1] }, menthe:{ f:[960,115], t:[.72,.24] }, prunier:{ f:[680,330], t:[.64,.5] },   // Océan : les nénuphars dans le coin en haut à droite
+  ocean:{ f:[1040,60], t:[.833,.1] },    // Lotus (id ocean) : les nénuphars dans le coin en haut à droite
 };
 function frameWorld(){ ['w-art','w-art-top'].forEach(frameArt); }   // le dessin, et la couche du dessus (les nénuphars du thème Océan) cadrée pareil
 function frameArt(artId){
@@ -3612,15 +3571,6 @@ function groundSVG(id,W){
     const np=cnt(10); for(let i=0;i<np;i++) s+=padSVG(n0((i+.2+R()*.6)/np*W), n0(216+R()*78), Math.round(13+R()*24), n0(R()*360), i%3, 'gp');   // un par tranche de largeur : ils ne se chevauchent pas
     s+=lotusSVG(n0(W*(.16+R()*.1)), 268, 15, 20, 'gp')+(W>700?lotusSVG(n0(W*(.72+R()*.1)), 254, 12, -15, 'gp'):'');
     for(let i=0;i<cnt(14);i++) s+=`<circle cx="${n0(R()*W)}" cy="${n0(205+R()*100)}" r="${(1.4+R()*1.8).toFixed(1)}" fill="#9FF3D2" opacity="${(.3+R()*.45).toFixed(2)}"/>`;
-  } else if(id==='menthe'){
-    s+=hill(170,20,lt(.05))+hill(216,18,dk(.12))+hill(262,12,dk(.2));
-    const leaf=(x,y,k,r)=>`<g transform="translate(${n0(x)} ${n0(y)}) rotate(${n0(r)}) scale(${k.toFixed(2)})"><path d="M0 0C14-22 44-22 58 0C44 22 14 22 0 0Z" fill="rgba(140,235,190,.36)"/><path d="M4 0H52" stroke="${dk(.2)}" stroke-width="1.6"/></g>`;
-    for(let i=0;i<cnt(16);i++) s+=leaf(R()*W, 205+R()*100, .6+R()*.8, R()*360);
-  } else if(id==='prunier'){
-    const fl=(x,y,k)=>{ let p=''; for(let i=0;i<5;i++) p+=`<ellipse cx="0" cy="-11" rx="8.5" ry="11" transform="rotate(${i*72})" fill="#FBE8EA" opacity=".88"/>`; return `<g transform="translate(${n0(x)} ${n0(y)}) scale(${k})">${p}<circle r="4.5" fill="#B81F2F"/></g>`; };
-    s+=`<g transform="translate(0 26)"><g transform="translate(${W} 0)"><path d="M10 318C-70 300-130 262-176 212M-70 300C-88 272-84 248-70 226M-130 262C-160 262-184 276-202 298" fill="none" stroke="#2A0C0A" stroke-opacity=".8" stroke-width="7" stroke-linecap="round"/>${fl(-176,212,1.1)}${fl(-70,226,.9)}${fl(-202,298,.8)}${fl(-118,282,.7)}</g>
-      <path d="M-10 318C50 304 96 280 132 244M96 280C108 262 108 244 102 230" fill="none" stroke="#2A0C0A" stroke-opacity=".7" stroke-width="6" stroke-linecap="round"/>`+fl(132,244,1)+fl(102,230,.8)+fl(60,300,.7)+`</g>`;
-    for(let i=0;i<cnt(22);i++){ const x=R()*W, y=215+R()*100; s+=`<ellipse cx="${n0(x)}" cy="${n0(y)}" rx="6" ry="3.4" transform="rotate(${n0(R()*180)} ${n0(x)} ${n0(y)})" fill="#F8DCE3" opacity="${(.3+R()*.4).toFixed(2)}"/>`; }
   }
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMax slice" aria-hidden="true">${s}</svg>`;
 }
@@ -3906,96 +3856,6 @@ const POND=(()=>{
     }catch(e){ console.error(e); } }
   return { sync, ptr, get running(){ return on; }, get kind(){ return kind; }, get fish(){ return fish; }, get level(){ return q; } };
 })();
-/* ---- Illustration : Prunier (fleurs blanches sur rouge profond) ---- */
-function prunierSVG(){
-  const PR_W=Math.min(2000,Math.max(800,Math.ceil(innerWidth*Math.min(window.devicePixelRatio||1,2)/400)*400));   // largeur de la photo adaptée à l'écran
-  const R=rng(88);
-  const f1=n=>n.toFixed(1);
-  // point et tangente d'une courbe de Bézier cubique
-  const bez=(p,t)=>{ const u=1-t; return [u*u*u*p[0]+3*u*u*t*p[2]+3*u*t*t*p[4]+t*t*t*p[6], u*u*u*p[1]+3*u*u*t*p[3]+3*u*t*t*p[5]+t*t*t*p[7]]; };
-  // branche pleine qui s'affine, avec un léger relief irrégulier
-  const limb=(p,w0,w1,n,wob)=>{ const L=[],Rt=[];
-    for(let i=0;i<=n;i++){ const t=i/n, a=bez(p,t), b=bez(p,Math.min(1,t+.01)), c=bez(p,Math.max(0,t-.01));
-      const dx=b[0]-c[0], dy=b[1]-c[1], l=Math.hypot(dx,dy)||1, nx=-dy/l, ny=dx/l;
-      const w=(w0+(w1-w0)*Math.pow(t,.8))*(1+(R()-.5)*wob);
-      L.push(f1(a[0]+nx*w/2)+' '+f1(a[1]+ny*w/2)); Rt.unshift(f1(a[0]-nx*w/2)+' '+f1(a[1]-ny*w/2)); }
-    return 'M'+L.join(' L')+' L'+Rt.join(' L')+'Z'; };
-  // pétale : base étroite, bord arrondi légèrement ondulé
-  const petal=(s)=>{ const k=()=>1+(R()-.5)*.08;
-    return `M0 0 C${f1(-24*s*k())} ${f1(-8*s)} ${f1(-40*s*k())} ${f1(-38*s*k())} ${f1(-28*s)} ${f1(-56*s*k())} C${f1(-18*s)} ${f1(-70*s*k())} ${f1(18*s)} ${f1(-70*s*k())} ${f1(28*s)} ${f1(-56*s*k())} C${f1(40*s*k())} ${f1(-38*s*k())} ${f1(24*s*k())} ${f1(-8*s)} 0 0Z`; };
-  const flower=(x,y,s,rot,tilt)=>{
-    let p='', veins='';
-    for(let i=0;i<5;i++){ const a=rot+i*72+(R()-.5)*8, d=petal(s);
-      p+=`<g transform="rotate(${f1(a)})"><path d="${d}" fill="url(#prPetal)"/><path d="${d}" fill="url(#prPetalEdge)"/></g>`;
-      for(let v=-2;v<=2;v++) veins+=`<path transform="rotate(${f1(a)})" d="M0 ${f1(-6*s)} Q${f1(v*5*s)} ${f1(-30*s)} ${f1(v*9*s)} ${f1(-50*s)}" stroke="#E3C2C6" stroke-width="${f1(.45*s)}" fill="none" opacity=".3"/>`; }
-    let st='';
-    for(let i=0;i<42;i++){ const a=(i/42)*Math.PI*2+R()*.2, l=(22+R()*14)*s, bend=(R()-.5)*6*s;
-      const ex=Math.cos(a)*l, ey=Math.sin(a)*l, mx=Math.cos(a)*l*.5-Math.sin(a)*bend, my=Math.sin(a)*l*.5+Math.cos(a)*bend;
-      st+=`<path d="M0 0 Q${f1(mx)} ${f1(my)} ${f1(ex)} ${f1(ey)}" stroke="url(#prFil)" stroke-width="${f1(.6*s)}" fill="none"/><ellipse cx="${f1(ex)}" cy="${f1(ey)}" rx="${f1(2.1*s)}" ry="${f1(1.4*s)}" transform="rotate(${f1(a*57.3)} ${f1(ex)} ${f1(ey)})" fill="url(#prAnther)"/>`; }
-    return `<g transform="translate(${x} ${y}) scale(1 ${tilt})" filter="url(#prShadow)">${p}${veins}
-      <circle r="${f1(13*s)}" fill="url(#prHeart)"/>${st}
-      <circle r="${f1(4*s)}" fill="#D9E27A"/><circle r="${f1(2*s)}" fill="#9BAF3A"/></g>`;
-  };
-  const bud=(x,y,s,a)=>`<g transform="translate(${x} ${y}) rotate(${a})">
-      <path d="M${-4*s} ${2*s} Q0 ${-3*s} ${4*s} ${2*s} L${2*s} ${7*s} L${-2*s} ${7*s}Z" fill="#3A1712"/>
-      <circle cy="${-4*s}" r="${6.5*s}" fill="url(#prBud)"/>
-      <ellipse cx="${-2*s}" cy="${-7*s}" rx="${2.2*s}" ry="${1.4*s}" fill="#FFFFFF" opacity=".5"/></g>`;
-  // fleurs floues au loin (profondeur de champ)
-  let bokeh='';
-  [[150,150,26,.18],[1080,520,34,.14],[980,90,18,.12],[260,560,22,.10],[1150,250,14,.12]].forEach(([x,y,r,o])=>{ bokeh+=`<circle cx="${x}" cy="${y}" r="${r}" fill="#FFE9EC" opacity="${o}"/>`; });
-  // pétales qui tombent
-  let fall='';
-  for(let i=0;i<9;i++){ const x=(R()*1200)|0, d=(10+R()*9).toFixed(1), dl=(R()*14).toFixed(1), sc=(.11+R()*.08).toFixed(2), sw=(30+R()*80)|0;
-    fall+=`<g class="pr-fall" style="--x:${x}px;--sw:${sw}px;--dd:${d}s;--dl:${dl}s"><path transform="scale(${sc})" d="${petal(1)}" fill="#F8DCE3" opacity=".9"/></g>`; }
-  const mainP=[-60,640, 250,500, 650,350, 985,212];
-  const twig1=[520,399, 526,372, 530,346, 522,318];
-  const twig2=[304,485, 296,466, 298,446, 306,428];
-  const twig3=[760,303, 788,286, 810,276, 830,252];
-  const bark=(d)=>`<path d="${d}" fill="url(#prBark)"/><path d="${d}" fill="url(#prBarkLight)" opacity=".7"/>`;
-  const branch=`<g filter="url(#prBranchShadow)">${bark(limb(mainP,15,3.2,90,.10))}${bark(limb(twig1,4.2,2,14,.08))}${bark(limb(twig2,3.6,1.8,12,.08))}${bark(limb(twig3,3.4,1.6,12,.08))}
-    <ellipse cx="452" cy="426" rx="6" ry="4.4" fill="#2A120E"/><ellipse cx="304" cy="485" rx="5" ry="3.6" fill="#2A120E"/><ellipse cx="560" cy="383" rx="4" ry="3" fill="#2A120E"/></g>`;
-  return svgWrap(`<rect width="1200" height="640" fill="url(#prSky)"/><rect width="1200" height="640" fill="url(#prGlow)"/>
-    <g filter="url(#prBokeh)">${bokeh}</g>
-    ${branch}
-    ${bud(522,322,1.05,-6)}${bud(509,337,.85,-48)}${bud(985,212,1.15,62)}${bud(306,430,.9,-14)}${bud(830,256,.95,30)}
-    <g class="pr-sway">${flower(712,306,1.2,-14,.92)}${flower(626,378,1.02,22,.88)}</g>
-    <image class="pr-photo" href="https://images.unsplash.com/photo-1681160380794-78863d869b87?w=${PR_W}&q=${PR_W>1200?78:68}&auto=format&fit=crop" x="0" y="0" width="1200" height="640" preserveAspectRatio="xMidYMid slice" onerror="this.remove()"/>
-    <g class="pr-falls">${fall}</g>
-    <rect width="1200" height="640" fill="url(#prVignette)"/>
-    <rect width="1200" height="640" filter="url(#prGrain)" opacity=".07"/>`,
-    `<linearGradient id="prSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#DC1B2B"/><stop offset=".5" stop-color="#CD1428"/><stop offset=".82" stop-color="#9C0A1E"/><stop offset="1" stop-color="#4E0310"/></linearGradient>
-     <radialGradient id="prGlow" cx=".6" cy=".4" r=".6"><stop offset="0" stop-color="#F23040" stop-opacity=".45"/><stop offset="1" stop-color="#F23040" stop-opacity="0"/></radialGradient>
-     <radialGradient id="prVignette" cx=".5" cy=".45" r=".75"><stop offset=".6" stop-color="#2A0006" stop-opacity="0"/><stop offset="1" stop-color="#2A0006" stop-opacity=".45"/></radialGradient>
-     <radialGradient id="prPetal" cx=".5" cy="1" r="1.05"><stop offset="0" stop-color="#F1D6D8"/><stop offset=".22" stop-color="#FBF1F1"/><stop offset=".6" stop-color="#FFFFFF"/><stop offset="1" stop-color="#FFFCFA"/></radialGradient>
-     <linearGradient id="prPetalEdge" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#E6C9CC" stop-opacity=".35"/><stop offset=".25" stop-color="#FFFFFF" stop-opacity="0"/><stop offset=".75" stop-color="#FFFFFF" stop-opacity="0"/><stop offset="1" stop-color="#E6C9CC" stop-opacity=".35"/></linearGradient>
-     <radialGradient id="prHeart"><stop offset="0" stop-color="#8A0C1C"/><stop offset=".55" stop-color="#B81F2F" stop-opacity=".85"/><stop offset="1" stop-color="#E8A9AF" stop-opacity="0"/></radialGradient>
-     <linearGradient id="prFil" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#C83A4A"/><stop offset=".5" stop-color="#F6EEDC"/><stop offset="1" stop-color="#FFFBEF"/></linearGradient>
-     <radialGradient id="prAnther" cx=".35" cy=".35"><stop offset="0" stop-color="#FFE38A"/><stop offset="1" stop-color="#C98A1A"/></radialGradient>
-     <radialGradient id="prBud" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#FF8A96"/><stop offset=".45" stop-color="#D21A33"/><stop offset="1" stop-color="#6E0414"/></radialGradient>
-     <linearGradient id="prBark" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5A2E24"/><stop offset=".45" stop-color="#3A1A14"/><stop offset="1" stop-color="#1C0A08"/></linearGradient>
-     <linearGradient id="prBarkLight" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="#8A5444" stop-opacity=".6"/><stop offset=".35" stop-color="#8A5444" stop-opacity="0"/></linearGradient>
-     <filter id="prShadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="3" dy="8" stdDeviation="7" flood-color="#4A0010" flood-opacity=".38"/></filter>
-     <filter id="prBranchShadow" x="-5%" y="-20%" width="110%" height="140%"><feDropShadow dx="2" dy="6" stdDeviation="5" flood-color="#3A0008" flood-opacity=".35"/></filter>
-     <filter id="prBokeh" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="9"/></filter>
-     <filter id="prGrain"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>`);
-}
-
-function mintSVG(){
-  const R=rng(53); let mist='', leaves='', dew='', bfly='';
-  for(let i=0;i<5;i++) mist+=`<g class="cloud" style="--dd:${(50+R()*40)|0}s;--cd:${(R()*60)|0}s" opacity=".55"><ellipse cx="0" cy="${330+i*55}" rx="${220+R()*120|0}" ry="${18+R()*10|0}" fill="#FFFFFF"/></g>`;
-  const leaf=(x,y,s,r,c)=>`<g transform="translate(${x} ${y}) rotate(${r}) scale(${s})"><g class="floaty" style="--fdl:${(R()*8).toFixed(1)}s;--fx:${(R()*60-30)|0}px;--fy:${(R()*40-20)|0}px;--fr:${(R()*60-30)|0}deg"><path d="M0 0c30-40 70-40 90 0c-20 40-60 40-90 0z" fill="${c}"/><path d="M4 0h82" stroke="#0E6B4F" stroke-width="2" opacity=".5"/></g></g>`;
-  for(let i=0;i<14;i++) leaves+=leaf(R()*1200|0,40+R()*380|0,.5+R()*.7,R()*360|0,['#22B58A','#5FD6A8','#9BE8C8','#128A6A'][i%4]);
-  for(let i=0;i<26;i++) dew+=`<circle class="tw" cx="${R()*1200|0}" cy="${R()*640|0}" r="${(1.5+R()*2).toFixed(1)}" fill="#FFFFFF" style="--tw:${(R()*4).toFixed(1)}s;--td:${(2+R()*3).toFixed(1)}s"/>`;
-  for(let i=0;i<4;i++){ const x=100+R()*1000|0, y=80+R()*250|0, c=['#FFB84D','#FF7EB6','#7CC4FF','#FFD166'][i];
-    bfly+=`<g transform="translate(${x} ${y})"><g class="floaty" style="--fdl:${(R()*6).toFixed(1)}s;--fx:${(R()*120-60)|0}px;--fy:${(R()*60-30)|0}px;--fr:${(R()*30-15)|0}deg"><ellipse class="flap" cx="-9" cy="0" rx="9" ry="12" fill="${c}"/><ellipse class="flap r" cx="9" cy="0" rx="9" ry="12" fill="${c}"/><line x1="0" y1="-10" x2="0" y2="10" stroke="#3A2A2A" stroke-width="2"/></g></g>`; }
-  return svgWrap(`<rect width="1200" height="640" fill="url(#msky)"/><circle cx="960" cy="120" r="90" fill="#FFF8D6" opacity=".9"/><circle cx="960" cy="120" r="150" fill="#FFF8D6" opacity=".25"/>
-    <path d="M0 420c150-70 300-90 450-50s300 90 450 40s200-70 300-60v290H0z" fill="#9BE8C8"/>
-    <path d="M0 480c180-80 340-60 500-20s260 60 420 10s180-60 280-40v210H0z" fill="#5FD6A8"/>
-    ${mist}<path d="M0 560c140-50 300-70 460-30s300 60 440 20s200-50 300-30v120H0z" fill="#22B58A"/>
-    <path d="M0 610c200-40 400-40 600-10s400 20 600-20v60H0z" fill="#128A6A"/>${leaves}${bfly}${dew}`,
-    `<linearGradient id="msky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C9F7E6"/><stop offset=".6" stop-color="#EAFBF4"/><stop offset="1" stop-color="#FFFFFF"/></linearGradient>`);
-}
-
 const SKINS = {
   defaut:{label:'Coopô',   desc:'Officiel : clair, violet et citron',     sw:['#F6F5FB','#FFFFFF','#6A4BFF'], art:shapesSVG},
   samurai:{label:'Samouraï',  desc:'Rouge, crème et vagues japonaises', sw:['#C41E3A','#F4ECE1','#17110F'], art:samuraiSVG},
@@ -4003,9 +3863,7 @@ const SKINS = {
   lofi:  {label:'Lo-fi',      desc:'Ciel d\'été, nuages et herbes au vent', sw:['#1F86C2','#FFFFFF','#6CBF3A'], art:lofiSVG},
   esth:  {label:'Esthétique', desc:'Pastels et soleil rétro',          sw:['#C9B8FF','#FCFAFF','#8A6CF0'], art:esthSVG},
   sombre:{label:'Sombre',     desc:'La version nuit du thème officiel',             sw:['#0C0A14','#16131F','#D4FF3F'], art:shapesSVG},
-  ocean: {label:'Océan',      desc:'Nénuphars et carpes koï qui te suivent',     sw:['#0A3D62','#FFFFFF','#0B8452'], art:pondSVG, artTop:pondTopSVG},
-  menthe:{label:'Menthe',     desc:'Collines, brume et papillons',             sw:['#2FAE87','#FFFFFF','#128A6A'], art:mintSVG},
-  prunier:{label:'Prunier',    desc:'Fleurs de prunier sur rouge profond', sw:['#C8102E','#FFFFFF','#2A1210'], art:prunierSVG},
+  ocean: {label:'Lotus',      desc:'Nénuphars et carpes koï qui te suivent',     sw:['#0A3D62','#FFFFFF','#0B8452'], art:pondSVG, artTop:pondTopSVG},
 };
 /* ---- Boutique (prix identiques à lib/catalogue.js du serveur de paiement) ---- */
 // enabled : true -> les objets payants sont verrouillés (false -> tout est gratuit)
@@ -4025,9 +3883,10 @@ function curCode(){
   return hit?hit[0]:(SHOP.currencies&&SHOP.currencies[0])||'XOF';
 }
 const price = (kind,cur=curCode()) => CURRENCIES[cur][kind];
-const PAID_SKINS = ['samurai','soft','lofi','esth','ocean','menthe','prunier'];
-const RETIRED_SKINS = ['awale'];   // thèmes retirés : le compte repasse au thème Coopô, avec un petit mot d'explication
-const PREMIUM_SKINS = [];   // thèmes premium (3 000 F) : aucun pour l'instant
+const PAID_SKINS = ['samurai','soft','lofi','esth','ocean'];   // « ocean » = le thème Lotus (identifiant gardé pour les comptes et les achats)
+const RETIRED_SKINS = ['awale','menthe','prunier'];   // thèmes retirés : le compte repasse au thème Coopô, avec un petit mot d'explication
+const RETIRED_NAMES = { awale:'Awalé', menthe:'Menthe', prunier:'Prunier' };
+const PREMIUM_SKINS = ['ocean'];   // thèmes premium (3 000 F) : Lotus
 const skinPrice = (id,cur=curCode()) => price(PREMIUM_SKINS.includes(id)?'premium':'theme',cur);
 const money = (n,cur=curCode()) => n.toLocaleString('fr-FR').replace(/\u202f|\u00a0/g,' ')+' '+CURRENCIES[cur].unit;
 function ownsAll(){ return !!(S.owned&&S.owned.pack); }
@@ -4166,7 +4025,7 @@ function buy(item){ const inf=itemInfo(item); if(!inf) return;
 /* ---- La page Boutique ---- */
 const SHOP_TABS=[['themes','Thèmes'],['plaques','Plaques'],['packs','Packs'],['objets','Mes objets']];
 const shopTag = t => t?`<span class="shop-tag${t==='Édition limitée'?' rare':''}">${t}</span>`:'';
-const SKIN_TAGS={ prunier:'Nouveau', ocean:'Nouveau', samurai:'Populaire' };
+const SKIN_TAGS={ ocean:'Nouveau', samurai:'Populaire' };
 function themeCard(id){ const t=SKINS[id], paid=PAID_SKINS.includes(id), own=canUseSkin(id), on=(S.skinWanted||S.skin)===id&&!_preview;
   const prev=`<div class="shop-prev shop-prev-th" style="--a:${t.sw[0]};--b:${t.sw[1]};--c2:${t.sw[2]}"><div class="th-mock"><i></i><i></i><i></i><b></b></div></div>`;
   const act = own ? (on?'<button class="btn btn-sm" disabled>Actif</button>':`<button class="btn btn-sm btn-ac" data-use-skin="${id}">Utiliser</button>`)
@@ -4428,7 +4287,7 @@ try{ if('serviceWorker' in navigator && location.protocol==='https:' && !/claude
 
 /* ---- Retour de paiement ---- */
 const FONT_SPECS={"Zen Dots": "Zen+Dots", "Quicksand": "Quicksand:wght@500;600;700", "Righteous": "Righteous", "Nunito": "Nunito:wght@500;700", "Zen Maru Gothic": "Zen+Maru+Gothic:wght@500;700", "Syne": "Syne:wght@600;700;800", "DM Sans": "DM+Sans:wght@500;700", "Chakra Petch": "Chakra+Petch:wght@500;600;700", "Sora": "Sora:wght@500;600", "Outfit": "Outfit:wght@600;700", "Inter": "Inter:wght@400;500;600;700", "Anton": "Anton", "Source Sans 3": "Source+Sans+3:wght@400;600;700", "Noto Serif JP": "Noto+Serif+JP:wght@700", "Shippori Mincho B1": "Shippori+Mincho+B1:wght@700;800", "Zen Kaku Gothic New": "Zen+Kaku+Gothic+New:wght@400;500;700", "Fredoka": "Fredoka:wght@500;600;700"};
-const SKIN_FONTS={"soft": ["Zen Dots", "Quicksand"], "lofi": ["Zen Maru Gothic", "Nunito"], "esth": ["Syne", "DM Sans"], "sombre": ["Outfit", "Inter"], "ocean": ["Fredoka", "Nunito"], "menthe": ["Chakra Petch", "Sora"], "defaut": ["Outfit", "Inter"], "samurai": ["Anton", "Source Sans 3", "Noto Serif JP"], "prunier": ["Shippori Mincho B1", "Zen Kaku Gothic New"]};
+const SKIN_FONTS={"soft": ["Zen Dots", "Quicksand"], "lofi": ["Zen Maru Gothic", "Nunito"], "esth": ["Syne", "DM Sans"], "sombre": ["Outfit", "Inter"], "ocean": ["Fredoka", "Nunito"], "defaut": ["Outfit", "Inter"], "samurai": ["Anton", "Source Sans 3", "Noto Serif JP"]};
 const _fontsLoaded=new Set();
 function loadSkinFonts(id){ const list=(SKIN_FONTS[id]||[]).filter(f=>FONT_SPECS[f]&&!_fontsLoaded.has(f)); if(!list.length) return;
   list.forEach(f=>_fontsLoaded.add(f)); const l=document.createElement('link'); l.rel='stylesheet';
@@ -6134,7 +5993,7 @@ const DB = {
         Promise.resolve().then(async()=>{ await db.collection('private').doc(uid).set({tags:tg},{mergeFields:['tags']}); await this.syncGameTags(tg); await db.collection('profiles').doc(uid).update({tags:{}}); }).catch(e=>console.error(e)); } }
       this._checked=true;
       // Thème Awalé retiré : le compte repasse au thème par défaut, avec un petit mot d'explication (une seule fois)
-      if(this._retired){ db.collection('profiles').doc(uid).update({skin:'defaut'}).catch(e=>console.error(e)); S.retiredMsg=true; this._retired=null; }
+      if(this._retired){ db.collection('profiles').doc(uid).update({skin:'defaut'}).catch(e=>console.error(e)); S.retiredMsg=RETIRED_NAMES[this._retired]||true; this._retired=null; }
       PLAYERS.length=0; ps.forEach(d=>{ if(d.id!==uid) PLAYERS.push(normP({...d.data(),id:d.id,age:undefined})); }); this._lastPlayers=Date.now();
       S.requests=[]; rq.forEach(d=>{ const r=d.data(); S.requests.push({id:d.id,from:this.fromUid(r.from),to:this.fromUid(r.to),status:r.status,at:r.at}); });
       S.blocked=[]; bl.forEach(d=>S.blocked.push(d.id));
