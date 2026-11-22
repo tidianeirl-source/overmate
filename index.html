@@ -2350,6 +2350,42 @@ html.lite .flame.warn, html.lite .flame-big{ animation:none; }
   .g-shell .g-home .grid{ grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr)); }
   .g-shell .g-join-page .panel{ border:0; box-shadow:none; background:none; }
 }
+
+/* =========================================================
+   Profil d'un mate : « Retirer des mates » est un vrai bouton (plus discret que « Envoyer un message »)
+   Modération sur le profil : suspendre, masquer, bannir (modérateurs seulement)
+   Aide : « Signaler un bug » et « Nous écrire » ; page Modération : recherche, messages reçus, suspendus et bannis
+   ========================================================= */
+.unmate-btn{ display:inline-flex !important; align-items:center; justify-content:center; gap:8px; }
+.unmate-btn svg{ width:18px; height:18px; flex:none; }
+.mod-box{ width:100%; display:grid; gap:10px; text-align:left; border-top:1.5px solid var(--line); padding-top:14px; }
+.mod-box h3{ display:flex; align-items:center; gap:6px; margin:0; font-size:15px; }
+.mod-box h3 svg{ width:18px; height:18px; flex:none; color:var(--pk2,var(--pk)); }
+.mod-state{ margin:0; font-size:13px; color:var(--mu); }
+.mod-state.bad{ color:color-mix(in srgb,#E5484D 78%,var(--tx)); font-weight:700; }
+.mod-acts{ display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
+.pp-side .mod-acts .btn{ width:auto; flex:1 1 auto; }
+.mod-lbl{ flex:1 1 100%; font-size:13px; font-weight:700; color:var(--mu); }
+.help-acts{ display:flex; flex-wrap:wrap; gap:10px; margin-top:4px; }
+.help-acts .btn{ display:inline-flex; align-items:center; gap:8px; }
+.help-acts .btn svg{ width:18px; height:18px; flex:none; }
+.ct-bughint{ display:block; margin-top:6px; } .ct-bughint[hidden]{ display:none; }
+.adm-h{ display:flex; align-items:center; gap:8px; margin:26px 0 12px; }
+.adm-find{ display:grid; gap:8px; margin:0 0 6px; } .adm-find h3,.adm-find p{ margin:0; }
+.adm-find .sn-search{ width:100%; box-sizing:border-box; }
+.adm-res{ display:grid; gap:6px; } .adm-res:empty{ display:none; } .adm-res p{ margin:0; }
+.adm-hit{ display:grid; grid-template-columns:36px minmax(0,1fr); gap:10px; align-items:center; padding:8px 10px; border-radius:12px; background:var(--field); color:inherit; text-decoration:none; }
+.adm-hit:hover{ background:color-mix(in srgb,var(--pk) 10%,var(--field)); }
+.adm-hit span{ display:grid; min-width:0; } .adm-hit b{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .adm-hit small{ font-size:12px; }
+.adm-msg-top{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; font-size:13px; }
+.adm-topic{ padding:2px 10px; border-radius:999px; font-size:12px; font-weight:700; background:color-mix(in srgb,var(--pk) 14%,transparent); color:var(--pk2,var(--pk)); }
+.adm-topic.bug{ background:color-mix(in srgb,#E5484D 16%,transparent); color:color-mix(in srgb,#E5484D 78%,var(--tx)); }
+.adm-text{ margin:10px 0; white-space:pre-wrap; overflow-wrap:anywhere; color:var(--tx); }
+.adm-mail,.adm-tech{ margin:0 0 8px; font-size:13px; overflow-wrap:anywhere; } .adm-tech small{ opacity:.8; }
+.adm-sel{ user-select:all; -webkit-user-select:all; font-weight:600; color:var(--tx); }
+.adm-msg.done{ opacity:.72; }
+.adm-done > summary{ cursor:pointer; margin:12px 0; font-weight:700; }
+@media (max-width:600px){ .adm-sanc .admin-head{ grid-template-columns:44px minmax(0,1fr); } .adm-sanc .admin-head .nact{ grid-column:1 / -1; } }   /* téléphone : le bouton passe sous le nom */
 </style>
 </head>
 <body>
@@ -2540,7 +2576,9 @@ const fresh = () => ({ skin:'defaut', auth:null, profiles:{}, accounts:{}, dobs:
 let S = (()=>{ try{ const r=localStorage.getItem(KEY); return r ? {...fresh(),...JSON.parse(r)} : fresh(); }catch(e){ return fresh(); } })();
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
 const BOOT_SKIN = S.skinOk || S.skin; // dernier thème choisi et affiché (pas un simple aperçu)
-const visible = () => PLAYERS.filter(p=>!S.blocked.includes(p.id) && !S.hidden.includes(p.id) && !S.banned.includes(p.id) && sameGroup(p));
+const suspendedP = p => !!p && +p.suspendedUntil>Date.now();   // compte suspendu par la modération (jusqu'à cette date)
+// un compte suspendu disparaît des matchs et des recherches, mais reste visible pour ses mates (leur conversation ne disparaît pas)
+const visible = () => PLAYERS.filter(p=>!S.blocked.includes(p.id) && !S.hidden.includes(p.id) && !S.banned.includes(p.id) && sameGroup(p) && (!suspendedP(p) || isMate(p.id)));
 const ranked = () => visible().map(p=>({p,c:compat(S.me,p)})).sort((x,y)=>y.c.pct-x.c.pct);
 
 /* =========================================================
@@ -2777,7 +2815,7 @@ function viewProfileHub(){
       ${menuRow(MENU_ICO.gift,'Inviter des amis','Un thème offert quand ton ami s\'inscrit','','data-ref-share')}
       ${menuRow(MENU_ICO.share,'Partager mon profil','Envoie ton lien à tes amis','','data-share-profile')}
       ${menuRow(MENU_ICO.help,'Aide','Questions et contact','#/aide')}
-      ${isAdmin()?menuRow(MENU_ICO.shield,'Modération','Signalements à traiter','#/moderation'):''}
+      ${isAdmin()?menuRow(MENU_ICO.shield,'Modération','Signalements, messages reçus, suspensions','#/moderation'):''}
     </nav>
     ${S.auth?'<button class="menu-out" type="button" data-signout>Se déconnecter</button>':''}
   </div>`;
@@ -3095,9 +3133,36 @@ function renderResults(){
 /* ----- Profil public d'un joueur ----- */
 // Les jeux du profil (avec le pseudo en jeu quand on a le droit de le voir)
 const ppGames = (p,showTags,shared) => (p.games||[]).map(g=>`<div class="gametag${shared(g)?' shared':''}"><span>${esc(g)}${p.ranks&&p.ranks[g]?` <small class="rank">${esc(rankLabel(g,p.ranks[g]))}</small>`:''}${p.roles&&p.roles[g]?` <small class="rank role">${esc(p.roles[g])}</small>`:''}</span><em>${showTags&&p.tags&&p.tags[g]?esc(p.tags[g]):(shared(g)?'En commun':'')}</em></div>`).join('');
+const UNMATE_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9.5" cy="8" r="3.5"/><path d="M3 20c.5-3.5 3-5.5 6.5-5.5s6 2 6.5 5.5M16 10h6"/></svg>';
+/* ---- Modération depuis le profil d'un joueur (modérateurs seulement) ----
+   Suspendre 1, 7 ou 30 jours (suspendedUntil : le compte ne peut plus se connecter ni écrire jusqu'à cette date),
+   masquer le profil, bannir, et lever chaque sanction. Jamais sur un autre modérateur (les règles Firebase le refusent aussi). */
+function modState(p){ const ban=S.banned.includes(p.id)||!!p.banned, hid=S.hidden.includes(p.id)||!!p.hidden, su=suspendedP(p);
+  return { ban, hid, su, txt: ban?'Banni : ne peut plus se connecter.':su?`Suspendu jusqu'au ${fmtDay(+p.suspendedUntil)}.`:hid?'Profil masqué : les autres joueurs ne le voient plus.':'Compte actif.' }; }
+function modPanel(p){ const s=modState(p);
+  return `<section class="mod-box" aria-label="Modération"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${MENU_ICO.shield}</svg>Modération</h3><p class="mod-state${s.ban||s.su?' bad':''}">${s.txt}</p>
+    ${s.ban?`<button class="btn btn-sm" type="button" data-mod="unban">Lever le ban</button>`
+      :`<div class="mod-acts">${s.su?`<button class="btn btn-sm" type="button" data-mod="unsusp">Lever la suspension</button>`
+          :`<span class="mod-lbl">Suspendre</span>${[1,7,30].map(d=>`<button class="btn btn-sm btn-ghost" type="button" data-mod="susp" data-days="${d}">${d} jour${d>1?'s':''}</button>`).join('')}`}</div>
+        <div class="mod-acts"><button class="btn btn-sm btn-ghost" type="button" data-mod="hide">${s.hid?'Rétablir le profil':'Masquer le profil'}</button><button class="btn btn-sm btn-danger" type="button" data-mod="ban">Bannir</button></div>`}</section>`; }
+function modAction(p,act,days,done){ const id=p.id, nm=esc(p.name), fin=()=>{ save(); if(done) done(); };
+  const closeRep=()=>{ DB.closeReports(id); S.reports.forEach(r=>{ if(r.id===id) r.status='done'; }); };
+  const fail="Ça n'a pas marché. Vérifie ta connexion et réessaie.";
+  if(act==='susp'){ const until=Date.now()+days*864e5;
+    modal(`<h3>Suspendre ${nm} ${days} jour${days>1?'s':''} ?</h3><p class="muted">Jusqu'au ${fmtDay(until)}, ${nm} ne pourra plus se connecter ni écrire, et n'apparaîtra plus dans les matchs. Tu pourras lever la suspension avant la fin.</p>
+      <div class="dlg-actions"><button class="btn btn-ghost" data-close>Annuler</button><button class="btn btn-danger" id="mok">Suspendre</button></div>`,
+      d=>d.querySelector('#mok').onclick=async ev=>{ ev.currentTarget.disabled=true; const ok=await DB.adminSuspend(id,until); d.close();
+        if(ok){ p.suspendedUntil=until; closeRep(); toast(`${p.name} est suspendu jusqu'au ${fmtDay(until)}`,4000); } else toast(fail); fin(); }); }
+  else if(act==='unsusp'){ DB.adminSuspend(id,0).then(ok=>{ if(ok){ p.suspendedUntil=0; toast('Suspension levée'); } else toast(fail); fin(); }); }
+  else if(act==='ban'){
+    modal(`<h3>Bannir ${nm} ?</h3><p class="muted">Le profil disparaît pour tout le monde et le compte ne peut plus se connecter. Tu pourras lever le ban plus tard.</p><div class="dlg-actions"><button class="btn btn-ghost" data-close>Annuler</button><button class="btn btn-danger" id="mok">Bannir</button></div>`,
+      d=>d.querySelector('#mok').onclick=async ev=>{ ev.currentTarget.disabled=true; const ok=await DB.adminBan(id,true); d.close();
+        if(ok){ p.banned=p.hidden=true; if(!S.banned.includes(id)) S.banned.push(id); if(!S.hidden.includes(id)) S.hidden.push(id); closeRep(); toast(`${p.name} est banni`); } else toast(fail); fin(); }); }
+  else if(act==='unban'){ DB.adminBan(id,false).then(ok=>{ if(ok){ p.banned=p.hidden=false; S.banned=S.banned.filter(x=>x!==id); S.hidden=S.hidden.filter(x=>x!==id); toast('Ban levé'); } else toast(fail); fin(); }); }
+  else if(act==='hide'){ const h=!modState(p).hid; DB.adminHide(id,h).then(ok=>{ if(ok){ p.hidden=h; S.hidden=h?[...new Set([...S.hidden,id])]:S.hidden.filter(x=>x!==id); toast(h?'Profil masqué':'Profil rétabli'); } else toast(fail); fin(); }); } }
 function viewPlayer(id){
   const self = id==='me';
-  const p = self ? publicMe() : visible().find(x=>x.id===id);
+  const p = self ? publicMe() : (visible().find(x=>x.id===id) || (isAdmin() ? PLAYERS.find(x=>x.id===id) : null));   // la modération voit aussi les comptes masqués, suspendus ou bannis
   if(!p){ app.innerHTML=`<div class="wrap page"><div class="empty"><h3>Ce profil n'est pas disponible</h3><a class="btn" href="#/matchs">Retour à mes matchs</a></div></div>`; return; }
   const c=S.me&&!self?compat(S.me,p):null, q=self?null:reqWith(id), mate=!!q&&q.status==='accepted';
   const shared = g => S.me&&!self&&S.me.games.includes(g);
@@ -3108,7 +3173,7 @@ function viewPlayer(id){
     : !q ? `<button class="btn btn-ac" id="mate">Envoyer une demande de mate</button>`
     : q.status==='pending' && q.from==='me' ? `<p class="hint">Demande envoyée · en attente</p><button class="btn btn-ghost btn-sm" id="cancel">Annuler la demande</button>`
     : q.status==='pending' ? `<p class="hint">${esc(p.name)} veut devenir ton mate</p><div class="nact"><button class="btn btn-ac" id="accept">Accepter</button><button class="btn btn-ghost" id="decline">Refuser</button></div>`
-    : `<p class="mates-ok">✓ Vous êtes mates</p><a class="btn btn-ac" href="#/messages/${p.id}">Envoyer un message</a>`;
+    : `<p class="mates-ok">✓ Vous êtes mates</p><a class="btn btn-ac" href="#/messages/${p.id}">Envoyer un message</a><button class="btn btn-ghost unmate-btn" type="button" id="unmate">${UNMATE_SVG}Retirer des mates</button>`;
   app.innerHTML=`<div class="wrap page"><a class="back" href="#/matchs" data-back><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Retour</a>
   <div class="pp">
     <div class="pp-head">${plateOf(p)?`<div class="pp-id${plqOn(p,1)}">${plq(p)}`:''}${avatar(p,88)}<div><h1>${esc(p.name)}${modBadge(p)}</h1><div class="pp-meta">${isMod(p)?`<span class="mod-tag">${MOD_SVG}Modérateur</span>`:''}${isOnline(p)?'<span class="online">En ligne</span>':`<span class="muted" style="font-size:13px">${seenTxt(p)}</span>`}${p.country?`<span class="muted">· ${esc(L(COUNTRIES,p.country))}</span>`:''}${(p.langs||[]).length?`<span class="muted">· ${p.langs.map(x=>L(LANGS,x)).join(', ')}</span>`:''}${p.rejoue?`<span class="rejoue" title="Nombre de mates qui rejoueraient avec ce joueur">👍 ${+p.rejoue||0} ${(+p.rejoue||0)>1?'rejoueraient':'rejouerait'} avec lui</span>`:''}</div></div>${plateOf(p)?'</div>':''}${!self&&dispoActive(p)?`<p class="pp-dispo"><i class="dot-live"></i><span><b>Dispo maintenant</b> pour ${esc(p.dispo.game)}, jusqu'à ${fmtUntil(p.dispo.until)}${p.dispo.note?`<em>${esc(p.dispo.note)}</em>`:''}</span></p>`:''}</div>
@@ -3131,7 +3196,8 @@ function viewPlayer(id){
     ${mateBtn}
     ${self?`<button class="btn btn-ghost" id="share2">Partager mon profil</button>`
       : mate ? '' : `<p class="hint">Une fois mates, vous pouvez vous écrire dans les messages de Coopô.</p>`}
-    ${self?'':`<div class="safety"><button class="linkbtn" id="report">Signaler</button><button class="linkbtn" id="block">Bloquer</button>${mate?`<button class="linkbtn" id="unmate">Retirer des mates</button>`:''}</div>`}
+    ${self?'':`<div class="safety"><button class="linkbtn" id="report">Signaler</button><button class="linkbtn" id="block">Bloquer</button></div>`}
+    ${!self&&isAdmin()&&!isMod(p)?modPanel(p):''}
   </aside></div></div>`;
   const re=()=>{ viewPlayer(id); animateAfterRender(); };
   // Les pseudos en jeu d'un 13-17 ans sont rangés à part (gametags) : on les charge seulement quand on a le droit de les voir
@@ -3145,6 +3211,7 @@ function viewPlayer(id){
   document.getElementById('unmate')?.addEventListener('click',()=>modal(`<h3>Retirer ${esc(p.name)} de tes mates ?</h3><p class="muted">Vous ne pourrez plus vous écrire, sauf nouvelle demande acceptée.</p><div class="dlg-actions"><button class="btn btn-ghost" data-close>Annuler</button><button class="btn btn-danger" id="uok">Retirer</button></div>`,
     d=>d.querySelector('#uok').onclick=()=>{ removeRequest(id); d.close(); toast(`${p.name} retiré de tes mates`); re(); }));
   app.querySelectorAll('[data-rate]').forEach(b=>b.onclick=()=>{ rate(id,+b.dataset.rate); re(); });
+  app.querySelectorAll('[data-mod]').forEach(b=>b.onclick=()=>modAction(p,b.dataset.mod,+b.dataset.days||0,re));
   document.getElementById('report')?.addEventListener('click',()=>modal(`<h3>Signaler ${esc(p.name)}</h3><p class="muted">La modération examine chaque signalement. ${esc(p.name)} n'est pas prévenu et disparaît tout de suite de ton côté.</p>
     <div class="radio-list">${['Comportement toxique ou harcèlement','Contenu inapproprié','Faux profil ou usurpation','Arnaque','Adulte qui contacte un mineur','Autre'].map((r,i)=>`<label><input type="radio" name="rr" value="${r}" ${i?'':'checked'}> ${r}</label>`).join('')}</div>
     <textarea id="rtxt" rows="3" placeholder="Détails (facultatif)" maxlength="500"></textarea>
@@ -5451,6 +5518,8 @@ async function shareProfile(){
 }
 
 /* ---- Aide, CGU, confidentialité ---- */
+const BUG_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="7" width="10" height="13" rx="5"/><path d="M9 7a3 3 0 0 1 6 0M12 11v9M3 13h4M17 13h4M4 7l3 2M20 7l-3 2M4 19l3-2M20 19l-3-2"/></svg>';
+const MAIL_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>';
 function viewHelp(){
   const faq=[['Comment est calculé le pourcentage de compatibilité ?','Chaque critère vaut un nombre de points (jeux en commun, horaires, style, jours, plateforme, rang, langue, pays). Le total est ramené sur 100. Sur le profil d\'un joueur, tu vois le détail critère par critère.'],
     ['Pourquoi je ne vois pas certains joueurs ?','Tu ne vois pas les joueurs que tu as bloqués, ni ceux masqués par la modération.'],
@@ -5469,6 +5538,8 @@ function viewHelp(){
       <li><b>Découvre tes matchs</b><span>Les joueurs les plus compatibles s'affichent en premier, les joueurs en ligne sont mis en avant.</span></li>
       <li><b>Envoie une demande de mate</b><span>S'il accepte, vous pouvez discuter et jouer ensemble. Tu peux aussi rejoindre un groupe.</span></li></ol></section>
     <section class="panel" style="margin-top:16px"><h3>Questions fréquentes</h3><div class="faq">${faq.map(([q,a])=>`<details><summary>${q}</summary><p>${a}</p></details>`).join('')}</div></section>
+    <section class="panel help-contact" style="margin-top:16px"><h3>Un souci ? Écris-nous</h3><p class="muted">Un bouton qui ne marche pas, une page qui s'affiche mal, une question sur ton compte : la modération lit chaque message.</p>
+      <div class="help-acts"><a class="btn btn-ac" href="#/contact/bug">${BUG_SVG}Signaler un bug</a><a class="btn btn-ghost" href="#/contact">${MAIL_SVG}Nous écrire</a></div></section>
     <p class="hint" style="margin-top:16px">Un problème avec un joueur ? Utilise « Signaler » sur son profil : la modération s'en occupe.</p></div>`;
 }
 function viewLegal(kind){
@@ -5627,24 +5698,44 @@ function viewRefund(){
 }
 
 /* ---- Nous écrire (formulaire enregistré dans Firebase, aucun contact affiché) ---- */
-function viewContact(){
-  app.innerHTML=`<div class="wrap page legal">${backAuto()}<div class="page-head"><div><h2>Nous écrire</h2><p>${S.auth?'Une question, un problème de compte, une demande sur tes données ? Écris-nous ici, la modération te répondra.':'Tu n\'arrives pas à te connecter ? Explique-nous le problème (600 caractères max). Pour toute autre demande, connecte-toi d\'abord.'}</p></div></div>
+// Sujets du formulaire « Nous écrire » ([valeur, libellé]) ; #/contact/bug ouvre directement « Un bug »
+const CONTACT_TOPICS=[['bug','Un bug'],['question','Une question'],['compte','Mon compte'],['autre','Autre chose']];
+const CONTACT_LBL={bug:'Bug',question:'Question',compte:'Compte',autre:'Autre',general:'Message',connexion:'Connexion'};
+// Ce qui part avec un signalement de bug, pour aider à le corriger (jamais l'e-mail ni le mot de passe)
+async function bugTech(){ let v=''; try{ v=((await caches.keys()).find(k=>/^coopo-v\d+$/.test(k))||''); }catch(e){}
+  return { app:v, ecran:`${innerWidth}×${innerHeight}`, theme:S.skin||'', appareil:String(navigator.userAgent||'').slice(0,220) }; }
+function viewContact(kind){
+  const bug=kind==='bug'&&!!S.auth, topic=bug?'bug':'question';
+  app.innerHTML=`<div class="wrap page legal">${backAuto()}<div class="page-head"><div><h2>${bug?'Signaler un bug':'Nous écrire'}</h2><p>${!S.auth?'Tu n\'arrives pas à te connecter ? Explique-nous le problème (600 caractères max). Pour toute autre demande, connecte-toi d\'abord.':bug?'Quelque chose ne marche pas comme prévu ? Dis-nous ce qui se passe, on le corrige.':'Une question, un problème de compte, une demande sur tes données ? Écris-nous ici, la modération te répondra.'}</p></div></div>
     <form class="panel" id="ct-form" novalidate style="display:grid;gap:14px;max-width:620px">
-      <div class="field"><label for="ct-mail">Ton e-mail pour la réponse</label><input id="ct-mail" type="email" maxlength="120" autocomplete="email" value="${esc(S.auth?.email||'')}"></div>
-      <div class="field"><label for="ct-msg">Ton message</label><textarea id="ct-msg" rows="6" maxlength="${S.auth?2000:600}" required></textarea><small class="ferr" id="ct-err"></small></div>
+      ${S.auth?`<div class="field"><label for="ct-topic">C'est à propos de…</label><select id="ct-topic">${CONTACT_TOPICS.map(([v,l])=>`<option value="${v}"${v===topic?' selected':''}>${l}</option>`).join('')}</select></div>`:''}
+      <div class="field"><label for="ct-msg">Ton message</label><textarea id="ct-msg" rows="6" maxlength="${S.auth?2000:600}" required placeholder="${bug?'Ex. : dans Messages, quand j\'appuie sur le micro, rien ne se passe.':''}"></textarea>
+        <small class="hint ct-bughint" id="ct-bughint"${bug?'':' hidden'}>Dis ce que tu faisais, ce qui s'est passé et sur quelle page. Pour nous aider, la version de Coopô, la taille de ton écran et le modèle de ton appareil sont joints au message.</small>
+        <small class="ferr" id="ct-err"></small></div>
+      <div class="field"><label for="ct-mail">Ton e-mail pour la réponse (facultatif)</label><input id="ct-mail" type="email" maxlength="120" autocomplete="email" value="${esc(S.auth?.email||'')}"></div>
       <div><button class="btn btn-ac" type="submit" id="ct-send">Envoyer le message</button></div>
     </form></div>`;
+  const sel=document.getElementById('ct-topic'); if(sel) sel.onchange=()=>{ const b=sel.value==='bug'; document.getElementById('ct-bughint').hidden=!b; document.querySelector('.page-head h2').textContent=b?'Signaler un bug':'Nous écrire'; };
   document.getElementById('ct-form').addEventListener('submit',async e=>{ e.preventDefault();
-    const msg=document.getElementById('ct-msg').value.trim(), mail=document.getElementById('ct-mail').value.trim(), err=document.getElementById('ct-err'), btn=document.getElementById('ct-send');
+    const msg=document.getElementById('ct-msg').value.trim(), mail=document.getElementById('ct-mail').value.trim(), err=document.getElementById('ct-err'), btn=document.getElementById('ct-send'), tp=sel?sel.value:'connexion';
     if(!msg){ err.textContent='Écris ton message avant d\'envoyer.'; return; }
     if(mail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)){ err.textContent='Cet e-mail ne semble pas valide.'; return; }
     err.textContent=''; btn.disabled=true; btn.textContent='Envoi…';
-    try{ await DB.sendContact({message:msg,email:mail}); app.querySelector('#ct-form').innerHTML='<h3>Message envoyé</h3><p class="muted">Merci. La modération te répondra par e-mail si tu en as laissé un.</p><div><a class="btn" href="#/accueil">Retour à l\'accueil</a></div>'; }
+    try{ await DB.sendContact({message:msg,email:mail,topic:tp,tech:tp==='bug'?await bugTech():null});
+      app.querySelector('#ct-form').innerHTML=`<h3>${tp==='bug'?'Merci pour ton signalement':'Message envoyé'}</h3><p class="muted">${tp==='bug'?'La modération le regarde et on corrige au plus vite.':'Merci.'} ${mail?'On te répondra par e-mail si besoin.':'Tu n\'as pas laissé d\'e-mail : on ne pourra pas te répondre directement.'}</p><div><a class="btn" href="#/accueil">Retour à l\'accueil</a></div>`; }
     catch(x){ btn.disabled=false; btn.textContent='Envoyer le message'; err.textContent='Envoi impossible pour le moment. Vérifie ta connexion et réessaie.'; } });
 }
 
 /* ---- Modération (administrateurs) ---- */
 const isAdmin = () => !!S.auth && (ADMINS.includes(S.auth.email)||ADMINS.includes(S.auth.uid));
+const ADM={ msgs:null, at:0, loading:false, err:false };   // page Modération : messages « Nous écrire » chargés
+// Un message « Nous écrire » : sujet, auteur, texte, e-mail pour répondre, et pour un bug l'appareil et la version
+function admMsgRow(m){ const p=m.uid?PLAYERS.find(x=>x.id===m.uid):null, done=m.status==='done', tp=CONTACT_LBL[m.topic]||'Message', t=m.tech&&typeof m.tech==='object'?m.tech:null;
+  return `<section class="panel admin-row adm-msg${done?' done':''}"><div class="adm-msg-top"><span class="adm-topic${m.topic==='bug'?' bug':''}">${esc(tp)}</span><span class="muted">${p?`<a href="#/joueur/${esc(p.id)}">${esc(p.name)}</a>`:m.uid?'Un joueur':'Visiteur non connecté'} · ${ago(+m.at||0)}${done?' · traité':''}</span></div>
+    <p class="adm-text">${esc(String(m.message||''))}</p>
+    ${m.email?`<p class="muted adm-mail">Répondre à : <span class="adm-sel">${esc(String(m.email))}</span></p>`:''}
+    ${t?`<p class="muted adm-tech">${esc([t.app,t.ecran,t.theme&&('thème '+t.theme)].filter(Boolean).join(' · '))}${t.appareil?`<br><small>${esc(String(t.appareil))}</small>`:''}</p>`:''}
+    <div class="nact"><button class="btn btn-sm${done?' btn-ghost':' btn-ac'}" type="button" data-cdone="${esc(m.id)}" data-v="${done?0:1}">${done?'Rouvrir':'Marquer traité'}</button></div></section>`; }
 function viewAdmin(){
   if(!isAdmin()){
     const uid=S.auth&&S.auth.uid, waiting=DB.live&&uid&&!DB._loaded;
@@ -5658,8 +5749,25 @@ function viewAdmin(){
     return; }
   const groups={}; S.reports.forEach(r=>{ (groups[r.id]||(groups[r.id]=[])).push(r); });
   const rows=Object.entries(groups).sort((a,b)=>b[1].length-a[1].length);
-  app.innerHTML=`<div class="wrap page"><div class="page-head"><div><h2>Modération</h2><p>${S.reports.filter(r=>r.status==='open').length} signalement(s) à traiter · ${S.hidden.length} profil(s) masqué(s) · ${S.banned.length} banni(s)</p></div></div>
+  // messages « Nous écrire » et comptes sanctionnés : chargés à l'ouverture de la page (au plus toutes les 20 secondes)
+  if(!ADM.loading && Date.now()-ADM.at>20000){ ADM.loading=true;
+    Promise.all([DB.loadContactMsgs(), DB.loadSanctions()]).then(([msgs])=>{ ADM.loading=false; ADM.at=Date.now(); if(msgs) ADM.msgs=msgs; ADM.err=!msgs;
+      if(location.hash==='#/moderation'&&!(dlg&&dlg.open)){ const y=scrollY; viewAdmin(); scrollTo(0,y); } }); }
+  const msgs=ADM.msgs||[], mOpen=msgs.filter(m=>m.status!=='done'), mDone=msgs.filter(m=>m.status==='done');
+  const sanc=PLAYERS.filter(p=>S.banned.includes(p.id)||p.banned||p.hidden||suspendedP(p)), nSusp=sanc.filter(p=>suspendedP(p)&&!modState(p).ban).length, nHid=sanc.filter(p=>p.hidden&&!modState(p).ban).length;
+  app.innerHTML=`<div class="wrap page"><div class="page-head"><div><h2>Modération</h2><p>${S.reports.filter(r=>r.status==='open').length} signalement(s) à traiter · ${mOpen.length} message(s) à lire · ${nSusp} suspendu(s) · ${S.banned.length} banni(s) · ${nHid} masqué(s)</p></div></div>
     <div class="admin-stats"><div><b>${PLAYERS.length}</b><span>profils</span></div><div><b>${PLAYERS.filter(p=>isOnline(p)).length}</b><span>en ligne</span></div><div><b>${S.requests.filter(r=>r.status==='accepted').length}</b><span>paires de mates</span></div><div><b>${allSquads().length}</b><span>sessions</span></div></div>
+    <section class="panel adm-find"><h3>Suspendre, masquer ou bannir un joueur</h3><p class="muted">Cherche son pseudo, puis ouvre son profil : les boutons de modération sont en bas, sous « Signaler » et « Bloquer ».</p>
+      <input class="sn-search" id="adm-q" type="search" placeholder="Pseudo du joueur" autocomplete="off" aria-label="Chercher un joueur"><div class="adm-res" id="adm-res"></div></section>
+    <h3 class="on-world adm-h">Messages reçus${mOpen.length?` <span class="badge static">${mOpen.length}</span>`:''}</h3>
+    ${!ADM.msgs&&ADM.loading?'<p class="muted on-world">Chargement des messages…</p>':ADM.err&&!ADM.msgs?'<p class="muted on-world">Messages indisponibles pour le moment.</p>'
+      :mOpen.length?mOpen.map(admMsgRow).join(''):'<p class="muted on-world">Aucun message à lire.</p>'}
+    ${mDone.length?`<details class="adm-done"><summary class="on-world">Messages déjà traités (${mDone.length})</summary>${mDone.map(admMsgRow).join('')}</details>`:''}
+    <h3 class="on-world adm-h">Suspendus, bannis et masqués</h3>
+    ${sanc.length?sanc.map(p=>{ const s=modState(p); return `<section class="panel admin-row adm-sanc"><div class="admin-head">${avatar(p,44)}<div><b><a href="#/joueur/${esc(p.id)}">${esc(p.name)}</a></b><span class="muted">${s.txt}</span></div>
+        <div class="nact">${s.ban?`<button class="btn btn-sm" type="button" data-sanc="unban" data-id="${esc(p.id)}">Lever le ban</button>`:s.su?`<button class="btn btn-sm" type="button" data-sanc="unsusp" data-id="${esc(p.id)}">Lever la suspension</button>`:`<button class="btn btn-sm" type="button" data-sanc="hide" data-id="${esc(p.id)}">Rétablir le profil</button>`}</div></div></section>`; }).join('')
+      :'<p class="muted on-world">Aucun compte suspendu, banni ou masqué.</p>'}
+    <h3 class="on-world adm-h">Signalements</h3>
     ${AUTH_LIVE&&SHOP.api?`<section class="panel admin-row"><div class="admin-head"><div><b>Anciens pseudos d'autres réseaux</b><span class="muted">Efface de la base les pseudos Discord, WhatsApp, Snapchat… de tous les joueurs, même ceux qui ne se sont pas reconnectés. Les comptes, les profils et les achats ne sont pas touchés.</span></div>
       <div class="nact"><button class="btn btn-sm" id="purge-go">Tout effacer</button></div></div><p class="muted" id="purge-out" role="status"></p></section>`:''}
     ${rows.length?rows.map(([id,rs])=>{ const p=PLAYERS.find(x=>x.id===id); const hid=S.hidden.includes(id), ban=S.banned.includes(id), open=rs.filter(r=>r.status==='open').length;
@@ -5672,13 +5780,23 @@ function viewAdmin(){
     try{ if(!(DB.live&&DB.fns)) await DB.ready(); for(let k=0;k<25;k++){ const r=(await DB.fns.httpsCallable('purgeContacts')({})).data; c+=r.contacts||0; p+=r.profils||0; if(!r.encore) break; }
       out.textContent=`Terminé : ${c} fiche(s) de pseudos supprimée(s), ${p} profil(s) nettoyé(s).`; }
     catch(e){ out.textContent='Pas terminé : '+((e&&e.message)||'erreur')+' Réessaie plus tard.'; } pg.disabled=false; };
-  app.querySelectorAll('[data-hide]').forEach(b=>b.onclick=()=>{ const id=b.dataset.hide; S.hidden=S.hidden.includes(id)?S.hidden.filter(x=>x!==id):[...S.hidden,id]; save(); DB.adminHide(id,S.hidden.includes(id)); viewAdmin(); });
+  const pOf=id=>PLAYERS.find(x=>x.id===id)||{};   // garde la fiche du joueur à jour (liste « Suspendus et bannis »)
+  app.querySelectorAll('[data-hide]').forEach(b=>b.onclick=()=>{ const id=b.dataset.hide; S.hidden=S.hidden.includes(id)?S.hidden.filter(x=>x!==id):[...S.hidden,id]; pOf(id).hidden=S.hidden.includes(id); save(); DB.adminHide(id,S.hidden.includes(id)); viewAdmin(); });
   app.querySelectorAll('[data-ban]').forEach(b=>b.onclick=()=>modal(`<h3>Bannir ce compte ?</h3><p class="muted">Le profil disparaît pour tout le monde et le compte ne peut plus se connecter.</p><div class="dlg-actions"><button class="btn btn-ghost" data-close>Annuler</button><button class="btn btn-danger" id="bk">Bannir</button></div>`,
-    d=>d.querySelector('#bk').onclick=()=>{ const id=b.dataset.ban; S.banned.push(id); DB.closeReports(id); S.reports.forEach(r=>{ if(r.id===id) r.status='done'; }); save(); DB.adminBan(id,true); d.close(); viewAdmin(); }));
-  app.querySelectorAll('[data-unban]').forEach(b=>b.onclick=()=>{ S.banned=S.banned.filter(x=>x!==b.dataset.unban); save(); DB.adminBan(b.dataset.unban,false); viewAdmin(); });
+    d=>d.querySelector('#bk').onclick=()=>{ const id=b.dataset.ban; S.banned.push(id); if(!S.hidden.includes(id)) S.hidden.push(id); Object.assign(pOf(id),{banned:true,hidden:true}); DB.closeReports(id); S.reports.forEach(r=>{ if(r.id===id) r.status='done'; }); save(); DB.adminBan(id,true); d.close(); viewAdmin(); }));
+  app.querySelectorAll('[data-unban]').forEach(b=>b.onclick=()=>{ const id=b.dataset.unban; S.banned=S.banned.filter(x=>x!==id); S.hidden=S.hidden.filter(x=>x!==id); Object.assign(pOf(id),{banned:false,hidden:false}); save(); DB.adminBan(id,false); viewAdmin(); });
   app.querySelectorAll('[data-chat-by]').forEach(b=>b.onclick=async()=>{ const box=b.nextElementSibling; box.textContent='Chargement…'; const l=await DB.loadReportedChat(b.dataset.chatBy,b.dataset.chatTarget);
     box.innerHTML = l===null ? '<p class="muted">Conversation non accessible.</p>' : l.length ? l.map(m=>`<p class="${m.fromTarget?'by-target':'by-rep'}"><b>${m.fromTarget?'Joueur signalé':'Signaleur'} :</b> ${esc(m.text)}</p>`).join('') : '<p class="muted">Aucun message.</p>'; });
   app.querySelectorAll('[data-done]').forEach(b=>b.onclick=()=>{ DB.closeReports(b.dataset.done); S.reports.forEach(r=>{ if(r.id===b.dataset.done) r.status='done'; }); save(); viewAdmin(); });
+  // chercher un joueur parmi ceux chargés (profils visibles, signalés, sanctionnés)
+  const q=document.getElementById('adm-q'), res=document.getElementById('adm-res');
+  if(q) q.oninput=()=>{ const t=q.value.trim().toLowerCase(); const hits=t.length<2?[]:PLAYERS.filter(p=>String(p.name||'').toLowerCase().includes(t)).slice(0,8);
+    res.innerHTML=hits.map(p=>`<a class="adm-hit" href="#/joueur/${esc(p.id)}">${avatar(p,36)}<span><b>${esc(p.name)}${modBadge(p)}</b><small class="muted">${isMod(p)?'Modérateur':modState(p).txt}</small></span></a>`).join('')
+      || (t.length<2?'':'<p class="muted">Aucun joueur à ce nom.</p>'); };
+  app.querySelectorAll('[data-sanc]').forEach(b=>b.onclick=()=>{ const p=PLAYERS.find(x=>x.id===b.dataset.id); if(p) modAction(p,b.dataset.sanc,0,()=>{ if(location.hash==='#/moderation') viewAdmin(); }); });
+  app.querySelectorAll('[data-cdone]').forEach(b=>b.onclick=async()=>{ b.disabled=true; const v=b.dataset.v==='1';
+    if(await DB.setContactDone(b.dataset.cdone,v)){ const m=(ADM.msgs||[]).find(x=>x.id===b.dataset.cdone); if(m) m.status=v?'done':'open'; const y=scrollY; viewAdmin(); scrollTo(0,y); }
+    else { b.disabled=false; toast("Ça n'a pas marché. Réessaie."); } });
 }
 function submitReport(id,reason,details){
   const rep={id,reason,details,at:Date.now(),status:'open',by:'me'}; S.reports.push(rep); DB.saveReport(rep);
@@ -5733,6 +5851,7 @@ const DB = {
         { const sk=pd.skin; if(sk&&SKINS[sk]) S.skinWanted=sk; else if(sk) S.skinWanted='defaut'; if(RETIRED_SKINS.includes(sk)) this._retired=sk; } S.profiles[uid]=S.me; }
       if(priv.exists&&priv.data().dob) S.dobs[uid]=priv.data().dob;
       if(prof.exists&&prof.data().banned){ await signOut(); toast('Ce compte a été suspendu par la modération.',7000); return; }
+      if(prof.exists&&+prof.data().suspendedUntil>Date.now()){ const su=+prof.data().suspendedUntil; await signOut(); toast(`Ton compte est suspendu par la modération jusqu'au ${fmtDay(su)}.`,9000); return; }   // v9 — suspension
       if(!prof.exists){ this._loaded=true; this._loading=false; this._noProfile=true; save(); refreshAfterData(); return; }
       { // Coopô ne garde plus aucun pseudo d'autres réseaux : on efface ce que ce compte avait enregistré (une seule fois par appareil)
         if(S.me){ delete S.me.discord; delete S.me.whatsapp; delete S.me.socials; delete S.privacy.discord; }
@@ -5819,7 +5938,7 @@ const DB = {
       try{ await db.collection('usernames').doc(lower).set({uid}); }   // en premier : si le pseudo appartient à un autre compte, rien d'autre n'est écrit
       catch(e){ if(String(e&&e.code).includes('permission')){ this._saveErr='name'; return false; } throw e; }
       await db.collection('private').doc(uid).set({dob,tags:me.tags||{},updatedAt:Date.now()},{mergeFields:['dob','tags','updatedAt']});
-      const {banned,hidden,rejoue,moderator,dispo,skin,discord,discordPublic,whatsapp,socials,...safe}=pub;
+      const {banned,hidden,rejoue,moderator,dispo,skin,discord,discordPublic,whatsapp,socials,suspendedUntil,...safe}=pub;   // champs de la modération : jamais renvoyés par le joueur
       const data={...safe,tags:publicTags(me),nameLower:lower,ageGroup:ageGroup(me),privacy:{tags:!!S.privacy.tags,online:!!S.privacy.online},online:!!S.privacy.online,lastSeen:S.privacy.online?Date.now():0,updatedAt:Date.now()};
       if(ageGroup(me)==='minor') await this.syncGameTags(me.tags||{});   // v7 — les pseudos en jeu d'un 13-17 ans sont rangés à part
       if(renamed) data.nameAt=Date.now(); else if(lastName) data.nameAt=lastName; else delete data.nameAt;
@@ -6020,7 +6139,9 @@ const DB = {
       S.hidden=PLAYERS.filter(p=>p.hidden).map(p=>p.id); S.banned=PLAYERS.filter(p=>p.banned).map(p=>p.id); save();
     }catch(e){ console.error(e); toast('Signalements indisponibles'); } },
   async closeReports(target){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ const b=this.db.batch(); S.reports.filter(r=>r.id===target&&r.rid&&r.status!=='done').forEach(r=>b.update(this.db.collection('reports').doc(r.rid),{status:'done'})); await b.commit(); }catch(e){ console.error(e); } },
-  async sendContact(c){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) throw new Error('offline'); await this.db.collection('contact').add({message:c.message,email:c.email||'',uid:this.uid()||'',topic:this.uid()?'general':'connexion',at:Date.now()}); },
+  async sendContact(c){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) throw new Error('offline');
+    const topic=this.uid()?(CONTACT_TOPICS.some(t=>t[0]===c.topic)?c.topic:'question'):'connexion';   // sans compte : seulement les soucis de connexion (règles)
+    await this.db.collection('contact').add({message:c.message,email:c.email||'',uid:this.uid()||'',topic,at:Date.now(),status:'open',...(c.tech&&this.uid()?{tech:c.tech}:{})}); },
   // Efface les données du compte. Renvoie false si l'effacement a échoué (le compte n'est alors pas supprimé, pour ne pas laisser de profil orphelin).
   async deleteAccountData(){ if(!this.live&&AUTH_LIVE&&!(await this.ready())) return false; if(!this.live||!this.uid()) return true; const uid=this.uid(), db=this.db, F=firebase.firestore.FieldValue, quiet=p=>p.catch(e=>console.error(e));
     try{ // d'abord ce qui peut manquer sans gravité : mes groupes, les groupes rejoints, mes annonces
@@ -6039,8 +6160,20 @@ const DB = {
       if(S.me&&S.me.name) b.delete(db.collection('usernames').doc(S.me.name.toLowerCase()));
       b.delete(db.collection('profiles').doc(uid)); b.delete(db.collection('private').doc(uid)); b.delete(db.collection('contacts').doc(uid)); await b.commit(); return true;
     }catch(e){ console.error(e); return false; } },
-  async adminHide(id,hidden){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ await this.db.collection('profiles').doc(id).update({hidden}); }catch(e){ console.error(e); } },
-  async adminBan(id,banned){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ await this.db.collection('profiles').doc(id).update({banned,hidden:banned}); }catch(e){ console.error(e); } },
+  async adminHide(id,hidden){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return !AUTH_LIVE; try{ await this.db.collection('profiles').doc(id).update({hidden}); return true; }catch(e){ console.error(e); return false; } },
+  async adminBan(id,banned){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return !AUTH_LIVE; try{ await this.db.collection('profiles').doc(id).update({banned,hidden:banned}); return true; }catch(e){ console.error(e); return false; } },
+  // v9 — suspension : date de fin en millisecondes (0 = levée)
+  async adminSuspend(id,until){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return !AUTH_LIVE; try{ await this.db.collection('profiles').doc(id).update({suspendedUntil:Math.max(0,Math.round(+until||0))}); return true; }catch(e){ console.error(e); return false; } },
+  // Modération : les comptes bannis, masqués ou suspendus (les bannis et masqués ne sont pas dans la liste des 300 profils visibles)
+  async loadSanctions(){ if(!this.live) return false; const db=this.db;
+    try{ const qs=await Promise.all([db.collection('profiles').where('banned','==',true).limit(100).get(), db.collection('profiles').where('hidden','==',true).limit(100).get(), db.collection('profiles').where('suspendedUntil','>',Date.now()).limit(100).get()]);
+      const add=d=>{ const x=normP({...d.data(),id:d.id,age:undefined}), i=PLAYERS.findIndex(p=>p.id===d.id); if(i>=0) Object.assign(PLAYERS[i],x); else PLAYERS.push({...x,_reported:true}); };
+      qs.forEach(q=>q.forEach(add));
+      S.hidden=PLAYERS.filter(p=>p.hidden).map(p=>p.id); S.banned=PLAYERS.filter(p=>p.banned).map(p=>p.id); save(); return true; }
+    catch(e){ console.error(e); return false; } },
+  // Modération : les messages du formulaire « Nous écrire » (bugs, questions…)
+  async loadContactMsgs(){ if(!this.live) return []; try{ const q=await this.db.collection('contact').orderBy('at','desc').limit(80).get(); return q.docs.map(d=>({...d.data(),id:d.id})); }catch(e){ console.error(e); return null; } },
+  async setContactDone(id,done){ if(!this.live) return !AUTH_LIVE; try{ await this.db.collection('contact').doc(id).update({status:done?'done':'open'}); return true; }catch(e){ console.error(e); return false; } },
 };
 
 // Site en ligne (Firebase configuré) : on retire tous les profils et groupes de démonstration
