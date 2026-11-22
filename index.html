@@ -802,6 +802,14 @@ input.invalid{ border-color:var(--lo) !important; animation:shake .35s; }
 .co-b i{ width:60px; height:60px; border-radius:50%; display:grid; place-items:center; background:rgba(255,255,255,.16); } .co-b svg{ width:26px; height:26px; }
 .co-b.off i{ background:#fff; color:#0E0B1F; } .co-b.end i{ background:#E5484D; } .co-b.yes i{ background:#2FB36A; }
 .co-b:focus-visible i{ outline:3px solid #fff; outline-offset:3px; }
+/* Photos dans les messages : bouton, vignette dans la bulle, vue en grand */
+.photo-msg{ display:block; padding:0; border:0; background:color-mix(in srgb,currentColor 12%,transparent); border-radius:8px; overflow:hidden; cursor:zoom-in; width:min(260px,62vw); max-width:100%; color:inherit; font:inherit; }
+.photo-msg img{ display:block; width:100%; height:100%; object-fit:cover; }
+.photo-msg .ph-wait{ display:grid; place-items:center; width:100%; height:100%; min-height:90px; font-size:13px; opacity:.8; }
+.photo-msg:focus-visible{ outline:2px solid currentColor; outline-offset:3px; }
+#photo-view{ position:fixed; inset:0; z-index:3900; display:grid; place-items:center; padding:max(16px,env(safe-area-inset-top)) 12px max(16px,env(safe-area-inset-bottom)); background:rgba(8,6,20,.94); }
+#photo-view img{ max-width:100%; max-height:calc(100dvh - 90px); border-radius:6px; object-fit:contain; }
+#photo-view button{ position:absolute; right:14px; top:max(14px,env(safe-area-inset-top)); width:46px; height:46px; border-radius:50%; border:0; background:rgba(255,255,255,.16); color:#fff; font-size:24px; line-height:1; cursor:pointer; }
 /* Messages vocaux : bouton micro, barre d'enregistrement, lecteur dans la bulle */
 .mic-btn{ flex:none; width:46px; min-width:46px; padding:0; display:grid; place-items:center; } .mic-btn svg{ width:20px; height:20px; }
 .chat-form.rec > :not(.rec-bar){ display:none; }
@@ -4587,8 +4595,11 @@ function viewChat(id){
   app.innerHTML=`<div class="dm-shell">${dmSide('c:'+id)}<div class="wrap page chat-page"><div class="chat-head">${backLink('#/messages','Messages')}<a class="chat-who${plqOn(p,1)}" href="#/joueur/${p.id}">${plq(p)}${avatar(p,44)}<div><b>${esc(p.name)}${modBadge(p)}</b>${isOnline(p)?'<span class="online">En ligne</span>':'<span class="muted" style="font-size:12px">Hors ligne</span>'}</div></a>${callBtns()}</div>
     <p class="flame-hint" id="flame-hint"></p>
     <div class="chat-box" id="chatbox"></div>
-    <form class="chat-form" id="chatform"><input type="text" id="chatin" placeholder="Écris un message…" maxlength="500" autocomplete="off">${micBtn()}<button class="btn btn-ac" type="submit">Envoyer</button></form></div></div>`;
+    <form class="chat-form" id="chatform"><input type="text" id="chatin" placeholder="Écris un message…" maxlength="500" autocomplete="off">${photoBtn()}${micBtn()}<button class="btn btn-ac" type="submit">Envoyer</button></form></div></div>`;
   dmFit(); renderChat(id);
+  // Photo : réduite sur l'appareil, puis envoyée comme un message
+  photoWire(ph=>{ const pid=newId(); PHOTOS[pid]=ph.data; const m={from:'me',text:PHOTO_TEXT,at:Date.now(),photo:{id:pid,w:ph.w,h:ph.h}}; (S.chats[id]||(S.chats[id]=[])).push(m); save();
+    DB.sendMessage(id,m).then(()=>{ if(location.hash==='#/messages/'+id) renderChat(id); }); renderChat(id); });
   document.querySelectorAll('[data-call]').forEach(b=>b.onclick=()=>startCall(id,b.dataset.call));
   // Message vocal : enregistré puis envoyé comme un message (30 secondes maximum)
   document.getElementById('micbtn')?.addEventListener('click',()=>recordVoice(v=>{ const vid=newId();
@@ -4705,6 +4716,46 @@ function renderCall(){ const c=CALL; if(!c) return; let ov=document.getElementBy
   callAttach(); clearInterval(c.tick); c.tick=setInterval(()=>{ const e=document.getElementById('co-state'); if(e&&CALL===c) e.textContent=state(); },1000); }
 window.addEventListener('pagehide',()=>{ if(CALL) endCall('hangup'); });
 
+/* ---- Photos dans les messages ----
+   Réservé aux adultes (les 13-17 ans n'envoient pas de photos). La photo est réduite sur l'appareil avant l'envoi,
+   puis rangée à part du message, comme les vocaux : chats/{paire}/photos/{id} ou groups/{groupe}/photos/{id} = { from, data, w, h, at }.
+   Le message garde { id, w, h } ; l'image n'est téléchargée que quand la bulle arrive à l'écran. */
+const PHOTO_TEXT='📷 Photo', PHOTO_RE=/^data:image\/(jpeg|webp);base64,/, PHOTO_LIMIT=420000, PHOTO_MAX=1280;
+const PHOTOS={};   // images déjà chargées ou tout juste envoyées (en mémoire seulement)
+const canPhoto = () => !!(window.FileReader&&document.createElement('canvas').getContext) && myGroupNow()==='adult';
+const IMG_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><circle cx="8.5" cy="10" r="1.6"/><path d="M4 17l5-4.5 3.5 3 3-2.500 4.500 4"/></svg>'.replace('2.500 4.500','2.5 4.5');
+const photoBtn = () => canPhoto() ? `<button class="btn mic-btn" type="button" id="photobtn" aria-label="Envoyer une photo" title="Photo">${IMG_SVG}</button><input type="file" id="photoin" accept="image/jpeg,image/png,image/webp" hidden>` : '';
+const photoBubble = (ph,kind,owner) => { const w=Math.max(1,+ph.w||4), h=Math.max(1,+ph.h||3), d=PHOTOS[ph.id];
+  return `<button type="button" class="photo-msg" data-photo="${esc(ph.id)}" data-pk="${kind}" data-po="${esc(owner)}" style="aspect-ratio:${w}/${Math.min(h,w*1.6)}" aria-label="Voir la photo en grand">${d&&PHOTO_RE.test(d)?`<img src="${d}" alt="Photo envoyée dans la conversation">`:'<span class="ph-wait">Photo…</span>'}</button>`; };
+// Réduit une image choisie : 1280 px au plus, en JPEG, sous la taille autorisée
+function shrinkPhoto(file){ return new Promise((ok,no)=>{ const url=URL.createObjectURL(file), img=new Image();
+  img.onerror=()=>{ URL.revokeObjectURL(url); no(new Error('image')); };
+  img.onload=()=>{ URL.revokeObjectURL(url); let max=PHOTO_MAX, data='', w=0, h=0;
+    for(let t=0;t<6;t++){ const k=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight)); w=Math.max(1,Math.round(img.naturalWidth*k)); h=Math.max(1,Math.round(img.naturalHeight*k));
+      const c=document.createElement('canvas'); c.width=w; c.height=h; const x=c.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,w,h); x.drawImage(img,0,0,w,h);
+      data=c.toDataURL('image/jpeg',t<2?.78:.62); if(data.length<=PHOTO_LIMIT) break; max=Math.round(max*.75); }
+    data.length<=PHOTO_LIMIT&&PHOTO_RE.test(data) ? ok({data,w,h}) : no(new Error('lourd')); };
+  img.src=url; }); }
+function photoWire(onDone){ const b=document.getElementById('photobtn'), inp=document.getElementById('photoin'); if(!b||!inp) return;
+  b.onclick=()=>inp.click();
+  inp.onchange=async()=>{ const f=inp.files&&inp.files[0]; inp.value=''; if(!f) return; if(!/^image\//.test(f.type)){ toast("Ce fichier n'est pas une image."); return; }
+    b.disabled=true; try{ onDone(await shrinkPhoto(f)); }catch(e){ toast(e&&e.message==='lourd'?'Cette photo est trop lourde, même réduite.':"Cette image n'a pas pu être lue."); } b.disabled=false; }; }
+// Les photos se chargent quand leur bulle arrive à l'écran
+let _photoIO=null;
+function photoWatch(){ const els=document.querySelectorAll('.photo-msg:not([data-ok])'); if(!els.length) return;
+  const load=async el=>{ if(el.dataset.ok) return; el.dataset.ok='1'; const data=await DB.loadPhoto(el.dataset.pk,el.dataset.po,el.dataset.photo);
+    if(data&&PHOTO_RE.test(data)){ if(!el.querySelector('img')) el.innerHTML=`<img src="${data}" alt="Photo envoyée dans la conversation">`; } else { const w=el.querySelector('.ph-wait'); if(w) w.textContent='Photo indisponible'; } };
+  if(!('IntersectionObserver' in window)){ els.forEach(load); return; }
+  if(!_photoIO) _photoIO=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ _photoIO.unobserve(e.target); load(e.target); } }),{rootMargin:'200px'});
+  els.forEach(el=>{ if(el.querySelector('img')) el.dataset.ok='1'; else _photoIO.observe(el); }); }
+// Vue en grand
+document.addEventListener('click',e=>{ const v=document.getElementById('photo-view'); if(v&&(e.target===v||e.target.closest('#photo-view button'))){ v.remove(); return; }
+  const b=e.target.closest('.photo-msg'); if(!b) return; const img=b.querySelector('img'); if(!img) return;
+  const o=document.createElement('div'); o.id='photo-view'; o.setAttribute('role','dialog'); o.setAttribute('aria-modal','true'); o.setAttribute('aria-label','Photo en grand');
+  o.innerHTML=`<img src="${img.src}" alt="Photo envoyée dans la conversation"><button type="button" aria-label="Fermer la photo">×</button>`; document.body.appendChild(o); o.querySelector('button').focus(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const v=document.getElementById('photo-view'); if(v) v.remove(); } });
+window.addEventListener('hashchange',()=>{ const v=document.getElementById('photo-view'); if(v) v.remove(); });
+
 /* ---- Messages vocaux ----
    Le son est enregistré par le téléphone (30 secondes maximum), puis rangé à part du message :
    chats/{paire}/voices/{id} ou groups/{groupe}/voices/{id} = { from, data, dur, at }.
@@ -4769,8 +4820,8 @@ const hasLink = t => /(?:https?:\/\/|www\.)\S+|\b[a-z0-9-]+\.(?:com|net|org|io|g
 const msgWarn = m => m.from==='me' ? '' : hasPhone(m.text) ? '<em class="bubble-warn">Prudence : ne partage ton numéro qu\'avec quelqu\'un que tu connais vraiment.</em>'
   : hasLink(m.text) ? '<em class="bubble-warn">Prudence avec les liens : ne saisis jamais ton mot de passe sur un site inconnu.</em>' : '';
 function renderChat(id){
-  const box=document.getElementById('chatbox'); if(!box) return; const msgs=S.chats[id]||[]; dmRefresh();
-  box.innerHTML = msgs.length ? msgs.map(m=>`<div class="bubble ${m.from==='me'?'me':''}">${m.voice?voiceBubble(m.voice,'c',id):`<span>${esc(m.text)}</span>${msgWarn(m)}`}<small>${ago(m.at)}</small></div>`).join('')
+  const box=document.getElementById('chatbox'); if(!box) return; const msgs=S.chats[id]||[]; dmRefresh(); setTimeout(photoWatch,0);
+  box.innerHTML = msgs.length ? msgs.map(m=>`<div class="bubble ${m.from==='me'?'me':''}">${m.voice?voiceBubble(m.voice,'c',id):m.photo?photoBubble(m.photo,'c',id):`<span>${esc(m.text)}</span>${msgWarn(m)}`}<small>${ago(m.at)}</small></div>`).join('')
     : `<div class="chat-empty"><p class="muted">Première partie ensemble ? Propose un créneau 🎮</p><div class="chips">${QUICK_MSGS.map(t=>`<button type="button" class="chip" data-quick="${esc(t)}">${esc(t)}</button>`).join('')}</div></div>`;
   box.scrollTop=box.scrollHeight;
   { const p=PLAYERS.find(x=>x.id===id), fh=document.getElementById('flame-hint'); if(fh) fh.innerHTML=flameHint(id,p?p.name:'Ton mate'); }
@@ -4927,8 +4978,9 @@ function viewGroup(id){
   (S.gseen=S.gseen||{})[id]=Date.now(); save();
   app.innerHTML=`<div class="dm-shell">${dmSide('g:'+id)}<div class="wrap page chat-page"><div class="chat-head">${backLink('#/groupes/groupes','Groupes')}<button class="chat-who g-who" type="button" id="ginfo">${gAvatar(g,44)}<div><b>${esc(g.name)}</b><span class="muted" style="font-size:12px">${g.members.length} membre${g.members.length>1?'s':''} · infos</span></div></button></div>
     <div class="chat-box" id="chatbox"><p class="muted" style="margin:auto">Chargement des messages…</p></div>
-    <form class="chat-form" id="chatform"><input type="text" id="chatin" placeholder="Écris au groupe…" maxlength="500" autocomplete="off">${micBtn()}<button class="btn btn-ac" type="submit">Envoyer</button></form></div></div>`;
+    <form class="chat-form" id="chatform"><input type="text" id="chatin" placeholder="Écris au groupe…" maxlength="500" autocomplete="off">${photoBtn()}${micBtn()}<button class="btn btn-ac" type="submit">Envoyer</button></form></div></div>`;
   dmFit(); document.getElementById('ginfo').onclick=()=>groupInfo(id);
+  photoWire(ph=>{ const pid=newId(); PHOTOS[pid]=ph.data; DB.sendGroupMessage(id,PHOTO_TEXT,null,{id:pid,w:ph.w,h:ph.h}); });
   document.getElementById('micbtn')?.addEventListener('click',()=>recordVoice(v=>{ const vid=newId(); VOICES[vid]=v.data; DB.sendGroupMessage(id,VOICE_TEXT,{id:vid,dur:v.dur}); }));
   try{ const cb=document.getElementById('chatbox'); if(cb&&'ResizeObserver' in window) new ResizeObserver(()=>{ cb.scrollTop=cb.scrollHeight; }).observe(cb); }catch(e){}
   document.getElementById('chatform').addEventListener('submit',e=>{ e.preventDefault(); const i=document.getElementById('chatin'), t=i.value.trim(); if(!t) return;
@@ -4938,10 +4990,10 @@ function viewGroup(id){
   DB.listenGroup(id,()=>{ if(location.hash==='#/groupe/'+id){ (S.gseen=S.gseen||{})[id]=Date.now(); renderGroupChat(id); } });
 }
 let GMSGS={};   // messages du groupe ouvert
-function renderGroupChat(id){ const box=document.getElementById('chatbox'), g=gById(id); if(!box||!g) return; const me=myId(), msgs=(GMSGS[id]||[]).filter(m=>!S.blocked.includes(m.from)), canDel=gCanMod(g);
+function renderGroupChat(id){ const box=document.getElementById('chatbox'), g=gById(id); if(!box||!g) return; setTimeout(photoWatch,0); const me=myId(), msgs=(GMSGS[id]||[]).filter(m=>!S.blocked.includes(m.from)), canDel=gCanMod(g);
   box.innerHTML = msgs.length ? msgs.map((m,k)=>{ const mine=m.from===me, p=gPlayer(m.from), same=k>0&&msgs[k-1].from===m.from&&m.at-msgs[k-1].at<5*60e3, role=gRole(g,m.from);
       return `<div class="gmsg${mine?' me':''}${same?' same':''}">${mine?'':(same?'<i class="g-gap"></i>':(p?`<a href="#/joueur/${esc(m.from)}">${avatar(p,32)}</a>`:'<span class="av" style="width:32px;height:32px;--h:220">?</span>'))}<div>${same||mine?'':`<small class="g-from">${p?np(p):'Ancien membre'}${ROLE_TAG[role]||''}</small>`}
-        <div class="bubble ${mine?'me':''}">${m.voice?voiceBubble(m.voice,'g',id):`<span>${esc(m.text)}</span>${mine?'':msgWarn({from:m.from,text:m.text})}`}<small>${ago(m.at)}${(canDel||mine)&&m.id?` · <button type="button" class="g-del" data-gdel="${esc(m.id)}">Supprimer</button>`:''}</small></div></div></div>`; }).join('')
+        <div class="bubble ${mine?'me':''}">${m.voice?voiceBubble(m.voice,'g',id):m.photo?photoBubble(m.photo,'g',id):`<span>${esc(m.text)}</span>${mine?'':msgWarn({from:m.from,text:m.text})}`}<small>${ago(m.at)}${(canDel||mine)&&m.id?` · <button type="button" class="g-del" data-gdel="${esc(m.id)}">Supprimer</button>`:''}</small></div></div></div>`; }).join('')
     : `<div class="chat-empty"><p class="muted">Le groupe est tout neuf. Lance la discussion 👋</p></div>`;
   box.scrollTop=box.scrollHeight;
   box.querySelectorAll('[data-gdel]').forEach(b=>b.onclick=()=>DB.deleteGroupMessage(id,b.dataset.gdel)); }
@@ -5242,7 +5294,7 @@ function viewLegal(kind){
     :`
     <h3>1. Données collectées</h3><p>Pour créer ton compte : e-mail, pseudo, date de naissance, et, si tu utilises Google, ton nom et ta photo Google. Pour ton profil : jeux, pseudos et rangs en jeu, horaires, jours, style, plateformes, pays, langues. Coopô ne te demande aucun numéro de téléphone ni pseudo d'un autre réseau ; ceux qui avaient été enregistrés avant ont été effacés. Pour la communauté : tes annonces et tes inscriptions aux tournois. Pour le fonctionnement : demandes de mate, messages, signalements, blocages, notifications, ton statut « en ligne » et l'heure de ta dernière visite, ton avis « tu rejouerais avec lui ? » sur un joueur, et, si tu es venu par un lien de parrainage, le pseudo de ton parrain. Si tu nous écris par le formulaire de contact : ton message et l'e-mail que tu indiques.</p>
     <h3>2. Ce qui est visible</h3><p>Les autres utilisateurs voient uniquement ton pseudo, ton avatar, tes jeux et tes habitudes de jeu. Ton statut « en ligne » et le moment de ta dernière visite sont visibles si tu ne les as pas désactivés dans les paramètres. Tes avis sur les autres joueurs ne leur sont pas montrés. Ton e-mail, ta date de naissance et ton âge exact ne sont jamais affichés. Ton e-mail reste uniquement dans le service de connexion (Firebase Authentication) : il n'est pas recopié dans la base de données du site. Tes messages privés ne sont lisibles que par toi et ton mate ; si tu signales une conversation, les derniers messages sont joints au signalement et la modération peut consulter cette conversation, uniquement pour traiter le signalement.</p>
-    <h3>3. Utilisation</h3><p>Les données servent à calculer les compatibilités, à faire fonctionner les demandes de mate, les messages et les groupes, à séparer les tranches d'âge et à assurer la modération. Aucune donnée n'est vendue. Aucune publicité ciblée. Messages privés, écrits ou vocaux : seuls toi et ton mate les lisez ou les écoutez. Les appels vocaux et vidéo passent directement entre vos deux appareils (parfois par un relais technique) et ne sont jamais enregistrés ; la modération n'y accède que si l'un de vous signale la conversation. Groupes : les messages sont lus par les membres du groupe, et la modération de Coopô peut les consulter et les supprimer pour protéger les joueurs. Flammes : Coopô enregistre seulement les jours où vous vous êtes écrit, pas le contenu.</p>
+    <h3>3. Utilisation</h3><p>Les données servent à calculer les compatibilités, à faire fonctionner les demandes de mate, les messages et les groupes, à séparer les tranches d'âge et à assurer la modération. Aucune donnée n'est vendue. Aucune publicité ciblée. Messages privés, écrits, vocaux ou photos : seuls toi et ton mate les voyez. Les appels vocaux et vidéo passent directement entre vos deux appareils (parfois par un relais technique) et ne sont jamais enregistrés ; la modération n'y accède que si l'un de vous signale la conversation. Groupes : les messages sont lus par les membres du groupe, et la modération de Coopô peut les consulter et les supprimer pour protéger les joueurs. Flammes : Coopô enregistre seulement les jours où vous vous êtes écrit, pas le contenu.</p>
     <h3>4. Hébergement</h3><p>Les données sont stockées sur Firebase, un service de Google Cloud. Elles sont protégées par des règles d'accès : ton e-mail et ta date de naissance ne sont lisibles que par toi et par la modération.</p>
     <h3>5. Conservation</h3><p>Les données sont conservées tant que le compte existe, puis supprimées. Les messages que tu as envoyés restent visibles par les mates qui les ont reçus. Les signalements peuvent être conservés anonymisés pour la sécurité du service.</p>
     <h3>6. Tes droits</h3><p>Tu peux consulter, modifier et supprimer tes données depuis ton compte, ou en nous écrivant via le formulaire <a href="#/contact">Nous écrire</a>. Les utilisateurs mineurs peuvent exercer ces droits avec un parent ou tuteur. En Côte d'Ivoire, tu peux aussi saisir l'ARTCI, l'autorité chargée de la protection des données personnelles.</p>
@@ -5629,7 +5681,8 @@ const DB = {
     return { members:[me,id].sort(), last, both, count }; },
   async sendMessage(id,m){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; const db=this.db;
     try{ const F=firebase.firestore.FieldValue, pair=this.pairId(id);
-      const mk=st=>{ const b=db.batch(), mref=db.collection('chats').doc(pair).collection('messages').doc(); b.set(mref,m.voice?{from:this.uid(),text:m.text,at:m.at,voice:m.voice}:{from:this.uid(),text:m.text,at:m.at});
+      const mk=st=>{ const b=db.batch(), mref=db.collection('chats').doc(pair).collection('messages').doc(); b.set(mref,{from:this.uid(),text:m.text,at:m.at,...(m.voice?{voice:m.voice}:{}),...(m.photo?{photo:m.photo}:{})});
+        if(m.photo) b.set(db.collection('chats').doc(pair).collection('photos').doc(m.photo.id),{from:this.uid(),data:PHOTOS[m.photo.id]||'',w:m.photo.w,h:m.photo.h,at:m.at});   // la photo part dans le même envoi que le message
         if(m.voice) b.set(db.collection('chats').doc(pair).collection('voices').doc(m.voice.id),{from:this.uid(),data:VOICES[m.voice.id]||'',dur:m.voice.dur,at:m.at});   // le son part dans le même envoi que le message
         if(st) st.msg=mref.id;   // la flamme cite le message envoyé dans le même lot : sans vrai message, les règles la refusent
         b.set(db.collection('limits').doc(this.uid()),{lastMsg:F.serverTimestamp()},{merge:true});   // 1 message par seconde maximum
@@ -5644,7 +5697,12 @@ const DB = {
       if(!this._lastNotifTo||this._lastNotifTo[id]==null||Date.now()-this._lastNotifTo[id]>60000){ (this._lastNotifTo=this._lastNotifTo||{})[id]=Date.now(); await this.saveNotif(id,{type:'message',from:'me',text:`${S.me.name} : ${m.text.slice(0,80)}`}); }
     }catch(e){ console.error(e); toast(String(e&&e.code).includes('permission')?'Doucement : attends une seconde entre deux messages.':"Le message n'est pas parti, réessaie."); } },
   listenChat(id,cb){ if(!this.live) return; this.stopChat();   // les 200 derniers messages (et plus les 200 premiers)
-    this._chatUnsub=this.db.collection('chats').doc(this.pairId(id)).collection('messages').orderBy('at').limitToLast(200).onSnapshot(snap=>{ S.chats[id]=[]; snap.forEach(d=>{ const m=d.data(); S.chats[id].push(m.voice&&m.voice.id?{from:this.fromUid(m.from),text:m.text,at:m.at,voice:{id:String(m.voice.id),dur:+m.voice.dur||0}}:{from:this.fromUid(m.from),text:m.text,at:m.at}); }); save(); cb(); },e=>console.error(e)); },
+    this._chatUnsub=this.db.collection('chats').doc(this.pairId(id)).collection('messages').orderBy('at').limitToLast(200).onSnapshot(snap=>{ S.chats[id]=[]; snap.forEach(d=>{ const m=d.data(); const o={from:this.fromUid(m.from),text:m.text,at:m.at}; if(m.voice&&m.voice.id) o.voice={id:String(m.voice.id),dur:+m.voice.dur||0}; if(m.photo&&m.photo.id) o.photo={id:String(m.photo.id),w:+m.photo.w||4,h:+m.photo.h||3}; S.chats[id].push(o); }); save(); cb(); },e=>console.error(e)); },
+  // Image d'un message photo : en mémoire si elle a déjà été vue, sinon téléchargée
+  async loadPhoto(kind,owner,pid){ if(PHOTOS[pid]) return PHOTOS[pid]; if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return null;
+    try{ const base=kind==='g'?this.db.collection('groups').doc(owner):this.db.collection('chats').doc(this.pairId(owner)); const d=await base.collection('photos').doc(pid).get();
+      if(!d.exists) return null; const data=String(d.data().data||''); const ks=Object.keys(PHOTOS); if(ks.length>30) ks.slice(0,15).forEach(k=>delete PHOTOS[k]); PHOTOS[pid]=data; return data; }
+    catch(e){ console.error(e); return null; } },
   // Son d'un message vocal : en mémoire s'il a déjà été écouté, sinon téléchargé (kind : 'c' conversation privée, 'g' groupe)
   async loadVoice(kind,owner,vid){ if(VOICES[vid]) return VOICES[vid]; if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return null;
     try{ const base=kind==='g'?this.db.collection('groups').doc(owner):this.db.collection('chats').doc(this.pairId(owner)); const d=await base.collection('voices').doc(vid).get();
@@ -5685,19 +5743,22 @@ const DB = {
   async deleteGroup(id){ this.stopGroup(); if(AUTH_LIVE){ if(!this.live&&!(await this.ready())) return false; const ref=this.db.collection('groups').doc(id);
       try{ for(let k=0;k<6;k++){ const q=await ref.collection('messages').limit(300).get(); if(q.empty) break; const b=this.db.batch(); q.forEach(x=>b.delete(x.ref)); await b.commit(); }   // les messages d'abord, puis le groupe
         try{ for(let k=0;k<30;k++){ const q=await ref.collection('voices').limit(8).get(); if(q.empty) break; const b=this.db.batch(); q.forEach(x=>b.delete(x.ref)); await b.commit(); } }catch(e){ console.error(e); }   // les sons des messages vocaux
+        try{ for(let k=0;k<40;k++){ const q=await ref.collection('photos').limit(4).get(); if(q.empty) break; const b=this.db.batch(); q.forEach(x=>b.delete(x.ref)); await b.commit(); } }catch(e){ console.error(e); }   // les photos
         await ref.delete(); }catch(e){ console.error(e); toast("Le groupe n'a pas pu être supprimé."); return false; } }
     GROUPS=GROUPS.filter(g=>g.id!==id); delete GMSGS[id]; return true; },
-  async sendGroupMessage(id,text,voice){ const m={from:myId(),text,at:Date.now()}; if(voice) m.voice=voice;
+  async sendGroupMessage(id,text,voice,photo){ const m={from:myId(),text,at:Date.now()}; if(voice) m.voice=voice; if(photo) m.photo=photo;
     if(!AUTH_LIVE){ (GMSGS[id]=GMSGS[id]||[]).push({...m,id:'l'+m.at}); renderGroupChat(id); return; }
     if(!this.live&&!(await this.ready())) return; const db=this.db, F=firebase.firestore.FieldValue, ref=db.collection('groups').doc(id);
     try{ const b=db.batch(); b.set(ref.collection('messages').doc(),m); if(voice) b.set(ref.collection('voices').doc(voice.id),{from:m.from,data:VOICES[voice.id]||'',dur:voice.dur,at:m.at});
+      if(photo) b.set(ref.collection('photos').doc(photo.id),{from:m.from,data:PHOTOS[photo.id]||'',w:photo.w,h:photo.h,at:m.at});
       b.set(db.collection('limits').doc(this.uid()),{lastMsg:F.serverTimestamp()},{merge:true}); await b.commit();
       const g=gById(id); if(g&&Date.now()-tsMs(g.lastAt)>5*60e3){ g.lastAt=Date.now(); ref.update({lastAt:F.serverTimestamp()}).catch(e=>console.error(e)); }   // « nouveaux messages » pour les autres membres, au plus une écriture toutes les 5 minutes
     }catch(e){ console.error(e); toast(String(e&&e.code).includes('permission')?"Message refusé : attends une seconde, ou tu n'es plus membre de ce groupe.":"Le message n'est pas parti, réessaie."); } },
   deleteGroupMessage(id,mid){ if(!this.live) { GMSGS[id]=(GMSGS[id]||[]).filter(m=>m.id!==mid); renderGroupChat(id); return; } const gm=(GMSGS[id]||[]).find(m=>m.id===mid); if(gm&&gm.voice) this.db.collection('groups').doc(id).collection('voices').doc(gm.voice.id).delete().catch(e=>console.error(e));   // le son part avec le message
+    if(gm&&gm.photo) this.db.collection('groups').doc(id).collection('photos').doc(gm.photo.id).delete().catch(e=>console.error(e));   // la photo aussi
     this.db.collection('groups').doc(id).collection('messages').doc(mid).delete().catch(e=>{ console.error(e); toast("Le message n'a pas pu être supprimé."); }); },
   listenGroup(id,cb){ this.stopGroup(); if(!this.live){ cb(); return; }   // les 100 derniers messages, en temps réel
-    this._groupUnsub=this.db.collection('groups').doc(id).collection('messages').orderBy('at').limitToLast(100).onSnapshot(snap=>{ GMSGS[id]=[]; snap.forEach(x=>{ const m=x.data(); GMSGS[id].push(m.voice&&m.voice.id?{id:x.id,from:m.from,text:m.text,at:m.at,voice:{id:String(m.voice.id),dur:+m.voice.dur||0}}:{id:x.id,from:m.from,text:m.text,at:m.at}); }); cb(); },
+    this._groupUnsub=this.db.collection('groups').doc(id).collection('messages').orderBy('at').limitToLast(100).onSnapshot(snap=>{ GMSGS[id]=[]; snap.forEach(x=>{ const m=x.data(); const o={id:x.id,from:m.from,text:m.text,at:m.at}; if(m.voice&&m.voice.id) o.voice={id:String(m.voice.id),dur:+m.voice.dur||0}; if(m.photo&&m.photo.id) o.photo={id:String(m.photo.id),w:+m.photo.w||4,h:+m.photo.h||3}; GMSGS[id].push(o); }); cb(); },
       e=>{ console.error(e); this.stopGroup(); this.loadGroups(true).then(()=>{ if(location.hash==='#/groupe/'+id) route(); }); }); },   // plus le droit de lire (retiré du groupe, groupe supprimé) : on recharge la liste
   stopGroup(){ if(this._groupUnsub){ try{ this._groupUnsub(); }catch(e){} this._groupUnsub=null; } },
   async saveNotif(toId,n){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ await this.db.collection('notifications').doc(this.toUid(toId)).collection('items').add({...n,from:this.toUid(n.from),at:Date.now(),read:false}); }catch(e){ console.error(e); } },
