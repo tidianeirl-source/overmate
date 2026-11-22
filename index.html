@@ -1658,7 +1658,7 @@ a.nudge{ background:var(--s1); border-style:solid; border-color:var(--hair); box
 .sheet{ background:var(--s1); border:1px solid var(--hair); border-radius:var(--rc); box-shadow:var(--e1); padding:6px 20px 24px; }   /* pages de lecture (CGU, confidentialité…) : le texte est posé sur une feuille */
 .sheet > :first-child{ margin-top:18px; } .sheet p{ color:var(--tx); line-height:1.65; } .sheet h3{ margin-top:26px; }
 /* bouton principal posé sur le décor : couleur qui ressort sur le monde (blanc quand le monde a la couleur du thème) */
-:is(.dispo-sec,.page-head,.wl-cta,.install-foot,.chat-form,.form-actions) > .btn-ac, .wrap.page > .btn-ac{ --b:var(--cta-b); --t:var(--cta-t); }
+:is(.dispo-sec,.page-head,.wl-cta,.install-foot,.chat-form,.form-actions,.cf-pill) > .btn-ac, .wrap.page > .btn-ac{ --b:var(--cta-b); --t:var(--cta-t); }
 /* ---- En-tête : fond seulement quand la page a défilé (au repos, le dessin reste entier) ---- */
 .top::before{ background:rgba(var(--w-top),.86); opacity:0; transition:opacity .25s ease; pointer-events:none; }
 @media (min-width:861px){ .top{ --top-h:84px; } }
@@ -2410,19 +2410,7 @@ html.lite .stk-msg.anim{ animation:none; }
 .bubble:has(> .stk-msg[data-stk]:not(.stk-gone)) small{ color:var(--mu); opacity:1; }
 .stk-view{ display:grid; place-items:center; padding:6px 0 0; }
 .stk-big{ width:min(220px,60vw); height:min(220px,60vw); font-size:min(220px,60vw); cursor:default; }
-.stk-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; } .stk-head h3{ margin:0; }
-.stk-head .btn svg,.stk-src .btn svg{ width:20px; height:20px; flex:none; }
-.stk-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(76px,1fr)); gap:10px; margin:14px 0 2px; max-height:min(52vh,420px); overflow:auto; padding:6px 6px 2px 0; }
-.stk-cap{ grid-column:1/-1; margin:4px 0 0; font-size:13px; font-weight:700; color:var(--mu); }
-.stk-tile{ position:relative; }
-.stk-pick{ display:grid; place-items:center; width:100%; aspect-ratio:1; padding:6px; border:1px solid var(--line); border-radius:16px; background:var(--s2); color:var(--tx); cursor:pointer; transition:transform .16s cubic-bezier(.23,1,.32,1), border-color .16s ease; }
-.stk-pick:active{ transform:scale(.96); }
-@media (hover:hover) and (pointer:fine){ .stk-pick:hover{ border-color:var(--pk); } }
-.stk-pick .stk-msg{ width:62px; height:62px; font-size:62px; pointer-events:none; }
-.stk-grid.manage .stk-pick{ cursor:default; }
 .stk-x{ position:absolute; top:-6px; right:-6px; width:28px; height:28px; display:grid; place-items:center; border-radius:50%; border:2px solid var(--bg); background:#C8283F; color:#fff; font:700 17px/1 var(--fb); cursor:pointer; }
-.stk-empty{ grid-column:1/-1; text-align:center; padding:18px 8px; } .stk-empty p{ margin:4px 0; }
-.stk-src{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0 6px; } .stk-src .btn{ min-height:56px; gap:8px; }
 .stk-ed{ display:grid; justify-items:center; gap:4px; margin-top:12px; } .stk-ed .hint{ margin:0; }
 #stk-cv{ width:min(240px,62vw); height:auto; aspect-ratio:1; border-radius:18px; touch-action:none; cursor:grab;
   background:repeating-conic-gradient(#D9DEE5 0 25%,#F3F5F8 0 50%) 0 0/18px 18px; }
@@ -2431,12 +2419,120 @@ html.lite .stk-msg.anim{ animation:none; }
 .stk-check{ display:flex; align-items:center; gap:8px; font-weight:700; font-size:14px; } .stk-check input{ width:20px; height:20px; accent-color:var(--pk); }
 /* bouton d'envoi : le mot sur grand écran, une icône sur téléphone (il faut la place pour stickers, photo et micro) */
 .send-btn .send-ico,.send-btn .save-ico{ display:none; width:22px; height:22px; }
-@media (max-width:520px){
-  .chat-form > .send-btn{ width:46px; min-width:46px; padding:0; justify-content:center; }
-  .send-btn .send-txt{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
-  .send-btn .send-ico{ display:block; }
-  .chat-form.editing .send-btn .send-ico{ display:none; } .chat-form.editing .send-btn .save-ico{ display:block; }
+
+/* ==== v11 — Zone d'écriture façon TikTok ====
+   L'appareil photo à gauche (téléphones), puis une barre arrondie : le champ, le micro, la galerie, le bouton stickers/emojis.
+   Quand on écrit, le micro et la galerie laissent la place au bouton d'envoi (un rond avec une flèche). */
+.chat-form.tk{ display:flex; align-items:flex-end; gap:8px; margin-top:12px; padding:0; border:0; border-radius:0; background:none; box-shadow:none; }
+.chat-form.tk .cf-cam{ flex:none; width:48px; min-width:48px; height:48px; padding:0; display:grid; place-items:center; border:0; border-radius:50%; box-shadow:none;
+  background:color-mix(in srgb,var(--tx) 10%,transparent); color:var(--tx); transition:transform .16s cubic-bezier(.23,1,.32,1); }
+.chat-form.tk .cf-cam svg{ width:24px; height:24px; }
+.chat-form.tk .cf-cam:active{ transform:scale(.94); }
+.cf-pill{ flex:1 1 0; min-width:0; display:flex; align-items:center; gap:0; min-height:48px; padding:2px 4px 2px 16px; border-radius:24px; background:var(--field); border:1.5px solid var(--line); }
+.cf-pill:focus-within{ border-color:var(--pk); }
+.chat-form.tk .cf-pill > input{ flex:1 1 0; min-width:0; height:42px; min-height:0; padding:0; border:0 !important; border-radius:0; background:none !important; box-shadow:none !important; color:var(--tx); font-size:16px; }
+.chat-form.tk .cf-pill > input:focus{ outline:none; }
+.chat-form.tk .cf-pill .mic-btn{ flex:none; width:40px; min-width:40px; height:40px; min-height:40px; padding:0; border:0; border-radius:50%; background:none; box-shadow:none; color:var(--tx); transition:transform .16s cubic-bezier(.23,1,.32,1), background-color .16s ease; }
+.chat-form.tk .cf-pill .mic-btn svg{ width:23px; height:23px; }
+.chat-form.tk .cf-pill .mic-btn:active{ transform:scale(.9); }
+@media (hover:hover) and (pointer:fine){ .chat-form.tk .cf-pill .mic-btn:hover{ background:color-mix(in srgb,var(--tx) 9%,transparent); } }
+.chat-form.tk .cf-pill .mic-btn:focus-visible,.chat-form.tk .cf-cam:focus-visible{ outline:2px solid var(--pk); outline-offset:1px; }
+.cp-btn .cp-ico-a,.cp-btn .cp-ico-k{ display:contents; } .cp-btn .cp-ico-k{ display:none; }
+.cp-btn.on .cp-ico-a{ display:none; } .cp-btn.on .cp-ico-k{ display:contents; }
+.chat-form.tk .send-btn{ flex:none; width:40px; min-width:40px; height:40px; min-height:40px; margin-left:2px; padding:0; display:grid; place-items:center; border-radius:50%; box-shadow:none; }
+.chat-form.tk .send-btn .send-txt{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+.chat-form.tk .send-btn .send-ico{ display:block; width:20px; height:20px; }
+.chat-form.tk.editing .send-btn .send-ico{ display:none; } .chat-form.tk.editing .send-btn .save-ico{ display:block; }
+.chat-form.tk.editing :is(.cf-cam,#micbtn,#photobtn,#cpbtn){ display:none; }
+@supports selector(:has(a)){   /* sans :has (vieux navigateurs), le bouton d'envoi reste toujours visible */
+  .chat-form.tk .send-btn{ display:none; }
+  .chat-form.tk:has(#chatin:not(:placeholder-shown)) .send-btn{ display:grid; }
+  .chat-form.tk:has(#chatin:not(:placeholder-shown)) :is(#micbtn,#photobtn){ display:none; }
 }
+@media (max-width:999px){
+  .chat-page .chat-form.tk{ gap:8px; padding:8px 10px max(8px,env(safe-area-inset-bottom)); border:0; border-top:1px solid var(--hair); border-radius:0; background:var(--s1); }
+  .chat-page .chat-form.tk .cf-pill .mic-btn{ border-radius:50%; }
+  .chat-page:has(.cpanel:not([hidden])) .chat-form.tk{ padding-bottom:8px; }
+}
+
+/* ==== v11 — Panneau stickers et emojis (il monte du bas, à la place du clavier) ==== */
+.cpanel{ flex:none; display:flex; flex-direction:column; height:min(300px,42vh); margin-top:10px; background:var(--s1); color:var(--tx); border:1px solid var(--hair); border-radius:20px 20px 0 0; overflow:hidden; }
+.cpanel[hidden]{ display:none; }
+.cp-grab{ flex:none; display:grid; place-items:center; height:22px; touch-action:none; cursor:grab; }
+.cp-grab i,.ps-grab i{ display:block; width:40px; height:4px; border-radius:2px; background:var(--mu); opacity:.5; }
+.cp-tabs{ flex:none; display:flex; align-items:center; gap:6px; padding:0 10px 6px; border-bottom:1px solid var(--hair); }
+.cp-tab,.cp-bk{ flex:none; width:52px; height:44px; display:grid; place-items:center; padding:0; border:0; border-radius:12px; background:none; color:var(--tx); cursor:pointer; transition:background-color .16s ease; }
+.cp-tab svg,.cp-bk svg{ width:26px; height:26px; }
+.cp-tab[aria-pressed="true"]{ background:color-mix(in srgb,var(--tx) 12%,transparent); }
+.cp-tab[hidden]{ display:none; }
+.cp-tab:focus-visible,.cp-bk:focus-visible,.cp-pick:focus-visible,.cp-emo:focus-visible,.qr-pick:focus-visible,.qr-x:focus-visible,.cp-manage:focus-visible{ outline:2px solid var(--pk); outline-offset:1px; }
+.cp-bk{ margin-left:auto; } .cpanel:not(.emo) .cp-bk{ display:none; }
+.cp-body{ flex:1 1 0; min-height:0; overflow-y:auto; overscroll-behavior:contain; padding:2px 12px 16px; }
+.cpanel:not([hidden]) .cp-body{ animation:cpIn .2s cubic-bezier(.23,1,.32,1); }
+@keyframes cpIn{ from{ opacity:0; transform:translateY(8px); } }
+.cp-cap{ margin:12px 2px 8px; font-size:15px; font-weight:600; color:var(--mu); }
+.cp-cap-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.cp-manage{ min-height:36px; padding:0 6px; border:0; border-radius:8px; background:none; color:color-mix(in srgb,var(--pk) 62%,var(--tx)); font:700 14px var(--fb); cursor:pointer; }   /* lisible sur les thèmes clairs et sombres */
+.cp-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(72px,1fr)); gap:10px; }
+.cp-tile{ position:relative; min-width:0; }
+.cp-tile:has(.stk-gone){ display:none; }
+.cp-pick{ display:grid; place-items:center; width:100%; aspect-ratio:1; padding:0; border:0; border-radius:16px; background:color-mix(in srgb,var(--tx) 6%,transparent); color:var(--tx); cursor:pointer; overflow:hidden; transition:transform .16s cubic-bezier(.23,1,.32,1), background-color .16s ease; }
+.cp-pick:active,.cp-pick.sent{ transform:scale(.92); }
+.cp-pick .stk-msg{ width:64px; height:64px; font-size:64px; pointer-events:none; }
+.cp-new{ background:color-mix(in srgb,var(--tx) 12%,transparent); } .cp-new svg{ width:34px; height:34px; }
+.cp-grid.manage .cp-pick{ cursor:default; }
+.cp-grid.manage .cp-pick:active{ transform:none; }
+.cp-hint{ margin:12px 2px 0; font-size:14px; color:var(--mu); }
+.cp-emos{ display:grid; grid-template-columns:repeat(auto-fill,minmax(42px,1fr)); gap:2px; }
+.cp-emo{ height:46px; padding:0; border:0; border-radius:10px; background:none; color:inherit; font-size:28px; line-height:1; cursor:pointer; font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",var(--fb),sans-serif; transition:transform .12s cubic-bezier(.23,1,.32,1); }
+.cp-emo:active{ transform:scale(.86); background:color-mix(in srgb,var(--tx) 10%,transparent); }
+@media (hover:hover) and (pointer:fine){ .cp-emo:hover,.cp-pick:hover,.qr-pick:hover,.cp-tab:hover,.cp-bk:hover{ background:color-mix(in srgb,var(--tx) 12%,transparent); } }
+@media (max-width:999px){
+  .chat-page .cpanel{ margin:0; border-width:1px 0 0; height:min(300px,44vh); background:var(--s2); padding-bottom:env(safe-area-inset-bottom); }
+}
+@media (prefers-reduced-motion:reduce){ .cpanel:not([hidden]) .cp-body{ animation:none; } }
+
+/* ==== v11 — « Appuie sur un sticker pour répondre » ==== */
+.qr-stk{ flex:none; display:grid; gap:10px; margin-top:10px; padding:10px 0; min-width:0; background:var(--s1); color:var(--tx); border:1px solid var(--hair); border-radius:16px; }
+.qr-stk[hidden]{ display:none; }
+.chat-page:has(#chatin:not(:placeholder-shown)) .qr-stk{ display:none; }   /* on écrit : la réponse est un texte */
+@media (pointer:coarse){ .chat-page:has(#chatin:focus) .qr-stk{ display:none; } }   /* clavier ouvert : on garde la place pour la conversation */
+@media (max-width:999px){ .chat-page .qr-stk{ margin:0; padding:10px 0 6px; border:0; border-radius:0; } }
+.qr-pill{ justify-self:center; display:flex; align-items:center; gap:4px; max-width:calc(100% - 24px); padding:3px 3px 3px 16px; border-radius:999px; background:color-mix(in srgb,var(--tx) 10%,transparent); color:var(--tx); font-size:14px; }
+.qr-pill span{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.qr-x{ flex:none; width:36px; height:36px; display:grid; place-items:center; border:0; border-radius:50%; background:none; color:var(--tx); font-size:22px; line-height:1; cursor:pointer; }
+.qr-row{ display:flex; gap:10px; overflow-x:auto; padding:0 12px 2px; scrollbar-width:none; overscroll-behavior-x:contain; }
+.qr-row::-webkit-scrollbar{ display:none; }
+.qr-pick{ flex:none; width:84px; height:84px; display:grid; place-items:center; padding:0; border:0; border-radius:16px; background:color-mix(in srgb,var(--tx) 6%,transparent); cursor:pointer; transition:transform .16s cubic-bezier(.23,1,.32,1); }
+.qr-pick:active,.qr-pick.sent{ transform:scale(.92); }
+.qr-pick .stk-msg{ width:70px; height:70px; font-size:70px; pointer-events:none; }
+.qr-pick:has(.stk-gone){ display:none; }
+
+/* ==== v11 — Gros emojis : 1 à 3 emojis seuls, sans bulle ==== */
+.jumbo{ font-size:42px; line-height:1.15; letter-spacing:1px; font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",var(--fb),sans-serif; }
+.jumbo.j1{ font-size:56px; }
+.bubble:has(> .jumbo){ background:none !important; border-color:transparent !important; box-shadow:none !important; padding:0 2px !important; color:var(--tx) !important; }
+.bubble:has(> .jumbo) small{ color:var(--mu); opacity:1; }
+
+/* ==== v11 — Feuille du bas (choix des photos) ==== */
+dialog.sheet{ margin:auto 0 0; width:100%; max-width:100%; max-height:min(88vh,760px); padding:0 0 max(12px,env(safe-area-inset-bottom)); border-radius:22px 22px 0 0; background:var(--s1); color:var(--tx); overflow:hidden; }
+dialog.sheet[open]{ display:flex; flex-direction:column; animation:sheetIn .3s cubic-bezier(.23,1,.32,1); }
+@keyframes sheetIn{ from{ transform:translateY(100%); } }
+@media (min-width:700px){ dialog.sheet{ margin:auto; width:min(560px,calc(100% - 32px)); border-radius:var(--rc); padding-bottom:14px; } dialog.sheet[open]{ animation:dlgIn .3s cubic-bezier(.3,1.4,.5,1); } }
+@media (prefers-reduced-motion:reduce){ dialog.sheet[open]{ animation:fade .2s ease; } }
+.ps-grab{ flex:none; display:grid; place-items:center; height:24px; touch-action:none; cursor:grab; }
+.ps-head{ flex:none; display:grid; grid-template-columns:48px minmax(0,1fr) 48px; align-items:center; padding:0 6px 10px; }
+.ps-title{ display:grid; justify-items:center; gap:1px; min-width:0; } .ps-title h3{ margin:0; font-size:18px; color:var(--tx); } .ps-n{ font-size:13px; color:var(--mu); }
+.ps-x{ width:44px; height:44px; display:grid; place-items:center; padding:0; border:0; border-radius:50%; background:none; color:var(--tx); font-size:30px; line-height:1; cursor:pointer; }
+.ps-grid{ flex:1 1 auto; min-height:0; overflow-y:auto; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:3px; padding:0 3px; align-content:start; }
+.ps-tile{ position:relative; aspect-ratio:1; min-width:0; padding:0; border:0; border-radius:4px; overflow:hidden; display:grid; place-items:center; background:color-mix(in srgb,var(--tx) 9%,transparent); color:var(--tx); cursor:pointer; }
+.ps-tile svg{ width:36px; height:36px; }
+.ps-ph img{ width:100%; height:100%; object-fit:cover; display:block; transition:opacity .16s ease; }
+.ps-ph:not(.on) img{ opacity:.55; }
+.ps-c{ position:absolute; top:8px; right:8px; width:26px; height:26px; box-sizing:border-box; border-radius:50%; border:2px solid #fff; background:rgba(0,0,0,.28); color:#fff; font:700 13px/22px var(--fb); font-style:normal; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,.35); }
+.ps-ph.on .ps-c{ background:var(--pk); color:var(--on-pk); }
+.ps-tile:focus-visible,.ps-x:focus-visible{ outline:2px solid var(--pk); outline-offset:-2px; }
+.ps-foot{ flex:none; padding:10px 12px 0; } .ps-send{ width:100%; min-height:50px; font-size:16px; }
 </style>
 </head>
 <body>
@@ -2665,8 +2761,8 @@ function chips(group,options,selected,single=false){
 const toastEl=document.getElementById('toast'); let tt;
 function toast(msg,ms=2400){ toastEl.textContent=msg; toastEl.classList.add('show'); clearTimeout(tt); tt=setTimeout(()=>toastEl.classList.remove('show'),ms); }
 const dlg=document.getElementById('dlg');
-function modal(html, onOpen){ try{ if(dlg.open) dlg.close(); }catch(e){}   // une fenêtre déjà ouverte est remplacée proprement (anciens navigateurs : sinon erreur)
-  dlg.innerHTML=html; try{ dlg.showModal(); }catch(e){ dlg.setAttribute('open',''); } dlg.scrollTop=0; onOpen&&onOpen(dlg); }
+function modal(html, onOpen, cls){ try{ if(dlg.open) dlg.close(); }catch(e){}   // une fenêtre déjà ouverte est remplacée proprement (anciens navigateurs : sinon erreur)
+  dlg.className=cls||''; dlg.style.transform=''; dlg.innerHTML=html; try{ dlg.showModal(); }catch(e){ dlg.setAttribute('open',''); } dlg.scrollTop=0; onOpen&&onOpen(dlg); }
 dlg.addEventListener('click',e=>{ if(e.target===dlg || e.target.closest('[data-close]')) dlg.close(); });
 
 /* =========================================================
@@ -4923,19 +5019,22 @@ function viewChat(id){ EDIT=null;
   S.unread[id]=0; { const seen=S.notifs.filter(n=>!n.read&&n.type==='message'&&n.from===id); seen.forEach(n=>n.read=true); DB.markRead(seen.map(n=>n.id)); } save(); renderNotifBadge();
   app.innerHTML=`<div class="dm-shell">${dmSide('c:'+id)}<div class="wrap page chat-page"><div class="chat-head">${backLink('#/messages','Messages')}<a class="chat-who${plqOn(p,1)}" href="#/joueur/${p.id}">${plq(p)}${avatar(p,44)}<div><b>${esc(p.name)}${modBadge(p)}</b>${isOnline(p)?'<span class="online">En ligne</span>':'<span class="muted" style="font-size:12px">Hors ligne</span>'}</div></a>${callBtns(p)}</div>
     <p class="flame-hint" id="flame-hint"></p>
-    <div class="chat-box" id="chatbox"></div>
-    <form class="chat-form" id="chatform">${stkBtn(!minorP(p))}<input type="text" id="chatin" placeholder="Écris un message…" maxlength="500" autocomplete="off">${photoBtn(!minorP(p))}${micBtn()}<button class="btn btn-ac send-btn" type="submit" aria-label="Envoyer"><span class="send-txt">Envoyer</span>${SEND_SVG}</button></form></div></div>`;
-  dmFit(); renderChat(id);
-  // Photo : réduite sur l'appareil, puis envoyée comme un message (jamais à un 13-17 ans)
-  photoWire(ph=>{ if(minorP(p)) return; const pid=newId(); PHOTOS[pid]=ph.data; const m={from:'me',text:PHOTO_TEXT,at:Date.now(),photo:{id:pid,w:ph.w,h:ph.h}}; (S.chats[id]||(S.chats[id]=[])).push(m); save();
-    DB.sendMessage(id,m).then(()=>{ if(location.hash==='#/messages/'+id) renderChat(id); }); renderChat(id); });
-  stickerWire(st=>{ if(minorP(p)) return; const m={from:'me',text:STICKER_TEXT,at:Date.now(),sticker:st}; (S.chats[id]||(S.chats[id]=[])).push(m); save();
-    DB.sendMessage(id,m).then(()=>{ if(location.hash==='#/messages/'+id) renderChat(id); }); renderChat(id); });
+    <div class="chat-box" id="chatbox"></div>${qrHTML()}
+    ${composerHTML('Message…',!minorP(p))}${cpanelHTML()}</div></div>`;
+  dmFit();
+  // v11 — chaque envoi passe dans la file : un message par seconde au plus (règle Firebase), dans l'ordre, même avec plusieurs photos ou stickers d'affilée
+  const here=()=>location.hash==='#/messages/'+id;
+  const sendC=m=>DB.queueSend(async()=>{ m.at=Date.now(); (S.chats[id]||(S.chats[id]=[])).push(m); save(); if(here()) renderChat(id);
+    await DB.sendMessage(id,m); if(here()) renderChat(id); });
+  // Stickers et emojis (stickers jamais avec un 13-17 ans)
+  cpWire(st=>{ if(minorP(p)) return; sendC({from:'me',text:STICKER_TEXT,sticker:st}); },!minorP(p));
+  renderChat(id);
+  // Photos : réduites sur l'appareil, puis envoyées une par une comme des messages (jamais à un 13-17 ans)
+  photoWire(ph=>{ if(minorP(p)) return; const pid=newId(); PHOTOS[pid]=ph.data; return sendC({from:'me',text:PHOTO_TEXT,photo:{id:pid,w:ph.w,h:ph.h}}); });
   document.querySelectorAll('[data-call]').forEach(b=>b.onclick=()=>startCall(id,b.dataset.call));
   // Message vocal : enregistré puis envoyé comme un message (30 secondes maximum)
   document.getElementById('micbtn')?.addEventListener('click',()=>recordVoice(v=>{ const vid=newId();
-    VOICES[vid]=v.data; const m={from:'me',text:VOICE_TEXT,at:Date.now(),voice:{id:vid,dur:v.dur,...(v.w?{w:v.w}:{})}}; (S.chats[id]||(S.chats[id]=[])).push(m); save();
-    DB.sendMessage(id,m).then(()=>{ if(location.hash==='#/messages/'+id) renderChat(id); }); renderChat(id); }));
+    VOICES[vid]=v.data; sendC({from:'me',text:VOICE_TEXT,voice:{id:vid,dur:v.dur,...(v.w?{w:v.w}:{})}}); }));
   // la zone de messages change de hauteur (contacts chargés, clavier, rotation) : on reste calé sur le dernier message
   try{ const cb=document.getElementById('chatbox'); if(cb&&'ResizeObserver' in window) new ResizeObserver(()=>{ cb.scrollTop=cb.scrollHeight; }).observe(cb); }catch(e){}
   document.getElementById('chatform').addEventListener('submit',e=>{ e.preventDefault(); const i=document.getElementById('chatin'), t=i.value.trim(); if(!t) return;
@@ -4943,7 +5042,7 @@ function viewChat(id){ EDIT=null;
     if(minorP(p)&&hasPhone(t)){ toast('Pour la sécurité des 13-17 ans, les numéros de téléphone ne peuvent pas être envoyés ici.'); return; }   // ni de la part d'un adulte vers un 13-17 ans
     if(submitEdit(t)) return;   // c'était une modification
     i.value='';
-    const m={from:'me',text:t,at:Date.now()}; (S.chats[id]||(S.chats[id]=[])).push(m); save(); DB.sendMessage(id,m).then(()=>{ if(location.hash==='#/messages/'+id) renderChat(id); }); renderChat(id);
+    sendC({from:'me',text:t});
     if(!AUTH_LIVE && Math.random()<.75) setTimeout(()=>{ const r={from:id,text:pick(CANNED),at:Date.now()}; (S.chats[id]||(S.chats[id]=[])).push(r);
       if(location.hash==='#/messages/'+id){ save(); renderChat(id); } else { S.unread[id]=(S.unread[id]||0)+1; notify({type:'message',from:id,text:`${p.name} : ${r.text}`}); } }, 2000+Math.random()*3000); });
   DB.listenChat(id,()=>{ if(location.hash==='#/messages/'+id) renderChat(id); });
@@ -5060,7 +5159,12 @@ const PHOTO_TEXT='📷 Photo', PHOTO_RE=/^data:image\/(jpeg|webp);base64,/, PHOT
 const PHOTOS={};   // images déjà chargées ou tout juste envoyées (en mémoire seulement)
 const canPhoto = () => !!(window.FileReader&&document.createElement('canvas').getContext) && myGroupNow()==='adult';
 const IMG_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><circle cx="8.5" cy="10" r="1.6"/><path d="M4 17l5-4.5 3.5 3 3-2.500 4.500 4"/></svg>'.replace('2.500 4.500','2.5 4.5');
-const photoBtn = (ok=true) => canPhoto()&&ok ? `<button class="btn mic-btn" type="button" id="photobtn" aria-label="Envoyer une photo" title="Photo">${IMG_SVG}</button><input type="file" id="photoin" accept="image/jpeg,image/png,image/webp" hidden>` : '';
+const photoBtn = (ok=true) => canPhoto()&&ok ? `<button class="btn mic-btn" type="button" id="photobtn" aria-label="Envoyer des photos de ta galerie" title="Galerie">${IMG_SVG}</button><input type="file" id="photoin" accept="image/jpeg,image/png,image/webp" multiple hidden>` : '';
+// v11 — appareil photo à gauche de la zone d'écriture (téléphones et tablettes seulement : sur ordinateur, la galerie suffit)
+const CAMERA_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.6A2.6 2.6 0 0 1 6.1 6h1.7l1.5-2.1h5.4L16.2 6h1.7a2.6 2.6 0 0 1 2.6 2.6v8.8a2.6 2.6 0 0 1-2.6 2.6H6.1a2.6 2.6 0 0 1-2.6-2.6z"/><circle cx="12" cy="12.9" r="3.7"/></svg>';
+const PLUS_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+const isCoarse = () => { try{ return matchMedia('(pointer:coarse)').matches; }catch(e){ return false; } };
+const camBtn = (ok=true) => canPhoto()&&ok&&isCoarse() ? `<button class="btn cf-cam" type="button" id="cambtn" aria-label="Prendre une photo" title="Appareil photo">${CAMERA_SVG}</button><input type="file" id="camin" accept="image/*" capture="environment" hidden>` : '';
 const photoBubble = (ph,kind,owner) => { const w=Math.max(1,+ph.w||4), h=Math.max(1,+ph.h||3), d=PHOTOS[ph.id];
   if(myGroupNow()==='minor') return `<span class="photo-msg" data-ok="1" style="aspect-ratio:${w}/${Math.min(h,w*1.6)}"><span class="ph-wait">Photo réservée aux adultes</span></span>`;   // v7 — un 13-17 ans ne voit pas les photos (les règles refusent aussi de les lui envoyer)
   return `<button type="button" class="photo-msg" data-photo="${esc(ph.id)}" data-pk="${kind}" data-po="${esc(owner)}" style="aspect-ratio:${w}/${Math.min(h,w*1.6)}" aria-label="Voir la photo en grand">${d&&PHOTO_RE.test(d)?`<img src="${d}" alt="Photo envoyée dans la conversation">`:'<span class="ph-wait">Photo…</span>'}</button>`; };
@@ -5073,10 +5177,60 @@ function shrinkPhoto(file){ return new Promise((ok,no)=>{ const url=URL.createOb
       data=c.toDataURL('image/jpeg',t<2?.78:.62); if(data.length<=PHOTO_LIMIT) break; max=Math.round(max*.75); }
     data.length<=PHOTO_LIMIT&&PHOTO_RE.test(data) ? ok({data,w,h}) : no(new Error('lourd')); };
   img.src=url; }); }
-function photoWire(onDone){ const b=document.getElementById('photobtn'), inp=document.getElementById('photoin'); if(!b||!inp) return;
-  b.onclick=()=>inp.click();
-  inp.onchange=async()=>{ const f=inp.files&&inp.files[0]; inp.value=''; if(!f) return; if(!/^image\//.test(f.type)){ toast("Ce fichier n'est pas une image."); return; }
-    b.disabled=true; try{ onDone(await shrinkPhoto(f)); }catch(e){ toast(e&&e.message==='lourd'?'Cette photo est trop lourde, même réduite.':"Cette image n'a pas pu être lue."); } b.disabled=false; }; }
+// v11 — façon TikTok : la galerie du téléphone s'ouvre (plusieurs photos d'un coup), puis une feuille montre les photos choisies,
+// avec un rond numéroté sur chacune, « + » pour en ajouter, l'appareil photo, et « Envoyer (N) ». Un site ne peut pas afficher toute la galerie lui-même.
+const PS_MAX=10, PS={files:[],urls:[],sel:[],tok:0,send:null};
+function photoWire(onPhoto){ const gal=document.getElementById('photobtn'), gin=document.getElementById('photoin'), cam=document.getElementById('cambtn'), cin=document.getElementById('camin');
+  PS.send=onPhoto;
+  if(gal&&gin) gal.onclick=()=>gin.click();
+  if(cam&&cin) cam.onclick=()=>cin.click();
+  const take=inp=>{ const all=[...(inp.files||[])], fs=all.filter(f=>/^image\//.test(f.type)); inp.value='';
+    if(all.length>fs.length) toast(fs.length?'Seules les photos partent (les vidéos ne sont pas encore possibles).':"Ce fichier n'est pas une photo.");
+    if(fs.length) photoSheet(fs); };
+  if(gin) gin.onchange=()=>take(gin);
+  if(cin) cin.onchange=()=>take(cin); }
+function psReset(){ PS.urls.forEach(u=>{ try{ URL.revokeObjectURL(u); }catch(e){} }); PS.files=[]; PS.urls=[]; PS.sel=[]; }
+const psOpen = () => dlg.open&&dlg.classList.contains('ps');
+function photoSheet(fs){ if(!psOpen()) psReset();
+  const room=Math.max(0,PS_MAX-PS.files.length), add=fs.slice(0,room);
+  if(fs.length>add.length) toast(`${PS_MAX} photos au plus à la fois.`);
+  add.forEach(f=>{ PS.files.push(f); PS.urls.push(URL.createObjectURL(f)); PS.sel.push(PS.files.length-1); });
+  if(psOpen()){ psRender(); return; }
+  const tok=++PS.tok;
+  modal(`<div class="ps-grab" aria-hidden="true"><i></i></div>
+    <div class="ps-head"><button type="button" class="ps-x" data-close aria-label="Fermer">×</button><div class="ps-title"><h3 id="ps-t">Photos</h3><span class="ps-n" id="ps-n" aria-live="polite"></span></div><span aria-hidden="true"></span></div>
+    <div class="ps-grid" id="ps-grid" role="group" aria-labelledby="ps-t"></div>
+    <div class="ps-foot"><button class="btn btn-ac ps-send" type="button" id="ps-send">Envoyer</button></div>`, d=>{
+    d.setAttribute('aria-labelledby','ps-t');
+    d.addEventListener('close',()=>{ d.removeAttribute('aria-labelledby'); if(PS.tok===tok) psReset(); },{once:true});
+    psRender();
+    d.querySelector('#ps-grid').onclick=e=>{ const t=e.target.closest('button'); if(!t) return;
+      if(t.hasAttribute('data-ps-add')){ document.getElementById('photoin')?.click(); return; }
+      if(t.hasAttribute('data-ps-cam')){ document.getElementById('camin')?.click(); return; }
+      const k=+t.dataset.psI; if(!(k>=0)) return; const at=PS.sel.indexOf(k); if(at>=0) PS.sel.splice(at,1); else PS.sel.push(k); psRender(); };
+    d.querySelector('#ps-send').onclick=()=>psSend();
+    sheetDrag(d.querySelector('.ps-grab'),d,()=>d.close());
+    d.querySelector('#ps-send').focus(); }, 'sheet ps'); }
+function psRender(){ const g=document.getElementById('ps-grid'); if(!g) return; const cam=isCoarse()&&!!document.getElementById('camin');
+  g.innerHTML=`${cam?`<button type="button" class="ps-tile ps-cam" data-ps-cam aria-label="Prendre une photo">${CAMERA_SVG}</button>`:''}${PS.files.length<PS_MAX?`<button type="button" class="ps-tile ps-add" data-ps-add aria-label="Ajouter des photos">${PLUS_SVG}</button>`:''}`
+    +PS.files.map((f,k)=>{ const n=PS.sel.indexOf(k)+1; return `<button type="button" class="ps-tile ps-ph${n?' on':''}" data-ps-i="${k}" aria-pressed="${n?'true':'false'}" aria-label="Photo ${k+1}${n?`, choisie en ${n}e`:''}"><img src="${PS.urls[k]}" alt=""><i class="ps-c" aria-hidden="true">${n||''}</i></button>`; }).join('');
+  const n=PS.sel.length, b=document.getElementById('ps-send'), c=document.getElementById('ps-n');
+  if(c) c.textContent=n?`${n} photo${n>1?'s':''} choisie${n>1?'s':''}`:'Aucune photo choisie';
+  if(b){ b.disabled=!n; b.textContent=n>1?`Envoyer (${n})`:'Envoyer'; } }
+// Les photos partent une par une, dans l'ordre des numéros (une par seconde au plus : c'est la règle des messages)
+async function psSend(){ const files=PS.sel.map(k=>PS.files[k]), send=PS.send; if(!files.length||!send) return; dlg.close();
+  let bad=0; for(const f of files){ try{ await send(await shrinkPhoto(f)); }catch(e){ bad++; } }
+  if(bad) toast(bad>1?`${bad} photos n'ont pas pu partir (trop lourdes ou illisibles).`:"Une photo n'a pas pu partir (trop lourde ou illisible).",3500); }
+addEventListener('hashchange',()=>{ if(psOpen()) dlg.close(); });
+// Une feuille qui se ferme en la tirant vers le bas (elle suit le doigt ; un geste rapide suffit)
+function sheetDrag(handle,el,close){ if(!handle||!el) return; let y0=0, dy=0, on=false, pts=[];
+  handle.addEventListener('pointerdown',e=>{ if(e.button>0) return; on=true; y0=e.clientY; dy=0; pts=[[performance.now(),e.clientY]]; el.style.transition='none'; try{ handle.setPointerCapture(e.pointerId); }catch(er){} });
+  handle.addEventListener('pointermove',e=>{ if(!on) return; dy=e.clientY-y0; pts.push([performance.now(),e.clientY]); if(pts.length>6) pts.shift(); el.style.transform=`translateY(${dy>0?dy:dy/5}px)`; });
+  const end=()=>{ if(!on) return; on=false; const a=pts[0], b=pts[pts.length-1], v=(b[1]-a[1])/Math.max(1,b[0]-a[0]);
+    el.style.transition='transform .22s cubic-bezier(.23,1,.32,1)';
+    if(dy>Math.min(140,el.offsetHeight*.3)||(v>.5&&dy>16)){ el.style.transform='translateY(100%)'; setTimeout(()=>{ el.style.transition=''; el.style.transform=''; close(); },200); }
+    else { el.style.transform=''; setTimeout(()=>{ el.style.transition=''; },240); } };
+  handle.addEventListener('pointerup',end); handle.addEventListener('pointercancel',end); }
 // Les photos se chargent quand leur bulle arrive à l'écran
 let _photoIO=null;
 function photoWatch(){ const els=document.querySelectorAll('.photo-msg:not([data-ok])'); if(!els.length) return;
@@ -5103,7 +5257,6 @@ const STICKER_TEXT='✨ Sticker', STK_RE=/^data:image\/(webp|png|jpeg);base64,/,
 const STK={};   // stickers déjà chargés : id → { data, n, shape } (en mémoire seulement)
 const canSticker = () => !!(window.FileReader&&document.createElement('canvas').getContext) && myGroupNow()==='adult';
 const STK_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 12.5V8a4.5 4.5 0 0 0-4.5-4.5H8A4.5 4.5 0 0 0 3.5 8v8A4.5 4.5 0 0 0 8 20.5h4.5z"/><path d="M12.5 20.5a8 8 0 0 0 8-8h-3.5a4.5 4.5 0 0 0-4.5 4.5z"/><circle cx="9" cy="10" r=".9" fill="currentColor"/><circle cx="15" cy="10" r=".9" fill="currentColor"/><path d="M8.6 14.2c.9.8 2 1.2 3.2 1.1"/></svg>';
-const stkBtn = (ok=true) => canSticker()&&ok ? `<button class="btn mic-btn stk-btn" type="button" id="stkbtn" aria-label="Stickers" title="Stickers">${STK_SVG}</button>` : '';
 const stkFavKey = () => 'coopo_stkfav_'+(S.auth&&S.auth.uid||'local');
 function stkFavs(){ try{ const a=JSON.parse(localStorage.getItem(stkFavKey())||'[]'); return Array.isArray(a)?a.filter(x=>typeof x==='string'&&/^[A-Za-z0-9]{8,40}$/.test(x)).slice(0,60):[]; }catch(e){ return []; } }
 function stkFavSet(a){ try{ localStorage.setItem(stkFavKey(),JSON.stringify(a.slice(0,60))); }catch(e){} }
@@ -5121,48 +5274,125 @@ function stickerWatch(root=document){ const els=root.querySelectorAll('.stk-msg[
   if(!_stkIO) _stkIO=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ _stkIO.unobserve(e.target); load(e.target); } }),{rootMargin:'200px'});
   els.forEach(el=>{ if(STK[el.dataset.stk]){ stkPaint(el,STK[el.dataset.stk]); } else _stkIO.observe(el); }); }
 
-/* -- Le tiroir à stickers : mes stickers, mes favoris, « Créer » -- */
-let STK_SEND=null;   // envoi du sticker choisi dans la conversation ouverte
-function stickerWire(send){ STK_SEND=send; const b=document.getElementById('stkbtn'); if(b) b.onclick=()=>stickerTray(); }
-async function stickerTray(manage){ if(!canSticker()) return;
-  modal(`<div class="stk-tray"><div class="stk-head"><h3>Stickers</h3><button class="btn btn-ac btn-sm" type="button" data-stk-new>${STK_SVG} Créer</button></div>
-    <div class="stk-grid${manage?' manage':''}" id="stk-grid"><p class="muted">Chargement…</p></div>
-    <div class="dlg-actions"><button class="btn btn-ghost" type="button" data-stk-manage>${manage?'Terminé':'Gérer'}</button><button class="btn btn-ghost" type="button" data-close>Fermer</button></div></div>`, d=>{
-    d.querySelector('[data-stk-new]').onclick=()=>stickerSource();
-    d.querySelector('[data-stk-manage]').onclick=()=>stickerTray(!manage); });
-  const mine=await DB.myStickers(), favs=stkFavs().filter(id=>!mine.some(s=>s.id===id));
-  const grid=document.getElementById('stk-grid'); if(!grid) return;
-  const tile=(id,own)=>`<div class="stk-tile"><button type="button" class="stk-pick" data-stk-send="${esc(id)}" aria-label="Envoyer ce sticker"><span class="stk-msg" data-stk="${esc(id)}"></span></button>${manage?`<button type="button" class="stk-x" data-stk-${own?'del':'unfav'}="${esc(id)}" aria-label="${own?'Supprimer ce sticker':'Retirer de mes stickers'}">×</button>`:''}</div>`;
-  grid.innerHTML = mine.length||favs.length ? `${mine.length?`<p class="stk-cap">Créés par toi</p>${mine.map(s=>tile(s.id,true)).join('')}`:''}${favs.length?`<p class="stk-cap">Ajoutés</p>${favs.map(id=>tile(id,false)).join('')}`:''}`
-    : `<div class="stk-empty"><p><b>Pas encore de sticker</b></p><p class="muted">Crée le tien à partir d'une photo ou d'une courte vidéo.</p></div>`;
-  stickerWatch(grid);
-  grid.querySelectorAll('[data-stk-send]').forEach(b=>b.onclick=async()=>{ if(manage||!STK_SEND) return; const id=b.dataset.stkSend, s=STK[id]||await DB.loadSticker(id);
-    if(!s){ toast("Ce sticker n'existe plus."); stkFavSet(stkFavs().filter(x=>x!==id)); stickerTray(); return; } dlg.close(); STK_SEND({id,n:s.n}); });
-  grid.querySelectorAll('[data-stk-del]').forEach(b=>b.onclick=()=>modal(`<h3>Supprimer ce sticker ?</h3><p class="muted">Il disparaîtra aussi des conversations où tu l'as envoyé, et des stickers de ceux qui l'avaient ajouté.</p>
+/* -- v11 — Panneau stickers et emojis, façon TikTok --
+   Il monte du bas de l'écran, sous la zone d'écriture, à la place du clavier : onglet Stickers (« Récemment utilisés », puis
+   « Enregistré » avec la case + pour créer un sticker à partir d'une photo ou d'une vidéo) et onglet Emojis (ajoutés dans le champ).
+   Un appui sur un sticker l'envoie ; le panneau reste ouvert. Les 13-17 ans, et les conversations avec un 13-17 ans, n'ont que les emojis.
+   Au-dessus de la zone d'écriture, quand l'autre vient d'écrire : « Appuie sur un sticker pour répondre » avec mes stickers. */
+const STAR_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.6l2.6 5.2 5.8.9-4.2 4.1 1 5.7L12 16.8l-5.2 2.7 1-5.7-4.2-4.1 5.8-.9z"/></svg>';
+const SMILE_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><path d="M8.4 14.1c.9 1.3 2.2 2 3.6 2s2.7-.7 3.6-2"/><path d="M9.1 9.7h.01M14.9 9.7h.01" stroke-width="2.7"/></svg>';
+const KBD_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12.5" rx="2.6"/><path d="M6.6 10.1h.01M10.2 10.1h.01M13.8 10.1h.01M17.4 10.1h.01M6.6 14.3h.01M17.4 14.3h.01" stroke-width="2.5"/><path d="M9.8 14.4h4.4"/></svg>';
+const BKSP_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.2 5.5h10.3a1.5 1.5 0 0 1 1.5 1.5v10a1.5 1.5 0 0 1-1.5 1.5H9.2L3 12z"/><path d="M12.6 9.6l4.8 4.8M17.4 9.6l-4.8 4.8"/></svg>';
+const EMOJIS='😂 🤣 😭 😍 🥰 😘 😊 😁 😅 😆 😉 😎 🤩 🥳 😏 😒 🙄 😤 😡 🤬 😱 😳 🥺 😢 😩 😴 🤔 🤫 🤭 🙃 😇 🤑 🤡 💀 👻 🤖 💩 🙈 🙊 😬 🥵 🥶 🤯 😮 😐 🤐 🤤 😋 ❤️ 🧡 💛 💚 💙 💜 🖤 🤍 💔 ❤️‍🔥 💕 💖 💯 🔥 ✨ ⭐ 💥 💫 ✅ ❌ ⚠️ ❓ ❗ 💤 👍 👎 👏 🙌 🙏 🤝 💪 ✌️ 🤞 🤙 👋 👊 ✊ 🫡 🫶 👀 👌 🤌 ☝️ 👉 🎮 🕹️ 🏆 🥇 🎯 ⚽ 🏀 🎉 🎊 🎁 🎂 🎧 🎤 📱 💻 ⏰ 💰 💸 🍕 🍔 🍟 🍗 🍿 🥤 ☕ 🍫 🐐 🦁 🐍 🐶 🐱 🐸 🦊 🐼 🦅 🐒 🇨🇮 🇸🇳 🇨🇲 🇧🇫 🇲🇱 🇬🇳 🇹🇬 🇧🇯 🇬🇦 🇨🇩 🇲🇦 🇫🇷'.split(' ');
+const CP={open:false,tab:'stk',pick:'stk',stk:false,manage:false};   // le panneau de la conversation ouverte (pick : le dernier onglet choisi)
+let STK_SEND=null;   // envoi d'un sticker dans la conversation ouverte
+const cpBtn = () => `<button class="btn mic-btn cp-btn" type="button" id="cpbtn" aria-label="Stickers et emojis" aria-expanded="false" aria-controls="cpanel" title="Stickers et emojis"><span class="cp-ico-a">${STK_SVG}</span><span class="cp-ico-k">${KBD_SVG}</span></button>`;
+const cpanelHTML = () => `<div class="cpanel" id="cpanel" role="region" aria-label="Stickers et emojis" hidden>
+  <div class="cp-grab" aria-hidden="true"><i></i></div>
+  <div class="cp-tabs" role="group" aria-label="Stickers ou emojis"><button type="button" class="cp-tab" data-cpt="stk" aria-label="Stickers" aria-pressed="true">${STAR_SVG}</button><button type="button" class="cp-tab" data-cpt="emo" aria-label="Emojis" aria-pressed="false">${SMILE_SVG}</button><button type="button" class="cp-bk" data-cp-bk aria-label="Effacer le dernier caractère" title="Effacer">${BKSP_SVG}</button></div>
+  <div class="cp-body" id="cp-body"></div>
+  <input type="file" id="stk-file" accept="image/jpeg,image/png,image/webp,video/*" hidden></div>`;
+const qrHTML = () => `<div class="qr-stk" id="qr-stk" hidden><div class="qr-pill"><span>Appuie sur un sticker pour répondre</span><button type="button" class="qr-x" data-qr-x aria-label="Masquer les stickers de réponse">×</button></div><div class="qr-row"></div></div>`;
+// Mémoire de l'appareil : stickers et emojis récents, bandeaux de réponse masqués
+const lsList = (k,max,ok) => { try{ const a=JSON.parse(localStorage.getItem(k)||'[]'); return Array.isArray(a)?a.filter(ok).slice(0,max):[]; }catch(e){ return []; } };
+const lsSet = (k,v) => { try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} };
+const STK_ID = x => typeof x==='string'&&/^[A-Za-z0-9]{8,40}$/.test(x);
+const stkRecKey = () => 'coopo_stkrec_'+(S.auth&&S.auth.uid||'local');
+const stkRecent = () => lsList(stkRecKey(),8,STK_ID);
+const stkRecPush = id => lsSet(stkRecKey(),[id,...stkRecent().filter(x=>x!==id)].slice(0,8));
+const stkRecDrop = id => lsSet(stkRecKey(),stkRecent().filter(x=>x!==id));
+const emoRecent = () => lsList('coopo_emorec',16,x=>typeof x==='string'&&x.length<=16);
+const emoRecPush = em => lsSet('coopo_emorec',[em,...emoRecent().filter(x=>x!==em)].slice(0,16));
+function stkMineCached(){ try{ const c=JSON.parse(localStorage.getItem(DB.stkIdxKey())||'null'); return c&&Array.isArray(c.list)?c.list.map(x=>x&&x.id).filter(STK_ID):[]; }catch(e){ return []; } }
+// Le panneau de la conversation qui s'ouvre : stickers permis ou non ici, et ce qui envoie un sticker
+function cpWire(send,stkOk){ STK_SEND=send; CP.open=false; CP.manage=false; CP.stk=!!stkOk&&canSticker(); CP.tab=CP.stk?CP.pick:'emo';
+  const b=document.getElementById('cpbtn'), pn=document.getElementById('cpanel'), i=document.getElementById('chatin'), qr=document.getElementById('qr-stk'); if(!b||!pn) return;
+  b.onclick=()=>CP.open?cpClose(true):cpOpen();
+  pn.querySelectorAll('[data-cpt]').forEach(t=>t.onclick=()=>{ CP.tab=CP.pick=t.dataset.cpt; CP.manage=false; cpRender(); });
+  pn.querySelector('[data-cp-bk]').onclick=()=>emoBack();
+  pn.querySelector('#stk-file').onchange=e=>{ const inp=e.target, f=inp.files&&inp.files[0]; inp.value=''; if(!f) return;
+    if(/^video\//.test(f.type)) stickerEditor(f,true); else if(/^image\//.test(f.type)) stickerEditor(f,false); else toast("Ce fichier n'est ni une photo ni une vidéo."); };
+  pn.querySelector('#cp-body').addEventListener('click',cpClick);
+  qr&&qr.addEventListener('click',e=>{ const t=e.target.closest('button'); if(!t) return;
+    if(t.hasAttribute('data-qr-x')){ qrDismiss(); return; }
+    if(t.dataset.stkSend){ qr.hidden=true; stkSendId(t.dataset.stkSend,t); } });
+  i&&i.addEventListener('focus',()=>{ if(CP.open&&isCoarse()) cpClose(false); });   // le clavier remplace le panneau, comme sur TikTok
+  sheetDrag(pn.querySelector('.cp-grab'),pn,()=>cpClose(false));
+  cpSync(); }
+function cpOpen(tab){ const pn=document.getElementById('cpanel'); if(!pn) return; if(tab) CP.tab=CP.pick=tab; if(!CP.stk) CP.tab='emo';
+  CP.open=true; CP.manage=false; pn.hidden=false; pn.style.transform=''; if(isCoarse()) document.getElementById('chatin')?.blur();
+  cpRender(); cpSync(); qrUpdate(); const cb=document.getElementById('chatbox'); if(cb) cb.scrollTop=cb.scrollHeight; }
+function cpClose(focus){ const pn=document.getElementById('cpanel'); CP.open=false; CP.manage=false; if(pn){ pn.hidden=true; pn.style.transform=''; } cpSync(); qrUpdate(); if(focus) document.getElementById('chatin')?.focus(); }
+function cpSync(){ const b=document.getElementById('cpbtn'); if(!b) return; b.classList.toggle('on',CP.open); b.setAttribute('aria-expanded',CP.open?'true':'false');
+  const l=CP.open?'Revenir au clavier':CP.stk?'Stickers et emojis':'Emojis'; b.setAttribute('aria-label',l); b.title=l; }
+async function cpRender(){ const pn=document.getElementById('cpanel'), body=document.getElementById('cp-body'); if(!pn||!body||!CP.open) return;
+  if(!CP.stk) CP.tab='emo';
+  pn.classList.toggle('emo',CP.tab==='emo'); pn.classList.toggle('solo',!CP.stk);
+  pn.querySelectorAll('[data-cpt]').forEach(t=>{ t.setAttribute('aria-pressed',t.dataset.cpt===CP.tab?'true':'false'); t.hidden=!CP.stk; });
+  const tok=cpRender.tok=(cpRender.tok||0)+1;
+  if(CP.tab==='emo'){ const rec=emoRecent(), btn=em=>`<button type="button" class="cp-emo" data-emo="${esc(em)}">${esc(em)}</button>`;
+    body.innerHTML=`${rec.length?`<p class="cp-cap">Récemment utilisés</p><div class="cp-emos">${rec.map(btn).join('')}</div>`:''}<p class="cp-cap">Emojis</p><div class="cp-emos">${EMOJIS.map(btn).join('')}</div>`; return; }
+  if(!body.querySelector('.cp-grid')) body.innerHTML='<p class="cp-hint">Chargement…</p>';
+  const mine=(await DB.myStickers()).map(x=>x.id).filter(STK_ID);
+  if(tok!==cpRender.tok||!CP.open||CP.tab!=='stk') return;
+  const favs=stkFavs(), saved=[...mine,...favs.filter(id=>!mine.includes(id))], m=CP.manage, rec=m?[]:stkRecent();
+  const tile=(id,kind)=>`<div class="cp-tile"><button type="button" class="cp-pick" data-stk-send="${esc(id)}" aria-label="Envoyer ce sticker"><span class="stk-msg" data-stk="${esc(id)}"></span></button>${kind?`<button type="button" class="stk-x" data-stk-${kind}="${esc(id)}" aria-label="${kind==='del'?'Supprimer ce sticker':'Retirer de mes stickers'}">×</button>`:''}</div>`;
+  body.innerHTML=`${rec.length?`<p class="cp-cap">Récemment utilisés</p><div class="cp-grid">${rec.map(id=>tile(id,'')).join('')}</div>`:''}
+    <div class="cp-cap cp-cap-row"><span>Enregistré</span>${saved.length?`<button type="button" class="cp-manage" data-cp-manage aria-pressed="${m?'true':'false'}">${m?'Terminé':'Gérer'}</button>`:''}</div>
+    <div class="cp-grid${m?' manage':''}">${m?'':`<button type="button" class="cp-pick cp-new" data-stk-new aria-label="Créer un sticker à partir d'une photo ou d'une vidéo">${PLUS_SVG}</button>`}${saved.map(id=>tile(id,m?(mine.includes(id)?'del':'unfav'):'')).join('')}</div>
+    ${saved.length?'':`<p class="cp-hint">Appuie sur + pour créer ton sticker à partir d'une photo ou d'une courte vidéo.</p>`}`;
+  stickerWatch(body); }
+function cpClick(e){ const t=e.target.closest('button'); if(!t) return;
+  if(t.dataset.emo){ emoInsert(t.dataset.emo); return; }
+  if(t.hasAttribute('data-stk-new')){ document.getElementById('stk-file')?.click(); return; }
+  if(t.hasAttribute('data-cp-manage')){ CP.manage=!CP.manage; cpRender(); return; }
+  if(t.dataset.stkDel){ const id=t.dataset.stkDel;
+    modal(`<h3>Supprimer ce sticker ?</h3><p class="muted">Il disparaîtra aussi des conversations où tu l'as envoyé, et des stickers de ceux qui l'avaient ajouté.</p>
       <div class="dlg-actions"><button class="btn btn-ghost" type="button" data-close>Annuler</button><button class="btn btn-danger" type="button" id="stk-del-ok">Supprimer</button></div>`,
-    d2=>d2.querySelector('#stk-del-ok').onclick=async()=>{ d2.querySelector('#stk-del-ok').disabled=true; if(await DB.deleteSticker(b.dataset.stkDel)) toast('Sticker supprimé'); stickerTray(true); }));
-  grid.querySelectorAll('[data-stk-unfav]').forEach(b=>b.onclick=()=>{ stkFavSet(stkFavs().filter(x=>x!==b.dataset.stkUnfav)); stickerTray(true); }); }
+      d2=>d2.querySelector('#stk-del-ok').onclick=async()=>{ d2.querySelector('#stk-del-ok').disabled=true; if(await DB.deleteSticker(id)){ stkRecDrop(id); toast('Sticker supprimé'); } d2.close(); cpRender(); qrUpdate(); }); return; }
+  if(t.dataset.stkUnfav){ stkFavSet(stkFavs().filter(x=>x!==t.dataset.stkUnfav)); stkRecDrop(t.dataset.stkUnfav); cpRender(); qrUpdate(); return; }
+  if(t.dataset.stkSend&&!CP.manage) stkSendId(t.dataset.stkSend,t); }
+// Envoyer un sticker d'un appui (depuis le panneau ou le bandeau de réponse)
+async function stkSendId(id,el){ if(!STK_SEND||!CP.stk) return;
+  if(el){ el.classList.add('sent'); setTimeout(()=>el.classList.remove('sent'),180); }
+  const s=STK[id]||await DB.loadSticker(id);
+  if(!s){ toast("Ce sticker n'existe plus."); stkFavSet(stkFavs().filter(x=>x!==id)); stkRecDrop(id); cpRender(); qrUpdate(); return; }
+  stkRecPush(id); STK_SEND({id,n:s.n}); }
+// Emojis : ajoutés là où se trouve le curseur ; le bouton ⌫ efface le dernier
+function emoInsert(em){ const i=document.getElementById('chatin'); if(!i||i.value.length+em.length>500) return;
+  const a=i.selectionStart??i.value.length, z=i.selectionEnd??a; try{ i.setRangeText(em,a,z,'end'); }catch(e){ i.value+=em; }
+  i.dispatchEvent(new Event('input',{bubbles:true})); emoRecPush(em); if(!isCoarse()) i.focus(); }
+function emoBack(){ const i=document.getElementById('chatin'); if(!i||!i.value) return; const z=i.selectionEnd??i.value.length, a=i.selectionStart??z;
+  if(a!==z) i.setRangeText('',a,z,'end');
+  else if(z>0){ const before=i.value.slice(0,z); let cut=1;
+    try{ const g=[...new Intl.Segmenter('fr',{granularity:'grapheme'}).segment(before)]; cut=g.length?g[g.length-1].segment.length:1; }catch(e){ cut=/[\uD800-\uDBFF][\uDC00-\uDFFF]$/.test(before)?2:1; }
+    i.setRangeText('',z-cut,z,'end'); }
+  i.dispatchEvent(new Event('input',{bubbles:true})); }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&CP.open&&!dlg.open&&e.target&&e.target.closest&&e.target.closest('#cpanel,#chatform')){ e.preventDefault(); cpClose(true); } });
+// « Appuie sur un sticker pour répondre » : quand le dernier message vient de l'autre (moins de 24 h), avec mes stickers récents et enregistrés
+const QR={key:'',last:null};   // la conversation ouverte ('c:<mate>' ou 'g:<groupe>') et son dernier message
+const qrKey = () => 'coopo_qrx_'+(S.auth&&S.auth.uid||'local');
+const qrMark = m => m?String(m.id||m.at||''):'';
+function qrDismiss(){ const el=document.getElementById('qr-stk'); if(el) el.hidden=true; try{ const o=JSON.parse(localStorage.getItem(qrKey())||'{}')||{}; delete o[QR.key]; o[QR.key]=qrMark(QR.last);
+    const ks=Object.keys(o); ks.slice(0,Math.max(0,ks.length-60)).forEach(k=>delete o[k]); localStorage.setItem(qrKey(),JSON.stringify(o)); }catch(e){} }
+function qrUpdate(){ const el=document.getElementById('qr-stk'); if(!el) return; const m=QR.last;
+  let off=!CP.stk||CP.open||!!EDIT||!m||m.mine||m.del||Date.now()-tsMs(m.at)>864e5;
+  if(!off){ try{ off=(JSON.parse(localStorage.getItem(qrKey())||'{}')||{})[QR.key]===qrMark(m); }catch(e){} }
+  const ids=off?[]:[...new Set([...stkRecent(),...stkMineCached(),...stkFavs()])].slice(0,10);
+  if(!ids.length&&!off&&!qrUpdate.tried){ let c=null; try{ c=localStorage.getItem(DB.stkIdxKey()); }catch(e){}   // mes stickers pas encore connus sur cet appareil : on les demande une fois
+    if(!c){ qrUpdate.tried=true; DB.myStickers().then(()=>qrUpdate()).catch(()=>{}); } }
+  if(!ids.length){ el.hidden=true; return; }
+  const sig=ids.join(','); if(el.dataset.sig!==sig){ el.dataset.sig=sig; el.querySelector('.qr-row').innerHTML=ids.map(id=>`<button type="button" class="qr-pick" data-stk-send="${esc(id)}" aria-label="Répondre avec ce sticker"><span class="stk-msg" data-stk="${esc(id)}"></span></button>`).join(''); }
+  el.hidden=false; stickerWatch(el); }
 // Un sticker reçu, en grand : l'ajouter à mes stickers
-document.addEventListener('click',e=>{ const el=e.target.closest('.stk-msg[data-stk][data-ok]'); if(!el||el.closest('.stk-tray')||el.classList.contains('stk-gone')) return; const id=el.dataset.stk, s=STK[id]; if(!s) return;
+document.addEventListener('click',e=>{ const el=e.target.closest('.stk-msg[data-stk][data-ok]'); if(!el||el.closest('.cpanel,.qr-stk')||el.classList.contains('stk-gone')) return; const id=el.dataset.stk, s=STK[id]; if(!s) return;
   const mine=!!el.dataset.mine, fav=stkFavs().includes(id);
   modal(`<div class="stk-view"><span class="stk-msg stk-big" data-stk="${esc(id)}"></span></div>
     <div class="dlg-actions">${mine?'':`<button class="btn ${fav?'btn-ghost':'btn-ac'}" type="button" id="stk-fav">${fav?'Retirer de mes stickers':'Ajouter à mes stickers'}</button>`}<button class="btn btn-ghost" type="button" data-close>Fermer</button></div>`, d=>{
     stkPaint(d.querySelector('.stk-big'),s);
     d.querySelector('#stk-fav')?.addEventListener('click',()=>{ const a=stkFavs(); stkFavSet(fav?a.filter(x=>x!==id):[id,...a.filter(x=>x!==id)]); toast(fav?'Retiré de tes stickers':'Ajouté à tes stickers'); d.close(); }); }); });
 
-/* -- Créer un sticker : choisir une photo ou une vidéo, puis la cadrer -- */
-function stickerSource(){
-  modal(`<h3>Nouveau sticker</h3><p class="muted">À partir de quoi ?</p>
-    <div class="stk-src"><button class="btn" type="button" data-src="image">${IMG_SVG} Une photo</button><button class="btn" type="button" data-src="video">${VID_SVG} Une vidéo</button></div>
-    <input type="file" id="stk-file" accept="image/jpeg,image/png,image/webp" hidden>
-    <p class="hint">La vidéo devient un sticker animé de 3 secondes au plus, sans le son.</p>
-    <div class="dlg-actions"><button class="btn btn-ghost" type="button" data-stk-back>Retour</button></div>`, d=>{
-    const inp=d.querySelector('#stk-file');
-    d.querySelectorAll('[data-src]').forEach(b=>b.onclick=()=>{ inp.accept=b.dataset.src==='video'?'video/*':'image/jpeg,image/png,image/webp'; inp.click(); });
-    d.querySelector('[data-stk-back]').onclick=()=>stickerTray();
-    inp.onchange=()=>{ const f=inp.files&&inp.files[0]; inp.value=''; if(!f) return;
-      if(/^video\//.test(f.type)) stickerEditor(f,true); else if(/^image\//.test(f.type)) stickerEditor(f,false); else toast("Ce fichier n'est ni une photo ni une vidéo."); }; }); }
-const VID_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2.5"/><path d="M16 10.5l5-3v9l-5-3"/></svg>';
+/* -- Créer un sticker : la photo ou la vidéo choisie (case + du panneau) est cadrée ici -- */
 // Dessine une image du sticker : la photo (ou l'image de la vidéo) cadrée, découpée selon la forme, avec contour et texte
 function stkDraw(ctx,src,S,o,flat){ const sw=src.videoWidth||src.naturalWidth||1, sh=src.videoHeight||src.naturalHeight||1;
   const shape=flat?'sq':o.shape, edge=!flat&&o.border&&shape!=='sq', bw=edge?Math.round(S*.045):0, pad=edge?bw/2+1:0, inner=S-2*pad;
@@ -5216,11 +5446,11 @@ async function stickerEditor(file,isVid){
     let drag=null; cv.addEventListener('pointerdown',e=>{ drag={x:e.clientX,y:e.clientY,ox:o.ox,oy:o.oy}; try{ cv.setPointerCapture(e.pointerId); }catch(er){} });
     cv.addEventListener('pointermove',e=>{ if(!drag) return; const r=cv.getBoundingClientRect(); o.ox=Math.max(-1,Math.min(1,drag.ox+(e.clientX-drag.x)/r.width)); o.oy=Math.max(-1,Math.min(1,drag.oy+(e.clientY-drag.y)/r.height)); re(); });
     const up=()=>{ drag=null; }; cv.addEventListener('pointerup',up); cv.addEventListener('pointercancel',up);
-    d.querySelector('[data-stk-back]').onclick=()=>stickerSource();
+    d.querySelector('[data-stk-back]').onclick=()=>d.close();
     d.querySelector('#stk-make').onclick=async()=>{ const b=d.querySelector('#stk-make'), err=d.querySelector('#stk-err'); b.disabled=true; err.textContent=''; alive=false; cancelAnimationFrame(raf);
       try{ const out=await stickerBuild(src,o,isVid,n=>{ b.textContent=`Création… ${n}`; }); b.textContent='Envoi…';
         const id=await DB.createSticker(out); if(!id) throw new Error('envoi');
-        STK[id]=out; toast('Sticker créé'); stickerTray(); }
+        STK[id]=out; d.close(); toast('Sticker créé'); if(CP.open) cpRender(); else cpOpen('stk'); qrUpdate(); }
       catch(e){ console.error(e); err.textContent=e&&e.message==='lourd'?'Ce sticker est trop lourd. Essaie une durée plus courte.':e&&e.message==='limite'?'Tu as déjà créé 30 stickers aujourd\'hui. Reviens demain !':"Le sticker n'a pas pu être créé. Réessaie.";
         b.disabled=false; b.textContent='Créer le sticker'; if(isVid){ alive=true; src.play().catch(()=>{}); const loop=()=>{ if(!alive) return; if(src.currentTime<o.start||src.currentTime>o.start+o.len) try{ src.currentTime=o.start; }catch(er){} draw(); raf=requestAnimationFrame(loop); }; loop(); } } }; }); }
 // Fabrique l'image finale : 256 px pour une photo ; pour une vidéo, une bande d'images de 160 px côte à côte
@@ -5245,6 +5475,9 @@ const newId = () => { let s=''; const a='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklm
 const canVoice = () => !!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&window.MediaRecorder);
 const MIC_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
 const micBtn = () => canVoice() ? `<button class="btn mic-btn" type="button" id="micbtn" aria-label="Enregistrer un message vocal" title="Message vocal">${MIC_SVG}</button>` : '';
+// v11 — zone d'écriture façon TikTok : l'appareil photo à gauche ; dans la barre, le champ puis le micro, la galerie et le bouton stickers/emojis.
+// Quand on écrit, le micro et la galerie laissent la place au bouton d'envoi.
+const composerHTML = (ph,ok) => `<form class="chat-form tk" id="chatform">${camBtn(ok)}<div class="cf-pill"><input type="text" id="chatin" placeholder="${ph}" maxlength="500" autocomplete="off" enterkeyhint="send" aria-label="${ph}">${micBtn()}${photoBtn(ok)}${cpBtn()}<button class="btn btn-ac send-btn" type="submit" aria-label="Envoyer"><span class="send-txt">Envoyer</span>${SEND_SVG}</button></div></form>`;
 const vTime = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
 /* Ondes des vocaux (comme sur Snapchat)
    À l'enregistrement, le son est découpé en VW_N tranches ; la force de chaque tranche (0 à 31) tient en un caractère (0 à 9, puis a à v).
@@ -5279,7 +5512,7 @@ const voiceBubble = (v,kind,owner) => { const real=vwOf(v), bars=vwBars(real||vw
 let REC=null;   // enregistrement en cours
 function stopRec(send){ const r=REC; if(!r) return; REC=null; clearInterval(r.tick); r.send=send; try{ if(r.mr.state!=='inactive') r.mr.stop(); else r.finish(); }catch(e){ r.finish(); } }
 async function recordVoice(onDone){
-  if(REC) return; const form=document.getElementById('chatform'); if(!form) return;
+  if(REC) return; const form=document.getElementById('chatform'); if(!form) return; if(CP.open) cpClose(false);
   let stream; try{ stream=await navigator.mediaDevices.getUserMedia({audio:true}); }
   catch(e){ toast(e&&e.name==='NotAllowedError'?'Autorise le micro dans ton navigateur pour envoyer un message vocal.':"Le micro n'est pas disponible sur cet appareil.",4000); return; }
   if(!document.body.contains(form)){ stream.getTracks().forEach(t=>t.stop()); return; }   // le joueur a quitté la conversation entre-temps
@@ -5342,11 +5575,17 @@ const msgFind = (kind,owner,mid) => msgList(kind,owner).find(m=>m.id===mid);
 const msgEditable = m => !!m && !m.del && !m.voice && !m.photo && !m.sticker;
 const MORE_SVG='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5.5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="18.5" cy="12" r="1.9"/></svg>';
 // le contenu d'une bulle
+// v11 — un message fait seulement d'1 à 3 emojis s'affiche en grand, sans bulle (comme sur TikTok)
+const EMO_ONLY=/^(?:[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}\u{1F3FB}-\u{1F3FF}\u{E0020}-\u{E007F}\u200D\uFE0F\u20E3]|\s)+$/u, EMO_ANY=/[\p{Extended_Pictographic}\u{1F1E6}-\u{1F1FF}]/u;
+function jumboN(t){ t=String(t||'').trim(); if(!t||t.length>40||!EMO_ONLY.test(t)||!EMO_ANY.test(t)) return 0; const x=t.replace(/\s+/g,''); let n=0;
+  try{ n=[...new Intl.Segmenter('fr',{granularity:'grapheme'}).segment(x)].length; }catch(e){ n=(x.match(/\p{Extended_Pictographic}/gu)||[]).length; }
+  return n>=1&&n<=3?n:0; }
 function msgBody(m,kind,owner,mine){
   if(m.del) return `<span class="msg-del">${MSG_DEL_TEXT}</span>`;
   if(m.voice) return voiceBubble(m.voice,kind,owner);
   if(m.photo) return photoBubble(m.photo,kind,owner);
   if(m.sticker) return stickerBubble(m.sticker,mine);
+  const jn=jumboN(m.text); if(jn) return `<span class="jumbo j${jn}">${esc(String(m.text).trim())}</span>`;
   return `<span>${esc(m.text)}</span>${mine?'':msgWarn({from:m.from,text:m.text})}`; }
 // le bas d'une bulle : l'heure, « modifié », et sur mes messages le bouton d'options
 const msgMeta = (m,mine,kind,owner) => `${ago(m.at)}${m.edited&&!m.del?' · modifié':''}${mine&&m.id&&!m.del?`<button type="button" class="msg-more" data-mm="${esc(m.id)}" data-mk="${kind}" data-mo="${esc(owner)}" aria-label="Modifier ou supprimer ce message" title="Options du message">${MORE_SVG}</button>`:''}`;
@@ -5361,14 +5600,14 @@ function msgMenu(kind,owner,mid){ const m=msgFind(kind,owner,mid); if(!m||m.del|
       d2=>d2.querySelector('#mm-del-ok').addEventListener('click',()=>{ d2.close(); if(EDIT&&EDIT.id===m.id) endEdit(true); DB.deleteMessage(kind,owner,m.id); }))); }); }
 // Modifier : le texte revient dans la zone d'écriture, avec un bandeau « Modifier le message · Annuler »
 function startEdit(kind,owner,m){ const i=document.getElementById('chatin'), f=document.getElementById('chatform'); if(!i||!f||!msgEditable(m)) return;
-  EDIT={kind,owner,id:m.id,text:m.text};
+  EDIT={kind,owner,id:m.id,text:m.text}; if(CP.open) cpClose(false); qrUpdate();
   let bar=document.getElementById('edit-bar'); if(!bar){ bar=document.createElement('div'); bar.id='edit-bar'; bar.className='edit-bar'; bar.setAttribute('role','status'); f.before(bar); }
   bar.innerHTML=`<span><b>Modifier le message</b><small>${esc(m.text.length>90?m.text.slice(0,90)+'…':m.text)}</small></span><button type="button" class="btn btn-ghost btn-sm" data-edit-cancel>Annuler</button>`;
   f.classList.add('editing'); const sb=f.querySelector('button[type="submit"]'); if(sb){ const t=sb.querySelector('.send-txt'); if(t) t.textContent='Enregistrer'; else sb.textContent='Enregistrer'; sb.setAttribute('aria-label','Enregistrer'); }
   i.value=m.text; i.focus(); try{ i.setSelectionRange(i.value.length,i.value.length); }catch(e){} }
 function endEdit(clear){ EDIT=null; document.getElementById('edit-bar')?.remove(); const f=document.getElementById('chatform');
   if(f){ f.classList.remove('editing'); const sb=f.querySelector('button[type="submit"]'); if(sb){ const t=sb.querySelector('.send-txt'); if(t) t.textContent='Envoyer'; else sb.textContent='Envoyer'; sb.setAttribute('aria-label','Envoyer'); } }
-  if(clear){ const i=document.getElementById('chatin'); if(i) i.value=''; } }
+  if(clear){ const i=document.getElementById('chatin'); if(i) i.value=''; } qrUpdate(); }
 // Le message en cours de modification est enregistré (appelé par l'envoi, après les contrôles habituels) : true si c'était une modification
 function submitEdit(t){ if(!EDIT) return false; const e=EDIT; endEdit(true); if(t!==e.text) DB.editMessage(e.kind,e.owner,e.id,t); return true; }
 { let lpT=0, lpX=0, lpY=0, lpAt=0;   // appui long sur un de mes messages (téléphone) ou clic droit (ordinateur) : le menu du message
@@ -5388,6 +5627,7 @@ function renderChat(id){
       return `<div class="bubble${mine?' me':''}${m.del?' del':''}"${mine&&m.id&&!m.del?` data-own="c|${esc(id)}|${esc(m.id)}"`:''}>${msgBody(m,'c',id,mine)}<small>${msgMeta(m,mine,'c',id)}</small></div>`; }).join('')
     : `<div class="chat-empty"><p class="muted">Première partie ensemble ? Propose un créneau 🎮</p><div class="chips">${QUICK_MSGS.map(t=>`<button type="button" class="chip" data-quick="${esc(t)}">${esc(t)}</button>`).join('')}</div></div>`;
   box.scrollTop=box.scrollHeight;
+  { const lm=msgs[msgs.length-1]; QR.key='c:'+id; QR.last=lm?{id:lm.id,at:lm.at,mine:lm.from==='me',del:!!lm.del}:null; qrUpdate(); }
   { const p=PLAYERS.find(x=>x.id===id), fh=document.getElementById('flame-hint'); if(fh) fh.innerHTML=flameHint(id,p?p.name:'Ton mate'); }
 }
 
@@ -5611,21 +5851,23 @@ function viewGroup(id){ EDIT=null;
   (S.gseen=S.gseen||{})[id]=Date.now(); save(); renderNotifBadge();
   app.innerHTML=`<div class="dm-shell g-shell">${gSide('g:'+id)}<div class="wrap page chat-page"><div class="chat-head">${backLink('#/groupe','Groupes')}<button class="chat-who g-who" type="button" id="ginfo">${gAvatar(g,44)}<div><b>${esc(g.name)}</b><span class="muted" style="font-size:12px">${g.members.length} membre${g.members.length>1?'s':''} · infos</span></div></button>
       ${g.members.length<GROUP_MAX?`<div class="chat-calls"><button class="btn btn-ac g-add-btn" type="button" id="g-add" aria-label="Ajouter des mates" title="Ajouter des mates">${ADDMATE_SVG}<span>Ajouter des mates</span></button></div>`:''}</div>
-    <div class="chat-box" id="chatbox"><p class="muted" style="margin:auto">Chargement des messages…</p></div>
-    <form class="chat-form" id="chatform">${stkBtn(!gHasMinor(g))}<input type="text" id="chatin" placeholder="Écris au groupe…" maxlength="500" autocomplete="off">${photoBtn(!gHasMinor(g))}${micBtn()}<button class="btn btn-ac send-btn" type="submit" aria-label="Envoyer"><span class="send-txt">Envoyer</span>${SEND_SVG}</button></form></div></div>`;
+    <div class="chat-box" id="chatbox"><p class="muted" style="margin:auto">Chargement des messages…</p></div>${qrHTML()}
+    ${composerHTML('Message au groupe…',!gHasMinor(g))}${cpanelHTML()}</div></div>`;
   dmFit(); document.getElementById('ginfo').onclick=()=>groupInfo(id);
   document.getElementById('g-add')?.addEventListener('click',()=>groupInvite(id));
-  photoWire(ph=>{ if(gHasMinor(gById(id))){ toast('Pas de photo dans un groupe où il y a des 13-17 ans.',3500); document.getElementById('photobtn')?.remove(); return; }
-    const pid=newId(); PHOTOS[pid]=ph.data; DB.sendGroupMessage(id,PHOTO_TEXT,null,{id:pid,w:ph.w,h:ph.h}); });
-  document.getElementById('micbtn')?.addEventListener('click',()=>recordVoice(v=>{ const vid=newId(); VOICES[vid]=v.data; DB.sendGroupMessage(id,VOICE_TEXT,{id:vid,dur:v.dur,...(v.w?{w:v.w}:{})}); }));
-  stickerWire(st=>{ if(gHasMinor(gById(id))){ toast('Pas de sticker dans un groupe où il y a des 13-17 ans.',3500); document.getElementById('stkbtn')?.remove(); return; } DB.sendGroupMessage(id,STICKER_TEXT,null,null,st); });
+  const sendG=(text,voice,photo,sticker)=>DB.queueSend(()=>DB.sendGroupMessage(id,text,voice,photo,sticker));   // v11 — un message par seconde au plus, dans l'ordre
+  const noMedia=()=>{ document.getElementById('photobtn')?.remove(); document.getElementById('cambtn')?.remove(); CP.stk=false; if(CP.open) cpRender(); cpSync(); qrUpdate(); };   // il y a un 13-17 ans dans le groupe
+  photoWire(ph=>{ if(gHasMinor(gById(id))){ toast('Pas de photo dans un groupe où il y a des 13-17 ans.',3500); noMedia(); return; }
+    const pid=newId(); PHOTOS[pid]=ph.data; return sendG(PHOTO_TEXT,null,{id:pid,w:ph.w,h:ph.h}); });
+  document.getElementById('micbtn')?.addEventListener('click',()=>recordVoice(v=>{ const vid=newId(); VOICES[vid]=v.data; sendG(VOICE_TEXT,{id:vid,dur:v.dur,...(v.w?{w:v.w}:{})}); }));
+  cpWire(st=>{ if(gHasMinor(gById(id))){ toast('Pas de sticker dans un groupe où il y a des 13-17 ans.',3500); noMedia(); return; } sendG(STICKER_TEXT,null,null,st); },!gHasMinor(g));
   try{ const cb=document.getElementById('chatbox'); if(cb&&'ResizeObserver' in window) new ResizeObserver(()=>{ cb.scrollTop=cb.scrollHeight; }).observe(cb); }catch(e){}
   document.getElementById('chatform').addEventListener('submit',e=>{ e.preventDefault(); const i=document.getElementById('chatin'), t=i.value.trim(); if(!t) return;
     if(myGroupNow()==='minor'&&hasPhone(t)){ toast('Pour ta sécurité, les numéros de téléphone ne peuvent pas être envoyés ici.'); return; }
     if(gHasMinor(gById(id))&&hasPhone(t)){ toast('Il y a des 13-17 ans dans ce groupe : les numéros de téléphone ne peuvent pas être envoyés ici.',3500); return; }
     if(submitEdit(t)) return;   // c'était une modification
-    i.value=''; DB.sendGroupMessage(id,t); });
-  DB.fetchPlayers(g.members).then(ch=>{ if(location.hash!=='#/groupe/'+id) return; if(gHasMinor(gById(id))){ document.getElementById('photobtn')?.remove(); document.getElementById('stkbtn')?.remove(); } if(ch) renderGroupChat(id); }).catch(()=>{});
+    i.value=''; sendG(t); });
+  DB.fetchPlayers(g.members).then(ch=>{ if(location.hash!=='#/groupe/'+id) return; if(gHasMinor(gById(id))) noMedia(); if(ch) renderGroupChat(id); }).catch(()=>{});
   DB.listenGroup(id,()=>{ if(location.hash==='#/groupe/'+id){ (S.gseen=S.gseen||{})[id]=Date.now(); renderGroupChat(id); } });
 }
 let GMSGS={};   // messages du groupe ouvert
@@ -5635,6 +5877,7 @@ function renderGroupChat(id){ const box=document.getElementById('chatbox'), g=gB
         <div class="bubble${mine?' me':''}${m.del?' del':''}"${mine&&m.id&&!m.del?` data-own="g|${esc(id)}|${esc(m.id)}"`:''}>${msgBody(m,'g',id,mine)}<small>${msgMeta(m,mine,'g',id)}${canDel&&!mine&&m.id?` · <button type="button" class="g-del" data-gdel="${esc(m.id)}">Supprimer</button>`:''}</small></div></div></div>`; }).join('')
     : `<div class="chat-empty"><p class="muted">Le groupe est tout neuf. ${g.members.length<2?'Ajoute tes mates, puis lance la discussion 👋':'Lance la discussion 👋'}</p>${g.members.length<2&&g.members.length<GROUP_MAX?`<button class="btn btn-ac" type="button" data-g-add>${ADDMATE_SVG} Ajouter des mates</button>`:''}${(g.invited||[]).length?`<p class="muted">${g.invited.length} invitation${g.invited.length>1?'s':''} en attente.</p>`:''}</div>`;
   box.scrollTop=box.scrollHeight;
+  { const lm=msgs[msgs.length-1]; QR.key='g:'+id; QR.last=lm?{id:lm.id,at:lm.at,mine:lm.from===me,del:!!lm.del}:null; qrUpdate(); }
   box.querySelector('[data-g-add]')?.addEventListener('click',()=>groupInvite(id));
   box.querySelectorAll('[data-gdel]').forEach(b=>b.onclick=()=>DB.deleteGroupMessage(id,b.dataset.gdel)); }
 // Infos du groupe : membres, rôles, invitations, réglages
@@ -6408,6 +6651,13 @@ const DB = {
     last[me]=t; let both=cur.both||0, count=cur.count||0;
     if(last[id]===t && both!==t){ count = both===t-1 ? count+1 : 1; both=t; }   // l'autre a déjà écrit aujourd'hui : la journée est validée
     return { members:[me,id].sort(), last, both, count }; },
+  // v11 — file d'envoi : les messages partent l'un après l'autre, à plus d'une seconde d'écart (les règles refusent 2 messages dans la même seconde).
+  // Un envoi qui traîne (réseau coupé) ne bloque pas la file plus de 4 secondes : il continue tout seul.
+  _sq:Promise.resolve(), _sqLast:0,
+  queueSend(job){ let give; const out=new Promise(r=>give=r);
+    const run=async()=>{ const w=this._sqLast+1150-Date.now(); if(w>0) await new Promise(r=>setTimeout(r,w));
+      const p=Promise.resolve().then(job); give(p); try{ await Promise.race([p,new Promise(r=>setTimeout(r,4000))]); }catch(e){} this._sqLast=Date.now(); };
+    this._sq=this._sq.then(run,run); return out.then(p=>p); },
   async sendMessage(id,m){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; const db=this.db;
     try{ const F=firebase.firestore.FieldValue, pair=this.pairId(id);
       const mk=st=>{ const b=db.batch(), mref=db.collection('chats').doc(pair).collection('messages').doc(); b.set(mref,{from:this.uid(),text:m.text,at:m.at,...(m.voice?{voice:m.voice}:{}),...(m.photo?{photo:m.photo}:{}),...(m.sticker?{sticker:m.sticker}:{})});
