@@ -2290,6 +2290,8 @@ html.lite .flame.warn, html.lite .flame-big{ animation:none; }
   .siderail .notif-btn:hover, .siderail .skin-btn:hover{ background:var(--hair); }
   .siderail .notif-btn .badge{ position:absolute; right:-3px; top:-3px; }
   .siderail .dm-ico.on::before, .siderail .dm-ico.unread::before{ left:-14px; }
+  /* en haut de la conversation, le nom (et sa plaque) s'étire jusqu'aux boutons d'appel */
+  .dm-shell .chat-head .chat-who{ flex:1 1 0 !important; min-width:0; max-width:none; }
   /* la barre des groupes est maintenant dans la colonne de gauche : la messagerie n'a plus que deux colonnes */
   .dm-shell{ grid-template-columns:300px minmax(0,1fr) !important; } .dm-shell .dm-rail{ display:none !important; }
   @media (prefers-reduced-motion:reduce){ .sr-i{ transition:none; } }
