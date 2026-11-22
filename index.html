@@ -2247,7 +2247,7 @@ html.lite .flame.warn, html.lite .flame-big{ animation:none; }
   .chat-page{ position:fixed; left:0; right:0; top:0; z-index:20; width:auto; max-width:none; height:var(--vvh,100dvh) !important; min-height:0; margin:0; padding:0 !important; display:flex; flex-direction:column; background:var(--s1); color:var(--tx); }
   .chat-page .chat-head{ flex:none; margin:0; padding:max(6px,env(safe-area-inset-top)) 6px 6px 2px; gap:4px; background:var(--s1); border-bottom:1px solid var(--hair); }
   .chat-page .chat-head .back{ margin:0; color:var(--tx); min-width:40px; min-height:44px; justify-content:center; font-size:0; gap:0; } .chat-page .chat-head .back svg{ width:22px; height:22px; }
-  .chat-page .chat-who{ flex:1 1 0; min-width:0; padding:0; border:0; border-radius:0; background:none; color:var(--tx); text-align:left; } .chat-page .chat-who .muted{ color:inherit; opacity:.7; }
+  .chat-page .chat-who{ flex:1 1 0 !important; max-width:none; min-width:0; padding:0; border:0; border-radius:0; background:none; color:var(--tx); text-align:left; } .chat-page .chat-who .muted{ color:inherit; opacity:.7; }
   .chat-page .chat-head, .chat-page .chat-head .back, .chat-page .chat-who:not(.plq-on), .chat-page .chat-who:not(.plq-on) b, .chat-page .chat-who:not(.plq-on) span:not(.online){ color:var(--tx) !important; text-shadow:none !important; }
   .chat-page .chat-calls{ gap:0; } .chat-page .call-btn{ background:none; border:0; box-shadow:none; border-radius:8px; color:var(--pk); } .chat-page .call-btn svg{ width:22px; height:22px; }
   .chat-page .flame-hint{ flex:none; margin:0; padding:4px 12px; } .chat-page .flame-hint:empty{ display:none; }
