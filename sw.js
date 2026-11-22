@@ -4,7 +4,7 @@
      (la nouvelle version continue d'arriver en arrière-plan et sera là à la prochaine ouverture).
    - Hors connexion, la dernière version enregistrée s'affiche.
    - Firebase, Google, CinetPay et les polices ne sont jamais mis en cache ici. */
-const CACHE = 'coopo-v36';
+const CACHE = 'coopo-v37';
 const WAIT_MS = 3000;
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 
