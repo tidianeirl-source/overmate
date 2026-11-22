@@ -2388,7 +2388,7 @@ body:not([data-route="profil"]):not([data-route="parametres"]):not([data-route="
 .msg-acts{ flex-wrap:wrap; }
 .edit-bar{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:10px; padding:8px 8px 8px 14px; border-radius:14px; background:var(--s1); border:1px solid var(--line); color:var(--tx); }
 .edit-bar > span{ display:grid; gap:1px; min-width:0; }
-.edit-bar b{ font-size:13px; color:var(--pk); }
+.edit-bar b{ font-size:13px; color:color-mix(in srgb,var(--pk) 62%,var(--tx)); }   /* lisible sur tous les thèmes */
 .edit-bar small{ font-size:13px; color:var(--mu); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .edit-bar .btn{ flex:none; }
 .chat-form.editing .mic-btn{ display:none; }
@@ -2513,6 +2513,35 @@ html.lite .stk-msg.anim{ animation:none; }
 .jumbo.j1{ font-size:56px; }
 .bubble:has(> .jumbo){ background:none !important; border-color:transparent !important; box-shadow:none !important; padding:0 2px !important; color:var(--tx) !important; }
 .bubble:has(> .jumbo) small{ color:var(--mu); opacity:1; }
+
+/* ==== v13 — Appui long sur un message : le menu façon TikTok ==== */
+.mm-ov{ position:fixed; inset:0; z-index:300; }
+.mm-dim{ position:absolute; inset:0; background:rgba(6,8,16,.58); -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px); animation:mmFade .16s ease-out; }
+.mm-lift{ z-index:1; pointer-events:none; animation:mmLift .22s cubic-bezier(.23,1,.32,1); }
+.mm-lift:not(:has(> .stk-msg,> .jumbo)){ box-shadow:0 14px 34px -12px rgba(0,0,0,.55); }
+.mm-menu{ position:fixed; z-index:2; display:grid; min-width:224px; max-width:min(300px,calc(100vw - 24px)); padding:6px; border-radius:18px; background:var(--s1); color:var(--tx); border:1px solid var(--hair); box-shadow:0 20px 50px -10px rgba(0,0,0,.5); transform-origin:var(--mm-ox,left) var(--mm-oy,top); animation:mmIn .18s cubic-bezier(.23,1,.32,1); }
+.mm-it{ display:flex; align-items:center; gap:14px; min-height:48px; padding:0 14px; border:0; border-radius:12px; background:none; color:inherit; font:600 16px/1.2 var(--fb); text-align:left; cursor:pointer; transition:background-color .12s ease; }
+.mm-it svg{ width:22px; height:22px; flex:none; }
+.mm-it:focus{ outline:none; } .mm-it:focus-visible{ outline:2px solid var(--pk); outline-offset:-2px; }
+.mm-it:active{ background:color-mix(in srgb,var(--tx) 10%,transparent); }
+@media (hover:hover) and (pointer:fine){ .mm-it:hover{ background:color-mix(in srgb,var(--tx) 8%,transparent); } }
+.mm-it.danger{ color:color-mix(in srgb,#C62F42 65%,var(--tx)); }   /* rouge plus foncé sur les thèmes clairs, plus clair sur le thème sombre */
+@keyframes mmFade{ from{ opacity:0; } }
+@keyframes mmIn{ from{ opacity:0; transform:scale(.94); } }
+@keyframes mmLift{ from{ transform:scale(.97); } }
+@media (prefers-reduced-motion:reduce){ .mm-dim,.mm-menu,.mm-lift{ animation:none; } }
+.bubble[data-msg]{ transition:transform .3s cubic-bezier(.23,1,.32,1); }
+.bubble.pressing{ transform:scale(.97); }
+@media (pointer:coarse){ .chat-box .bubble{ -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; } }
+/* répondre : la citation en haut de la bulle (une petite carte), et le bandeau au-dessus de la zone d'écriture */
+.msg-reply{ display:grid; gap:1px; min-width:0; max-width:100%; margin:0 0 4px; padding:6px 10px; border:0; border-radius:10px; background:color-mix(in srgb,var(--tx) 7%,var(--field)); color:var(--tx); text-align:left; font:inherit; cursor:pointer; }
+.bubble.me .msg-reply{ background:var(--field); }
+.bubble:has(> .stk-msg[data-stk]:not(.stk-gone)) .msg-reply,.bubble:has(> .jumbo) .msg-reply{ border:1px solid var(--line); }
+.msg-reply b{ font-size:12.5px; color:color-mix(in srgb,var(--pk) 60%,var(--tx)); } .msg-reply span{ font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.msg-reply:focus-visible{ outline:2px solid var(--pk); outline-offset:2px; }
+.bubble.flash{ animation:msgFlash 1.5s ease; }
+@keyframes msgFlash{ 0%,55%{ box-shadow:0 0 0 3px color-mix(in srgb,var(--pk) 60%,transparent); } 100%{ box-shadow:0 0 0 3px transparent; } }
+.reply-x{ min-width:44px; font-size:22px; line-height:1; }
 
 /* ==== v12 — Fond des conversations : le motif du thème (dessiné par chatMotif) ; il reste immobile quand on fait défiler ==== */
 .chat-box,.chat-page .chat-box{ background-color:var(--chat-bg,var(--s1)); background-image:var(--chat-pat,none); background-repeat:repeat; background-position:0 0; }
@@ -5114,8 +5143,8 @@ function viewChat(id){ EDIT=null; chatMotif();
   dmFit();
   // v11 — chaque envoi passe dans la file : un message par seconde au plus (règle Firebase), dans l'ordre, même avec plusieurs photos ou stickers d'affilée
   const here=()=>location.hash==='#/messages/'+id;
-  const sendC=m=>DB.queueSend(async()=>{ m.at=Date.now(); (S.chats[id]||(S.chats[id]=[])).push(m); save(); if(here()) renderChat(id);
-    await DB.sendMessage(id,m); if(here()) renderChat(id); });
+  const sendC=m=>{ const rp=takeReply('c',id); if(rp) m.reply=rp; return DB.queueSend(async()=>{ m.at=Date.now(); (S.chats[id]||(S.chats[id]=[])).push(m); save(); if(here()) renderChat(id);
+    await DB.sendMessage(id,m); if(here()) renderChat(id); }); };
   // Stickers et emojis (stickers jamais avec un 13-17 ans)
   cpWire(st=>{ if(minorP(p)) return; sendC({from:'me',text:STICKER_TEXT,sticker:st}); },!minorP(p));
   renderChat(id);
@@ -5677,20 +5706,85 @@ function msgBody(m,kind,owner,mine){
   if(m.sticker) return stickerBubble(m.sticker,mine);
   const jn=jumboN(m.text); if(jn) return `<span class="jumbo j${jn}">${esc(String(m.text).trim())}</span>`;
   return `<span>${esc(m.text)}</span>${mine?'':msgWarn({from:m.from,text:m.text})}`; }
-// le bas d'une bulle : l'heure, « modifié », et sur mes messages le bouton d'options
-const msgMeta = (m,mine,kind,owner) => `${ago(m.at)}${m.edited&&!m.del?' · modifié':''}${mine&&m.id&&!m.del?`<button type="button" class="msg-more" data-mm="${esc(m.id)}" data-mk="${kind}" data-mo="${esc(owner)}" aria-label="Modifier ou supprimer ce message" title="Options du message">${MORE_SVG}</button>`:''}`;
-function msgMenu(kind,owner,mid){ const m=msgFind(kind,owner,mid); if(!m||m.del||!m.id) return;
-  const what=m.voice?'Message vocal':m.photo?'Photo':m.sticker?'Sticker':`« ${esc(m.text.length>140?m.text.slice(0,140)+'…':m.text)} »`;
-  modal(`<h3>Ton message</h3><p class="muted msg-quote">${what}</p>
-    <div class="dlg-actions msg-acts">${msgEditable(m)?'<button class="btn" type="button" data-mm-copy>Copier</button><button class="btn" type="button" data-mm-edit>Modifier</button>':''}<button class="btn btn-danger" type="button" data-mm-del>Supprimer</button><button class="btn btn-ghost" type="button" data-close>Annuler</button></div>`, d=>{
-    d.querySelector('[data-mm-edit]')?.addEventListener('click',()=>{ d.close(); startEdit(kind,owner,m); });
-    d.querySelector('[data-mm-copy]')?.addEventListener('click',async()=>{ d.close(); try{ await navigator.clipboard.writeText(m.text); toast('Message copié'); }catch(e){ toast("Impossible de copier ici."); } });
-    d.querySelector('[data-mm-del]').addEventListener('click',()=>modal(`<h3>Supprimer ce message ?</h3><p class="muted">Il sera remplacé par « ${MSG_DEL_TEXT} » pour tout le monde. On ne peut pas revenir en arrière.</p>
+// le bas d'une bulle : l'heure, « modifié », et le bouton d'options (tous les messages : répondre, copier ; les miens : modifier, supprimer)
+const msgMeta = (m,mine,kind,owner) => `${ago(m.at)}${m.edited&&!m.del?' · modifié':''}${m.id&&!m.del?`<button type="button" class="msg-more" data-mm="${esc(m.id)}" data-mk="${kind}" data-mo="${esc(owner)}" aria-label="Actions sur ce message" aria-haspopup="menu" title="Options du message">${MORE_SVG}</button>`:''}`;
+/* ---- v13 — Appui long sur un message, façon TikTok ----
+   On garde le doigt sur un message (ou clic droit, ou le bouton ⋯) : le reste de l'écran s'assombrit, le message reste en avant
+   et un menu s'ouvre juste à côté : Répondre et Copier sur tous les messages, Modifier et Supprimer sur les miens.
+   Dans un groupe, le créateur et les modérateurs ont aussi « Supprimer pour tous » sur les messages des autres. */
+const REPLY_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 6.5 4.5 11.5l5 5"/><path d="M5 11.5h9a5.5 5.5 0 0 1 5.5 5.5v1"/></svg>';
+const COPY_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2.2"/><path d="M15.5 8.5V6.2a1.7 1.7 0 0 0-1.7-1.7H6.2a1.7 1.7 0 0 0-1.7 1.7v7.6a1.7 1.7 0 0 0 1.7 1.7h2.3"/></svg>';
+const PEN_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 19.5h4l10.3-10.3a2.1 2.1 0 0 0-3-3L5.5 16.5z"/><path d="M13.8 8.2l3 3"/></svg>';
+const TRASH_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 7h15M9.5 7V5.2c0-.9.7-1.7 1.7-1.7h1.6c1 0 1.7.8 1.7 1.7V7M6.6 7l.9 11.8c.1 1 .9 1.7 1.8 1.7h5.4c1 0 1.7-.7 1.8-1.7L17.4 7"/><path d="M10 11v5.5M14 11v5.5"/></svg>';
+let MM=null;   // le menu ouvert : { ov, back } (back : ce qui reprend le focus quand il se ferme)
+const msgMine = (kind,m) => kind==='g' ? m.from===myId() : m.from==='me';
+function mmClose(){ if(!MM) return; const {ov,back}=MM; MM=null; ov.remove(); try{ if(back&&document.body.contains(back)) back.focus({preventScroll:true}); }catch(e){} }
+function msgMenu(kind,owner,mid,src){ mmClose(); const m=msgFind(kind,owner,mid); if(!m||m.del||!m.id) return;
+  const mine=msgMine(kind,m), g=kind==='g'?gById(owner):null, modDel=kind==='g'&&!mine&&!!g&&gCanMod(g);
+  const bub=(src&&src.closest&&src.closest('.bubble'))||document.querySelector(`#chatbox .bubble[data-mid="${CSS.escape(mid)}"]`);
+  const items=[['reply','Répondre',REPLY_SVG],msgEditable(m)&&['copy','Copier',COPY_SVG],mine&&msgEditable(m)&&['edit','Modifier',PEN_SVG],mine&&['del','Supprimer',TRASH_SVG],modDel&&['gdel','Supprimer pour tous',TRASH_SVG]].filter(Boolean);
+  const ov=document.createElement('div'); ov.className='mm-ov'; ov.id='mm-ov';
+  ov.innerHTML=`<div class="mm-dim" data-mm-close></div><div class="mm-menu" role="menu" aria-label="Actions sur le message">${items.map(([k,l,ic])=>`<button type="button" role="menuitem" class="mm-it${k==='del'||k==='gdel'?' danger':''}" ${k==='gdel'?`data-gdel="${esc(m.id)}"`:`data-mm-${k}`}>${ic}<span>${l}</span></button>`).join('')}</div>`;
+  // le message reste en avant : une copie posée exactement à sa place, au-dessus du voile
+  let r=null, lift=null;
+  if(bub){ const b0=bub.getBoundingClientRect(), w=bub.offsetWidth, h=bub.offsetHeight; r={left:b0.left+b0.width/2-w/2, top:b0.top+b0.height/2-h/2, width:w, height:h};
+    lift=bub.cloneNode(true); lift.classList.remove('pressing','flash'); lift.classList.add('mm-lift'); ['data-msg','data-own','data-mid'].forEach(x=>lift.removeAttribute(x)); lift.setAttribute('aria-hidden','true');
+    lift.querySelectorAll('[id]').forEach(x=>x.removeAttribute('id'));
+    const cs=getComputedStyle(bub); ['paddingTop','paddingRight','paddingBottom','paddingLeft','borderTopLeftRadius','borderTopRightRadius','borderBottomLeftRadius','borderBottomRightRadius','borderTopWidth','borderRightWidth','borderBottomWidth','borderLeftWidth','borderStyle','borderColor','backgroundColor','color','fontSize','lineHeight','gap'].forEach(k=>{ lift.style[k]=cs[k]; });
+    Object.assign(lift.style,{position:'fixed',left:r.left+'px',top:r.top+'px',width:r.width+'px',margin:'0',maxWidth:'none',boxSizing:'border-box'});
+    ov.insertBefore(lift,ov.querySelector('.mm-menu')); }
+  document.body.appendChild(ov);
+  // le menu : sous le message, sinon au-dessus, sinon en bas de l'écran (le message remonte alors juste au-dessus)
+  const menu=ov.querySelector('.mm-menu'), vw=innerWidth, vh=(window.visualViewport&&visualViewport.height)||innerHeight, pad=12, mw=menu.offsetWidth, mh=menu.offsetHeight;
+  let top, left, oy='top';
+  if(r){ left=mine?r.left+r.width-mw:r.left; menu.style.setProperty('--mm-ox',mine?'right':'left');
+    if(r.top+r.height+8+mh<=vh-pad) top=r.top+r.height+8;
+    else if(r.top-8-mh>=pad){ top=r.top-8-mh; oy='bottom'; }
+    else { top=vh-pad-mh; if(lift) lift.style.top=Math.max(pad,top-8-r.height)+'px'; } }
+  else { left=(vw-mw)/2; top=(vh-mh)/2; }
+  left=Math.max(pad,Math.min(vw-pad-mw,left)); top=Math.max(pad,top);
+  menu.style.left=left+'px'; menu.style.top=top+'px'; menu.style.setProperty('--mm-oy',oy);
+  MM={ov,back:src&&src.classList&&src.classList.contains('msg-more')?src:(bub&&bub.querySelector('.msg-more'))||null};
+  ov.addEventListener('click',e=>{ if(e.target.closest('[data-mm-close]')){ mmClose(); return; } const t=e.target.closest('.mm-it'); if(!t) return; mmClose();
+    if(t.hasAttribute('data-mm-reply')) startReply(kind,owner,m);
+    else if(t.hasAttribute('data-mm-copy')) (async()=>{ try{ await navigator.clipboard.writeText(m.text); toast('Message copié'); }catch(er){ toast("Impossible de copier ici."); } })();
+    else if(t.hasAttribute('data-mm-edit')) startEdit(kind,owner,m);
+    else if(t.hasAttribute('data-mm-del')) modal(`<h3>Supprimer ce message ?</h3><p class="muted">Il sera remplacé par « ${MSG_DEL_TEXT} » pour tout le monde. On ne peut pas revenir en arrière.</p>
       <div class="dlg-actions"><button class="btn btn-ghost" type="button" data-close>Annuler</button><button class="btn btn-danger" type="button" id="mm-del-ok">Supprimer</button></div>`,
-      d2=>d2.querySelector('#mm-del-ok').addEventListener('click',()=>{ d2.close(); if(EDIT&&EDIT.id===m.id) endEdit(true); DB.deleteMessage(kind,owner,m.id); }))); }); }
+      d2=>d2.querySelector('#mm-del-ok').addEventListener('click',()=>{ d2.close(); if(EDIT&&EDIT.id===m.id) endEdit(true); if(REPLY&&REPLY.id===m.id) endReply(); DB.deleteMessage(kind,owner,m.id); }));
+    else if(t.hasAttribute('data-gdel')) modal(`<h3>Supprimer ce message pour tout le monde ?</h3><p class="muted">Il sera effacé du groupe pour de bon, avec sa photo ou son vocal.</p>
+      <div class="dlg-actions"><button class="btn btn-ghost" type="button" data-close>Annuler</button><button class="btn btn-danger" type="button" id="gdel-ok">Supprimer</button></div>`,
+      d2=>d2.querySelector('#gdel-ok').addEventListener('click',()=>{ d2.close(); DB.deleteGroupMessage(owner,m.id); })); });
+  ov.addEventListener('keydown',e=>{ const its=[...ov.querySelectorAll('.mm-it')], k=its.indexOf(document.activeElement);
+    if(e.key==='Escape'){ e.preventDefault(); mmClose(); }
+    else if(e.key==='ArrowDown'||e.key==='ArrowUp'||e.key==='Tab'){ e.preventDefault(); const d=e.key==='ArrowUp'||(e.key==='Tab'&&e.shiftKey)?-1:1; its[(k+d+its.length)%its.length]?.focus(); }
+    else if(e.key==='Home'||e.key==='End'){ e.preventDefault(); its[e.key==='Home'?0:its.length-1]?.focus(); } });
+  ov.querySelector('.mm-it')?.focus({preventScroll:true}); }
+addEventListener('hashchange',()=>mmClose());
+// Répondre à un message : un bandeau « Réponse à … » au-dessus de la zone d'écriture ; le prochain message envoyé (texte, sticker, photo ou vocal) le cite.
+// Le message ne garde que { id, from } : la citation montre le message d'origine tel qu'il est aujourd'hui (modifié, ou « Message supprimé »).
+let REPLY=null;   // { kind, owner, id, from } — from : l'identifiant du compte de l'auteur
+const msgUid = (kind,from) => kind==='g'||!DB.live ? from : DB.toUid(from);     // auteur tel qu'affiché ici ('me' pour moi) → identifiant du compte
+const uidLocal = (kind,uid) => kind==='g'||!DB.live ? uid : DB.fromUid(uid);    // et l'inverse
+function replyWho(kind,owner,uid){ const f=uidLocal(kind,uid);
+  if(kind==='g'){ if(f===myId()) return 'Toi'; const p=gPlayer(f); return p&&p.name?p.name:'Un ancien membre'; }
+  if(f==='me') return 'Toi'; const p=PLAYERS.find(x=>x.id===f)||PLAYERS.find(x=>x.id===owner); return p&&p.name?p.name:'Ton mate'; }
+const replyText = m => m.del ? MSG_DEL_TEXT : m.photo ? PHOTO_TEXT : m.voice ? VOICE_TEXT : m.sticker ? STICKER_TEXT : String(m.text||'').replace(/\s+/g,' ').trim();
+const cut = (t,n) => t.length>n ? t.slice(0,n)+'…' : t;
+function startReply(kind,owner,m){ const f=document.getElementById('chatform'), i=document.getElementById('chatin'); if(!f||!i||!m||!m.id) return;
+  if(EDIT) endEdit(true);
+  REPLY={kind,owner,id:m.id,from:msgUid(kind,m.from)};
+  let bar=document.getElementById('reply-bar'); if(!bar){ bar=document.createElement('div'); bar.id='reply-bar'; bar.className='edit-bar reply-bar'; bar.setAttribute('role','status'); f.before(bar); }
+  bar.innerHTML=`<span><b>Réponse à ${esc(replyWho(kind,owner,REPLY.from))}</b><small>${esc(cut(replyText(m),90))}</small></span><button type="button" class="btn btn-ghost btn-sm reply-x" data-reply-cancel aria-label="Ne plus répondre à ce message">×</button>`;
+  i.focus(); }
+function endReply(){ REPLY=null; document.getElementById('reply-bar')?.remove(); }
+function takeReply(kind,owner){ if(!REPLY||REPLY.kind!==kind||REPLY.owner!==owner) return null; const r={id:REPLY.id,from:REPLY.from}; endReply(); return r; }
+// la citation en haut de la bulle (un appui : on remonte jusqu'au message d'origine)
+function replyQuote(m,kind,owner){ const r=m.reply; if(!r||m.del) return ''; const o=msgFind(kind,owner,r.id);
+  return `<button type="button" class="msg-reply" data-goto="${esc(r.id)}" aria-label="Voir le message d'origine"><b>${esc(replyWho(kind,owner,r.from))}</b><span>${esc(cut(o?replyText(o):'Message plus ancien',80))}</span></button>`; }
 // Modifier : le texte revient dans la zone d'écriture, avec un bandeau « Modifier le message · Annuler »
 function startEdit(kind,owner,m){ const i=document.getElementById('chatin'), f=document.getElementById('chatform'); if(!i||!f||!msgEditable(m)) return;
-  EDIT={kind,owner,id:m.id,text:m.text}; if(CP.open) cpClose(false); qrUpdate();
+  EDIT={kind,owner,id:m.id,text:m.text}; endReply(); if(CP.open) cpClose(false); qrUpdate();
   let bar=document.getElementById('edit-bar'); if(!bar){ bar=document.createElement('div'); bar.id='edit-bar'; bar.className='edit-bar'; bar.setAttribute('role','status'); f.before(bar); }
   bar.innerHTML=`<span><b>Modifier le message</b><small>${esc(m.text.length>90?m.text.slice(0,90)+'…':m.text)}</small></span><button type="button" class="btn btn-ghost btn-sm" data-edit-cancel>Annuler</button>`;
   f.classList.add('editing'); const sb=f.querySelector('button[type="submit"]'); if(sb){ const t=sb.querySelector('.send-txt'); if(t) t.textContent='Enregistrer'; else sb.textContent='Enregistrer'; sb.setAttribute('aria-label','Enregistrer'); }
@@ -5700,21 +5794,31 @@ function endEdit(clear){ EDIT=null; document.getElementById('edit-bar')?.remove(
   if(clear){ const i=document.getElementById('chatin'); if(i) i.value=''; } qrUpdate(); }
 // Le message en cours de modification est enregistré (appelé par l'envoi, après les contrôles habituels) : true si c'était une modification
 function submitEdit(t){ if(!EDIT) return false; const e=EDIT; endEdit(true); if(t!==e.text) DB.editMessage(e.kind,e.owner,e.id,t); return true; }
-{ let lpT=0, lpX=0, lpY=0, lpAt=0;   // appui long sur un de mes messages (téléphone) ou clic droit (ordinateur) : le menu du message
-  const open=b=>{ const [k,o,id]=b.dataset.own.split('|'); lpAt=Date.now(); msgMenu(k,o,id); };
-  document.addEventListener('pointerdown',e=>{ const b=e.target.closest('.bubble[data-own]'); clearTimeout(lpT); if(!b||e.button>0||e.target.closest('button,a,audio,input')) return; lpX=e.clientX; lpY=e.clientY; lpT=setTimeout(()=>open(b),480); });
-  const stop=()=>clearTimeout(lpT);
+{ let lpT=0, prT=0, lpX=0, lpY=0, lpAt=0, lpB=null, lpEat=false;   // appui long sur un message (téléphone, ou souris maintenue) ou clic droit (ordinateur) : le menu du message
+  const open=b=>{ const [k,o,id]=b.dataset.msg.split('|'); lpAt=Date.now(); lpEat=true; b.classList.remove('pressing'); try{ navigator.vibrate&&navigator.vibrate(12); }catch(e){} msgMenu(k,o,id,b); };
+  const stop=()=>{ clearTimeout(lpT); clearTimeout(prT); if(lpB){ lpB.classList.remove('pressing'); lpB=null; } };
+  document.addEventListener('pointerdown',e=>{ stop(); lpEat=false; const b=e.target.closest('.bubble[data-msg]'); if(!b||e.button>0||e.target.closest('a,input,.msg-more')) return;
+    lpX=e.clientX; lpY=e.clientY; lpB=b; prT=setTimeout(()=>b.classList.add('pressing'),140); lpT=setTimeout(()=>{ lpB=null; open(b); },480); });
   document.addEventListener('pointerup',stop); document.addEventListener('pointercancel',stop);
-  document.addEventListener('pointermove',e=>{ if(Math.abs(e.clientX-lpX)+Math.abs(e.clientY-lpY)>12) stop(); },{passive:true});
-  document.addEventListener('contextmenu',e=>{ const b=e.target.closest('.bubble[data-own]'); if(!b) return; e.preventDefault(); stop(); if(Date.now()-lpAt>900) open(b); });
-  document.addEventListener('click',e=>{ const mm=e.target.closest('[data-mm]'); if(mm){ msgMenu(mm.dataset.mk,mm.dataset.mo,mm.dataset.mm); return; }
-    if(e.target.closest('[data-edit-cancel]')){ endEdit(true); document.getElementById('chatin')?.focus(); } });
-  document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&EDIT&&e.target&&e.target.id==='chatin'){ e.preventDefault(); endEdit(true); } });
-  addEventListener('hashchange',()=>{ EDIT=null; }); }
+  document.addEventListener('pointermove',e=>{ if(lpB&&Math.abs(e.clientX-lpX)+Math.abs(e.clientY-lpY)>12) stop(); },{passive:true});
+  document.addEventListener('scroll',()=>{ if(lpB) stop(); },true);
+  // le clic qui termine un appui long n'ouvre ni la photo, ni le sticker, ni le vocal (le prochain appui, lui, marche normalement)
+  document.addEventListener('click',e=>{ if(!lpEat) return; lpEat=false; if(e.target.closest&&e.target.closest('.bubble[data-msg]')){ e.preventDefault(); e.stopPropagation(); } },true);
+  document.addEventListener('contextmenu',e=>{ const b=e.target.closest('.bubble[data-msg]'); if(!b) return; e.preventDefault(); stop(); if(Date.now()-lpAt>900) open(b); });
+  document.addEventListener('click',e=>{ const mm=e.target.closest('.msg-more[data-mm]'); if(mm){ msgMenu(mm.dataset.mk,mm.dataset.mo,mm.dataset.mm,mm); return; }
+    const go=e.target.closest('.msg-reply[data-goto]');
+    if(go){ const el=document.querySelector(`#chatbox .bubble[data-mid="${CSS.escape(go.dataset.goto)}"]`);
+      if(el){ el.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'}); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); setTimeout(()=>el.classList.remove('flash'),1500); }
+      else toast('Ce message est trop ancien pour être affiché ici.'); return; }
+    if(e.target.closest('[data-edit-cancel]')){ endEdit(true); document.getElementById('chatin')?.focus(); return; }
+    if(e.target.closest('[data-reply-cancel]')){ endReply(); document.getElementById('chatin')?.focus(); } });
+  document.addEventListener('keydown',e=>{ if(e.key!=='Escape'||!e.target||e.target.id!=='chatin') return;
+    if(EDIT){ e.preventDefault(); endEdit(true); } else if(REPLY){ e.preventDefault(); endReply(); } });
+  addEventListener('hashchange',()=>{ EDIT=null; REPLY=null; stop(); }); }
 function renderChat(id){
   const box=document.getElementById('chatbox'); if(!box) return; const msgs=S.chats[id]||[]; dmRefresh(); setTimeout(photoWatch,0); setTimeout(stickerWatch,0);
   box.innerHTML = msgs.length ? msgs.map(m=>{ const mine=m.from==='me';
-      return `<div class="bubble${mine?' me':''}${m.del?' del':''}"${mine&&m.id&&!m.del?` data-own="c|${esc(id)}|${esc(m.id)}"`:''}>${msgBody(m,'c',id,mine)}<small>${msgMeta(m,mine,'c',id)}</small></div>`; }).join('')
+      return `<div class="bubble${mine?' me':''}${m.del?' del':''}"${m.id?` data-mid="${esc(m.id)}"`:''}${m.id&&!m.del?` data-msg="c|${esc(id)}|${esc(m.id)}"`:''}${mine&&m.id&&!m.del?` data-own="c|${esc(id)}|${esc(m.id)}"`:''}>${replyQuote(m,'c',id)}${msgBody(m,'c',id,mine)}<small>${msgMeta(m,mine,'c',id)}</small></div>`; }).join('')
     : `<div class="chat-empty"><p class="muted">Première partie ensemble ? Propose un créneau 🎮</p><div class="chips">${QUICK_MSGS.map(t=>`<button type="button" class="chip" data-quick="${esc(t)}">${esc(t)}</button>`).join('')}</div></div>`;
   box.scrollTop=box.scrollHeight;
   { const lm=msgs[msgs.length-1]; QR.key='c:'+id; QR.last=lm?{id:lm.id,at:lm.at,mine:lm.from==='me',del:!!lm.del}:null; qrUpdate(); }
@@ -5811,6 +5915,7 @@ const normG = g => { ['mods','members','invited','kicked'].forEach(k=>{ if(!Arra
 const tsMs = v => v&&typeof v.toMillis==='function' ? v.toMillis() : (+v||0);
 // v10 — ce qu'un message peut porter en plus : anciennes versions, date de modification, suppression, sticker
 function msgExtra(o,m){ if(Array.isArray(m.hist)&&m.hist.length) o.hist=m.hist.filter(x=>typeof x==='string').slice(-20);
+  if(m.reply&&typeof m.reply.id==='string'&&/^[A-Za-z0-9]{8,40}$/.test(m.reply.id)&&typeof m.reply.from==='string'&&m.reply.from.length<=128) o.reply={id:m.reply.id,from:m.reply.from};   // v13 — réponse à un message
   if(m.edited) o.edited=tsMs(m.edited)||1; if(m.del===true) o.del=true;
   if(m.sticker&&typeof m.sticker.id==='string'&&/^[A-Za-z0-9]{8,40}$/.test(m.sticker.id)) o.sticker={id:m.sticker.id,n:Math.max(1,Math.min(30,+m.sticker.n||1))}; return o; }
 const gById = id => GROUPS.find(g=>g.id===id);
@@ -5945,7 +6050,7 @@ function viewGroup(id){ EDIT=null; chatMotif();
     ${composerHTML('Message au groupe…',!gHasMinor(g))}${cpanelHTML()}</div></div>`;
   dmFit(); document.getElementById('ginfo').onclick=()=>groupInfo(id);
   document.getElementById('g-add')?.addEventListener('click',()=>groupInvite(id));
-  const sendG=(text,voice,photo,sticker)=>DB.queueSend(()=>DB.sendGroupMessage(id,text,voice,photo,sticker));   // v11 — un message par seconde au plus, dans l'ordre
+  const sendG=(text,voice,photo,sticker)=>{ const rp=takeReply('g',id); return DB.queueSend(()=>DB.sendGroupMessage(id,text,voice,photo,sticker,rp)); };   // v11 — un message par seconde au plus, dans l'ordre ; v13 — avec la réponse en cours
   const noMedia=()=>{ document.getElementById('photobtn')?.remove(); document.getElementById('cambtn')?.remove(); CP.stk=false; if(CP.open) cpRender(); cpSync(); qrUpdate(); };   // il y a un 13-17 ans dans le groupe
   photoWire(ph=>{ if(gHasMinor(gById(id))){ toast('Pas de photo dans un groupe où il y a des 13-17 ans.',3500); noMedia(); return; }
     const pid=newId(); PHOTOS[pid]=ph.data; return sendG(PHOTO_TEXT,null,{id:pid,w:ph.w,h:ph.h}); });
@@ -5961,15 +6066,15 @@ function viewGroup(id){ EDIT=null; chatMotif();
   DB.listenGroup(id,()=>{ if(location.hash==='#/groupe/'+id){ (S.gseen=S.gseen||{})[id]=Date.now(); renderGroupChat(id); } });
 }
 let GMSGS={};   // messages du groupe ouvert
-function renderGroupChat(id){ const box=document.getElementById('chatbox'), g=gById(id); if(!box||!g) return; setTimeout(photoWatch,0); setTimeout(stickerWatch,0); const me=myId(), msgs=(GMSGS[id]||[]).filter(m=>!S.blocked.includes(m.from)), canDel=gCanMod(g);
+function renderGroupChat(id){ const box=document.getElementById('chatbox'), g=gById(id); if(!box||!g) return; setTimeout(photoWatch,0); setTimeout(stickerWatch,0); const me=myId(), msgs=(GMSGS[id]||[]).filter(m=>!S.blocked.includes(m.from));
   box.innerHTML = msgs.length ? msgs.map((m,k)=>{ const mine=m.from===me, p=gPlayer(m.from), same=k>0&&msgs[k-1].from===m.from&&m.at-msgs[k-1].at<5*60e3, role=gRole(g,m.from);
       return `<div class="gmsg${mine?' me':''}${same?' same':''}">${mine?'':(same?'<i class="g-gap"></i>':(p?`<a href="#/joueur/${esc(m.from)}">${avatar(p,32)}</a>`:'<span class="av" style="width:32px;height:32px;--h:220">?</span>'))}<div>${same||mine?'':`<small class="g-from">${p?np(p):'Ancien membre'}${ROLE_TAG[role]||''}</small>`}
-        <div class="bubble${mine?' me':''}${m.del?' del':''}"${mine&&m.id&&!m.del?` data-own="g|${esc(id)}|${esc(m.id)}"`:''}>${msgBody(m,'g',id,mine)}<small>${msgMeta(m,mine,'g',id)}${canDel&&!mine&&m.id?` · <button type="button" class="g-del" data-gdel="${esc(m.id)}">Supprimer</button>`:''}</small></div></div></div>`; }).join('')
+        <div class="bubble${mine?' me':''}${m.del?' del':''}"${m.id?` data-mid="${esc(m.id)}"`:''}${m.id&&!m.del?` data-msg="g|${esc(id)}|${esc(m.id)}"`:''}${mine&&m.id&&!m.del?` data-own="g|${esc(id)}|${esc(m.id)}"`:''}>${replyQuote(m,'g',id)}${msgBody(m,'g',id,mine)}<small>${msgMeta(m,mine,'g',id)}</small></div></div></div>`; }).join('')
     : `<div class="chat-empty"><p class="muted">Le groupe est tout neuf. ${g.members.length<2?'Ajoute tes mates, puis lance la discussion 👋':'Lance la discussion 👋'}</p>${g.members.length<2&&g.members.length<GROUP_MAX?`<button class="btn btn-ac" type="button" data-g-add>${ADDMATE_SVG} Ajouter des mates</button>`:''}${(g.invited||[]).length?`<p class="muted">${g.invited.length} invitation${g.invited.length>1?'s':''} en attente.</p>`:''}</div>`;
   box.scrollTop=box.scrollHeight;
   { const lm=msgs[msgs.length-1]; QR.key='g:'+id; QR.last=lm?{id:lm.id,at:lm.at,mine:lm.from===me,del:!!lm.del}:null; qrUpdate(); }
   box.querySelector('[data-g-add]')?.addEventListener('click',()=>groupInvite(id));
-  box.querySelectorAll('[data-gdel]').forEach(b=>b.onclick=()=>DB.deleteGroupMessage(id,b.dataset.gdel)); }
+}
 // Infos du groupe : membres, rôles, invitations, réglages
 function groupInfo(id){ const g=gById(id); if(!g) return; const me=myId(), role=gRole(g,me), admin=role==='admin';
   const order=u=>u===g.owner?0:(g.mods||[]).includes(u)?1:2, mem=[...g.members].sort((a,b)=>order(a)-order(b));
@@ -6750,7 +6855,7 @@ const DB = {
     this._sq=this._sq.then(run,run); return out.then(p=>p); },
   async sendMessage(id,m){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; const db=this.db;
     try{ const F=firebase.firestore.FieldValue, pair=this.pairId(id);
-      const mk=st=>{ const b=db.batch(), mref=db.collection('chats').doc(pair).collection('messages').doc(); b.set(mref,{from:this.uid(),text:m.text,at:m.at,...(m.voice?{voice:m.voice}:{}),...(m.photo?{photo:m.photo}:{}),...(m.sticker?{sticker:m.sticker}:{})});
+      const mk=st=>{ const b=db.batch(), mref=db.collection('chats').doc(pair).collection('messages').doc(); b.set(mref,{from:this.uid(),text:m.text,at:m.at,...(m.voice?{voice:m.voice}:{}),...(m.photo?{photo:m.photo}:{}),...(m.sticker?{sticker:m.sticker}:{}),...(m.reply?{reply:m.reply}:{})});
         if(m.photo) b.set(db.collection('chats').doc(pair).collection('photos').doc(m.photo.id),{from:this.uid(),data:PHOTOS[m.photo.id]||'',w:m.photo.w,h:m.photo.h,at:m.at});   // la photo part dans le même envoi que le message
         if(m.voice) b.set(db.collection('chats').doc(pair).collection('voices').doc(m.voice.id),{from:this.uid(),data:VOICES[m.voice.id]||'',dur:m.voice.dur,at:m.at});   // le son part dans le même envoi que le message
         if(st) st.msg=mref.id;   // la flamme cite le message envoyé dans le même lot : sans vrai message, les règles la refusent
@@ -6819,7 +6924,7 @@ const DB = {
         try{ for(let k=0;k<40;k++){ const q=await ref.collection('photos').limit(4).get(); if(q.empty) break; const b=this.db.batch(); q.forEach(x=>b.delete(x.ref)); await b.commit(); } }catch(e){ console.error(e); }   // les photos
         await ref.delete(); }catch(e){ console.error(e); toast("Le groupe n'a pas pu être supprimé."); return false; } }
     GROUPS=GROUPS.filter(g=>g.id!==id); delete GMSGS[id]; return true; },
-  async sendGroupMessage(id,text,voice,photo,sticker){ const m={from:myId(),text,at:Date.now()}; if(voice) m.voice=voice; if(photo) m.photo=photo; if(sticker) m.sticker=sticker;
+  async sendGroupMessage(id,text,voice,photo,sticker,reply){ const m={from:myId(),text,at:Date.now()}; if(voice) m.voice=voice; if(photo) m.photo=photo; if(sticker) m.sticker=sticker; if(reply) m.reply=reply;
     if(!AUTH_LIVE){ (GMSGS[id]=GMSGS[id]||[]).push({...m,id:'l'+m.at}); renderGroupChat(id); return; }
     if(!this.live&&!(await this.ready())) return; const db=this.db, F=firebase.firestore.FieldValue, ref=db.collection('groups').doc(id);
     try{ const mk=()=>{ const b=db.batch(); b.set(ref.collection('messages').doc(),m); if(voice) b.set(ref.collection('voices').doc(voice.id),{from:m.from,data:VOICES[voice.id]||'',dur:voice.dur,at:m.at});
