@@ -3578,12 +3578,12 @@ const SKINS = {
 // enabled : true -> les objets payants sont verrouillés (false -> tout est gratuit)
 // api     : adresse du serveur de paiement (Vercel). C'est lui qui dit si le paiement est ouvert (voir payInit) et lui seul qui débloque un achat.
 const SHOP = { enabled:true, api:'https://coopo-paiement.vercel.app/api', region:'europe-west1', currencies:['XOF'] };   // currencies : devises proposées tant que le serveur n'a pas répondu
-// Prix par devise : theme/pack = thèmes · p1..p4 = plaques (couleur, dégradé ou motif, brillant, édition limitée) · k1..k4 = packs de plaques
+// Prix par devise : theme/pack = thèmes · p1..p5 = plaques (couleur, dégradé ou motif, brillant, édition limitée, illustrée) · k1..k4 = packs de plaques
 const CURRENCIES = {
-  XOF:{ label:'F CFA (BCEAO)', unit:'F CFA', theme:1500,  premium:3000,  pack:7500,  p1:500, p2:800, p3:1000, p4:2000, k1:2000, k2:2500, k3:2400, k4:6000, countries:['CI','SN','ML','BF','BJ','TG','NE'] },
-  XAF:{ label:'F CFA (BEAC)',  unit:'F CFA', theme:1500,  premium:3000,  pack:7500,  p1:500, p2:800, p3:1000, p4:2000, k1:2000, k2:2500, k3:2400, k4:6000, countries:['CM','GA','CG'] },
-  GNF:{ label:'Franc guinéen', unit:'GNF',   theme:21000, premium:42000, pack:105000, p1:7000, p2:11000, p3:14000, p4:28000, k1:28000, k2:35000, k3:33500, k4:84000, countries:['GN'] },
-  CDF:{ label:'Franc congolais', unit:'FC',  theme:7500, premium:15000,  pack:37500, p1:2500, p2:4000, p3:5000, p4:10000, k1:10000, k2:12500, k3:12000, k4:30000, countries:['CD'] },
+  XOF:{ label:'F CFA (BCEAO)', unit:'F CFA', theme:1500,  premium:3000,  pack:7500,  p1:500, p2:800, p3:1000, p4:2000, p5:1500, k1:2000, k2:2500, k3:2400, k4:6000, countries:['CI','SN','ML','BF','BJ','TG','NE'] },
+  XAF:{ label:'F CFA (BEAC)',  unit:'F CFA', theme:1500,  premium:3000,  pack:7500,  p1:500, p2:800, p3:1000, p4:2000, p5:1500, k1:2000, k2:2500, k3:2400, k4:6000, countries:['CM','GA','CG'] },
+  GNF:{ label:'Franc guinéen', unit:'GNF',   theme:21000, premium:42000, pack:105000, p1:7000, p2:11000, p3:14000, p4:28000, p5:21000, k1:28000, k2:35000, k3:33500, k4:84000, countries:['GN'] },
+  CDF:{ label:'Franc congolais', unit:'FC',  theme:7500, premium:15000,  pack:37500, p1:2500, p2:4000, p3:5000, p4:10000, p5:7500, k1:10000, k2:12500, k3:12000, k4:30000, countries:['CD'] },
 };
 const curOK = c => !SHOP.currencies || SHOP.currencies.includes(c);
 function curCode(){
@@ -3637,15 +3637,16 @@ const PLATES = {
   flamme10:{label:'Étincelle',cat:'recompense',how:'10 jours de flamme avec un mate'}, flamme30:{label:'Brasier',cat:'recompense',how:'30 jours de flamme avec un mate'},
   flamme100:{label:'Fournaise',cat:'recompense',how:'100 jours de flamme avec un mate'}, flamme365:{label:'Flamme éternelle',cat:'recompense',how:'365 jours de flamme avec un mate'},
   souvenir:{label:'Souvenir Awalé',cat:'recompense',how:'Offerte aux joueurs qui avaient le thème Awalé'},
-  // Plaques illustrées en préparation (soon:true) : on les voit dans la boutique, mais personne ne peut encore les acheter ni les porter.
-  // Pour les vendre : les ajouter au catalogue du serveur de paiement (lib/catalogue.js) et aux règles Firestore, leur donner un prix dans PLATE_CATS, puis retirer « soon:true ».
-  coquelicots:{label:'Coquelicots',cat:'illustre',soon:true}, bouffon:{label:'Bouffon',cat:'illustre',soon:true},
+  coquelicots:{label:'Coquelicots',cat:'illustre',tag:'Nouveau'}, bouffon:{label:'Bouffon',cat:'illustre',tag:'Nouveau'},
+  // Une plaque en préparation s'écrit avec « soon:true » : on la voit dans la boutique sous « Bientôt », avec un aperçu, mais personne ne peut l'acheter ni la porter.
+  // Pour la vendre : l'ajouter au catalogue du serveur de paiement (lib/catalogue.js), ranger sa famille dans PLATE_CATS avec un prix, puis retirer « soon:true ».
 };
 // [catégorie, titre, clé de prix, phrase]
-const PLATE_CATS=[['couleur','Couleurs','p1','Une couleur franche, et des cristaux qui scintillent.'],['degrade','Dégradés animés','p2','Lever de soleil, lagune, braises, néons : le décor bouge doucement.'],['gaming','Motifs gaming','p2','Pixels, manette, circuit, drapeau à damier.'],['brillant','Effets brillants','p3','Or, chrome, hologramme : un reflet passe sur la plaque.'],['rare','Édition limitée','p4','En vente pour un temps limité, puis plus jamais.']];
+const PLATE_CATS=[['couleur','Couleurs','p1','Une couleur franche, et des cristaux qui scintillent.'],['degrade','Dégradés animés','p2','Lever de soleil, lagune, braises, néons : le décor bouge doucement.'],['gaming','Motifs gaming','p2','Pixels, manette, circuit, drapeau à damier.'],['brillant','Effets brillants','p3','Or, chrome, hologramme : un reflet passe sur la plaque.'],['illustre','Illustrées','p5','Un vrai petit décor qui s\'anime : un pré de coquelicots, un bonnet de bouffon.'],['rare','Édition limitée','p4','En vente pour un temps limité, puis plus jamais.']];
 const RARE_UNTIL='2027-01-31';   // dernier jour de vente des plaques en édition limitée (le serveur applique la même date)
 const rareOpen = () => Date.now() < Date.parse(RARE_UNTIL+'T23:59:59Z');
 const platesIn = cat => Object.keys(PLATES).filter(k=>PLATES[k].cat===cat);
+const platesSoon = () => Object.keys(PLATES).filter(k=>PLATES[k].soon);   // plaques en préparation : pas encore en vente
 const PPACKS={ couleurs:{label:'Pack Couleurs',cat:'couleur',price:'k1'}, degrades:{label:'Pack Dégradés',cat:'degrade',price:'k2'}, gaming:{label:'Pack Gaming',cat:'gaming',price:'k2'}, brillants:{label:'Pack Brillants',cat:'brillant',price:'k3'},
   plaques:{label:'Toutes les plaques',price:'k4',tag:'Populaire'} };
 const ppackItems = k => PPACKS[k].cat ? platesIn(PPACKS[k].cat) : ['couleur','degrade','gaming','brillant'].flatMap(platesIn);
@@ -3757,9 +3758,9 @@ function viewShop(tab){
   let body='';
   if(tab==='themes') body=`<div class="shop-grid">${Object.keys(SKINS).map(themeCard).join('')}</div>`;
   else if(tab==='plaques') body=`<section class="shop-sec"><h3>Offerte</h3><p class="muted">Une plaque, c'est un bandeau décoré derrière ton pseudo : dans les messages, les groupes et sur ton profil.</p><div class="shop-grid shop-grid-np">${plateCard('base')}</div></section>`
-    + PLATE_CATS.map(([c,l,,sub])=>`<section class="shop-sec${c==='rare'?' shop-sec-rare':''}"><h3>${l}</h3><p class="muted">${sub}</p><div class="shop-grid shop-grid-np">${platesIn(c).map(plateCard).join('')}</div></section>`).join('')
+    + PLATE_CATS.filter(([c])=>platesIn(c).some(x=>!PLATES[x].soon)).map(([c,l,,sub])=>`<section class="shop-sec${c==='rare'?' shop-sec-rare':''}"><h3>${l}</h3><p class="muted">${sub}</p><div class="shop-grid shop-grid-np">${platesIn(c).filter(x=>!PLATES[x].soon).map(plateCard).join('')}</div></section>`).join('')
     + `<section class="shop-sec"><h3>À gagner</h3><p class="muted">Ces plaques ne s'achètent pas : elles se méritent.</p><div class="shop-grid shop-grid-np">${platesIn('recompense').filter(x=>x!=='souvenir'||ownsPlate(x)).map(plateCard).join('')}</div></section>`
-    + (platesIn('illustre').length?`<section class="shop-sec"><h3>Bientôt</h3><p class="muted">Des plaques illustrées, en préparation. Tu peux déjà regarder l'aperçu.</p><div class="shop-grid shop-grid-np">${platesIn('illustre').map(plateCard).join('')}</div></section>`:'');
+    + (platesSoon().length?`<section class="shop-sec"><h3>Bientôt</h3><p class="muted">Des plaques en préparation. Tu peux déjà regarder l'aperçu.</p><div class="shop-grid shop-grid-np">${platesSoon().map(plateCard).join('')}</div></section>`:'');
   else if(tab==='packs') body=`<div class="shop-grid shop-grid-wide">${['pack',...Object.keys(PPACKS).map(k=>'ppack:'+k)].map(packCard).join('')}</div>`;
   else { const th=Object.keys(SKINS).filter(canUseSkin), pls=Object.keys(PLATES).filter(ownsPlate);
     body=`<section class="shop-sec"><h3>Mes thèmes</h3><div class="shop-grid">${th.map(themeCard).join('')}</div></section>
