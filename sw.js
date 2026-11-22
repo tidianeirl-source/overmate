@@ -4,12 +4,14 @@
      (la nouvelle version continue d'arriver en arrière-plan et sera là à la prochaine ouverture).
    - Hors connexion, la dernière version enregistrée s'affiche.
    - Firebase, Google, CinetPay et les polices ne sont jamais mis en cache ici. */
-const CACHE = 'coopo-v27';
+const CACHE = 'coopo-v28';
 const WAIT_MS = 3000;
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
+const V = '?v=2';   // numéro de version des icônes : le même que dans index.html et manifest.webmanifest
+const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png' + V, './icons/icon-512.png' + V];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  // { cache: 'reload' } : à chaque nouvelle version, ces fichiers sont redemandés au serveur (jamais une vieille copie gardée par le navigateur)
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {
