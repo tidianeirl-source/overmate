@@ -2371,6 +2371,9 @@ html[data-skin="ocean"] #world-top{ display:block; }
 @keyframes pdBob{ from{ transform:rotate(-1.4deg); } to{ transform:rotate(1.6deg) translate(1.5px,1px); } }
 html:not(.world-live) #world-top .pd-bob{ animation:none !important; }
 html.world-live.scrolled #world-top .pd-bob{ animation-play-state:paused !important; }
+.inv-now{ display:grid; gap:10px; } .inv-look{ max-width:420px; } .inv-now p{ margin:0; } .inv-acts{ display:flex; gap:8px; flex-wrap:wrap; }
+.shop-sec h3 small{ font:600 14px var(--fb); margin-left:6px; color:inherit; opacity:.85; }
+body:not([data-route="profil"]):not([data-route="parametres"]):not([data-route="boutique"]):not([data-route="inventaire"]) .top .inv-btn{ display:none; }
 </style>
 </head>
 <body>
@@ -2410,6 +2413,7 @@ setTimeout(function(){try{if(SPLASH.armed)return;}catch(e){}if(!s)return;s.class
   <nav class="navpill" aria-label="Navigation principale"></nav>
   <div class="top-right"></div>
   <button class="notif-btn" type="button" aria-label="Notifications" title="Notifications"></button>
+  <button class="inv-btn skin-btn" type="button" aria-label="Inventaire : mes thèmes et plaques" title="Inventaire" data-inv-go></button>
   <button class="skin-btn" type="button" aria-label="Boutique : thèmes et plaques" title="Boutique"></button>
 </header>
 <main id="app" tabindex="-1"></main>
@@ -2633,7 +2637,7 @@ function updateFavicon(){ const draw=()=>{ try{ const cs=getComputedStyle(docume
   _favImg.complete ? draw() : _favImg.onload=draw; }
 // 6 onglets : la recherche se range dans Matchs, les réglages dans Profil. « groupes » = la Communauté (ancien nom), « groupe » = l'onglet Groupes.
 const NAV=[['accueil','Accueil'],['matchs','Matchs'],['groupes','Communauté'],['messages','Messages'],['groupe','Groupes'],['profil','Profil']];
-const NAV_PARENT={recherche:'matchs',parametres:'profil',boutique:'profil','faux-paiement':'profil',paiement:'profil',aide:'profil',contact:'profil',app:'profil',cgu:'profil',confidentialite:'profil',cookies:'profil',remboursement:'profil',moderation:'profil'};   // page secondaire → onglet allumé
+const NAV_PARENT={recherche:'matchs',parametres:'profil',boutique:'profil',inventaire:'profil','faux-paiement':'profil',paiement:'profil',aide:'profil',contact:'profil',app:'profil',cgu:'profil',confidentialite:'profil',cookies:'profil',remboursement:'profil',moderation:'profil'};   // page secondaire → onglet allumé
 const TAB_LBL={groupes:'Commu'};
 function renderNav(active){
   const navItems = isAdmin() ? [...NAV,['moderation','Modération']] : NAV;
@@ -2646,9 +2650,9 @@ function renderNav(active){
   if(rail) rail.innerHTML=`<a class="logo" href="#/accueil" aria-label="Coopô, retour à l'accueil" title="Coopô"></a>
     <nav class="sr-nav" aria-label="Navigation principale">${navItems.map(([r,l])=>`<a class="sr-i" href="#/${r}" data-nav="${r}" ${r===top?'aria-current="page"':''} title="${esc(l)}" aria-label="${esc(l)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[r]||ICONS.accueil}</svg></a>`).join('')}</nav>
     <span class="dm-sep" aria-hidden="true"></span><nav class="sr-groups" id="sr-groups" aria-label="Mes groupes">${railGroups()}</nav>
-    <div class="sr-foot"><button class="notif-btn" type="button" aria-label="Notifications" title="Notifications"></button><button class="skin-btn" type="button" aria-label="Boutique : thèmes et plaques" title="Boutique"></button></div>`;
+    <div class="sr-foot"><button class="notif-btn" type="button" aria-label="Notifications" title="Notifications"></button><button class="inv-btn skin-btn" type="button" aria-label="Inventaire : mes thèmes et plaques" title="Inventaire" data-inv-go></button><button class="skin-btn" type="button" aria-label="Boutique : thèmes et plaques" title="Boutique"></button></div>`;
   document.querySelectorAll('.logo').forEach(l=>l.innerHTML=LOGO);
-  document.querySelectorAll('.skin-btn').forEach(b=>b.innerHTML=PALETTE_ICON);
+  document.querySelectorAll('.skin-btn').forEach(b=>b.innerHTML=b.classList.contains('inv-btn')?INV_ICON:PALETTE_ICON);
   const online=visible().filter(p=>isOnline(p)).length;
   const liveTxt = online ? `${online} joueur${online>1?'s':''} en ligne` : (S.auth ? 'Bienvenue sur Coopô' : 'Nouveau : rejoins les premiers');
   document.querySelectorAll('.top-right').forEach(t=>t.innerHTML=`<span class="live">${liveTxt}</span><small>${S.auth?'connecté : '+esc(S.me?.name||S.auth.name):S.me?'profil : '+esc(S.me.name):'<a href="#/connexion">se connecter</a>'}</small>`);
@@ -2684,7 +2688,7 @@ function route(){
   document.body.classList.toggle('no-profile', !!S.auth && !profileComplete());
   document.body.classList.toggle('has-profile', !!S.auth && profileComplete());
   const views={accueil:viewHome, connexion:()=>viewAuth('login'), inscription:()=>viewAuth('signup'), profil:viewProfile, matchs:viewMatches, recherche:viewSearch, parametres:viewSettings, joueur:viewPlayer,
-    messages:viewMessages, groupes:viewSquads, groupe:viewGroup, aide:viewHelp, cgu:()=>viewLegal('cgu'), confidentialite:()=>viewLegal('privacy'), cookies:viewCookies, remboursement:viewRefund, contact:viewContact, app:viewApp, bienvenue:viewWelcome, paiement:viewPayment, 'faux-paiement':viewFakePay, boutique:viewShop, moderation:viewAdmin};
+    messages:viewMessages, groupes:viewSquads, groupe:viewGroup, aide:viewHelp, cgu:()=>viewLegal('cgu'), confidentialite:()=>viewLegal('privacy'), cookies:viewCookies, remboursement:viewRefund, contact:viewContact, app:viewApp, bienvenue:viewWelcome, paiement:viewPayment, 'faux-paiement':viewFakePay, boutique:viewShop, inventaire:viewInventory, moderation:viewAdmin};
   if(name.startsWith('@')){ let nm=''; try{ nm=decodeURIComponent(name.slice(1)).toLowerCase(); }catch(e){} const p=PLAYERS.find(x=>x.name.toLowerCase()===nm); document.body.classList.remove('is-home'); document.body.dataset.route='joueur'; viewPlayer(S.me&&S.me.name.toLowerCase()===nm?'me':(p?p.id:'?')); renderNav(''); window.scrollTo(0,0); app.firstElementChild?.classList.add('page-in'); animateAfterRender(); return; }
   const v = views[name] || viewHome;
   clearInterval(scTimer);
@@ -2799,6 +2803,7 @@ function viewProfileHub(){
     </section>
     <nav class="menu" aria-label="Mon compte">
       ${menuRow(ICONS.parametres,'Réglages','Confidentialité et compte','#/parametres')}
+      ${menuRow(INV_ICON.replace(/^<svg[^>]*>|<\/svg>$/g,''),'Inventaire','Équipe tes thèmes et tes plaques','#/inventaire')}
       ${menuRow(MENU_ICO.palette,'Boutique',`Thèmes et plaques · thème actuel : ${esc((SKINS[S.skin]||SKINS.defaut).label)}`,'#/boutique')}
       ${menuRow(MENU_ICO.gift,'Inviter des amis','Un thème offert quand ton ami s\'inscrit','','data-ref-share')}
       ${menuRow(MENU_ICO.share,'Partager mon profil','Envoie ton lien à tes amis','','data-share-profile')}
@@ -3236,7 +3241,7 @@ function viewSettings(tab){
   const blocked=PLAYERS.filter(p=>S.blocked.includes(p.id)), w=S.weights||CONFIG.weights;
   const tg=(k,t,h)=>`<div class="toggle"><div><label for="pv-${k}" class="lbl">${t}</label><p class="hint">${h}</p></div><input class="switch" type="checkbox" id="pv-${k}" data-pv="${k}" ${S.privacy[k]?'checked':''}></div>`;
   app.innerHTML=`<div class="wrap page" style="max-width:760px">${backLink('#/profil','Profil')}<div class="page-head"><div><h2>Réglages</h2><p>Thème, confidentialité, notifications et compte.</p></div></div><div class="form">${emailVerifyPanel()}
-    <section class="panel"><h3>Thème et plaque</h3><p class="muted">Thème actuel : ${esc((SKINS[S.skin]||SKINS.defaut).label)}${plateOf(S.me)?` · plaque ${esc(PLATES[plateOf(S.me)].label)}`:''}.</p><div><a class="btn btn-sm" href="#/boutique/objets">Changer dans la boutique</a></div></section>
+    <section class="panel"><h3>Thème et plaque</h3><p class="muted">Thème actuel : ${esc((SKINS[S.skin]||SKINS.defaut).label)}${plateOf(S.me)?` · plaque ${esc(PLATES[plateOf(S.me)].label)}`:''}.</p><div><a class="btn btn-sm" href="#/inventaire">Changer dans l'inventaire</a></div></section>
     <section class="panel"><h3>Affichage</h3><div>
       <div class="toggle"><div><label for="set-lite" class="lbl">Mode léger</label><p class="hint">Moins d'animations : plus fluide sur les petits téléphones, et la batterie tient mieux.</p></div><input class="switch" type="checkbox" id="set-lite" ${liteOn()?'checked':''}></div></div></section>
     <section class="panel"><h3>Confidentialité</h3><div>
@@ -3922,7 +3927,7 @@ document.addEventListener('click',e=>{ const b=e.target.closest('[data-pv-buy]')
 const PLATES = {
   base:{label:'Classique',cat:'base',desc:'Offerte à tous les joueurs'},
   rubis:{label:'Rubis',cat:'couleur'}, saphir:{label:'Saphir',cat:'couleur'}, emeraude:{label:'Émeraude',cat:'couleur'}, ambre:{label:'Ambre',cat:'couleur'}, onyx:{label:'Onyx',cat:'couleur'},
-  aurore:{label:'Aurore',cat:'degrade',tag:'Populaire'}, lagune:{label:'Lagune',cat:'degrade'}, braise:{label:'Braise',cat:'degrade'}, neon:{label:'Néon',cat:'degrade',tag:'Nouveau'},
+  aurore:{label:'Sunset',cat:'degrade',tag:'Populaire'}, lagune:{label:'Lagune',cat:'degrade'}, braise:{label:'Braise',cat:'degrade'}, neon:{label:'Néon',cat:'degrade',tag:'Nouveau'},
   pixel:{label:'Pixel',cat:'gaming',tag:'Populaire'}, manette:{label:'Manette',cat:'gaming'}, circuit:{label:'Circuit',cat:'gaming'}, damier:{label:'Damier',cat:'gaming',tag:'Nouveau'},
   or:{label:'Or',cat:'brillant',tag:'Populaire'}, chrome:{label:'Chrome',cat:'brillant'}, holo:{label:'Holo',cat:'brillant',tag:'Nouveau'},
   dragon:{label:'Dragon',cat:'rare'}, galaxie:{label:'Galaxie',cat:'rare'}, foudre:{label:'Foudre',cat:'rare'},
@@ -3938,7 +3943,7 @@ const PLATE_CATS=[['couleur','Couleurs','p1','Une couleur franche, et des crista
 const RARE_UNTIL='2027-01-31';   // dernier jour de vente des plaques en édition limitée (le serveur applique la même date)
 const rareOpen = () => Date.now() < Date.parse(RARE_UNTIL+'T23:59:59Z');
 // Plaques retirées le 22 novembre 2026 : plus en vente, plus montrées dans la boutique, plus offertes (même aux modérateurs).
-// Un joueur qui en aurait vraiment acheté ou gagné une la garde : elle reste dans « Mes objets » et s'affiche toujours sur son profil.
+// Un joueur qui en aurait vraiment acheté ou gagné une la garde : elle reste dans son inventaire et s'affiche toujours sur son profil.
 const RETIRED_PLATES=['or','chrome','holo','braise','souvenir'];
 const platesIn = cat => Object.keys(PLATES).filter(k=>PLATES[k].cat===cat&&!RETIRED_PLATES.includes(k));
 const platesSoon = () => Object.keys(PLATES).filter(k=>PLATES[k].soon);   // plaques en préparation : pas encore en vente
@@ -3990,7 +3995,7 @@ async function payInit(){ if(PAY.loaded||PAY._busy||!SHOP.api||!AUTH_LIVE) retur
       if(j&&(j.mode==='test'||j.mode==='live')){ PAY.mode=j.mode; PAY.label=String(j.label||'').slice(0,60);
         if(Array.isArray(j.currencies)){ const cs=j.currencies.filter(c=>CURRENCIES[c]); if(cs.length) SHOP.currencies=cs; } } } }catch(e){}
   PAY.loaded=true; PAY._busy=false;
-  if(location.hash.startsWith('#/boutique')){ const y=scrollY; route(); scrollTo(0,y); } }
+  if(/^#\/(boutique|inventaire)/.test(location.hash)){ const y=scrollY; route(); scrollTo(0,y); } }
 const canPay = () => PAY.mode==='live' || (PAY.mode==='test' && isAdmin());
 const TEST_NOTE='<div class="test-note" role="note"><b>Mode test</b><span>Faux paiement : aucun argent n\'est débité. Réservé à la modération, pour vérifier que tout marche.</span></div>';
 // Description d'un article : 'theme:<id>', 'pack' (tous les thèmes), 'plate:<id>', 'ppack:<id>'
@@ -4023,7 +4028,7 @@ function buy(item){ const inf=itemInfo(item); if(!inf) return;
       catch(e){ err.textContent=(e&&e.message)||'Le paiement n\'a pas pu démarrer.'; b.disabled=false; b.textContent='Payer'; } }; }); }
 
 /* ---- La page Boutique ---- */
-const SHOP_TABS=[['themes','Thèmes'],['plaques','Plaques'],['packs','Packs'],['objets','Mes objets']];
+const SHOP_TABS=[['themes','Thèmes'],['plaques','Plaques'],['packs','Packs']];
 const shopTag = t => t?`<span class="shop-tag${t==='Édition limitée'?' rare':''}">${t}</span>`:'';
 const SKIN_TAGS={ ocean:'Nouveau', samurai:'Populaire' };
 function themeCard(id){ const t=SKINS[id], paid=PAID_SKINS.includes(id), own=canUseSkin(id), on=(S.skinWanted||S.skin)===id&&!_preview;
@@ -4049,6 +4054,7 @@ function viewShop(tab){
   if(dataPending()) return loadingView('Boutique');
   if(!S.me) return needProfile('Boutique');
   payInit();
+  if(tab==='objets'){ location.replace('#/inventaire'); return; }   // ancien onglet « Mes objets » : c'est maintenant l'inventaire
   tab=SHOP_TABS.some(x=>x[0]===tab)?tab:'themes';
   const many=AUTH_LIVE&&(SHOP.currencies||Object.keys(CURRENCIES)).length>1;
   let body='';
@@ -4058,23 +4064,32 @@ function viewShop(tab){
     + `<section class="shop-sec"><h3>À gagner</h3><p class="muted">Ces plaques ne s'achètent pas : elles se méritent.</p><div class="shop-grid shop-grid-np">${platesIn('recompense').map(plateCard).join('')}</div></section>`
     + (platesSoon().length?`<section class="shop-sec"><h3>Bientôt</h3><p class="muted">Des plaques en préparation. Tu peux déjà regarder l'aperçu.</p><div class="shop-grid shop-grid-np">${platesSoon().map(plateCard).join('')}</div></section>`:'');
   else if(tab==='packs') body=`<div class="shop-grid shop-grid-wide">${['pack',...Object.keys(PPACKS).map(k=>'ppack:'+k)].map(packCard).join('')}</div>`;
-  else { const th=Object.keys(SKINS).filter(canUseSkin), pls=Object.keys(PLATES).filter(ownsPlate);
-    body=`<section class="shop-sec"><h3>Mes thèmes</h3><div class="shop-grid">${th.map(themeCard).join('')}</div></section>
-      <section class="shop-sec"><h3>Mes plaques</h3><p class="muted">Équipe une plaque pour l'afficher derrière ton pseudo, ou retire-la.</p><div class="shop-grid shop-grid-np">${pls.map(plateCard).join('')}</div>
-      ${plateOf(S.me)?'<p style="margin-top:14px"><button class="btn btn-ghost btn-sm" data-use-plate="">Ne porter aucune plaque</button></p>':''}</section>`; }
   app.innerHTML=`<div class="wrap page shop"><div class="page-head"><div><h2>Boutique</h2><p>Thèmes et plaques nominatives pour personnaliser ton Coopô.</p></div>
       ${many?`<div class="field shop-cur"><label for="shop-cur">Devise</label><select id="shop-cur">${Object.entries(CURRENCIES).filter(([k])=>curOK(k)).map(([k,v])=>`<option value="${k}" ${k===curCode()?'selected':''}>${v.label}</option>`).join('')}</select></div>`:''}</div>
-    <div class="chips board-tabs" role="tablist">${SHOP_TABS.map(([k,l])=>`<a class="chip" role="tab" href="#/boutique/${k}" aria-selected="${tab===k}" aria-pressed="${tab===k}">${l}</a>`).join('')}</div>
+    <div class="chips board-tabs" role="tablist">${SHOP_TABS.map(([k,l])=>`<a class="chip" role="tab" href="#/boutique/${k}" aria-selected="${tab===k}" aria-pressed="${tab===k}">${l}</a>`).join('')}<a class="chip" href="#/inventaire">Inventaire</a></div>
     ${PAY.mode==='test'&&isAdmin()?TEST_NOTE.replace('</div>','<button class="btn btn-sm" data-shop-buy="plate:rubis">Essayer un faux achat</button></div>'):''}${body}</div>`;
+  plqWatch();
+}
+/* ---- Inventaire : tout ce que le joueur possède, à équiper en un clic (idée de Neko) ---- */
+function viewInventory(){
+  if(dataPending()) return loadingView('Inventaire');
+  if(!S.me) return needProfile('Inventaire');
+  const th=Object.keys(SKINS).filter(canUseSkin), pls=Object.keys(PLATES).filter(ownsPlate), cur=(SKINS[S.skinWanted||S.skin]||SKINS.defaut).label, pl=plateOf(S.me);
+  app.innerHTML=`<div class="wrap page shop inv"><div class="page-head"><div><h2>Inventaire</h2><p>Tes thèmes et tes plaques. Touche « Utiliser » ou « Équiper » : c'est appliqué tout de suite.</p></div></div>
+    <section class="panel inv-now"><div class="me-id inv-look${plqOn(publicMe(),1)}">${plq(publicMe())}${avatar(publicMe(),56)}<div class="me-who"><b class="me-name">${esc(S.me.name)}</b><span class="muted">Ton look actuel</span></div></div><p class="muted">Thème : <b>${esc(cur)}</b> · Plaque : <b>${pl?esc(PLATES[pl].label):'aucune'}</b></p>
+      <div class="inv-acts">${pl?'<button class="btn btn-ghost btn-sm" data-use-plate="">Retirer la plaque</button>':''}<a class="btn btn-sm" href="#/boutique">Aller à la boutique</a></div></section>
+    <section class="shop-sec"><h3>Mes thèmes <small>${th.length}</small></h3><div class="shop-grid">${th.map(themeCard).join('')}</div></section>
+    <section class="shop-sec"><h3>Mes plaques <small>${pls.length}</small></h3><div class="shop-grid shop-grid-np">${pls.map(plateCard).join('')}</div></section></div>`;
   plqWatch();
 }
 document.addEventListener('change',e=>{ if(e.target&&(e.target.id==='shop-cur'||e.target.id==='set-cur')){ S.currency=e.target.value; save(); const y=scrollY; route(); scrollTo(0,y); } });
 document.addEventListener('click',e=>{ const t=e.target;
   const bb=t.closest('[data-shop-buy]'); if(bb){ buy(bb.dataset.shopBuy); return; }
   const pv=t.closest('[data-shop-prev]'); if(pv){ const [k,id]=pv.dataset.shopPrev.split(':'); if(k==='theme'){ try{ if(dlg.open) dlg.close(); }catch(err){} previewSkin(id); } else platePreview(id); return; }
-  const up=t.closest('[data-use-plate]'); if(up){ setPlate(up.dataset.usePlate); if(location.hash.startsWith('#/boutique')){ const y=scrollY; route(); scrollTo(0,y); } return; }
+  const up=t.closest('[data-use-plate]'); if(up){ setPlate(up.dataset.usePlate); if(/^#\/(boutique|inventaire)/.test(location.hash)){ const y=scrollY; route(); scrollTo(0,y); } return; }
   const us=t.closest('[data-use-skin]'); if(us){ const id=us.dataset.useSkin; if(!SKINS[id]||!canUseSkin(id)) return; const y=scrollY;
     applySkin(id,true,{then:()=>{ route(); scrollTo(0,y); }}); DB.saveSkin(id); toast(`Thème ${SKINS[id].label} activé`); return; }
+  if(t.closest('[data-inv-go]')){ location.hash='#/inventaire'; return; }
   if(t.closest('.skin-btn')){ location.hash='#/boutique'; } });
 
 /* ---- Retour de paiement ---- */
@@ -4090,7 +4105,7 @@ function viewPayment(tx){
     try{ const r=(await DB.fns.httpsCallable('checkPayment')({tx})).data;
       if(r.status==='paid'){ await DB.loadPurchases(); const item=String(r.item||''), [k,id]=item.split(':'), inf=itemInfo(item);
         if(k==='theme'&&SKINS[id]){ applySkin(id,true); DB.saveSkin(id); } else if(k==='plate'&&PLATES[id]&&ownsPlate(id)) setPlate(id);
-        app.innerHTML=box('Merci, c\'est débloqué !', k==='theme'?`Le thème ${esc(SKINS[id]?.label||id)} est à toi et vient d'être activé.`:k==='plate'?`La plaque ${esc(PLATES[id]?.label||id)} est à toi et vient d'être équipée.`:`${esc(inf?inf.title:'Ton achat')} : tout est à toi. Retrouve-le dans « Mes objets ».`,'<a class="btn btn-ac" href="#/boutique/objets">Voir mes objets</a>'); return; }
+        app.innerHTML=box('Merci, c\'est débloqué !', k==='theme'?`Le thème ${esc(SKINS[id]?.label||id)} est à toi et vient d'être activé.`:k==='plate'?`La plaque ${esc(PLATES[id]?.label||id)} est à toi et vient d'être équipée.`:`${esc(inf?inf.title:'Ton achat')} : tout est à toi. Retrouve-le dans ton inventaire.`,'<a class="btn btn-ac" href="#/inventaire">Voir mon inventaire</a>'); return; }
       if(r.status==='failed'){ app.innerHTML=box('Paiement non abouti','Le paiement a été refusé ou annulé. Rien n\'a été débloqué et rien n\'a été débité.','<a class="btn" href="#/boutique">Retour à la boutique</a>'); return; }
       if(r.status==='review'){ app.innerHTML=box('Paiement en vérification','Le montant reçu ne correspond pas au prix. La modération va vérifier : écris-nous via « Nous écrire » avec la référence '+esc(tx)+'.'); return; }
       if(tries++<8) return setTimeout(check,5000);
@@ -4110,6 +4125,7 @@ function viewFakePay(tx){
     try{ await DB.fns.httpsCallable('testPay')({tx,outcome:b.dataset.fake}); location.hash='#/paiement/'+encodeURIComponent(tx); }
     catch(e){ err.textContent=(e&&e.message)||'Le faux paiement n\'a pas pu être enregistré.'; app.querySelectorAll('[data-fake]').forEach(x=>x.disabled=false); } });
 }
+const INV_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v10a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9z"/><path d="M9.5 5V4a2.5 2.5 0 0 1 5 0v1"/><path d="M9 13h6v3H9z"/></svg>';   // sac à dos : l'inventaire
 const PALETTE_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>';
 /* ================= Dispo maintenant ================= */
 const DISPO_DUR=[['1',"1 heure"],['2',"2 heures"],['3',"3 heures"],['5',"Toute la soirée"]];
@@ -5179,7 +5195,7 @@ function flameMilestone(id){ const s=(S.streaks||{})[id]; if(!s||s.both<dayNow()
   setTimeout(()=>{ try{ burst(innerWidth/2,innerHeight*.4); }catch(e){}
     modal(`<div class="flame-party"><span class="flame-big" aria-hidden="true">🔥</span><h3>${step} jours d'affilée${p?` avec ${esc(p.name)}`:''} !</h3>
       <p class="muted">Vous vous êtes écrit chaque jour pendant ${step} jours. La plaque <b>${np({plate:'flamme'+step,name:PLATES['flamme'+step].label})}</b> est à vous deux.</p></div>
-      <div class="dlg-actions"><button class="btn btn-ghost" data-close>Plus tard</button><a class="btn btn-ac" href="#/boutique/objets" data-close>Voir ma plaque</a></div>`); },600); }
+      <div class="dlg-actions"><button class="btn btn-ghost" data-close>Plus tard</button><a class="btn btn-ac" href="#/inventaire" data-close>Voir ma plaque</a></div>`); },600); }
 // Rappel : une flamme va s'éteindre et c'est à moi d'écrire (une fois par jour et par mate, quand Coopô est ouvert)
 function flameCheck(){ if(!AUTH_LIVE||!S.me||new Date().getUTCHours()<FLAME_WARN_HOUR) return; const t=dayNow(); S.flameNudged=S.flameNudged||{};
   Object.keys(S.streaks||{}).forEach(id=>{ const f=flameState(id), p=PLAYERS.find(x=>x.id===id); if(!f||!p||!isMate(id)||f.count<FLAME_FROM||f.done||f.mine||S.flameNudged[id]===t) return;
