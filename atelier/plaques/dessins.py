@@ -685,3 +685,247 @@ def bouffon():
     css = "& > .plq > i::after{ transform-origin:80% 85%; }"
     return dict(id='bouffon', label='Bouffon', pa='#1C0A12', pb='#6B1226', art=art, fx1=('fall', fx1, dict(k=2, dur=12, up=True)),
                 fx2=('still', fx2, dict(extra='plqTilt 1.1s ease-in-out infinite alternate')), css=css)
+
+
+# ================================================================ PLAQUES DU 23 NOVEMBRE 2026 : Koï, Soleil rouge, Nuages
+# Dessins originaux, d'après trois motifs traditionnels choisis par Aki : deux carpes koï autour du yin et du yang,
+# un soleil en spirale aux rayons de flamme, des nuages porte-bonheur (comme dans l'art chinois).
+# Le motif principal est centré sur x = 190 de la fenêtre. Les calques qui tournent sont des CARRÉS (aussi hauts que la plaque)
+# posés exactement sur ce centre : ils peuvent ainsi tourner sur eux-mêmes, quelle que soit la taille de la plaque.
+def carre(cx=190):
+    """Les réglages d'un calque carré centré sur x = cx de la fenêtre (le décalage est compté en largeurs du carré)."""
+    dec = ((W - cx) / H - .5) * 100
+    return f'left:auto; width:auto; aspect-ratio:1/1; transform:translateX(-{dec:.3f}%);', f'translateX(-{dec:.3f}%)'
+
+
+def courbe(points, closed=True):
+    return smooth(points, closed=closed)
+
+
+# ---------------------------------------------------------------- Koï : une carpe blanche et une carpe noire qui tournent autour du yin et du yang, sur du papier de riz
+ENCRE, PAPIER = '#1B1511', '#FBF7EE'
+
+
+def koi_dessin(R=19.0, L=49.0, W0=3.4, t=0.0, a0=-1.05):
+    """Une carpe vue de dessus, couchée le long d'un cercle de rayon R autour de (30, 30).
+    s = position le long du corps (0 = le nez, L = le bout de la queue) ; y = écart vers l'extérieur du cercle.
+    t = la phase de la nage (de 0 à 1) : une onde passe du nez vers la queue.
+    Le corps prend la couleur de remplissage du <use> qui le pose (fill), et les petits traits intérieurs sa couleur de texte (color) :
+    le même dessin fait une carpe blanche (fill papier, color encre) et une carpe noire (fill encre, color papier)."""
+    Lb = L * .6                       # la fin du corps (le reste est la queue)
+    lam, A = L * 1.05, 2.0
+
+    def onde(s):
+        return A * (s / L) ** 2 * math.sin(2 * math.pi * (s / lam - t))
+
+    def P(s, y):
+        th = a0 + s / R
+        rr = R + y + onde(s)
+        return (30 + rr * math.cos(th), 30 + rr * math.sin(th))
+
+    def larg(s):
+        u = min(max(s / Lb, 0), 1)
+        return W0 * (1.9 * math.sqrt(u) * (1 - u) + .15 * u * u) / .748
+
+    def seg(a, b):
+        return f'M{n(a[0])} {n(a[1])}L{n(b[0])} {n(b[1])}'
+
+    ss = [Lb * (i / 12) ** 1.3 for i in range(13)]
+    corps = courbe([P(s, larg(s)) for s in ss] + [P(s, -larg(s)) for s in reversed(ss)])
+    # la queue : deux longues voiles souples avec un creux au milieu ; elles ondulent un peu plus que le corps
+    wp, T, Lq = larg(Lb), 5.9, L - Lb
+    fl = 1.1 * math.sin(2 * math.pi * (1.15 - t))
+    queue = courbe([P(Lb - .8, wp * .9), P(Lb + Lq * .3, wp + 1.6), P(Lb + Lq * .78, T + fl * .7), P(L + .4, T - .6 + fl),
+                    P(Lb + Lq * .62, .9 + fl * .45),
+                    P(L - .6, -T + 1.2 + fl), P(Lb + Lq * .74, -T + .2 + fl * .7), P(Lb + Lq * .28, -wp - 1.5), P(Lb - .8, -wp * .9)])
+    traits = ''.join(seg(P(Lb + 1.4, k * .5), P(Lb + Lq * (.72 if abs(k) < 2 else .62), k * 2.1 + fl * .8)) for k in (-2.5, -1.2, 0, 1.2, 2.5))
+    # les nageoires de côté : de grands éventails arrondis qui battent doucement, et deux plus petites au milieu du corps
+    nag = ''
+    for s0, ta0, ph in ((Lb * .25, 1.25, 0), (Lb * .66, .7, .3)):
+        for side in (1, -1):
+            ta = ta0 if side > 0 else ta0 * .58      # côté intérieur : plus petites, pour ne jamais toucher le yin et le yang
+            bat = .6 * math.sin(2 * math.pi * (t + ph + (0 if side > 0 else .5)))
+            w = larg(s0)
+            pts_ = [(s0 - .6, w * .9), (s0 + .4 * ta, w + (2.9 + bat) * ta), (s0 + 2.6 * ta, w + (4.8 + bat) * ta), (s0 + 5 * ta, w + (4.3 + bat) * ta),
+                    (s0 + 5.8 * ta, w + (2.2 + bat * .5) * ta), (s0 + 3.2 * ta, w * .95)]
+            nag += courbe([P(s, side * y) for s, y in pts_])
+            traits += seg(P(s0 + .3, side * w), P(s0 + 2.4 * ta, side * (w + (4.2 + bat) * ta))) + seg(P(s0 + 1.3, side * w), P(s0 + 4.4 * ta, side * (w + (3.4 + bat * .8) * ta)))
+    dos = 'M' + 'L'.join(f'{n(x)} {n(y)}' for x, y in (P(s, 0) for s in (Lb * .32, Lb * .55, Lb * .78, Lb * .96)))
+    yeux = ''.join(circ(*P(Lb * .1, k * larg(Lb * .1) * .6), .55) for k in (1, -1))
+    contour = dict(stroke=ENCRE, stroke_width='.8', stroke_linejoin='round')
+    return (path(queue, **contour) + path(nag, **contour) + path(traits, fill='none', stroke='currentColor', stroke_width='.35', stroke_opacity='.65')
+            + path(corps, **contour) + path(dos, fill='none', stroke='currentColor', stroke_width='.45', stroke_opacity='.5', stroke_linecap='round')
+            + circ(*P(Lb * .17, 0), 1.45, fill='#C8302A') + g(yeux, fill='currentColor'))
+
+
+def yin_yang(cx, cy, r, c1, c2, rot=0):
+    h = r / 2
+    moitie = (f'M{n(cx)} {n(cy - r)}A{n(r)} {n(r)} 0 0 1 {n(cx)} {n(cy + r)}A{n(h)} {n(h)} 0 0 1 {n(cx)} {n(cy)}'
+              f'A{n(h)} {n(h)} 0 0 0 {n(cx)} {n(cy - r)}Z')
+    body = circ(cx, cy, r, fill=c2) + path(moitie, fill=c1) + circ(cx, cy + h, r * .15, fill=c2) + circ(cx, cy - h, r * .15, fill=c1)
+    return g(body, transform=f'rotate({rot} {n(cx)} {n(cy)})') + circ(cx, cy, r + .35, fill='none', stroke=ENCRE, stroke_width='.9')
+
+
+@plaque
+def koi():
+    r = rnd(23)
+    cx, cy = 190, 30
+    # le papier : quelques fibres et des points, un lavis d'encre très léger derrière le yin et le yang, des ronds dans l'eau
+    fib = ''
+    for i in range(16):
+        x, y, L_, a = 50 + r.random() * 190, r.random() * 60, 4 + r.random() * 9, (r.random() - .5) * .9
+        fib += f'M{n(x)} {n(y)}q{n(L_ * .5 * math.cos(a))} {n(L_ * .5 * math.sin(a) + (r.random() - .5) * 2)} {n(L_ * math.cos(a))} {n(L_ * math.sin(a))}'
+    body = path(fib, fill='none', stroke='#B9A27A', stroke_width='.35', stroke_opacity='.45', stroke_linecap='round')
+    body += g(''.join(circ(40 + r.random() * 200, r.random() * 60, .3 + r.random() * .3) for i in range(20)), fill='#9C8460', opacity='.3')
+    body += circ(cx, cy, 30, fill='url(#lav)')
+    for rr, op in ((26.5, .2), (33, .13), (40, .08)):
+        body += circ(cx, cy, rr, fill='none', stroke=ENCRE, stroke_width='.55', stroke_opacity=n2(op))
+    body += yin_yang(cx, cy, 9.4, '#C8302A', ENCRE, rot=32)
+    art = svg(body, defs=rad('lav', [(0, '#6B5A45', .22), (.55, '#6B5A45', .08), (1, '#6B5A45', 0)]))
+    # un rond dans l'eau, qui part du yin et du yang et s'efface
+    onde = svg(circ(30, 30, 14, fill='none', stroke=ENCRE, stroke_width='.7', stroke_opacity='.55'), 60, 60)
+    # les deux carpes, image par image : elles nagent (4 images) pendant que tout le calque tourne autour du centre
+    defs = ''.join(g(koi_dessin(t=i / 4), id=f'k{i}') for i in range(4))
+    fr = [f"<use href='#k{i}' fill='{PAPIER}' color='{ENCRE}'/><use href='#k{i}' transform='rotate(180 30 30)' fill='{ENCRE}' color='{PAPIER}'/>" for i in range(4)]
+    carpes = frames(fr, 60, 60, defs=defs)
+    base, tr = carre(cx)
+    css = ("&{ --pts:0 0 2px #FBF7EE, 0 0 5px rgba(251,247,238,.95); }\n"   # un halo couleur papier : le texte foncé reste lisible même sur la carpe noire
+           f"& > .plq > i::before{{ transform:{tr} scale(1.25); opacity:.4; }}\n"
+           f"&! > .plq > i::before{{ animation:plqKoiOnde 3.6s cubic-bezier(.2,.6,.35,1) infinite; }}\n"
+           f"@keyframes plqKoiOnde{{ from{{ transform:{tr} scale(.78); opacity:.75; }} to{{ transform:{tr} scale(1.95); opacity:0; }} }}\n"
+           f"@keyframes plqKoiTour{{ from{{ transform:{tr} rotate(0deg); }} to{{ transform:{tr} rotate(-360deg); }} }}\n"
+           f"@supports not (aspect-ratio:1){{ & > .plq > i::before, & > .plq > i::after{{ width:25%; }} }}")
+    return dict(id='koi', label='Koï', pa='#F1E7D3', pb='#E3D2B1', tx='#1C1410', art=art,
+                fx1=('still', onde, dict(css=base + ' background-size:100% 100%; background-position:center;')),
+                fx2=('anim', carpes, dict(nb=4, dur=.9, extra=', plqKoiTour 26s linear infinite', css=base)), css=css)
+
+
+# ---------------------------------------------------------------- Soleil rouge : des rayons en flammes qui tournent lentement, une spirale qui tourne en sens inverse
+def rayon(th, r0, Lr, bw, r, cx=30, cy=30, vague=2.1):
+    """Un rayon en forme de flamme ondulée : large à la base, effilé au bout, avec quelques irrégularités de pinceau."""
+    ux, uy = math.cos(th), math.sin(th)            # vers l'extérieur
+    tx, ty = -uy, ux                                # sur le côté
+    gauche, droite = [], []
+    N = 7
+    for k in range(N + 1):
+        t = k / N
+        rho = r0 + t * (Lr - r0)
+        d = vague * math.sin(2 * math.pi * t * .9) * t ** .6
+        w = bw * (1 - t) ** .85 * (1 + .3 * math.sin(math.pi * t))
+        jx = (r.random() - .5) * .35 if 0 < k < N else 0
+        mx, my = cx + rho * ux + d * tx, cy + rho * uy + d * ty
+        gauche.append((mx + (w + jx) * tx, my + (w + jx) * ty))
+        droite.append((mx - (w - jx) * tx, my - (w - jx) * ty))
+    return courbe(gauche + list(reversed(droite))[1:])
+
+
+def spirale(rmax=10.1, tours=2.2, cx=30, cy=30, pas=.42):
+    """Une spirale au pinceau : fine au centre, épaisse au bord."""
+    tm = tours * 2 * math.pi
+    ext, inn = [], []
+    k = 0
+    while True:
+        th = min(k * pas, tm)
+        u = th / tm
+        rr, w = 1.1 + (rmax - 1.1) * u, .55 + 2.1 * u
+        ext.append((cx + (rr + w / 2) * math.cos(th), cy + (rr + w / 2) * math.sin(th)))
+        inn.append((cx + max(rr - w / 2, .2) * math.cos(th), cy + max(rr - w / 2, .2) * math.sin(th)))
+        if th >= tm:
+            break
+        k += 1
+    return courbe(ext + list(reversed(inn)))
+
+
+@plaque
+def soleil():
+    r = rnd(31)
+    cx = 190
+    # le fond : une grande lueur derrière le soleil, des cercles de chaleur, quelques braises immobiles
+    body = circ(cx, 30, 38, fill='url(#lu)') + circ(cx, 30, 19, fill='url(#co)')
+    for rr, op in ((31, .14), (37, .09), (44, .05)):
+        body += circ(cx, 30, rr, fill='none', stroke='#FF7A3A', stroke_width='.6', stroke_opacity=n2(op))
+    body += g(''.join(circ(70 + r.random() * 170, r.random() * 60, .3 + r.random() * .5) for i in range(16)), fill='#FFB070', opacity='.35')
+    art = svg(body, defs=rad('lu', [(0, '#FF6A2E', .55), (.45, '#E2361E', .2), (1, '#E2361E', 0)]) + rad('co', [(0, '#FFC27A', .32), (1, '#FF6A2E', 0)]))
+    # les rayons : dix flammes, longues et courtes, et des points entre elles
+    N, ray, pts_ = 10, '', ''
+    for i in range(N):
+        th = -math.pi / 2 + i * 2 * math.pi / N
+        long_ = i % 2 == 0
+        ray += rayon(th, 12.5, 28.6 if long_ else 24.2, 2.7 if long_ else 2.05, r, vague=2.2 if long_ else 1.7)
+        a = th + math.pi / N
+        pts_ += circ(30 + 15.4 * math.cos(a), 30 + 15.4 * math.sin(a), .85)
+        if not long_:
+            pts_ += circ(30 + 22.6 * math.cos(a), 30 + 22.6 * math.sin(a), .7)
+    d1 = "<radialGradient id='rg' gradientUnits='userSpaceOnUse' cx='30' cy='30' r='29'><stop offset='.42' stop-color='#FFB25E'/><stop offset='.64' stop-color='#F2552F'/><stop offset='1' stop-color='#B21E18'/></radialGradient>"
+    rayons = svg(path(ray, fill='url(#rg)') + g(pts_, fill='#FF9A55'), 60, 60, d1)
+    # la spirale du centre
+    d2 = "<radialGradient id='sg' gradientUnits='userSpaceOnUse' cx='30' cy='30' r='13'><stop offset='0' stop-color='#FFC98A'/><stop offset='.4' stop-color='#FF7E3F'/><stop offset='1' stop-color='#E3381F'/></radialGradient>"
+    # la spirale tourne dans un anneau, d'où partent les rayons
+    spi = svg(circ(30, 30, 12.6, fill='none', stroke='url(#sg)', stroke_width='1.6') + path(spirale(), fill='url(#sg)') + circ(30, 30, 1.3, fill='#FFD49A'), 60, 60, d2)
+    base, tr = carre(cx)
+    # les rayons tournent en 48 s et « respirent » 6 fois par tour ; la spirale tourne en sens inverse
+    pas = ' '.join(f"{n2(100 * k / 12)}%{{ transform:{tr} rotate({30 * k}deg) scale({'1.06' if k % 2 else '1'}); }}" for k in range(13))
+    css = ("&{ --pts:0 1px 2px rgba(0,0,0,.65), 0 0 7px rgba(20,8,7,.75); }\n"   # un halo sombre : le texte blanc reste lisible devant le soleil
+           f"@keyframes plqSoleilR{{ {pas} }}\n"
+           f"@keyframes plqSoleilS{{ from{{ transform:{tr} rotate(0deg); }} to{{ transform:{tr} rotate(-360deg); }} }}\n"
+           f"@supports not (aspect-ratio:1){{ & > .plq > i::before, & > .plq > i::after{{ width:25%; }} }}")
+    return dict(id='soleil', label='Soleil rouge', pa='#140807', pb='#3E0F0A', bg='linear-gradient(100deg,#140807 30%,#2A0B08 62%,#4A140C)', art=art,
+                fx1=('still', rayons, dict(css=base, extra='plqSoleilR 48s linear infinite')),
+                fx2=('still', spi, dict(css=base, extra='plqSoleilS 11s linear infinite')), css=css)
+
+
+# ---------------------------------------------------------------- Nuages : des nuages porte-bonheur rouges qui passent devant un soleil d'or, sur un ciel de jade
+def traine(x, y, L, e0, amp, plus=0):
+    """La traîne d'un nuage : épaisse contre le nuage, effilée au bout, avec un petit crochet vers le haut."""
+    haut, bas = [], []
+    for k in range(9):
+        t = k / 8
+        cx, cy = x - L * t, y + amp * math.sin(math.pi * t * 1.15) - 4.2 * t ** 3
+        e = e0 * (1 - t) ** .9 + .35
+        haut.append((cx, cy - e / 2 - plus))
+        bas.append((cx, cy + e / 2 + plus))
+    return courbe(haut + list(reversed(bas)))
+
+
+def nuage_xiangyun(lobes, fond, bord, volute, ep=1.1, queue=None):
+    """Un nuage porte-bonheur fait de boucles (x, y, rayon), posées sur une base arrondie, avec une traîne (facultative).
+    Le bord est le même nuage, un peu plus gros, posé dessous ; chaque boucle porte une volute qui s'enroule vers le centre."""
+    xs, rs = [x for x, y, rr in lobes], [rr for x, y, rr in lobes]
+
+    def silhouette(plus):
+        o = ''.join(circ(x, y, rr + plus) for x, y, rr in lobes)
+        o += ell((min(xs) + max(xs)) / 2, max(y + rr * .35 for x, y, rr in lobes), (max(xs) - min(xs)) / 2 + 1.5 + plus, min(rs) * .72 + plus)
+        if queue:
+            o += path(traine(*queue, plus=plus))
+        return o
+    vol = ''
+    for x, y, rr in lobes:
+        pts_ = [(x + rr * (.72 - k * .045) * math.cos(-1.9 + k * .42), y + rr * (.72 - k * .045) * math.sin(-1.9 + k * .42)) for k in range(15)]
+        vol += courbe(pts_, closed=False)
+    return ((g(silhouette(ep), fill=bord) if bord else '') + g(silhouette(0), fill=fond)
+            + path(vol, fill='none', stroke=volute, stroke_width='.85', stroke_linecap='round'))
+
+
+@plaque
+def nuages_porte_bonheur():
+    # le ciel : un soleil d'or entouré d'un halo, et deux traînées de brume
+    d = rad('ha', [(0, '#F7D27A', .55), (.5, '#F2B84B', .16), (1, '#F2B84B', 0)]) + lin('or', [(0, '#FFF0B8'), (1, '#F0B348')])
+    body = circ(203, 24, 34, fill='url(#ha)') + circ(203, 24, 15, fill='url(#or)') + circ(203, 24, 15, fill='none', stroke='#FFF6D6', stroke_width='.6', stroke_opacity='.6')
+    body += path('M70 44Q130 38 186 44T240 42', fill='none', stroke='#E9F3EC', stroke_width='1.2', stroke_opacity='.08', stroke_linecap='round')
+    body += path('M96 52Q150 47 206 52T240 50', fill='none', stroke='#E9F3EC', stroke_width='.9', stroke_opacity='.07', stroke_linecap='round')
+    art = svg(body, defs=d)
+    grad = "<linearGradient id='ro' gradientUnits='userSpaceOnUse' x1='0' y1='20' x2='0' y2='49'><stop offset='0' stop-color='#EA553F'/><stop offset='1' stop-color='#B3261D'/></linearGradient>"
+    # au loin : des petits nuages pâles qui glissent lentement (hors du coin du pseudo)
+    loin = (nuage_xiangyun([(150, 14, 3.6), (157, 11, 4.6), (164, 14, 3.4)], '#5E9C8F', None, '#C4E4DA')
+            + nuage_xiangyun([(226, 50, 3.8), (234, 47, 4.8), (242, 50, 3.6)], '#5E9C8F', None, '#C4E4DA'))
+    fx1 = svg(boucle_x(g(loin, opacity='.6'), 240), W, 60)
+    # devant : un grand nuage porte-bonheur devant le soleil, puis un plus petit qui arrive plus tard.
+    # Ce calque fait deux fenêtres de large (480) : à l'arrêt on voit sa moitié droite (le grand nuage seul, loin du pseudo),
+    # le petit nuage n'entre qu'avec le mouvement.
+    pres = (nuage_xiangyun([(412, 37, 6.8), (423, 31, 8.6), (436, 29, 9.6), (449, 32, 8.4), (459, 38, 6.4)], 'url(#ro)', '#F2C14E', '#FFEBD0', 1.15,
+                           queue=(418, 40.8, 42, 5.2, 1.6))
+            + nuage_xiangyun([(150, 42, 5), (158, 38, 6.4), (168, 40, 5.2)], 'url(#ro)', '#F2C14E', '#FFEBD0', 1, queue=(154, 44.5, 28, 3.8, 1.2)))
+    fx2 = svg(boucle_x(pres, 480), 2 * W, 60, grad)
+    css = "&{ --pts:0 1px 2px rgba(0,0,0,.6), 0 0 7px rgba(6,26,24,.7); }"   # un halo sombre : le texte blanc reste lisible devant les nuages
+    return dict(id='nuages', label='Nuages', css=css, pa='#0A2522', pb='#1B5A52', bg='linear-gradient(100deg,#0A2522 30%,#134540 62%,#1F6359)', art=art,
+                fx1=('drift', fx1, dict(k=1, dur=46)), fx2=('drift', fx2, dict(k=2, dur=42)))
