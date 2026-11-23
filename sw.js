@@ -4,7 +4,7 @@
      (la nouvelle version continue d'arriver en arrière-plan et sera là à la prochaine ouverture).
    - Hors connexion, la dernière version enregistrée s'affiche.
    - Firebase, Google, CinetPay et les polices ne sont jamais mis en cache ici. */
-const CACHE = 'coopo-v45';
+const CACHE = 'coopo-v46';
 const WAIT_MS = 3000;
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 
@@ -42,6 +42,28 @@ self.addEventListener('fetch', e => {
     return;
   }
   e.respondWith(caches.match(req).then(hit => hit || fetch(req)));   // icônes et manifeste : cache d'abord
+});
+
+// v14 — Notifications « push » (envoyées par le serveur via Firebase Cloud Messaging) : un appel arrive même quand Coopô est fermée.
+//   step « ring » : « Appel vocal de … » qui sonne jusqu'à ce qu'on y touche ; step « end » : on l'enlève, et « Appel manqué » si personne n'a décroché.
+self.addEventListener('push', e => {
+  let p = {}; try { p = e.data ? e.data.json() : {}; } catch (x) {}
+  const d = (p && p.data) || {};
+  if (d.type !== 'call' || !d.pair || !d.from) return;
+  const reg = self.registration, tag = 'call-' + d.pair, icon = 'icons/icon-192.png', who = String(d.name || 'Ton mate').slice(0, 40);
+  const url = reg.scope + '#/messages/' + encodeURIComponent(d.from), at = +d.at || Date.now();
+  e.waitUntil((async () => {
+    const shown = await reg.getNotifications({ tag });
+    if (d.step === 'end') {
+      shown.forEach(n => n.close());
+      if (d.missed === '1') await reg.showNotification('Appel manqué', { body: who + " a essayé de t'appeler.", tag: 'missed-' + d.pair, icon, badge: icon, timestamp: at, data: { url } });
+      return;
+    }
+    const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    if (shown.length || wins.some(w => w.visibilityState === 'visible')) return;   // déjà affichée, ou Coopô est à l'écran (elle sonne déjà)
+    await reg.showNotification((d.kind === 'video' ? 'Appel vidéo' : 'Appel vocal') + ' de ' + who, { body: 'Touche pour répondre', tag, renotify: true,
+      requireInteraction: true, vibrate: [500, 250, 500, 250, 500, 250, 500], icon, badge: icon, timestamp: at, data: { url } });
+  })());
 });
 
 // Clic sur une notification : ouvre (ou ramène) Coopô sur la bonne page

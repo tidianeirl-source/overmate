@@ -2162,6 +2162,8 @@ button.g-who{ cursor:pointer; font:inherit; color:inherit; text-align:left; min-
 .gmsg{ display:flex; gap:8px; align-items:flex-end; max-width:88%; align-self:flex-start; } .gmsg.me{ align-self:flex-end; } .gmsg.same{ margin-top:-4px; }
 .gmsg > div{ display:grid; gap:3px; min-width:0; justify-items:start; } .gmsg.me > div{ justify-items:end; }
 .gmsg .bubble{ max-width:100%; } .gmsg a{ flex:none; line-height:0; } .g-gap{ width:32px; flex:none; }
+/* v14 — dans un groupe, c'est .gmsg qui limite la largeur : sans ça, la règle des conversations privées (84 %, 70 %) rétrécissait les bulles et coupait les messages courts */
+.chat-page .gmsg .bubble,.dm-shell .gmsg .bubble{ max-width:100%; }
 .g-from{ display:flex; align-items:center; gap:6px; padding-left:4px; font-size:13px; min-width:0; max-width:100%; }
 .g-role{ flex:none; padding:1px 7px; border-radius:999px; background:var(--s2); color:var(--tx); font:700 10px/1.6 var(--fb); font-style:normal; text-transform:uppercase; letter-spacing:.04em; margin-left:6px; }
 .g-role.admin{ background:var(--pk); color:var(--on-pk); }
@@ -2542,6 +2544,40 @@ html.lite .stk-msg.anim{ animation:none; }
 .bubble.flash{ animation:msgFlash 1.5s ease; }
 @keyframes msgFlash{ 0%,55%{ box-shadow:0 0 0 3px color-mix(in srgb,var(--pk) 60%,transparent); } 100%{ box-shadow:0 0 0 3px transparent; } }
 .reply-x{ min-width:44px; font-size:22px; line-height:1; }
+
+/* ==== v14 — Réactions avec des emojis ==== */
+.mm-rxbar{ position:fixed; z-index:2; display:flex; align-items:center; gap:2px; padding:5px; border-radius:999px; background:var(--s1); color:var(--tx); border:1px solid var(--hair); box-shadow:0 14px 40px -10px rgba(0,0,0,.5); transform-origin:var(--mm-ox,left) center; animation:mmIn .18s cubic-bezier(.23,1,.32,1); }
+.mm-rx{ display:grid; place-items:center; width:44px; height:44px; padding:0; border:0; border-radius:50%; background:none; color:var(--tx); font:26px/1 "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",var(--fb),sans-serif; cursor:pointer; transition:transform .16s cubic-bezier(.23,1,.32,1),background-color .12s ease; }
+.mm-rx svg{ width:22px; height:22px; }
+.mm-rx[aria-pressed="true"]{ background:color-mix(in srgb,var(--pk) 24%,transparent); }
+.mm-rx:active{ transform:scale(.88); }
+.mm-rx:focus{ outline:none; } .mm-rx:focus-visible{ outline:2px solid var(--pk); outline-offset:-2px; }
+@media (hover:hover) and (pointer:fine){ .mm-rx:hover{ transform:scale(1.18); } }
+@media (max-width:359px){ .mm-rx{ width:38px; height:38px; font-size:22px; } }
+.msg-rx{ display:flex; flex-wrap:wrap; gap:4px; justify-self:start; margin:3px -6px -17px; position:relative; z-index:1; }
+.bubble.me .msg-rx{ justify-self:end; }
+.bubble:has(> .msg-rx){ margin-bottom:14px; }
+.rx{ display:inline-flex; align-items:center; gap:3px; min-height:26px; padding:1px 8px; border-radius:999px; border:1px solid var(--line); background:var(--s1); color:var(--tx); font:700 12.5px/1 var(--fb); box-shadow:0 2px 6px -2px rgba(0,0,0,.3); cursor:pointer; -webkit-user-select:none; user-select:none; }
+.rx .e{ font:15px/1 "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif; }
+.rx.on{ border-color:color-mix(in srgb,var(--pk) 70%,var(--tx)); background:color-mix(in srgb,var(--pk) 16%,var(--s1)); }
+.rx:focus-visible{ outline:2px solid var(--pk); outline-offset:2px; }
+.rx-list{ list-style:none; margin:4px 0 0; padding:0; display:grid; gap:2px; max-height:min(60vh,420px); overflow:auto; }
+.rx-list li{ display:flex; align-items:center; gap:12px; min-height:48px; padding:2px 4px; border-bottom:1px solid var(--line); }
+.rx-list li:last-child{ border-bottom:0; }
+.rx-list .e{ font:24px/1 "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif; width:32px; text-align:center; }
+.rx-list .who{ flex:1; font-weight:600; min-width:0; overflow-wrap:anywhere; }
+.sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
+.rx-pick{ display:grid; grid-template-columns:repeat(auto-fill,minmax(44px,1fr)); gap:2px; max-height:min(52vh,380px); overflow:auto; margin-top:6px; }
+.rx-pk{ height:44px; border:0; border-radius:12px; background:none; font:24px/1 "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif; cursor:pointer; }
+.rx-pk[aria-pressed="true"]{ background:color-mix(in srgb,var(--pk) 24%,transparent); }
+.rx-pk:focus-visible{ outline:2px solid var(--pk); outline-offset:-2px; }
+@media (hover:hover) and (pointer:fine){ .rx-pk:hover{ background:color-mix(in srgb,var(--tx) 8%,transparent); } }
+/* bandeau « Ne rate plus aucun appel » (page Messages) */
+.nt-ban{ display:flex; align-items:center; flex-wrap:wrap; gap:10px 12px; margin:0 0 14px; padding:12px 12px 12px 14px; border-radius:16px; background:var(--s1); color:var(--tx); border:1px solid var(--line); }
+.nt-ban > i{ display:grid; place-items:center; width:40px; height:40px; flex:none; border-radius:50%; background:color-mix(in srgb,var(--pk) 18%,transparent); color:color-mix(in srgb,var(--pk) 70%,var(--tx)); }
+.nt-ban > i svg{ width:22px; height:22px; }
+.nt-ban > span{ flex:1 1 200px; display:grid; gap:2px; min-width:0; } .nt-ban b{ font-size:15px; } .nt-ban small{ font-size:13px; color:var(--mu); line-height:1.35; }
+.nt-ban .nb-x{ min-width:44px; min-height:44px; font-size:22px; line-height:1; }
 
 /* ==== v12 — Fond des conversations : le motif du thème (dessiné par chatMotif) ; il reste immobile quand on fait défiler ==== */
 .chat-box,.chat-page .chat-box{ background-color:var(--chat-bg,var(--s1)); background-image:var(--chat-pat,none); background-repeat:repeat; background-position:0 0; }
@@ -4367,14 +4403,51 @@ async function deviceNotify(n){
     const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration(); if(reg) reg.showNotification(title,opt); else new Notification(title,opt);
   }catch(e){} }
 function notifySettingHTML(){
-  if(!('Notification' in window)) return `<p class="hint">Ton navigateur ne gère pas les notifications. Installe l'application pour une meilleure expérience.</p>`;
+  if(!('Notification' in window)) return isIOS()&&!isStandalone()
+    ? `<p class="hint">Sur iPhone, ajoute d'abord Coopô à ton écran d'accueil (bouton Partager, puis « Sur l'écran d'accueil »). Ouvre Coopô depuis l'écran d'accueil, puis reviens ici pour activer les notifications.</p>`
+    : `<p class="hint">Ton navigateur ne gère pas les notifications. Installe l'application pour une meilleure expérience.</p>`;
   const st=Notification.permission;
   if(st==='denied') return `<p class="hint">Les notifications sont bloquées pour Coopô dans les réglages de ton navigateur.</p>`;
-  return `<div class="toggle"><span><b>Notifications sur cet appareil</b><small class="muted" style="display:block">Demandes de mate et messages, quand Coopô est ouverte en arrière-plan.</small></span><button class="btn btn-sm ${S.notifyOn&&st==='granted'?'':'btn-ac'}" type="button" id="notif-toggle">${S.notifyOn&&st==='granted'?'Désactiver':'Activer'}</button></div>`;
+  const on=S.notifyOn&&st==='granted';
+  return `<div class="toggle"><span><b>Notifications sur cet appareil</b><small class="muted" style="display:block">${pushCan()?'Appels, demandes de mate et messages. Les appels sonnent même quand Coopô est fermée.':'Appels, demandes de mate et messages, quand Coopô est ouverte en arrière-plan.'}</small></span><button class="btn btn-sm ${on?'':'btn-ac'}" type="button" id="notif-toggle">${on?'Désactiver':'Activer'}</button></div>`;
 }
+// Activer les notifications (réglages ou bandeau des Messages) : l'autorisation du navigateur, puis l'adresse « push » de cet appareil
+async function notifyEnable(){ try{ const r=await Notification.requestPermission(); S.notifyOn=r==='granted'; save();
+    if(r!=='granted'){ toast('Notifications refusées'); return false; }
+    const p=await pushOn(); toast(p?'Notifications activées : tes appels sonneront même quand Coopô est fermée.':'Notifications activées',3500); return true; }catch(x){ return false; } }
 document.addEventListener('click',async e=>{ if(!e.target.closest('#notif-toggle')) return;
-  if(S.notifyOn&&Notification.permission==='granted'){ S.notifyOn=false; save(); route(); return; }
-  try{ const r=await Notification.requestPermission(); S.notifyOn=r==='granted'; save(); toast(r==='granted'?'Notifications activées':'Notifications refusées'); route(); }catch(x){} });
+  if(S.notifyOn&&Notification.permission==='granted'){ S.notifyOn=false; save(); pushOff(); route(); return; }
+  await notifyEnable(); route(); });
+/* ---- v14 — Notifications « push » : un appel arrive même quand Coopô est fermée ----
+   Quand le joueur active les notifications, son appareil reçoit une adresse de notification (Firebase Cloud Messaging),
+   rangée dans private/{uid}.push (5 appareils au plus). Quand il appelle un mate, Coopô demande au serveur de paiement
+   (/api/notifyCall) de faire sonner les appareils du mate ; c'est le service worker (sw.js) qui affiche la notification. */
+const FCM_VAPID='BPxo2lfyQraUCGxMm-JUZSKFVOJhxeN-XLoy_yS_uS-iOmMhEfA-IwIjRtTcelg-SzWLUFQKev6QHR47ZID9PEo';   // clé publique « Web Push » du projet Firebase (pas un secret)
+const PUSH_KEY='coopo_push';   // l'adresse de cet appareil (pour la retirer quand on désactive)
+const pushTok = () => { try{ return localStorage.getItem(PUSH_KEY)||''; }catch(e){ return ''; } };
+const pushTokSet = v => { try{ v?localStorage.setItem(PUSH_KEY,v):localStorage.removeItem(PUSH_KEY); }catch(e){} };
+const pushCan = () => AUTH_LIVE&&'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
+async function pushMessaging(){ if(!pushCan()) return null; if(!DB.live&&!(await DB.ready())) return null;
+  if(!firebase.messaging) await loadScript(`https://www.gstatic.com/firebasejs/${FB_VERSION}/firebase-messaging-compat.js`);
+  if(!firebase.messaging||!(await firebase.messaging.isSupported())) return null; return firebase.messaging(); }
+async function pushOn(){ try{ if(!('Notification' in window)||Notification.permission!=='granted') return false;
+    const m=await pushMessaging(); if(!m) return false; const reg=await navigator.serviceWorker.ready;
+    const tok=await m.getToken({vapidKey:FCM_VAPID,serviceWorkerRegistration:reg}); if(!tok) return false;
+    const old=pushTok(); if(old&&old!==tok) await DB.dropPush(old).catch(()=>{});
+    await DB.savePush(tok); pushTokSet(tok); return true; }catch(e){ console.warn('push',e); return false; } }
+async function pushOff(){ const tok=pushTok(); pushTokSet(null); try{ if(tok) await DB.dropPush(tok); if(window.firebase&&firebase.messaging){ const m=await pushMessaging(); if(m) await m.deleteToken(); } }catch(e){ console.warn('push',e); } }
+let _pushChecked=false;   // une fois par visite : on garde l'adresse à jour (elle peut changer), ou on la retire si les notifications sont coupées
+function pushRefresh(){ if(_pushChecked||!pushCan()) return; _pushChecked=true;
+  if(S.notifyOn&&Notification.permission==='granted') pushOn(); else if(pushTok()) pushOff(); }
+// Fait sonner les appareils du mate (même Coopô fermée) : step « ring » quand l'appel part, « end » s'il s'arrête sans réponse
+async function pushCall(c,step){ try{ if(!SHOP.api||!AUTH_LIVE||!c||!c.id||!c.at) return; const u=firebase.auth().currentUser; if(!u) return; const tk=await u.getIdToken();
+    await fetch(SHOP.api.replace(/\/$/,'')+'/notifyCall',{method:'POST',headers:{Authorization:'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify({to:c.id,at:c.at,step}),keepalive:true}); }catch(e){} }
+// Sur la page Messages : proposer une fois d'activer les notifications, pour que les appels arrivent même Coopô fermée
+const NB_KEY='coopo_nb_x';
+function notifBanHTML(){ try{ if(!pushCan()||Notification.permission!=='default'||localStorage.getItem(NB_KEY)) return ''; }catch(e){ return ''; }
+  return `<div class="nt-ban" id="nt-ban" role="region" aria-label="Notifications"><i aria-hidden="true">${BELL}</i><span><b>Ne rate plus aucun appel</b><small>Active les notifications : tes mates pourront t'appeler même quand Coopô est fermée.</small></span><button class="btn btn-sm btn-ac" type="button" data-nb-on>Activer</button><button class="btn btn-sm btn-ghost nb-x" type="button" data-nb-x aria-label="Plus tard">×</button></div>`; }
+document.addEventListener('click',async e=>{ const on=e.target.closest('[data-nb-on]'), x=e.target.closest('[data-nb-x]'); if(!on&&!x) return;
+  try{ localStorage.setItem(NB_KEY,'1'); }catch(er){} document.getElementById('nt-ban')?.remove(); if(on) await notifyEnable(); });
 
 /* ---- Accueil : rappel pour compléter le profil, et jeux les plus joués ---- */
 function profileNudge(){
@@ -5112,7 +5185,7 @@ function snList(mates){
     return `<a class="sn-row${u?' unread':''}${plqOn(p)}" href="#/messages/${p.id}" data-f="${u?'unread ':''}${on?'online ':''}${fl?'flame':''}" data-n="${esc(String(p.name||'').toLowerCase())}">${plq(p)}<span class="sn-av">${avatar(p,56)}${on?'<span class="online" title="En ligne"></span>':''}</span><div class="sn-mid"><b><span>${esc(p.name)}</span>${modBadge(p)}</b>
       <span class="sn-st ${st[0]}">${last||u?'<i></i>':''}<span class="t">${st[1]}</span><span class="x">${last?'· '+shortAgo(last.at):''}${fl?` · ${f.count} ${f.warn?'⏳':'🔥'}`:''}</span></span></div><span class="sn-end">${u?`<span class="badge static">${u}</span>`:CHAT_SVG}</span></a>`; }).join('');
   const chip=(k,l,n)=>`<button type="button" class="chip" data-snf="${k}" aria-pressed="${k==='all'}">${l}${n?` <span class="cnt">${n}</span>`:''}</button>`;
-  return `<div class="page-head sn-top"><div><h2>Messages</h2></div><button class="btn sn-round" type="button" id="sn-find" aria-label="Chercher une conversation" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button><a class="btn sn-round" href="#/matchs" aria-label="Trouver de nouveaux mates" title="Trouver de nouveaux mates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9.5" cy="8" r="3.5"/><path d="M3 20c.5-3.5 3-5.5 6.5-5.5s6 2 6.5 5.5M19 7v6M16 10h6"/></svg></a></div>
+  return `${notifBanHTML()}<div class="page-head sn-top"><div><h2>Messages</h2></div><button class="btn sn-round" type="button" id="sn-find" aria-label="Chercher une conversation" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button><a class="btn sn-round" href="#/matchs" aria-label="Trouver de nouveaux mates" title="Trouver de nouveaux mates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9.5" cy="8" r="3.5"/><path d="M3 20c.5-3.5 3-5.5 6.5-5.5s6 2 6.5 5.5M19 7v6M16 10h6"/></svg></a></div>
     <input class="sn-search" id="sn-q" type="search" placeholder="Chercher un mate" autocomplete="off" aria-label="Chercher un mate" hidden>
     <div class="sn-chips" role="group" aria-label="Filtrer les conversations">${chip('all','Tous')}${chip('unread','Non lus',nU)}${chip('online','En ligne')}${chip('flame','Flammes 🔥')}</div>
     ${items.length?`<div class="sn-list" id="sn-list">${rows}<p class="muted sn-none" id="sn-none" hidden>Aucune conversation ici.</p></div>`
@@ -5172,7 +5245,7 @@ function viewChat(id){ EDIT=null; chatMotif();
      { parts, from, to, kind:'audio'|'video', status:'ringing'|'active'|'ended', offer, answer, at, why, endedBy }
    Un relais (réglé sur le serveur, page /turn) aide quand les deux réseaux ne se voient pas directement.
    Limite : l'appel ne sonne que si le mate a Coopô ouvert. */
-const CALL_RING_S=40;
+const CALL_RING_S=50;   // v14 — 50 s (avant 40) : le temps d'ouvrir Coopô depuis la notification
 let CALL=null;   // l'appel en cours : { id, pair, role:'out'|'in', kind, at, status, pc, stream, remote, ... }
 const canCall = () => !!(window.RTCPeerConnection&&navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
 const PHONE_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>';
@@ -5211,11 +5284,11 @@ async function startCall(id,kind){
   callAttach();
   try{ const pc=callPc(c,await iceServers()); const offer=await pc.createOffer(); await pc.setLocalDescription(offer); await iceDone(pc); if(CALL!==c) return;
     const me=DB.uid(); await DB.db.collection('calls').doc(c.pair).set({parts:[me,id].sort(),from:me,to:id,kind,status:'ringing',offer:{type:'offer',sdp:pc.localDescription.sdp},at:c.at});
-    if(CALL!==c) return; c.sent=true; c.status='ringing'; renderCall(); callRing(true,true);
+    if(CALL!==c) return; c.sent=true; c.status='ringing'; renderCall(); callRing(true,true); pushCall(c,'ring');   // v14 — fait sonner les appareils du mate, même Coopô fermée
     c.ringT=setTimeout(()=>{ if(CALL===c&&c.status!=='active') endCall('noanswer'); },CALL_RING_S*1000); }
   catch(e){ console.error(e); if(CALL===c){ closeCall(); toast("L'appel n'a pas pu démarrer. Réessaie dans un instant.",3500); } } }
 // Répondre
-async function acceptCall(){ const c=CALL; if(!c||c.role!=='in'||c.status!=='ringing') return; c.status='connecting'; callRing(false); renderCall();
+async function acceptCall(){ const c=CALL; if(!c||c.role!=='in'||c.status!=='ringing') return; c.status='connecting'; callRing(false); callNotify(c,'end'); renderCall();
   try{ c.stream=await callMedia(c.kind); }catch(e){ if(CALL===c){ endCall('refused'); callMediaErr(e,c.kind); } return; }
   if(CALL!==c){ c.stream.getTracks().forEach(t=>t.stop()); return; }
   callAttach();
@@ -5226,15 +5299,19 @@ async function acceptCall(){ const c=CALL; if(!c||c.role!=='in'||c.status!=='rin
 // Raccrocher, refuser, ou fin automatique. On prévient l'autre téléphone, puis on ferme tout.
 const CALL_WHY={ hangup:'Appel terminé.', refused:'Appel refusé.', noanswer:'Pas de réponse.', busy:'Ton mate est déjà en appel.', fail:"La connexion n'a pas pu s'établir. Réessaie, si possible en Wi-Fi." };
 function endCall(why){ const c=CALL; if(!c) return;
-  if(c.role==='in'||c.sent) DB.db.collection('calls').doc(c.pair).update({status:'ended',why,endedBy:DB.uid()}).catch(e=>console.error(e));
-  closeCall(c.role==='in'&&why==='refused'?'':c.role==='out'&&why==='hangup'&&c.status!=='active'?'Appel annulé.':CALL_WHY[why]||CALL_WHY.hangup); }
-function closeCall(msg){ const c=CALL; if(!c) return; CALL=null; clearTimeout(c.ringT); clearInterval(c.tick); callRing(false);
+  const upd=(c.role==='in'||c.sent) ? DB.db.collection('calls').doc(c.pair).update({status:'ended',why,endedBy:DB.uid()}).catch(e=>console.error(e)) : null;
+  closeCall(c.role==='in'&&why==='refused'?'':c.role==='out'&&why==='hangup'&&c.status!=='active'?'Appel annulé.':CALL_WHY[why]||CALL_WHY.hangup, why, upd); }
+// why : pourquoi l'appel s'arrête ; upd : l'enregistrement « terminé » en cours (on attend qu'il soit fait avant de prévenir le serveur)
+function closeCall(msg,why,upd){ const c=CALL; if(!c) return; CALL=null; clearTimeout(c.ringT); clearInterval(c.tick); callRing(false);
+  // v14 — notifications : on enlève la sonnerie affichée ; un appel reçu qui n'a pas été décroché (ni refusé) devient « Appel manqué »
+  callNotify(c,c.role==='in'&&c.status==='ringing'&&why!=='refused'?'missed':'end');
+  if(c.role==='out'&&c.sent&&c.status!=='active'&&!c.answered) (upd||Promise.resolve()).then(()=>pushCall(c,'end'));
   try{ c.stream&&c.stream.getTracks().forEach(t=>t.stop()); }catch(e){} try{ c.pc&&c.pc.close(); }catch(e){}
   const ov=document.getElementById('call-ov'); if(ov) ov.remove(); if(msg) toast(msg,3000); }
 // Ce que dit le document d'appel (reçu en direct de la base)
 function onCallDoc(pair,d){ if(!d) return; const me=DB.uid(), c=CALL;
   if(c&&c.pair===pair&&d.at===c.at){
-    if(d.status==='ended'&&d.endedBy!==me){ closeCall(c.role==='in'&&c.status==='ringing'?'':CALL_WHY[d.why==='refused'||d.why==='busy'||d.why==='fail'?d.why:'hangup']); return; }
+    if(d.status==='ended'&&d.endedBy!==me){ closeCall(c.role==='in'&&c.status==='ringing'?'':CALL_WHY[d.why==='refused'||d.why==='busy'||d.why==='fail'?d.why:'hangup'],'remote'); return; }
     if(c.role==='out'&&d.status==='active'&&d.answer&&!c.answered&&c.pc){ c.answered=true; callRing(false); c.status='connecting'; renderCall();
       c.pc.setRemoteDescription(d.answer).catch(e=>{ console.error(e); if(CALL===c) endCall('fail'); });
       clearTimeout(c.ringT); c.ringT=setTimeout(()=>{ if(CALL===c&&c.status!=='active') endCall('fail'); },20000); }
@@ -5244,13 +5321,48 @@ function onCallDoc(pair,d){ if(!d) return; const me=DB.uid(), c=CALL;
   if(!isMate(d.from)||!d.offer) return;
   if(d.kind==='video'&&crossAge(PLAYERS.find(x=>x.id===d.from))){ DB.db.collection('calls').doc(pair).update({status:'ended',why:'refused',endedBy:me}).catch(()=>{}); return; }   // v7 — pas de vidéo entre âges différents
   const n=CALL={id:d.from,pair,role:'in',kind:d.kind==='video'?'video':'audio',at:d.at,status:'ringing',offer:d.offer,muted:false,camOff:false};
-  n.ringT=setTimeout(()=>{ if(CALL===n&&n.status==='ringing') closeCall('Appel manqué.'); },Math.max(3000,CALL_RING_S*1000-(Date.now()-d.at)));
-  renderCall(); callRing(true); }
-// Sonnerie (petits bips) + vibration. Le navigateur peut refuser le son tant qu'on n'a pas touché l'écran : ce n'est pas grave.
+  n.ringT=setTimeout(()=>{ if(CALL===n&&n.status==='ringing') closeCall('Appel manqué.','noanswer'); },Math.max(3000,CALL_RING_S*1000-(Date.now()-d.at)));
+  renderCall(); callRing(true); callNotify(n,'ring'); }
+/* ---- v14 — Sons de Coopô : la sonnerie d'un appel qui arrive, et « ça sonne » chez celui qui appelle ----
+   Le navigateur ne laisse jouer un son qu'après un premier appui sur l'écran : on prépare le son dès ce premier appui,
+   sinon la sonnerie d'un appel qui arrive plus tard resterait muette (surtout sur iPhone). Le son se met en veille quand il ne sert pas. */
+let ACX=null, ACX_T=0;
+function sndCtx(){ try{ if(!ACX){ const A=window.AudioContext||window.webkitAudioContext; if(!A) return null; ACX=new A(); } if(ACX.state!=='running'&&ACX.state!=='closed') ACX.resume().catch(()=>{}); return ACX; }catch(e){ return null; } }
+function sndRest(){ clearTimeout(ACX_T); ACX_T=setTimeout(()=>{ if(!RING&&ACX&&ACX.state==='running') ACX.suspend().catch(()=>{}); },8000); }
+{ let ready=false; const prep=()=>{ if(ready&&(!RING||!ACX||ACX.state==='running')) return; const c=sndCtx(); if(!c) return; ready=true;
+    try{ const b=c.createBuffer(1,1,22050), src=c.createBufferSource(); src.buffer=b; src.connect(c.destination); src.start(0); }catch(e){} sndRest(); };
+  addEventListener('pointerdown',prep,{capture:true,passive:true}); addEventListener('keydown',prep,true); }
+// Sonnerie : une petite mélodie façon marimba toutes les 2,6 secondes, et des vibrations (Android)
+const RING_TUNE=[[0,659.3],[.15,784],[.3,1046.5],[.45,784],[.62,880],[.82,1046.5]];
+function ringTune(c,out,t){ RING_TUNE.forEach(([d,f])=>[[1,.32,.5],[3.98,.06,.16],[10.2,.015,.05]].forEach(([k,a,len])=>{ const o=c.createOscillator(), g=c.createGain(), t0=t+d;
+    o.frequency.value=f*k; g.gain.setValueAtTime(.0001,t0); g.gain.exponentialRampToValueAtTime(a,t0+.006); g.gain.exponentialRampToValueAtTime(.0001,t0+len);
+    o.connect(g); g.connect(out); o.start(t0); o.stop(t0+len+.03); })); }
+// « Ça sonne » : un « tuut » doux d'une seconde toutes les 4 secondes
+function ringBack(c,out,t){ const o=c.createOscillator(), g=c.createGain(); o.frequency.value=425;
+  g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.09,t+.05); g.gain.setValueAtTime(.09,t+1.15); g.gain.exponentialRampToValueAtTime(.0001,t+1.25);
+  o.connect(g); g.connect(out); o.start(t); o.stop(t+1.3); }
 let RING=null;
-function callRing(on,soft){ if(RING){ clearInterval(RING.t); try{ RING.ctx.close(); }catch(e){} RING=null; try{ navigator.vibrate&&navigator.vibrate(0); }catch(e){} } if(!on) return;
-  try{ const ctx=new (window.AudioContext||window.webkitAudioContext)(); const beep=()=>{ if(ctx.state==='suspended') return; [0,.28].forEach(d=>{ const o=ctx.createOscillator(), g=ctx.createGain(); o.frequency.value=soft?440:660; g.gain.value=soft?.04:.12; o.connect(g); g.connect(ctx.destination); o.start(ctx.currentTime+d); o.stop(ctx.currentTime+d+.2); }); if(!soft){ try{ navigator.vibrate&&navigator.vibrate([250,120,250]); }catch(e){} } };
-    RING={ctx,t:setInterval(beep,soft?3000:1800)}; beep(); }catch(e){} }
+function callRing(on,soft){
+  if(RING){ clearInterval(RING.t); try{ RING.out&&RING.out.disconnect(); }catch(e){} RING=null; try{ navigator.vibrate&&navigator.vibrate(0); }catch(e){} sndRest(); }
+  if(!on) return;
+  const r=RING={t:0,out:null,soft:!!soft}, c=sndCtx();
+  const play=()=>{ if(RING!==r) return; const cx=sndCtx();
+    if(cx&&cx.state==='running'){ try{ if(!r.out){ r.out=cx.createGain(); r.out.gain.value=.55; r.out.connect(cx.destination); } (soft?ringBack:ringTune)(cx,r.out,cx.currentTime+.04); r.played=(r.played||0)+1; }catch(e){} }
+    if(!soft){ try{ navigator.vibrate&&navigator.vibrate([400,200,400]); }catch(e){} } };
+  r.t=setInterval(play,soft?4000:2600);
+  if(c&&c.state!=='running') c.resume().then(play,play); else play(); }
+/* ---- v14 — Notification de l'appareil pour un appel, quand Coopô est ouverte mais cachée (autre onglet, écran verrouillé…) ----
+   Quand Coopô est fermée, c'est le serveur qui fait sonner le téléphone (notification « push », voir pushCall). */
+const callName = c => { const p=visible().find(x=>x.id===c.id)||S.profiles[c.id]; return (p&&p.name)||'Ton mate'; };
+async function callNotify(c,step){ try{
+  if(!('Notification' in window)||Notification.permission!=='granted'||!S.notifyOn) return;
+  const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration(); if(!reg||!reg.showNotification) return;
+  const tag='call-'+c.pair, url=location.origin+location.pathname+'#/messages/'+c.id, icon='icons/icon-192.png';
+  if(step==='ring'){ if(!document.hidden||(await reg.getNotifications({tag})).length) return;
+    await reg.showNotification(`${c.kind==='video'?'Appel vidéo':'Appel vocal'} de ${callName(c)}`,{body:'Touche pour répondre',tag,renotify:true,requireInteraction:true,vibrate:[400,200,400,200,400],icon,badge:icon,timestamp:c.at,data:{url}}); return; }
+  (await reg.getNotifications({tag})).forEach(n=>n.close());
+  if(step==='missed'&&document.hidden) await reg.showNotification('Appel manqué',{body:`${callName(c)} a essayé de t'appeler.`,tag:'missed-'+c.pair,icon,badge:icon,timestamp:c.at,data:{url}});
+}catch(e){} }
 // L'écran d'appel (posé par-dessus tout le site : il reste si on change de page)
 function callAttach(){ const c=CALL; if(!c) return; const r=document.getElementById(c.kind==='video'?'call-remote':'call-audio'), l=document.getElementById('call-local');
   if(r&&c.remote&&r.srcObject!==c.remote){ r.srcObject=c.remote; r.play&&r.play().catch(()=>{}); } if(l&&c.stream&&l.srcObject!==c.stream){ l.srcObject=c.stream; l.play&&l.play().catch(()=>{}); } }
@@ -5716,6 +5828,31 @@ const REPLY_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 const COPY_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8.5" y="8.5" width="11" height="11" rx="2.2"/><path d="M15.5 8.5V6.2a1.7 1.7 0 0 0-1.7-1.7H6.2a1.7 1.7 0 0 0-1.7 1.7v7.6a1.7 1.7 0 0 0 1.7 1.7h2.3"/></svg>';
 const PEN_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 19.5h4l10.3-10.3a2.1 2.1 0 0 0-3-3L5.5 16.5z"/><path d="M13.8 8.2l3 3"/></svg>';
 const TRASH_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 7h15M9.5 7V5.2c0-.9.7-1.7 1.7-1.7h1.6c1 0 1.7.8 1.7 1.7V7M6.6 7l.9 11.8c.1 1 .9 1.7 1.8 1.7h5.4c1 0 1.7-.7 1.8-1.7L17.4 7"/><path d="M10 11v5.5M14 11v5.5"/></svg>';
+/* ---- v14 — Réactions avec des emojis ----
+   Dans le menu de l'appui long, une rangée d'emojis (❤️ 😂 😮 😢 😡 👍, et + pour les autres). La réaction s'affiche sous le message,
+   avec le nombre ; un appui dessus montre qui a réagi (et « Retirer » pour la sienne). Une réaction par personne et par message :
+   re = { identifiant du compte : emoji } dans le message ; chacun ne peut toucher que la sienne (règles Firestore v12). */
+const RX_QUICK=['❤️','😂','😮','😢','😡','👍'];
+const RX_OK=/^[^A-Za-z0-9<>&"'\\]{1,16}$/u;   // un emoji : ni lettres, ni chiffres, 16 caractères au plus
+const RX_PLUS_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+const rxKey = kind => msgUid(kind, kind==='g'?myId():'me');   // ma place dans re : l'identifiant de mon compte
+const rxMine = (m,kind) => (m&&m.re&&m.re[rxKey(kind)])||'';
+function rxGroups(m){ const g=new Map(); Object.entries(m.re||{}).forEach(([u,e])=>{ if(!g.has(e)) g.set(e,[]); g.get(e).push(u); }); return [...g.entries()].sort((a,b)=>b[1].length-a[1].length); }
+function reactsHTML(m,kind,owner){ if(!m||m.del||!m.id||!m.re) return ''; const gs=rxGroups(m); if(!gs.length) return ''; const me=rxKey(kind), d=`${kind}|${esc(owner)}|${esc(m.id)}`;
+  return `<div class="msg-rx">${gs.slice(0,4).map(([e,us])=>{ const mine=us.includes(me), n=us.length;
+      return `<button type="button" class="rx${mine?' on':''}" data-rx="${d}" aria-label="${esc(e)} : ${n} réaction${n>1?'s':''}${mine?', dont la tienne':''}. Voir qui a réagi"><span class="e" aria-hidden="true">${esc(e)}</span>${n>1?`<b aria-hidden="true">${n}</b>`:''}</button>`; }).join('')}${gs.length>4?`<button type="button" class="rx" data-rx="${d}" aria-label="Voir toutes les réactions"><b>+${gs.length-4}</b></button>`:''}</div>`; }
+// qui a réagi (et « Retirer » pour sa propre réaction)
+function rxList(kind,owner,mid){ const m=msgFind(kind,owner,mid); if(!m||!m.re) return; const me=rxKey(kind);
+  const rows=Object.entries(m.re).sort((a,b)=>(b[0]===me)-(a[0]===me)).map(([u,e])=>`<li><span class="e" aria-hidden="true">${esc(e)}</span><span class="who">${esc(replyWho(kind,owner,u))}<span class="sr-only"> : ${esc(e)}</span></span>${u===me?'<button type="button" class="btn btn-sm btn-ghost" data-rx-off>Retirer</button>':''}</li>`).join('');
+  modal(`<h3>Réactions</h3><ul class="rx-list">${rows}</ul><div class="dlg-actions"><button class="btn" type="button" data-close>Fermer</button></div>`,
+    d=>{ const b=d.querySelector('[data-rx-off]'); if(b) b.addEventListener('click',()=>{ d.close(); DB.react(kind,owner,mid,null); }); }); }
+// « + » : tous les emojis
+function rxPick(kind,owner,m){ const cur=rxMine(m,kind);
+  modal(`<h3>Réagir avec un emoji</h3><div class="rx-pick" role="group" aria-label="Emojis">${EMOJIS.map(e=>`<button type="button" class="rx-pk" data-pk="${e}" aria-label="${e}" aria-pressed="${cur===e}">${e}</button>`).join('')}</div><div class="dlg-actions"><button class="btn" type="button" data-close>Annuler</button></div>`,
+    d=>d.querySelector('.rx-pick').addEventListener('click',ev=>{ const b=ev.target.closest('[data-pk]'); if(!b) return; d.close(); DB.react(kind,owner,m.id,cur===b.dataset.pk?null:b.dataset.pk); })); }
+// Redessiner une conversation sans perdre sa place : si le dernier message n'a pas changé (une réaction, une modification…), on reste au même endroit
+function chatKeep(box,msgs){ const lm=msgs[msgs.length-1], last=lm?String(lm.id||lm.at):'', same=box.dataset.last===last&&box.childElementCount>0, y=box.scrollTop;
+  box.dataset.last=last; return same&&box.scrollHeight-y-box.clientHeight>60?y:null; }
 let MM=null;   // le menu ouvert : { ov, back } (back : ce qui reprend le focus quand il se ferme)
 const msgMine = (kind,m) => kind==='g' ? m.from===myId() : m.from==='me';
 function mmClose(){ if(!MM) return; const {ov,back}=MM; MM=null; ov.remove(); try{ if(back&&document.body.contains(back)) back.focus({preventScroll:true}); }catch(e){} }
@@ -5724,7 +5861,8 @@ function msgMenu(kind,owner,mid,src){ mmClose(); const m=msgFind(kind,owner,mid)
   const bub=(src&&src.closest&&src.closest('.bubble'))||document.querySelector(`#chatbox .bubble[data-mid="${CSS.escape(mid)}"]`);
   const items=[['reply','Répondre',REPLY_SVG],msgEditable(m)&&['copy','Copier',COPY_SVG],mine&&msgEditable(m)&&['edit','Modifier',PEN_SVG],mine&&['del','Supprimer',TRASH_SVG],modDel&&['gdel','Supprimer pour tous',TRASH_SVG]].filter(Boolean);
   const ov=document.createElement('div'); ov.className='mm-ov'; ov.id='mm-ov';
-  ov.innerHTML=`<div class="mm-dim" data-mm-close></div><div class="mm-menu" role="menu" aria-label="Actions sur le message">${items.map(([k,l,ic])=>`<button type="button" role="menuitem" class="mm-it${k==='del'||k==='gdel'?' danger':''}" ${k==='gdel'?`data-gdel="${esc(m.id)}"`:`data-mm-${k}`}>${ic}<span>${l}</span></button>`).join('')}</div>`;
+  const cur=rxMine(m,kind), other=cur&&!RX_QUICK.includes(cur);   // v14 — ma réaction actuelle (surlignée ; la toucher à nouveau la retire)
+  ov.innerHTML=`<div class="mm-dim" data-mm-close></div><div class="mm-rxbar" role="group" aria-label="Réagir à ce message">${RX_QUICK.map(e=>`<button type="button" class="mm-rx" data-mm-rx="${e}" aria-label="Réagir avec ${e}" aria-pressed="${cur===e}">${e}</button>`).join('')}<button type="button" class="mm-rx more" data-mm-rxmore aria-label="${other?`Ta réaction : ${esc(cur)}. Autres emojis`:'Autres emojis'}"${other?' aria-pressed="true"':''}>${other?esc(cur):RX_PLUS_SVG}</button></div><div class="mm-menu" role="menu" aria-label="Actions sur le message">${items.map(([k,l,ic])=>`<button type="button" role="menuitem" class="mm-it${k==='del'||k==='gdel'?' danger':''}" ${k==='gdel'?`data-gdel="${esc(m.id)}"`:`data-mm-${k}`}>${ic}<span>${l}</span></button>`).join('')}</div>`;
   // le message reste en avant : une copie posée exactement à sa place, au-dessus du voile
   let r=null, lift=null;
   if(bub){ const b0=bub.getBoundingClientRect(), w=bub.offsetWidth, h=bub.offsetHeight; r={left:b0.left+b0.width/2-w/2, top:b0.top+b0.height/2-h/2, width:w, height:h};
@@ -5744,8 +5882,17 @@ function msgMenu(kind,owner,mid,src){ mmClose(); const m=msgFind(kind,owner,mid)
   else { left=(vw-mw)/2; top=(vh-mh)/2; }
   left=Math.max(pad,Math.min(vw-pad-mw,left)); top=Math.max(pad,top);
   menu.style.left=left+'px'; menu.style.top=top+'px'; menu.style.setProperty('--mm-oy',oy);
+  // v14 — la rangée de réactions : au-dessus du message, sinon sous le message, sinon au-dessus ou sous le menu (là où il y a la place)
+  { const rb=ov.querySelector('.mm-rxbar'), bw=rb.offsetWidth, bh=rb.offsetHeight, lt=lift?parseFloat(lift.style.top):r?r.top:top, lh=r?r.height:0;
+    const boxes=[[top,top+mh]].concat(r?[[lt,lt+lh]]:[]), free=y=>y>=pad&&y+bh<=vh-pad&&boxes.every(([a,b])=>y+bh<=a-4||y>=b+4);
+    const tries=r?[lt-8-bh,lt+lh+8,top-8-bh,top+mh+8]:[top-8-bh,top+mh+8];
+    const by=tries.find(free); const bx=Math.max(pad,Math.min(vw-pad-bw,r?(mine?r.left+r.width-bw:r.left):(vw-bw)/2));
+    rb.style.left=bx+'px'; rb.style.top=(by==null?pad:by)+'px'; rb.style.setProperty('--mm-ox',mine?'right':'left'); }
   MM={ov,back:src&&src.classList&&src.classList.contains('msg-more')?src:(bub&&bub.querySelector('.msg-more'))||null};
-  ov.addEventListener('click',e=>{ if(e.target.closest('[data-mm-close]')){ mmClose(); return; } const t=e.target.closest('.mm-it'); if(!t) return; mmClose();
+  ov.addEventListener('click',e=>{ if(e.target.closest('[data-mm-close]')){ mmClose(); return; }
+    const rx=e.target.closest('[data-mm-rx]'); if(rx){ mmClose(); DB.react(kind,owner,m.id,cur===rx.dataset.mmRx?null:rx.dataset.mmRx); return; }   // v14
+    if(e.target.closest('[data-mm-rxmore]')){ mmClose(); rxPick(kind,owner,m); return; }
+    const t=e.target.closest('.mm-it'); if(!t) return; mmClose();
     if(t.hasAttribute('data-mm-reply')) startReply(kind,owner,m);
     else if(t.hasAttribute('data-mm-copy')) (async()=>{ try{ await navigator.clipboard.writeText(m.text); toast('Message copié'); }catch(er){ toast("Impossible de copier ici."); } })();
     else if(t.hasAttribute('data-mm-edit')) startEdit(kind,owner,m);
@@ -5755,9 +5902,12 @@ function msgMenu(kind,owner,mid,src){ mmClose(); const m=msgFind(kind,owner,mid)
     else if(t.hasAttribute('data-gdel')) modal(`<h3>Supprimer ce message pour tout le monde ?</h3><p class="muted">Il sera effacé du groupe pour de bon, avec sa photo ou son vocal.</p>
       <div class="dlg-actions"><button class="btn btn-ghost" type="button" data-close>Annuler</button><button class="btn btn-danger" type="button" id="gdel-ok">Supprimer</button></div>`,
       d2=>d2.querySelector('#gdel-ok').addEventListener('click',()=>{ d2.close(); DB.deleteGroupMessage(owner,m.id); })); });
-  ov.addEventListener('keydown',e=>{ const its=[...ov.querySelectorAll('.mm-it')], k=its.indexOf(document.activeElement);
+  ov.addEventListener('keydown',e=>{ const inRx=!!document.activeElement.closest('.mm-rxbar'), its=[...ov.querySelectorAll(inRx?'.mm-rx':'.mm-it')], all=[...ov.querySelectorAll('.mm-rx,.mm-it')], k=its.indexOf(document.activeElement);
     if(e.key==='Escape'){ e.preventDefault(); mmClose(); }
-    else if(e.key==='ArrowDown'||e.key==='ArrowUp'||e.key==='Tab'){ e.preventDefault(); const d=e.key==='ArrowUp'||(e.key==='Tab'&&e.shiftKey)?-1:1; its[(k+d+its.length)%its.length]?.focus(); }
+    else if(e.key==='Tab'){ e.preventDefault(); const j=all.indexOf(document.activeElement), d=e.shiftKey?-1:1; all[(j+d+all.length)%all.length]?.focus(); }   // Tab : réactions puis menu
+    else if((!inRx&&(e.key==='ArrowDown'||e.key==='ArrowUp'))||(inRx&&(e.key==='ArrowRight'||e.key==='ArrowLeft'))){ e.preventDefault(); const d=e.key==='ArrowUp'||e.key==='ArrowLeft'?-1:1; its[(k+d+its.length)%its.length]?.focus(); }
+    else if(inRx&&(e.key==='ArrowDown'||e.key==='ArrowUp')){ e.preventDefault(); ov.querySelector('.mm-it')?.focus(); }
+    else if(!inRx&&(e.key==='ArrowLeft'||e.key==='ArrowRight')){ e.preventDefault(); ov.querySelector('.mm-rx')?.focus(); }
     else if(e.key==='Home'||e.key==='End'){ e.preventDefault(); its[e.key==='Home'?0:its.length-1]?.focus(); } });
   ov.querySelector('.mm-it')?.focus({preventScroll:true}); }
 addEventListener('hashchange',()=>mmClose());
@@ -5797,7 +5947,7 @@ function submitEdit(t){ if(!EDIT) return false; const e=EDIT; endEdit(true); if(
 { let lpT=0, prT=0, lpX=0, lpY=0, lpAt=0, lpB=null, lpEat=false;   // appui long sur un message (téléphone, ou souris maintenue) ou clic droit (ordinateur) : le menu du message
   const open=b=>{ const [k,o,id]=b.dataset.msg.split('|'); lpAt=Date.now(); lpEat=true; b.classList.remove('pressing'); try{ navigator.vibrate&&navigator.vibrate(12); }catch(e){} msgMenu(k,o,id,b); };
   const stop=()=>{ clearTimeout(lpT); clearTimeout(prT); if(lpB){ lpB.classList.remove('pressing'); lpB=null; } };
-  document.addEventListener('pointerdown',e=>{ stop(); lpEat=false; const b=e.target.closest('.bubble[data-msg]'); if(!b||e.button>0||e.target.closest('a,input,.msg-more')) return;
+  document.addEventListener('pointerdown',e=>{ stop(); lpEat=false; const b=e.target.closest('.bubble[data-msg]'); if(!b||e.button>0||e.target.closest('a,input,.msg-more,.msg-rx')) return;
     lpX=e.clientX; lpY=e.clientY; lpB=b; prT=setTimeout(()=>b.classList.add('pressing'),140); lpT=setTimeout(()=>{ lpB=null; open(b); },480); });
   document.addEventListener('pointerup',stop); document.addEventListener('pointercancel',stop);
   document.addEventListener('pointermove',e=>{ if(lpB&&Math.abs(e.clientX-lpX)+Math.abs(e.clientY-lpY)>12) stop(); },{passive:true});
@@ -5806,6 +5956,7 @@ function submitEdit(t){ if(!EDIT) return false; const e=EDIT; endEdit(true); if(
   document.addEventListener('click',e=>{ if(!lpEat) return; lpEat=false; if(e.target.closest&&e.target.closest('.bubble[data-msg]')){ e.preventDefault(); e.stopPropagation(); } },true);
   document.addEventListener('contextmenu',e=>{ const b=e.target.closest('.bubble[data-msg]'); if(!b) return; e.preventDefault(); stop(); if(Date.now()-lpAt>900) open(b); });
   document.addEventListener('click',e=>{ const mm=e.target.closest('.msg-more[data-mm]'); if(mm){ msgMenu(mm.dataset.mk,mm.dataset.mo,mm.dataset.mm,mm); return; }
+    const rx=e.target.closest('.rx[data-rx]'); if(rx){ const [k,o,id]=rx.dataset.rx.split('|'); rxList(k,o,id); return; }   // v14 — qui a réagi
     const go=e.target.closest('.msg-reply[data-goto]');
     if(go){ const el=document.querySelector(`#chatbox .bubble[data-mid="${CSS.escape(go.dataset.goto)}"]`);
       if(el){ el.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'}); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); setTimeout(()=>el.classList.remove('flash'),1500); }
@@ -5817,10 +5968,11 @@ function submitEdit(t){ if(!EDIT) return false; const e=EDIT; endEdit(true); if(
   addEventListener('hashchange',()=>{ EDIT=null; REPLY=null; stop(); }); }
 function renderChat(id){
   const box=document.getElementById('chatbox'); if(!box) return; const msgs=S.chats[id]||[]; dmRefresh(); setTimeout(photoWatch,0); setTimeout(stickerWatch,0);
+  const keep=chatKeep(box,msgs);   // v14 — un message modifié (réaction…) : on reste au même endroit ; un nouveau message : on descend
   box.innerHTML = msgs.length ? msgs.map(m=>{ const mine=m.from==='me';
-      return `<div class="bubble${mine?' me':''}${m.del?' del':''}"${m.id?` data-mid="${esc(m.id)}"`:''}${m.id&&!m.del?` data-msg="c|${esc(id)}|${esc(m.id)}"`:''}${mine&&m.id&&!m.del?` data-own="c|${esc(id)}|${esc(m.id)}"`:''}>${replyQuote(m,'c',id)}${msgBody(m,'c',id,mine)}<small>${msgMeta(m,mine,'c',id)}</small></div>`; }).join('')
+      return `<div class="bubble${mine?' me':''}${m.del?' del':''}"${m.id?` data-mid="${esc(m.id)}"`:''}${m.id&&!m.del?` data-msg="c|${esc(id)}|${esc(m.id)}"`:''}${mine&&m.id&&!m.del?` data-own="c|${esc(id)}|${esc(m.id)}"`:''}>${replyQuote(m,'c',id)}${msgBody(m,'c',id,mine)}<small>${msgMeta(m,mine,'c',id)}</small>${reactsHTML(m,'c',id)}</div>`; }).join('')
     : `<div class="chat-empty"><p class="muted">Première partie ensemble ? Propose un créneau 🎮</p><div class="chips">${QUICK_MSGS.map(t=>`<button type="button" class="chip" data-quick="${esc(t)}">${esc(t)}</button>`).join('')}</div></div>`;
-  box.scrollTop=box.scrollHeight;
+  box.scrollTop=keep==null?box.scrollHeight:keep;
   { const lm=msgs[msgs.length-1]; QR.key='c:'+id; QR.last=lm?{id:lm.id,at:lm.at,mine:lm.from==='me',del:!!lm.del}:null; qrUpdate(); }
   { const p=PLAYERS.find(x=>x.id===id), fh=document.getElementById('flame-hint'); if(fh) fh.innerHTML=flameHint(id,p?p.name:'Ton mate'); }
 }
@@ -5917,7 +6069,10 @@ const tsMs = v => v&&typeof v.toMillis==='function' ? v.toMillis() : (+v||0);
 function msgExtra(o,m){ if(Array.isArray(m.hist)&&m.hist.length) o.hist=m.hist.filter(x=>typeof x==='string').slice(-20);
   if(m.reply&&typeof m.reply.id==='string'&&/^[A-Za-z0-9]{8,40}$/.test(m.reply.id)&&typeof m.reply.from==='string'&&m.reply.from.length<=128) o.reply={id:m.reply.id,from:m.reply.from};   // v13 — réponse à un message
   if(m.edited) o.edited=tsMs(m.edited)||1; if(m.del===true) o.del=true;
-  if(m.sticker&&typeof m.sticker.id==='string'&&/^[A-Za-z0-9]{8,40}$/.test(m.sticker.id)) o.sticker={id:m.sticker.id,n:Math.max(1,Math.min(30,+m.sticker.n||1))}; return o; }
+  if(m.sticker&&typeof m.sticker.id==='string'&&/^[A-Za-z0-9]{8,40}$/.test(m.sticker.id)) o.sticker={id:m.sticker.id,n:Math.max(1,Math.min(30,+m.sticker.n||1))};
+  if(m.re&&typeof m.re==='object'&&!Array.isArray(m.re)){ const re={}; let n=0;   // v14 — réactions { identifiant : emoji }
+    for(const [k,v] of Object.entries(m.re)){ if(n>=60) break; if(/^[A-Za-z0-9_-]{1,128}$/.test(k)&&typeof v==='string'&&RX_OK.test(v)){ re[k]=v; n++; } } if(n) o.re=re; }
+  return o; }
 const gById = id => GROUPS.find(g=>g.id===id);
 const gIn = g => !!g && g.members.includes(myId());
 const gRole = (g,uid) => g.owner===uid?'admin':(g.mods||[]).includes(uid)?'mod':'';
@@ -6067,11 +6222,12 @@ function viewGroup(id){ EDIT=null; chatMotif();
 }
 let GMSGS={};   // messages du groupe ouvert
 function renderGroupChat(id){ const box=document.getElementById('chatbox'), g=gById(id); if(!box||!g) return; setTimeout(photoWatch,0); setTimeout(stickerWatch,0); const me=myId(), msgs=(GMSGS[id]||[]).filter(m=>!S.blocked.includes(m.from));
+  const keep=chatKeep(box,msgs);   // v14 — voir renderChat
   box.innerHTML = msgs.length ? msgs.map((m,k)=>{ const mine=m.from===me, p=gPlayer(m.from), same=k>0&&msgs[k-1].from===m.from&&m.at-msgs[k-1].at<5*60e3, role=gRole(g,m.from);
       return `<div class="gmsg${mine?' me':''}${same?' same':''}">${mine?'':(same?'<i class="g-gap"></i>':(p?`<a href="#/joueur/${esc(m.from)}">${avatar(p,32)}</a>`:'<span class="av" style="width:32px;height:32px;--h:220">?</span>'))}<div>${same||mine?'':`<small class="g-from">${p?np(p):'Ancien membre'}${ROLE_TAG[role]||''}</small>`}
-        <div class="bubble${mine?' me':''}${m.del?' del':''}"${m.id?` data-mid="${esc(m.id)}"`:''}${m.id&&!m.del?` data-msg="g|${esc(id)}|${esc(m.id)}"`:''}${mine&&m.id&&!m.del?` data-own="g|${esc(id)}|${esc(m.id)}"`:''}>${replyQuote(m,'g',id)}${msgBody(m,'g',id,mine)}<small>${msgMeta(m,mine,'g',id)}</small></div></div></div>`; }).join('')
+        <div class="bubble${mine?' me':''}${m.del?' del':''}"${m.id?` data-mid="${esc(m.id)}"`:''}${m.id&&!m.del?` data-msg="g|${esc(id)}|${esc(m.id)}"`:''}${mine&&m.id&&!m.del?` data-own="g|${esc(id)}|${esc(m.id)}"`:''}>${replyQuote(m,'g',id)}${msgBody(m,'g',id,mine)}<small>${msgMeta(m,mine,'g',id)}</small>${reactsHTML(m,'g',id)}</div></div></div>`; }).join('')
     : `<div class="chat-empty"><p class="muted">Le groupe est tout neuf. ${g.members.length<2?'Ajoute tes mates, puis lance la discussion 👋':'Lance la discussion 👋'}</p>${g.members.length<2&&g.members.length<GROUP_MAX?`<button class="btn btn-ac" type="button" data-g-add>${ADDMATE_SVG} Ajouter des mates</button>`:''}${(g.invited||[]).length?`<p class="muted">${g.invited.length} invitation${g.invited.length>1?'s':''} en attente.</p>`:''}</div>`;
-  box.scrollTop=box.scrollHeight;
+  box.scrollTop=keep==null?box.scrollHeight:keep;
   { const lm=msgs[msgs.length-1]; QR.key='g:'+id; QR.last=lm?{id:lm.id,at:lm.at,mine:lm.from===me,del:!!lm.del}:null; qrUpdate(); }
   box.querySelector('[data-g-add]')?.addEventListener('click',()=>groupInvite(id));
 }
@@ -6762,6 +6918,7 @@ const DB = {
         if(location.hash==='#/messages') refreshAfterData(); else { const m=/^#\/messages\/(.+)$/.exec(location.hash); if(m) renderChat(m[1]); } },lerr));
       save(); this.setPresence(true); clearInterval(this._hb); this._hb=setInterval(()=>{ if(!document.hidden) this.setPresence(true); },120000);   // toutes les 2 min, seulement si la page est affichée
       this.applyReferral();   // parrainage en attente (e-mail vérifié depuis la dernière visite)
+      setTimeout(pushRefresh,4000);   // v14 — adresse « push » de cet appareil tenue à jour
     }catch(e){ console.error(e); this._loaded=true; this._loading=false; this._err=(e&&e.code)||String(e); toast('Chargement impossible. Vérifie ta connexion, puis recharge la page.'); refreshAfterData(); }
   },
   // Charge les profils qui manquent (mates ou demandes hors des 300 premiers profils). Renvoie true si au moins un a été ajouté.
@@ -6979,6 +7136,18 @@ const DB = {
     if(!this.live&&!(await this.ready())) return;
     try{ await this.msgRef(kind,owner,mid).update({del:true,edited:firebase.firestore.FieldValue.serverTimestamp()}); apply(); }
     catch(e){ console.error(e); toast("Le message n'a pas pu être supprimé."); } },
+  // v14 — réagir à un message avec un emoji (emo = null : retirer sa réaction). Chacun ne touche que SA réaction : re.{son identifiant}
+  async react(kind,owner,mid,emo){ const m=msgFind(kind,owner,mid); if(!m||m.del||(emo&&!RX_OK.test(emo))) return; const k=rxKey(kind), before=m.re?{...m.re}:null;
+    const apply=re=>this.msgLocal(kind,owner,()=>{ const x=msgFind(kind,owner,mid); if(x){ if(re&&Object.keys(re).length) x.re=re; else delete x.re; } return x; });
+    const next={...(m.re||{})}; if(emo) next[k]=emo; else delete next[k]; apply(next);
+    if(!AUTH_LIVE) return; if(!this.live&&!(await this.ready())){ apply(before); return; }
+    try{ await this.msgRef(kind,owner,mid).update({['re.'+k]:emo||firebase.firestore.FieldValue.delete()}); }
+    catch(e){ console.error(e); apply(before); toast("La réaction n'est pas partie, réessaie."); } },
+  // v14 — adresse de notification de cet appareil, dans private/{uid}.push (5 appareils au plus)
+  async savePush(tok){ if(!this.live) return; const ref=this.db.collection('private').doc(this.uid()), d=(await ref.get()).data()||{};
+    const list=(Array.isArray(d.push)?d.push:[]).filter(x=>typeof x==='string'&&x!==tok); list.push(tok);
+    if(JSON.stringify(list.slice(-5))!==JSON.stringify(d.push||[])) await ref.update({push:list.slice(-5)}); },
+  async dropPush(tok){ if(!this.live) return; await this.db.collection('private').doc(this.uid()).update({push:firebase.firestore.FieldValue.arrayRemove(tok)}); },
   deleteGroupMessage(id,mid){ if(!this.live) { GMSGS[id]=(GMSGS[id]||[]).filter(m=>m.id!==mid); renderGroupChat(id); return; } const gm=(GMSGS[id]||[]).find(m=>m.id===mid); if(gm&&gm.voice) this.db.collection('groups').doc(id).collection('voices').doc(gm.voice.id).delete().catch(e=>console.error(e));   // le son part avec le message
     if(gm&&gm.photo) this.db.collection('groups').doc(id).collection('photos').doc(gm.photo.id).delete().catch(e=>console.error(e));   // la photo aussi
     this.db.collection('groups').doc(id).collection('messages').doc(mid).delete().catch(e=>{ console.error(e); toast("Le message n'a pas pu être supprimé."); }); },
