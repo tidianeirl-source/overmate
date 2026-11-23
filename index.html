@@ -2700,7 +2700,7 @@ html:is([data-skin="defaut"],[data-skin="sombre"]) .mh :is(.mh-hello,h1){ color:
 html:is([data-skin="defaut"],[data-skin="sombre"]) :is(.mh .mh-online,.pill-live,.wl-kicker){ background:var(--s1) !important; color:var(--tx) !important; border:1px solid var(--line) !important; -webkit-backdrop-filter:none !important; backdrop-filter:none !important; }
 /* en-tête des conversations : posé sur la barre de la conversation */
 html:is([data-skin="defaut"],[data-skin="sombre"]) body .chat-head :is(.chat-who b,.chat-who .online,.back){ color:var(--tx) !important; text-shadow:none !important; }
-html:is([data-skin="defaut"],[data-skin="sombre"]) body .chat-head .chat-who .muted{ color:var(--mu) !important; text-shadow:none !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) body .chat-head .chat-who .muted{ color:var(--mu) !important; text-shadow:none !important; opacity:1 !important; }   /* « Hors ligne » : sans transparence, il reste lisible sur la barre claire */
 html:is([data-skin="defaut"],[data-skin="sombre"]) .form-actions{ background:var(--bg) !important; }
 html:is([data-skin="defaut"],[data-skin="sombre"]) .back:hover{ background:var(--s2) !important; }
 /* boutons pleins : plus de reflet ni d'ombre en dégradé */
