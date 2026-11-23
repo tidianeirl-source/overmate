@@ -2545,6 +2545,40 @@ html.lite .stk-msg.anim{ animation:none; }
 @keyframes msgFlash{ 0%,55%{ box-shadow:0 0 0 3px color-mix(in srgb,var(--pk) 60%,transparent); } 100%{ box-shadow:0 0 0 3px transparent; } }
 .reply-x{ min-width:44px; font-size:22px; line-height:1; }
 
+/* ==== v15 — Appel à plusieurs ==== */
+#call-ov .co-who.multi{ margin-top:3vh; width:100%; }
+.co-grid{ display:flex; flex-wrap:wrap; justify-content:center; gap:18px 20px; max-width:440px; margin:0 auto; }
+.co-p{ display:flex; flex-direction:column; align-items:center; gap:6px; width:112px; min-width:0; font-size:14px; font-weight:700; line-height:1.25; }
+.co-p span{ max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .co-p small{ font-weight:500; font-size:12px; opacity:.85; }
+.co-p.ring .avatar,.co-p.ring .av{ opacity:.5; }
+.co-pick{ position:absolute; left:0; right:0; bottom:0; z-index:5; max-height:74%; display:flex; flex-direction:column; gap:8px; background:#1B1733; color:#fff; border-radius:20px 20px 0 0; padding:16px 14px max(14px,env(safe-area-inset-bottom)); text-align:left; box-shadow:0 -10px 40px rgba(0,0,0,.5); animation:coPick .22s cubic-bezier(.23,1,.32,1); }
+@keyframes coPick{ from{ transform:translateY(24px); opacity:0; } }
+.co-pick-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; } .co-pick h3{ margin:0; font-size:18px; color:#fff; }
+.co-pick p{ margin:0; font-size:13px; color:rgba(255,255,255,.78); }
+.co-pick-x{ width:44px; height:44px; border:0; border-radius:50%; background:rgba(255,255,255,.14); color:#fff; font-size:22px; line-height:1; cursor:pointer; }
+.co-pick-list{ overflow:auto; display:flex; flex-direction:column; gap:2px; overscroll-behavior:contain; }
+.co-pick-row{ display:flex; align-items:center; gap:12px; padding:8px; border:0; border-radius:12px; background:none; color:#fff; font:inherit; text-align:left; cursor:pointer; min-height:56px; }
+.co-pick-row b{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .co-pick-row small{ flex:none; font-size:12px; color:#7CE3A1; }
+@media (hover:hover) and (pointer:fine){ .co-pick-row:hover{ background:rgba(255,255,255,.1); } }
+.co-pick-row:focus-visible,.co-pick-x:focus-visible{ outline:3px solid #fff; outline-offset:2px; }
+@media (prefers-reduced-motion:reduce){ .co-pick{ animation:none; } }
+@media (min-width:700px){ .co-pick{ left:50%; right:auto; width:440px; transform:translateX(-50%); bottom:24px; border-radius:20px; animation:none; } }
+/* ==== v15 — Mates épinglés, « Vu », « écrit… » ==== */
+.sn-row,.dm-row{ -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; -webkit-user-drag:none; }
+.sn-row.pressing,.dm-row.pressing{ transform:scale(.985); transition:transform .14s cubic-bezier(.23,1,.32,1); }
+.pin-ic{ flex:none; width:14px; height:14px; opacity:.75; }
+.sn-tip{ padding:14px 16px 4px; font-size:13px; text-align:center; }
+.row-menu-head{ display:flex; align-items:center; gap:12px; min-width:0; } .row-menu-head h3{ margin:0; overflow-wrap:anywhere; }
+.row-menu{ display:flex; flex-direction:column; gap:8px; margin-top:14px; } .row-menu .btn{ justify-content:flex-start; gap:10px; min-height:48px; } .row-menu .pin-ic{ width:18px; height:18px; opacity:1; }
+.sn-st.seen i{ border:0; border-radius:0; background:currentColor; clip-path:polygon(evenodd,0 0,100% 50%,0 100%,0 0,20% 30%,20% 70%,62% 50%,20% 30%); }
+.seen-tag{ font-weight:700; }
+.typing-wrap{ position:relative; height:0; flex:none; z-index:3; }
+.typing{ position:absolute; left:10px; bottom:6px; max-width:calc(100% - 20px); display:flex; align-items:center; gap:8px; padding:5px 12px 5px 10px; border-radius:999px; background:var(--s2,var(--s1)); color:var(--tx); border:1px solid var(--line); font-size:13px; line-height:1.3; box-shadow:0 2px 10px rgba(0,0,0,.12); pointer-events:none; }
+.typing[hidden]{ display:none; }
+.typing span:last-child{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ty-dots{ display:inline-flex; gap:3px; flex:none; } .ty-dots i{ width:5px; height:5px; border-radius:50%; background:currentColor; opacity:.35; animation:tyDot 1.2s infinite ease-in-out; } .ty-dots i:nth-child(2){ animation-delay:.15s; } .ty-dots i:nth-child(3){ animation-delay:.3s; }
+@keyframes tyDot{ 0%,60%,100%{ opacity:.35; transform:none; } 30%{ opacity:1; transform:translateY(-2px); } }
+@media (prefers-reduced-motion:reduce){ .ty-dots i{ animation:none; opacity:.7; } .sn-row.pressing,.dm-row.pressing{ transform:none; } }
 /* ==== v14 — Réactions avec des emojis ==== */
 .mm-rxbar{ position:fixed; z-index:2; display:flex; align-items:center; gap:2px; padding:5px; border-radius:999px; background:var(--s1); color:var(--tx); border:1px solid var(--hair); box-shadow:0 14px 40px -10px rgba(0,0,0,.5); transform-origin:var(--mm-ox,left) center; animation:mmIn .18s cubic-bezier(.23,1,.32,1); }
 .mm-rx{ display:grid; place-items:center; width:44px; height:44px; padding:0; border:0; border-radius:50%; background:none; color:var(--tx); font:26px/1 "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",var(--fb),sans-serif; cursor:pointer; transition:transform .16s cubic-bezier(.23,1,.32,1),background-color .12s ease; }
@@ -4828,7 +4862,7 @@ function clearSession(){
   DB._loaded=false; DB._checked=false; DB._notifReady=false; DB._refWait=false; DB._miss={};
   S.auth=null; S.me=null; S.rewards=null; S.owned=null;
   if(AUTH_LIVE){ try{ localStorage.removeItem('coopo_cache'); }catch(e){} PLAYERS.length=0; ADMINS.length=0; ANNONCES=[]; TOURNOIS=[];
-    S.requests=[]; S.notifs=[]; S.chats={}; S.unread={}; S.ratings={}; S.rated={}; S.blocked=[]; S.hidden=[]; S.banned=[]; S.reports=[]; S.squads=[]; S.joined=[]; S.profiles={}; S.dobs={}; S.streaks={}; S.gseen={}; S.flameSeen={}; S.flameNudged={}; }
+    S.requests=[]; S.notifs=[]; S.chats={}; S.unread={}; S.ratings={}; S.rated={}; S.blocked=[]; S.hidden=[]; S.banned=[]; S.reports=[]; S.squads=[]; S.joined=[]; S.profiles={}; S.dobs={}; S.streaks={}; S.gseen={}; S.flameSeen={}; S.flameNudged={}; S.pins=[]; S.seenBy={}; }
   save(); splashSync();   // plus de compte à attendre : l'écran d'ouverture se retire
 }
 function onSignedOut(){ clearSession(); applySkin('defaut'); splashSync(); if(location.hash!=='#/connexion') location.hash='#/connexion'; else route(); }
@@ -5082,6 +5116,33 @@ S.reports.forEach(r=>{ if(!r.status) r.status='open'; });
 const reqWith = id => S.requests.find(r=>(r.from==='me'&&r.to===id)||(r.from===id&&r.to==='me'));
 const isMate = id => !!reqWith(id) && reqWith(id).status==='accepted';
 const matesList = () => visible().filter(p=>isMate(p.id));
+/* ---- v15 — Mates épinglés : ils restent en haut de la liste des messages (5 au plus).
+   Rangé dans la partie privée du compte (private/{moi}.pins) : visible par soi seulement, sur tous ses appareils. ---- */
+const PIN_MAX=5, PIN_SVG='<svg class="pin-ic" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M15.2 2.6l6.2 6.2-1.9.8-3.4 3.4.5 4.9-1.5 1.5-4.2-4.2-5.6 5.6-1.3.2.2-1.3 5.6-5.6-4.2-4.2 1.5-1.5 4.9.5 3.4-3.4z"/></svg>';
+const pins = () => Array.isArray(S.pins)?S.pins:[];
+const isPinned = id => pins().includes(id);
+const pinSort = (list,idOf=p=>p.id) => { const pn=pins(); return list.filter(x=>pn.includes(idOf(x))).concat(list.filter(x=>!pn.includes(idOf(x)))); };   // les épinglés d'abord ; dans chaque partie, l'ordre est gardé
+function togglePin(id){ const pn=pins().filter(x=>isMate(x)), on=pn.includes(id);   // un mate retiré perd son épingle
+  if(!on&&pn.length>=PIN_MAX){ toast(`${PIN_MAX} mates épinglés au plus. Retire d'abord une épingle.`,3500); return false; }
+  S.pins=on?pn.filter(x=>x!==id):[...pn,id]; save(); DB.savePins(); toast(on?'Épingle retirée':'Mate épinglé en haut de tes messages'); return true; }
+function pinRefresh(){ if(location.hash==='#/messages') route(); else dmRefresh(); }
+// Menu d'une conversation dans la liste (appui long sur téléphone, clic droit sur ordinateur)
+function rowMenu(id){ const p=visible().find(x=>x.id===id); if(!p||!isMate(id)) return; const on=isPinned(id);
+  modal(`<div class="row-menu-head">${avatar(p,48)}<h3>${esc(p.name)}</h3></div>
+    <div class="row-menu"><button class="btn" type="button" id="rm-pin">${PIN_SVG}<span>${on?'Retirer l\'épingle':'Épingler en haut'}</span></button><a class="btn btn-ghost" href="#/joueur/${esc(p.id)}" data-close>Voir le profil</a></div>
+    <div class="dlg-actions"><button class="btn btn-ghost" type="button" data-close>Fermer</button></div>`, d=>{ d.querySelector('#rm-pin').onclick=()=>{ d.close(); if(togglePin(id)) pinRefresh(); }; }); }
+{ let t=0, x=0, y=0, row=null, eat=false, at=0;
+  const sel='a.sn-row:not(.grp)[href^="#/messages/"],a.dm-row:not(.g-row)[href^="#/messages/"]';
+  const idOf=r=>decodeURIComponent(r.getAttribute('href').slice('#/messages/'.length));
+  const stop=()=>{ clearTimeout(t); if(row){ row.classList.remove('pressing'); row=null; } };
+  document.addEventListener('pointerdown',e=>{ stop(); eat=false; const r=e.target.closest&&e.target.closest(sel); if(!r||e.button>0||e.pointerType==='mouse') return;
+    x=e.clientX; y=e.clientY; row=r; r.classList.add('pressing');
+    t=setTimeout(()=>{ const r2=row; stop(); if(!r2) return; eat=true; at=Date.now(); try{ navigator.vibrate&&navigator.vibrate(12); }catch(er){} rowMenu(idOf(r2)); },500); });
+  document.addEventListener('pointerup',stop); document.addEventListener('pointercancel',stop);
+  document.addEventListener('pointermove',e=>{ if(row&&Math.abs(e.clientX-x)+Math.abs(e.clientY-y)>12) stop(); },{passive:true});
+  document.addEventListener('scroll',()=>{ if(row) stop(); },true);
+  document.addEventListener('click',e=>{ if(!eat) return; eat=false; e.preventDefault(); e.stopPropagation(); },true);   // le clic qui termine l'appui long n'ouvre pas la conversation et ne ferme pas le menu
+  document.addEventListener('contextmenu',e=>{ const r=e.target.closest&&e.target.closest(sel); if(!r) return; e.preventDefault(); stop(); if(Date.now()-at>900) rowMenu(idOf(r)); }); }
 const pendingReceived = () => S.requests.filter(r=>r.to==='me'&&r.status==='pending'&&visible().some(p=>p.id===r.from));
 function sendRequest(p){
   if(!canAsk(p)){ toast("C'est au joueur de moins de 18 ans de t'envoyer la demande."); return; }   // v7 — aussi vérifié par les règles Firestore
@@ -5148,9 +5209,9 @@ function lastMsg(id){ const m=(S.chats[id]||[]).slice(-1)[0]||null, n=S.notifs.f
   return m&&m.del ? {...m,text:MSG_DEL_TEXT} : m; }
 /* Colonne des conversations (ordinateur seulement) : les mates puis les groupes, le plus récent en haut. key = 'c:<joueur>' ou 'g:<groupe>'. */
 function dmSideInner(key){
-  const mates=matesList().sort((a,b)=>{ const la=lastMsg(a.id), lb=lastMsg(b.id); return (lb?lb.at:0)-(la?la.at:0); });
+  const mates=pinSort(matesList().sort((a,b)=>{ const la=lastMsg(a.id), lb=lastMsg(b.id); return (lb?lb.at:0)-(la?la.at:0); }));   // v15 — les mates épinglés en haut
   return `<h3>Messages privés</h3>${mates.length?mates.map((p,i)=>{ const last=lastMsg(p.id), u=S.unread[p.id]||0;   // les plaques des 12 premières lignes sont animées (au-delà : au survol)
-      return `<a class="dm-row${key==='c:'+p.id?' on':''}${u?' unread':''}${plqOn(p,i<12)}" href="#/messages/${p.id}"${key==='c:'+p.id?' aria-current="page"':''}>${plq(p)}${avatar(p,36)}<div><b><span>${esc(p.name)}</span>${isOnline(p)?'<span class="online"></span>':''}</b><span class="muted">${last?esc((last.from==='me'?'Toi : ':'')+last.text):'Dis bonjour 👋'}</span></div>${u?`<span class="badge static">${u}</span>`:''}</a>`; }).join(''):'<p class="muted dm-none">Pas encore de mates.</p>'}`; }
+      return `<a class="dm-row${key==='c:'+p.id?' on':''}${u?' unread':''}${plqOn(p,i<12)}" href="#/messages/${p.id}"${key==='c:'+p.id?' aria-current="page"':''}>${plq(p)}${avatar(p,36)}<div><b><span>${esc(p.name)}</span>${isOnline(p)?'<span class="online"></span>':''}${isPinned(p.id)?PIN_SVG+'<span class="sr-only">épinglé</span>':''}</b><span class="muted">${last?esc((last.from==='me'?'Toi : ':'')+last.text):'Dis bonjour 👋'}</span></div>${u?`<span class="badge static">${u}</span>`:''}</a>`; }).join(''):'<p class="muted dm-none">Pas encore de mates.</p>'}`; }
 // Les groupes dans la colonne de gauche du site (ordinateur) : un rond par groupe, puis « + »
 function railGroups(){ if(!S.auth||!S.me) return ''; const m=location.hash.match(/^#\/groupe\/([^/?]+)/), cur=m?decodeURIComponent(m[1]):'';
   const groups=GROUPS.filter(gIn).sort((a,b)=>tsMs(b.lastAt||b.at)-tsMs(a.lastAt||a.at));
@@ -5177,18 +5238,18 @@ const gRowSn = g => { const u=gUnread(g);
   return `<a class="sn-row grp${u?' unread':''}" href="#/groupe/${esc(g.id)}" data-n="${esc(g.name.toLowerCase())}"><span class="sn-av">${gAvatar(g,56)}</span><div class="sn-mid"><b><span>${esc(g.name)}</span>${g.private?'<span class="g-lock" title="Groupe privé">'+LOCK_SVG+'</span>':''}</b>
     <span class="sn-st${u?' new':''}"><i></i><span class="t">${u?'Nouveaux messages':esc(g.game||'Tous les jeux')}</span><span class="x">${u&&g.lastAt?'· '+shortAgo(tsMs(g.lastAt)):`· ${g.members.length} membre${g.members.length>1?'s':''}${g.lastAt?' · '+shortAgo(tsMs(g.lastAt)):''}`}</span></span></div><span class="sn-end">${u?'<span class="badge static" aria-label="Nouveaux messages">•</span>':CHAT_SVG}</span></a>`; };
 function snList(mates){
-  const items=mates.map(p=>({p,at:(lastMsg(p.id)||{}).at||0})).sort((x,y)=>y.at-x.at);
+  const items=pinSort(mates.map(p=>({p,at:(lastMsg(p.id)||{}).at||0})).sort((x,y)=>y.at-x.at),x=>x.p.id);   // v15 — les mates épinglés en haut
   const nU=mates.filter(p=>S.unread[p.id]).length;
   const rows=items.map(it=>{
     const p=it.p, last=lastMsg(p.id), u=S.unread[p.id]||0, f=flameState(p.id), on=isOnline(p), fl=f&&f.count>=FLAME_FROM;
-    const st=u?['new',u>1?`${u} nouveaux messages`:'Nouveau message']:!last?['','Dis bonjour 👋']:last.from==='me'?['sent','Envoyé']:['','Reçu'];
-    return `<a class="sn-row${u?' unread':''}${plqOn(p)}" href="#/messages/${p.id}" data-f="${u?'unread ':''}${on?'online ':''}${fl?'flame':''}" data-n="${esc(String(p.name||'').toLowerCase())}">${plq(p)}<span class="sn-av">${avatar(p,56)}${on?'<span class="online" title="En ligne"></span>':''}</span><div class="sn-mid"><b><span>${esc(p.name)}</span>${modBadge(p)}</b>
+    const pin=isPinned(p.id), st=u?['new',u>1?`${u} nouveaux messages`:'Nouveau message']:!last?['','Dis bonjour 👋']:last.from==='me'?(seenOf(p.id)>=last.at?['seen','Vu']:['sent','Envoyé']):['','Reçu'];   // v15 — « Vu » quand le mate a lu
+    return `<a class="sn-row${u?' unread':''}${plqOn(p)}" href="#/messages/${p.id}" data-f="${u?'unread ':''}${on?'online ':''}${fl?'flame':''}" data-n="${esc(String(p.name||'').toLowerCase())}">${plq(p)}<span class="sn-av">${avatar(p,56)}${on?'<span class="online" title="En ligne"></span>':''}</span><div class="sn-mid"><b><span>${esc(p.name)}</span>${modBadge(p)}${pin?PIN_SVG+'<span class="sr-only">épinglé</span>':''}</b>
       <span class="sn-st ${st[0]}">${last||u?'<i></i>':''}<span class="t">${st[1]}</span><span class="x">${last?'· '+shortAgo(last.at):''}${fl?` · ${f.count} ${f.warn?'⏳':'🔥'}`:''}</span></span></div><span class="sn-end">${u?`<span class="badge static">${u}</span>`:CHAT_SVG}</span></a>`; }).join('');
   const chip=(k,l,n)=>`<button type="button" class="chip" data-snf="${k}" aria-pressed="${k==='all'}">${l}${n?` <span class="cnt">${n}</span>`:''}</button>`;
   return `${notifBanHTML()}<div class="page-head sn-top"><div><h2>Messages</h2></div><button class="btn sn-round" type="button" id="sn-find" aria-label="Chercher une conversation" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button><a class="btn sn-round" href="#/matchs" aria-label="Trouver de nouveaux mates" title="Trouver de nouveaux mates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9.5" cy="8" r="3.5"/><path d="M3 20c.5-3.5 3-5.5 6.5-5.5s6 2 6.5 5.5M19 7v6M16 10h6"/></svg></a></div>
     <input class="sn-search" id="sn-q" type="search" placeholder="Chercher un mate" autocomplete="off" aria-label="Chercher un mate" hidden>
     <div class="sn-chips" role="group" aria-label="Filtrer les conversations">${chip('all','Tous')}${chip('unread','Non lus',nU)}${chip('online','En ligne')}${chip('flame','Flammes 🔥')}</div>
-    ${items.length?`<div class="sn-list" id="sn-list">${rows}<p class="muted sn-none" id="sn-none" hidden>Aucune conversation ici.</p></div>`
+    ${items.length?`<div class="sn-list" id="sn-list">${rows}<p class="muted sn-none" id="sn-none" hidden>Aucune conversation ici.</p></div>${items.length>=3&&!pins().length?`<p class="muted sn-tip">Astuce : garde le doigt sur un mate (ou clic droit) pour l'épingler en haut.</p>`:''}`
       :`<div class="empty"><h3>Pas encore de mates</h3><p class="muted">Envoie une demande à un joueur compatible. Dès qu'il accepte, vous pouvez discuter ici.</p><a class="btn btn-ac" href="#/matchs">Voir mes matchs</a></div>`}`; }
 function snWire(){ const list=document.getElementById('sn-list'), q=document.getElementById('sn-q'), find=document.getElementById('sn-find'); let f='all';
   const apply=()=>{ if(!list) return; const t=(q&&!q.hidden?q.value:'').trim().toLowerCase(); let n=0;
@@ -5204,6 +5265,10 @@ function viewMessages(id){
   app.innerHTML=`<div class="dm-shell">${dmSide('')}<div class="dm-empty"><div><h3>Choisis une conversation</h3><p class="muted">Tes mates sont dans la colonne de gauche. Tes groupes sont dans l'onglet Groupes.</p></div></div><div class="wrap page dm-list-page" style="max-width:720px">${snList(mates)}</div></div>`;
   snWire();
   dmFit();
+  // v15 — « Vu » dans la liste : pour les conversations où mon message est le dernier, on regarde si le mate l'a lu (12 au plus, une fois par minute)
+  { const need=mates.filter(p=>{ const lm=lastMsg(p.id); return lm&&lm.from==='me'&&!(seenOf(p.id)>=lm.at); }).slice(0,12).map(p=>p.id);
+    if(need.length) DB.peekSeen(need).then(ids=>{ if(location.hash!=='#/messages') return; (ids||[]).forEach(i=>{ const lm=lastMsg(i), st=document.querySelector(`.sn-row[href="#/messages/${CSS.escape(i)}"] .sn-st.sent`);
+      if(st&&lm&&seenOf(i)>=lm.at){ st.classList.replace('sent','seen'); const t=st.querySelector('.t'); if(t) t.textContent='Vu'; } }); }); }
 }
 function viewChat(id){ EDIT=null; chatMotif();
   const p=visible().find(x=>x.id===id);
@@ -5211,7 +5276,7 @@ function viewChat(id){ EDIT=null; chatMotif();
   S.unread[id]=0; { const seen=S.notifs.filter(n=>!n.read&&n.type==='message'&&n.from===id); seen.forEach(n=>n.read=true); DB.markRead(seen.map(n=>n.id)); } save(); renderNotifBadge();
   app.innerHTML=`<div class="dm-shell">${dmSide('c:'+id)}<div class="wrap page chat-page"><div class="chat-head">${backLink('#/messages','Messages')}<a class="chat-who${plqOn(p,1)}" href="#/joueur/${p.id}">${plq(p)}${avatar(p,44)}<div><b>${esc(p.name)}${modBadge(p)}</b>${isOnline(p)?'<span class="online">En ligne</span>':'<span class="muted" style="font-size:12px">Hors ligne</span>'}</div></a>${callBtns(p)}</div>
     <p class="flame-hint" id="flame-hint"></p>
-    <div class="chat-box" id="chatbox"></div>${qrHTML()}
+    <div class="chat-box" id="chatbox"></div>${typingHTML()}${qrHTML()}
     ${composerHTML('Message…',!minorP(p))}${cpanelHTML()}</div></div>`;
   dmFit();
   // v11 — chaque envoi passe dans la file : un message par seconde au plus (règle Firebase), dans l'ordre, même avec plusieurs photos ou stickers d'affilée
@@ -5224,7 +5289,7 @@ function viewChat(id){ EDIT=null; chatMotif();
   // Photos : réduites sur l'appareil, puis envoyées une par une comme des messages (jamais à un 13-17 ans)
   photoWire(ph=>{ if(minorP(p)) return; const pid=newId(); PHOTOS[pid]=ph.data; return sendC({from:'me',text:PHOTO_TEXT,photo:{id:pid,w:ph.w,h:ph.h}}); });
   document.querySelectorAll('[data-call]').forEach(b=>b.onclick=()=>startCall(id,b.dataset.call));
-  // Message vocal : enregistré puis envoyé comme un message (30 secondes maximum)
+  // Message vocal : enregistré puis envoyé comme un message (2 minutes au plus)
   document.getElementById('micbtn')?.addEventListener('click',()=>recordVoice(v=>{ const vid=newId();
     VOICES[vid]=v.data; sendC({from:'me',text:VOICE_TEXT,voice:{id:vid,dur:v.dur,...(v.w?{w:v.w}:{})}}); }));
   // la zone de messages change de hauteur (contacts chargés, clavier, rotation) : on reste calé sur le dernier message
@@ -5233,12 +5298,40 @@ function viewChat(id){ EDIT=null; chatMotif();
     if(S.me&&ageGroup(S.me)==='minor'&&hasPhone(t)){ toast('Pour ta sécurité, les numéros de téléphone ne peuvent pas être envoyés ici.'); return; }   // 13-17 ans : pas de numéro dans le chat
     if(minorP(p)&&hasPhone(t)){ toast('Pour la sécurité des 13-17 ans, les numéros de téléphone ne peuvent pas être envoyés ici.'); return; }   // ni de la part d'un adulte vers un 13-17 ans
     if(submitEdit(t)) return;   // c'était une modification
-    i.value='';
+    i.value=''; DB._typ=null;
     sendC({from:'me',text:t});
     if(!AUTH_LIVE && Math.random()<.75) setTimeout(()=>{ const r={from:id,text:pick(CANNED),at:Date.now()}; (S.chats[id]||(S.chats[id]=[])).push(r);
       if(location.hash==='#/messages/'+id){ save(); renderChat(id); } else { S.unread[id]=(S.unread[id]||0)+1; notify({type:'message',from:id,text:`${p.name} : ${r.text}`}); } }, 2000+Math.random()*3000); });
-  DB.listenChat(id,()=>{ if(location.hash==='#/messages/'+id) renderChat(id); });
+  let lastId=null;
+  DB.listenChat(id,()=>{ if(!here()) return; const lm=(S.chats[id]||[]).slice(-1)[0]; if(lm&&lm.from!=='me'&&lm.id!==lastId) typingClear(DB.toUid(id)); lastId=lm?lm.id:null; renderChat(id); });   // son message est arrivé : il n'écrit plus
+  // v15 — « Vu » et « écrit… »
+  document.getElementById('chatin').addEventListener('input',e=>{ if(e.target.value.trim()&&!EDIT) DB.typing('c',id,'w'); });
+  DB.listenMeta('c',id,chg=>{ if(!here()) return; const s=META.seen[DB.toUid(id)]||0; if(s>seenOf(id)){ (S.seenBy=S.seenBy||{})[id]=s; save(); }
+    if(chg) renderChat(id); else seenMark('c',id); typingRender(); });
 }
+/* ---- v15 — « Vu » et « écrit… » ----
+   Dans chaque conversation (chats/{paire}/meta/{moi}) et chaque groupe (groups/{id}/meta/{moi}), chacun tient à jour un petit document :
+     { seen: l'heure du dernier message des autres que j'ai lu, t: 'w' (j'écris) | 'v' (j'enregistre un vocal) | '', tAt: l'heure du signal }
+   « écrit… » : un signal toutes les 5 secondes au plus pendant qu'on écrit ; il s'efface tout seul 7 secondes après le dernier signal. */
+const TYPING_MS=7000, TYPING_EVERY=5000;
+let META=null, TYP_T=0;   // la conversation écoutée : { key, kind, id, seen:{uid:heure}, typ:{uid:{t,tAt,until}}, mine, ready }
+const seenOf = id => (S.seenBy&&+S.seenBy[id])||0;   // jusqu'où ce mate a lu mes messages (gardé sur l'appareil pour la liste)
+const typingHTML = () => '<div class="typing-wrap"><div class="typing" id="typing" role="status" aria-live="polite" hidden></div></div>';
+const chatHere = () => { const m=location.hash.match(/^#\/(messages|groupe)\/([^/?]+)/); return m?[m[1]==='groupe'?'g':'c',decodeURIComponent(m[2])]:null; };
+const typingSend = t => { const h=chatHere(); if(h) DB.typing(h[0],h[1],t); };
+function typingClear(uid){ if(META&&META.typ[uid]){ delete META.typ[uid]; typingRender(); } }
+function typingRender(){ const el=document.getElementById('typing'); if(!el) return; clearTimeout(TYP_T); const now=Date.now(); let txt='';
+  if(META){ const g=META.kind==='g'?gById(META.id):null;
+    Object.keys(META.typ).forEach(u=>{ if(META.typ[u].until<=now) delete META.typ[u]; });
+    const on=Object.keys(META.typ).filter(u=>!S.blocked.includes(u)&&(!g||g.members.includes(u)));
+    if(on.length){ const nm=u=>{ const p=META.kind==='g'?gPlayer(u):PLAYERS.find(x=>x.id===u); return p&&p.name?p.name:'Un mate'; }, voice=on.every(u=>META.typ[u].t==='v');
+      txt = on.length===1 ? `${nm(on[0])} ${voice?'enregistre un vocal':'écrit'}` : on.length===2 ? `${nm(on[0])} et ${nm(on[1])} ${voice?'enregistrent un vocal':'écrivent'}` : `${on.length} personnes ${voice?'enregistrent un vocal':'écrivent'}`;
+      TYP_T=setTimeout(typingRender,Math.max(300,Math.min(...on.map(u=>META.typ[u].until))-now+60)); } }
+  if(el.dataset.t!==txt){ el.dataset.t=txt; el.hidden=!txt; el.innerHTML=txt?`<span class="ty-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>${esc(txt)}…</span>`:''; } }
+// J'ai lu : on note l'heure du dernier message des autres (une écriture seulement quand il y a du nouveau, et jamais quand la page est cachée)
+function seenMark(kind,id){ const me=kind==='g'?myId():'me', msgs=kind==='g'?(GMSGS[id]||[]):(S.chats[id]||[]); let at=0; msgs.forEach(m=>{ if(m.from!==me&&m.at>at) at=m.at; }); if(at) DB.markSeen(kind,id,at); }
+document.addEventListener('visibilitychange',()=>{ if(document.hidden) return; const h=chatHere(); if(h) seenMark(h[0],h[1]);
+  if(CALL&&CALL.mix) sndCtx(); });   // appel à plusieurs : au retour sur Coopô, le mélange des voix reprend s'il s'était mis en veille
 /* ---- Appels vocaux et vidéo ----
    Deux mates s'appellent directement, de téléphone à téléphone (WebRTC). Le son et l'image ne passent pas par Coopô.
    Pour se trouver, les deux téléphones s'échangent leurs réglages dans calls/{paire} :
@@ -5263,13 +5356,74 @@ const iceDone = (pc,ms=2500) => new Promise(res=>{ if(pc.iceGatheringState==='co
   pc.addEventListener('icegatheringstatechange',()=>{ if(pc.iceGatheringState==='complete'){ clearTimeout(t); res(); } }); });
 const callMedia = kind => navigator.mediaDevices.getUserMedia(kind==='video'?{audio:true,video:{facingMode:'user',width:{ideal:640},height:{ideal:480}}}:{audio:true});
 const callMediaErr = (e,kind) => toast(e&&e.name==='NotAllowedError'?`Autorise le micro${kind==='video'?' et la caméra':''} dans ton navigateur pour appeler.`:`Le micro${kind==='video'?' ou la caméra':''} n'est pas disponible sur cet appareil.`,4500);
-function callPc(c,servers){ const pc=c.pc=new RTCPeerConnection({iceServers:servers});
-  c.stream.getTracks().forEach(t=>pc.addTrack(t,c.stream));
-  pc.ontrack=e=>{ c.remote=e.streams[0]||new MediaStream([e.track]); callAttach(); };
-  pc.onconnectionstatechange=()=>{ if(CALL!==c) return; const st=pc.connectionState;
-    if(st==='connected'){ if(c.status!=='active'){ c.status='active'; c.t0=c.t0||Date.now(); clearTimeout(c.ringT); callRing(false); } c.lost=false; renderCall(); }
-    else if(st==='disconnected'){ c.lost=true; renderCall(); }
-    else if(st==='failed'){ endCall('fail'); } };
+/* v15 — Appel à plusieurs (vocal, 4 personnes au plus). Pendant un appel vocal, chacun peut ajouter un de ses mates.
+   Celui qui ajoute appelle ce mate comme d'habitude (calls/{paire}), sans raccrocher : il a alors un lien avec chacun, et il relie les autres entre eux.
+   Chaque mate reçoit sa voix mélangée à celles des autres (jamais la sienne). Rien ne change dans la base : chaque lien est un appel à deux entre mates.
+   L'appel = c (le premier lien : c.id, c.pair, c.pc…) + c.extra (les liens ajoutés, de la même forme). Si celui qui relie raccroche, les autres sont séparés.
+   Un petit canal (c.dc) permet à chacun de dire à ses voisins qui est dans l'appel : pour afficher les noms, et pour s'arrêter à 4. */
+const CALL_MAX=4, LINK_KEYS=['id','pair','at','pc','remote','sent','answered','status','lost','ringT','src','srcOf','srcTo','out','behind','dc'];
+const callLinks = c => [c,...(c.extra||[])];
+const linkOf = (c,pc) => callLinks(c).find(x=>x.pc===pc);
+const callAge = id => { const p=PLAYERS.find(x=>x.id===id); return p?ageGroup(p):''; };
+// Les autres personnes de l'appel, telles que je les connais : [{ id, n (nom), g (âge), ring (ça sonne encore) }]
+function callOthers(c){ const out=[]; callLinks(c).forEach(L=>{ const ring=L!==c&&L.status!=='active';
+    (L.behind&&L.behind.length&&!ring?L.behind:[{id:L.id}]).forEach(x=>{ if(!out.some(y=>y.id===x.id)) out.push({...x,ring}); }); }); return out; }
+function rosterSend(c,except){ if(CALL!==c) return; const me={id:DB.uid(),n:String((S.me&&S.me.name)||'').slice(0,40),g:myGroupNow()};
+  callLinks(c).forEach(L=>{ if(L===except||!L.dc||L.dc.readyState!=='open') return; const r=[me];
+    callLinks(c).forEach(X=>{ if(X===L||(X!==c&&X.status!=='active')) return; (X.behind&&X.behind.length?X.behind:[{id:X.id,n:callName(X),g:callAge(X.id)}]).forEach(x=>{ if(!r.some(y=>y.id===x.id)) r.push(x); }); });
+    try{ L.dc.send(JSON.stringify({r})); }catch(e){} }); }
+function rosterWire(c,pc,dc){ dc.onopen=()=>rosterSend(c);
+  dc.onmessage=e=>{ const L=linkOf(c,pc); if(CALL!==c||!L) return;
+    try{ const j=JSON.parse(String(e.data).slice(0,4000)); if(!j||!Array.isArray(j.r)) return; const me=DB.uid();
+      const list=j.r.slice(0,8).filter(x=>x&&typeof x.id==='string'&&/^[A-Za-z0-9_-]{1,128}$/.test(x.id)&&x.id!==me).map(x=>({id:x.id,n:String(x.n||'').slice(0,40),g:x.g==='minor'||x.g==='adult'?x.g:''}));
+      if(!list.some(x=>x.id===L.id)) list.unshift({id:L.id,n:callName(L),g:callAge(L.id)});
+      L.behind=list; rosterSend(c,L); renderCall(); }catch(er){} };
+  return dc; }
+// Le mélange des voix : ce que j'envoie à chacun = mon micro + les voix des autres
+function mixOut(c,L){ const cx=sndCtx(); if(!c.mix) c.mix={mic:cx.createMediaStreamSource(new MediaStream(c.stream.getAudioTracks()))};
+  if(!L.out){ L.out=cx.createMediaStreamDestination(); c.mix.mic.connect(L.out); }
+  return L.out.stream.getAudioTracks()[0]; }
+function mixSync(c){ if(!c.mix) return; const cx=sndCtx(); if(!cx) return; const ls=callLinks(c);
+  ls.forEach(L=>{ if(L.remote&&L.srcOf!==L.remote){ try{ L.src&&L.src.disconnect(); }catch(e){} try{ L.src=cx.createMediaStreamSource(L.remote); L.srcOf=L.remote; L.srcTo=[]; }catch(e){ L.src=null; } } });
+  ls.forEach(A=>{ if(!A.src) return; ls.forEach(B=>{ if(B===A||!B.out||A.srcTo.includes(B.out)) return; try{ A.src.connect(B.out); A.srcTo.push(B.out); }catch(e){} }); }); }
+// Un lien s'arrête (pas de réponse, connexion impossible) : s'il était le seul, l'appel se termine ; sinon l'appel continue avec les autres
+function linkEnd(c,pc,why){ const L=linkOf(c,pc); if(CALL!==c||!L) return; if(L===c&&!(c.extra||[]).length) endCall(why); else dropLink(c,L,why,true); }
+function dropLink(c,L,why,tell,quiet){ if(CALL!==c||!callLinks(c).includes(L)) return; const name=callName(L), wasLive=L.status==='active';
+  const upd=tell&&(L.sent||(L===c&&c.role==='in')) ? DB.db.collection('calls').doc(L.pair).update({status:'ended',why:why||'hangup',endedBy:DB.uid()}).catch(e=>console.error(e)) : null;
+  if(L.sent&&!wasLive&&!L.answered&&!(L===c&&c.role==='in')){ const x={id:L.id,at:L.at}; (upd||Promise.resolve()).then(()=>pushCall(x,'end')); }   // il n'a pas décroché : sa notification devient « Appel manqué »
+  clearTimeout(L.ringT); try{ L.src&&L.src.disconnect(); }catch(e){} try{ L.out&&c.mix&&c.mix.mic.disconnect(L.out); }catch(e){} try{ L.pc&&L.pc.close(); }catch(e){}
+  if(L===c){ const N=c.extra.find(x=>x.status==='active')||c.extra[0]; c.extra=c.extra.filter(x=>x!==N); LINK_KEYS.forEach(k=>{ c[k]=N[k]; }); c.role='out'; }   // le premier lien est parti : un autre prend sa place
+  else c.extra=c.extra.filter(x=>x!==L);
+  if(!quiet) toast(wasLive?`${name} a quitté l'appel.`:why==='noanswer'?`${name} n'a pas répondu.`:why==='busy'?`${name} est déjà en appel.`:why==='refused'?`${name} a refusé l'appel.`:`${name} n'a pas pu rejoindre l'appel.`,3000);
+  rosterSend(c); renderCall(); callAttach(); }
+// Entre un adulte et un 13-17 ans qui ne sont pas forcément mates : pas dans le même appel
+const callAgeClash = (c,p) => callOthers(c).some(x=>{ const g=x.g||callAge(x.id); return g&&g!==ageGroup(p); });
+const callCanAdd = c => !!c&&c.kind==='audio'&&c.status==='active'&&1+callOthers(c).length<CALL_MAX&&!!(window.AudioContext||window.webkitAudioContext);
+async function addToCall(id){ const c=CALL; if(!c||c.kind!=='audio'||c.status!=='active') return;
+  if(1+callOthers(c).length>=CALL_MAX){ toast(`${CALL_MAX} personnes au plus dans un appel.`); return; }
+  if(callOthers(c).some(x=>x.id===id)) return;
+  const p=PLAYERS.find(x=>x.id===id); if(!p||!isMate(id)){ toast("Vous n'êtes pas encore mates."); return; }
+  if(callAgeClash(c,p)){ toast("Pour la sécurité des 13-17 ans, un adulte et un 13-17 ans ne peuvent pas être réunis dans cet appel.",4500); return; }
+  if(!sndCtx()){ toast("Ce navigateur ne permet pas les appels à plusieurs."); return; }
+  const L={id,pair:DB.pairId(id),at:Date.now(),status:'calling'}; (c.extra=c.extra||[]).push(L); renderCall();
+  const on=()=>CALL===c&&(c.extra||[]).includes(L);
+  try{ const servers=await iceServers(); if(!on()) return;
+    if(!c.mix){ const sd=c.pc.getSenders().find(x=>x.track&&x.track.kind==='audio'); if(sd) await sd.replaceTrack(mixOut(c,c)); mixSync(c); }   // ma voix part désormais mélangée à celles des autres
+    if(!on()) return;
+    const pc=callPc(c,servers,L); const offer=await pc.createOffer(); await pc.setLocalDescription(offer); await iceDone(pc); if(!on()) return;
+    const me=DB.uid(); await DB.db.collection('calls').doc(L.pair).set({parts:[me,id].sort(),from:me,to:id,kind:'audio',status:'ringing',offer:{type:'offer',sdp:pc.localDescription.sdp},at:L.at});
+    if(!on()) return; L.sent=true; L.status='ringing'; renderCall(); pushCall({id:L.id,at:L.at},'ring');
+    L.ringT=setTimeout(()=>{ const X=linkOf(c,pc); if(X&&X.status!=='active') linkEnd(c,pc,'noanswer'); },CALL_RING_S*1000); }
+  catch(e){ console.error(e); if(on()){ dropLink(c,L,'fail',false,true); toast("Ce mate n'a pas pu être appelé. Réessaie dans un instant.",3500); } } }
+// L = le lien à créer (par défaut le premier : c lui-même)
+function callPc(c,servers,L=c){ const pc=L.pc=new RTCPeerConnection({iceServers:servers});
+  if(L===c) c.stream.getTracks().forEach(t=>pc.addTrack(t,c.stream)); else pc.addTrack(mixOut(c,L),c.stream);
+  try{ L.dc=rosterWire(c,pc,pc.createDataChannel('coopo',{negotiated:true,id:0})); }catch(e){}   // v15 — le petit canal « qui est dans l'appel »
+  pc.ontrack=e=>{ const X=linkOf(c,pc); if(!X) return; X.remote=e.streams[0]||new MediaStream([e.track]); callAttach(); mixSync(c); };
+  pc.onconnectionstatechange=()=>{ const X=linkOf(c,pc); if(CALL!==c||!X) return; const st=pc.connectionState;
+    if(st==='connected'){ if(X.status!=='active'){ X.status='active'; c.t0=c.t0||Date.now(); clearTimeout(X.ringT); if(X===c) callRing(false); mixSync(c); rosterSend(c); } X.lost=false; renderCall(); }
+    else if(st==='disconnected'){ X.lost=true; renderCall(); }
+    else if(st==='failed'){ linkEnd(c,pc,'fail'); } };
   return pc; }
 // Lancer un appel
 async function startCall(id,kind){
@@ -5300,6 +5454,8 @@ async function acceptCall(){ const c=CALL; if(!c||c.role!=='in'||c.status!=='rin
 const CALL_WHY={ hangup:'Appel terminé.', refused:'Appel refusé.', noanswer:'Pas de réponse.', busy:'Ton mate est déjà en appel.', fail:"La connexion n'a pas pu s'établir. Réessaie, si possible en Wi-Fi." };
 function endCall(why){ const c=CALL; if(!c) return;
   const upd=(c.role==='in'||c.sent) ? DB.db.collection('calls').doc(c.pair).update({status:'ended',why,endedBy:DB.uid()}).catch(e=>console.error(e)) : null;
+  (c.extra||[]).forEach(L=>{ if(!L.sent) return; const u=DB.db.collection('calls').doc(L.pair).update({status:'ended',why:'hangup',endedBy:DB.uid()}).catch(e=>console.error(e));   // v15 — les mates ajoutés sont prévenus aussi
+    if(L.status!=='active'&&!L.answered){ const x={id:L.id,at:L.at}; u.then(()=>pushCall(x,'end')); } });
   closeCall(c.role==='in'&&why==='refused'?'':c.role==='out'&&why==='hangup'&&c.status!=='active'?'Appel annulé.':CALL_WHY[why]||CALL_WHY.hangup, why, upd); }
 // why : pourquoi l'appel s'arrête ; upd : l'enregistrement « terminé » en cours (on attend qu'il soit fait avant de prévenir le serveur)
 function closeCall(msg,why,upd){ const c=CALL; if(!c) return; CALL=null; clearTimeout(c.ringT); clearInterval(c.tick); callRing(false);
@@ -5307,14 +5463,20 @@ function closeCall(msg,why,upd){ const c=CALL; if(!c) return; CALL=null; clearTi
   callNotify(c,c.role==='in'&&c.status==='ringing'&&why!=='refused'?'missed':'end');
   if(c.role==='out'&&c.sent&&c.status!=='active'&&!c.answered) (upd||Promise.resolve()).then(()=>pushCall(c,'end'));
   try{ c.stream&&c.stream.getTracks().forEach(t=>t.stop()); }catch(e){} try{ c.pc&&c.pc.close(); }catch(e){}
+  (c.extra||[]).forEach(L=>{ clearTimeout(L.ringT); try{ L.pc&&L.pc.close(); }catch(e){} }); c.extra=[];   // v15
+  if(c.mix){ callLinks(c).forEach(L=>{ try{ L.src&&L.src.disconnect(); }catch(e){} }); try{ c.mix.mic.disconnect(); }catch(e){} c.mix=null; sndRest(); }
   const ov=document.getElementById('call-ov'); if(ov) ov.remove(); if(msg) toast(msg,3000); }
 // Ce que dit le document d'appel (reçu en direct de la base)
 function onCallDoc(pair,d){ if(!d) return; const me=DB.uid(), c=CALL;
-  if(c&&c.pair===pair&&d.at===c.at){
-    if(d.status==='ended'&&d.endedBy!==me){ closeCall(c.role==='in'&&c.status==='ringing'?'':CALL_WHY[d.why==='refused'||d.why==='busy'||d.why==='fail'?d.why:'hangup'],'remote'); return; }
-    if(c.role==='out'&&d.status==='active'&&d.answer&&!c.answered&&c.pc){ c.answered=true; callRing(false); c.status='connecting'; renderCall();
-      c.pc.setRemoteDescription(d.answer).catch(e=>{ console.error(e); if(CALL===c) endCall('fail'); });
-      clearTimeout(c.ringT); c.ringT=setTimeout(()=>{ if(CALL===c&&c.status!=='active') endCall('fail'); },20000); }
+  const L=c&&callLinks(c).find(x=>x.pair===pair&&x.at===d.at);   // v15 — le lien concerné : le premier, ou un mate ajouté
+  if(L){ const why=d.why==='refused'||d.why==='busy'||d.why==='fail'?d.why:'';
+    if(d.status==='ended'&&d.endedBy!==me){
+      if(L===c&&!(c.extra||[]).length) closeCall(c.role==='in'&&c.status==='ringing'?'':CALL_WHY[why||'hangup'],'remote');
+      else dropLink(c,L,why,false);   // un mate quitte l'appel : il continue avec les autres
+      return; }
+    if((L!==c||c.role==='out')&&d.status==='active'&&d.answer&&!L.answered&&L.pc){ const pc=L.pc; L.answered=true; if(L===c) callRing(false); L.status='connecting'; renderCall();
+      pc.setRemoteDescription(d.answer).catch(e=>{ console.error(e); linkEnd(c,pc,'fail'); });
+      clearTimeout(L.ringT); L.ringT=setTimeout(()=>{ const X=linkOf(c,pc); if(X&&X.status!=='active') linkEnd(c,pc,'fail'); },20000); }
     return; }
   if(d.to!==me||d.status!=='ringing'||Math.abs(Date.now()-d.at)>CALL_RING_S*1000) return;   // pas pour moi, ou trop vieux
   if(c){ if(c.pair!==pair||c.at!==d.at) DB.db.collection('calls').doc(pair).update({status:'ended',why:'busy',endedBy:me}).catch(()=>{}); return; }
@@ -5328,7 +5490,7 @@ function onCallDoc(pair,d){ if(!d) return; const me=DB.uid(), c=CALL;
    sinon la sonnerie d'un appel qui arrive plus tard resterait muette (surtout sur iPhone). Le son se met en veille quand il ne sert pas. */
 let ACX=null, ACX_T=0;
 function sndCtx(){ try{ if(!ACX){ const A=window.AudioContext||window.webkitAudioContext; if(!A) return null; ACX=new A(); } if(ACX.state!=='running'&&ACX.state!=='closed') ACX.resume().catch(()=>{}); return ACX; }catch(e){ return null; } }
-function sndRest(){ clearTimeout(ACX_T); ACX_T=setTimeout(()=>{ if(!RING&&ACX&&ACX.state==='running') ACX.suspend().catch(()=>{}); },8000); }
+function sndRest(){ clearTimeout(ACX_T); ACX_T=setTimeout(()=>{ if(!RING&&!(CALL&&CALL.mix)&&ACX&&ACX.state==='running') ACX.suspend().catch(()=>{}); },8000); }   // v15 — pas de veille pendant un appel à plusieurs (le son sert au mélange des voix)
 { let ready=false; const prep=()=>{ if(ready&&(!RING||!ACX||ACX.state==='running')) return; const c=sndCtx(); if(!c) return; ready=true;
     try{ const b=c.createBuffer(1,1,22050), src=c.createBufferSource(); src.buffer=b; src.connect(c.destination); src.start(0); }catch(e){} sndRest(); };
   addEventListener('pointerdown',prep,{capture:true,passive:true}); addEventListener('keydown',prep,true); }
@@ -5365,17 +5527,30 @@ async function callNotify(c,step){ try{
 }catch(e){} }
 // L'écran d'appel (posé par-dessus tout le site : il reste si on change de page)
 function callAttach(){ const c=CALL; if(!c) return; const r=document.getElementById(c.kind==='video'?'call-remote':'call-audio'), l=document.getElementById('call-local');
-  if(r&&c.remote&&r.srcObject!==c.remote){ r.srcObject=c.remote; r.play&&r.play().catch(()=>{}); } if(l&&c.stream&&l.srcObject!==c.stream){ l.srcObject=c.stream; l.play&&l.play().catch(()=>{}); } }
+  if(r&&c.remote&&r.srcObject!==c.remote){ r.srcObject=c.remote; r.play&&r.play().catch(()=>{}); } if(l&&c.stream&&l.srcObject!==c.stream){ l.srcObject=c.stream; l.play&&l.play().catch(()=>{}); }
+  document.querySelectorAll('#call-ov audio[data-ca]').forEach(a=>{ const L=(c.extra||[])[+a.dataset.ca]; if(L&&L.remote&&a.srcObject!==L.remote){ a.srcObject=L.remote; a.play&&a.play().catch(()=>{}); } }); }   // v15 — les mates ajoutés
 function renderCall(){ const c=CALL; if(!c) return; let ov=document.getElementById('call-ov'); if(!ov){ ov=document.createElement('div'); ov.id='call-ov'; ov.setAttribute('role','dialog'); ov.setAttribute('aria-modal','true'); document.body.appendChild(ov); }
   const p=visible().find(x=>x.id===c.id)||S.profiles[c.id]||{id:c.id,name:'Ton mate'}, live=c.status==='active', video=c.kind==='video';
   const state=()=>c.lost?'Reconnexion…':live?vTime((Date.now()-c.t0)/1000):c.status==='calling'?'Préparation de l\'appel…':c.status==='connecting'?'Connexion…':c.role==='in'?(video?'Appel vidéo entrant':'Appel vocal entrant'):'Ça sonne…';
   const b=(act,cls,label,svg)=>`<button class="co-b ${cls}" type="button" data-co="${act}"><i>${svg}</i><span>${label}</span></button>`;
-  ov.className=(video?'video':'audio')+(live?' live':''); ov.setAttribute('aria-label',`Appel avec ${p.name||'ton mate'}`);
-  ov.innerHTML=`${video?`<video id="call-remote" autoplay playsinline></video><video id="call-local" autoplay playsinline muted${c.stream?'':' hidden'}></video>`:'<audio id="call-audio" autoplay></audio>'}
-    <div class="co-who">${avatar(p,96)}<div><b>${esc(p.name||'Ton mate')}</b><div class="co-state" id="co-state" aria-live="polite">${state()}</div></div></div>
+  // v15 — appel à plusieurs : un rond par personne ; « Ajouter » ouvre la liste de mes mates
+  const others=callOthers(c), multi=!video&&others.length>1, who=x=>visible().find(y=>y.id===x.id)||PLAYERS.find(y=>y.id===x.id)||S.profiles[x.id]||{id:x.id,name:x.n||'Un joueur'};
+  const pick=c.picking&&callCanAdd(c) ? matesList().filter(m=>!others.some(x=>x.id===m.id)&&!callAgeClash(c,m)).sort((a,b)=>(isOnline(b)-isOnline(a))||String(a.name).localeCompare(String(b.name),'fr')) : null;
+  if(!pick) c.picking=false;
+  const hadPick=!!ov.querySelector('.co-pick'), py=hadPick?ov.querySelector('.co-pick-list').scrollTop:0;
+  ov.className=(video?'video':'audio')+(live?' live':''); ov.setAttribute('aria-label',multi?`Appel à ${others.length+1}`:`Appel avec ${p.name||'ton mate'}`);
+  ov.innerHTML=`${video?`<video id="call-remote" autoplay playsinline></video><video id="call-local" autoplay playsinline muted${c.stream?'':' hidden'}></video>`:'<audio id="call-audio" autoplay></audio>'+(c.extra||[]).map((L,i)=>`<audio data-ca="${i}" autoplay></audio>`).join('')}
+    ${multi?`<div class="co-who multi"><div class="co-grid">${others.map(x=>{ const q=who(x); return `<div class="co-p${x.ring?' ring':''}">${avatar(q,72)}<span>${esc(q.name||'Un joueur')}</span>${x.ring?'<small>Ça sonne…</small>':''}</div>`; }).join('')}</div><div><b>Appel à ${others.length+1}</b><div class="co-state" id="co-state" aria-live="polite">${state()}</div></div></div>`
+      :`<div class="co-who">${avatar(p,96)}<div><b>${esc(p.name||'Ton mate')}</b><div class="co-state" id="co-state" aria-live="polite">${state()}</div></div></div>`}
     <div class="co-btns">${c.role==='in'&&c.status==='ringing' ? b('no','end','Refuser',HANG_SVG)+b('yes','yes','Répondre',video?CAM_SVG:PHONE_SVG)
-      : b('mute',c.muted?'off':'',c.muted?'Micro coupé':'Micro',MIC_SVG)+(video?b('cam',c.camOff?'off':'',c.camOff?'Caméra coupée':'Caméra',CAM_SVG):'')+b('end','end','Raccrocher',HANG_SVG)}</div>`;
+      : b('mute',c.muted?'off':'',c.muted?'Micro coupé':'Micro',MIC_SVG)+(video?b('cam',c.camOff?'off':'',c.camOff?'Caméra coupée':'Caméra',CAM_SVG):'')+(callCanAdd(c)?b('add',c.picking?'off':'','Ajouter',ADDMATE_SVG):'')+b('end','end','Raccrocher',HANG_SVG)}</div>
+    ${pick?`<div class="co-pick" role="dialog" aria-label="Ajouter un mate à l'appel"><div class="co-pick-head"><h3>Ajouter un mate</h3><button type="button" class="co-pick-x" data-co="pickx" aria-label="Fermer la liste">×</button></div>
+      <p>${pick.length?`Il reçoit ton appel et rejoint la discussion. ${CALL_MAX} personnes au plus.`:'Aucun autre mate à ajouter pour le moment.'}</p>
+      <div class="co-pick-list">${pick.map(m=>`<button type="button" class="co-pick-row" data-co-add="${esc(m.id)}">${avatar(m,40)}<b>${esc(m.name)}</b>${isOnline(m)?'<small>En ligne</small>':''}</button>`).join('')}</div></div>`:''}`;
+  if(pick){ const pl=ov.querySelector('.co-pick-list'); pl.scrollTop=py; if(!hadPick) (pl.querySelector('button')||ov.querySelector('.co-pick-x')).focus(); }
+  ov.querySelectorAll('[data-co-add]').forEach(x=>x.onclick=()=>{ c.picking=false; addToCall(x.dataset.coAdd); if(CALL===c) renderCall(); });
   ov.querySelectorAll('[data-co]').forEach(x=>x.onclick=()=>{ const a=x.dataset.co;
+    if(a==='add'){ c.picking=!c.picking; renderCall(); return; } if(a==='pickx'){ c.picking=false; renderCall(); ov.querySelector('[data-co="add"]')?.focus(); return; }
     if(a==='yes') acceptCall(); else if(a==='no') endCall('refused'); else if(a==='end') endCall('hangup');
     else if(a==='mute'){ c.muted=!c.muted; c.stream&&c.stream.getAudioTracks().forEach(t=>t.enabled=!c.muted); renderCall(); }
     else if(a==='cam'){ c.camOff=!c.camOff; c.stream&&c.stream.getVideoTracks().forEach(t=>t.enabled=!c.camOff); renderCall(); } });
@@ -5697,10 +5872,14 @@ async function stickerBuild(src,o,isVid,progress){ const webp=stkWebp();
   throw new Error('lourd'); }
 
 /* ---- Messages vocaux ----
-   Le son est enregistré par le téléphone (30 secondes maximum), puis rangé à part du message :
+   Le son est enregistré par le téléphone (2 minutes au plus), puis rangé à part du message :
    chats/{paire}/voices/{id} ou groups/{groupe}/voices/{id} = { from, data, dur, at }.
    Le message lui-même ne garde que { id, dur } : le son n'est téléchargé que si on appuie sur lecture (ça économise la connexion). */
-const VOICE_MAX=30, VOICE_TEXT='🎤 Message vocal', VOICE_RE=/^data:audio\/(webm|ogg|mp4|mpeg|aac|x-m4a)[;,]/, VOICE_LIMIT=680000;
+const VOICE_MAX=120, VOICE_FIRST=60, VOICE_TEXT='🎤 Message vocal', VOICE_RE=/^data:audio\/(webm|ogg|mp4|mpeg|aac|x-m4a)[;,]/, VOICE_LIMIT=1000000;
+// v15 — jusqu'à 2 minutes (avant : 30 secondes). Le son doit tenir dans la place autorisée par la base (1 Mo) : on retient le poids d'une seconde de son
+// sur cet appareil, et si ses sons sont lourds, sa durée maximale est réduite d'autant. Tant qu'on ne le connaît pas (iPhone), le premier vocal va jusqu'à 1 minute.
+const vRate = () => { try{ return +localStorage.getItem('coopo_vrate')||0; }catch(e){ return 0; } };
+const voiceMax = type => { const r=vRate(); return r>0 ? Math.max(20,Math.min(VOICE_MAX,Math.floor(VOICE_LIMIT*.92/r))) : /webm|ogg/.test(type||'') ? VOICE_MAX : VOICE_FIRST; };
 const VOICES={};   // sons déjà chargés ou tout juste enregistrés (gardés en mémoire seulement)
 const newId = () => { let s=''; const a='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'; for(let i=0;i<20;i++) s+=a[Math.random()*a.length|0]; return s; };
 const canVoice = () => !!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&window.MediaRecorder);
@@ -5749,24 +5928,26 @@ async function recordVoice(onDone){
   if(!document.body.contains(form)){ stream.getTracks().forEach(t=>t.stop()); return; }   // le joueur a quitté la conversation entre-temps
   const type=['audio/webm;codecs=opus','audio/mp4','audio/ogg;codecs=opus','audio/webm'].find(t=>{ try{ return MediaRecorder.isTypeSupported(t); }catch(e){ return false; } });
   let mr; try{ mr=new MediaRecorder(stream,type?{mimeType:type,audioBitsPerSecond:24000}:{audioBitsPerSecond:24000}); }catch(e){ try{ mr=new MediaRecorder(stream); }catch(x){ stream.getTracks().forEach(t=>t.stop()); toast("L'enregistrement n'est pas possible sur cet appareil."); return; } }
-  const chunks=[], t0=Date.now(), bar=document.createElement('div'); bar.className='rec-bar';
-  bar.innerHTML=`<i class="rec-dot" aria-hidden="true"></i><b aria-live="off">0:00 / ${vTime(VOICE_MAX)}</b><button class="btn btn-sm btn-ghost" type="button" data-rec="0">Annuler</button><button class="btn btn-sm btn-ac" type="button" data-rec="1">Envoyer</button>`;
+  const chunks=[], t0=Date.now(), bar=document.createElement('div'), vmax=voiceMax(mr.mimeType||type); bar.className='rec-bar';
+  bar.innerHTML=`<i class="rec-dot" aria-hidden="true"></i><b aria-live="off">0:00 / ${vTime(vmax)}</b><button class="btn btn-sm btn-ghost" type="button" data-rec="0">Annuler</button><button class="btn btn-sm btn-ac" type="button" data-rec="1">Envoyer</button>`;
   form.classList.add('rec'); form.appendChild(bar);
   const r=REC={mr,send:false,tick:0};
   r.finish=()=>{ stream.getTracks().forEach(t=>t.stop()); bar.remove(); form.classList.remove('rec');
-    if(!r.send) return; const dur=Math.min(VOICE_MAX,Math.max(1,Math.round((r.t1-t0)/1000)));
+    if(!r.send){ typingSend(''); return; } DB._typ=null; const dur=Math.min(vmax,Math.max(1,Math.round((r.t1-t0)/1000)));
     if(r.t1-t0<700||!chunks.length){ toast('Message trop court.'); return; }
     const fr=new FileReader(); fr.onerror=()=>toast("Le message vocal n'a pas pu être préparé.");
     fr.onload=async()=>{ const data=String(fr.result||''); if(!VOICE_RE.test(data)){ toast("Ce format de son n'est pas pris en charge."); return; }
-      if(data.length>VOICE_LIMIT){ toast('Message vocal trop lourd : fais-le un peu plus court.'); return; }
+      if(r.t1-t0>=4000){ try{ localStorage.setItem('coopo_vrate',String(Math.round(data.length/((r.t1-t0)/1000)))); }catch(e){} }   // le poids d'une seconde de son sur cet appareil
+      if(data.length>VOICE_LIMIT){ toast(`Message vocal trop lourd pour ce téléphone : il ne peut pas dépasser ${vTime(voiceMax(mr.mimeType||type))}. Réessaie en plus court.`,5000); return; }
       const w=await vwFromData(data); onDone({data,dur,w}); };   // les ondes partent avec le message ('' si le téléphone ne sait pas les calculer)
     fr.readAsDataURL(new Blob(chunks,{type:(mr.mimeType||type||'audio/webm').split(';')[0]})); };
   mr.ondataavailable=e=>{ if(e.data&&e.data.size) chunks.push(e.data); };
   mr.onstop=()=>{ r.t1=r.t1||Date.now(); r.finish(); }; mr.onerror=()=>{ r.send=false; r.t1=Date.now(); if(REC===r){ REC=null; clearInterval(r.tick); } r.finish(); };
   bar.querySelector('[data-rec="0"]').onclick=()=>{ r.t1=Date.now(); stopRec(false); };
   bar.querySelector('[data-rec="1"]').onclick=()=>{ r.t1=Date.now(); stopRec(true); };
-  r.tick=setInterval(()=>{ const s=(Date.now()-t0)/1000; const b=bar.querySelector('b'); if(b) b.textContent=`${vTime(s)} / ${vTime(VOICE_MAX)}`;
-    if(s>=VOICE_MAX){ r.t1=Date.now(); stopRec(true); } else if(!document.body.contains(form)){ r.t1=Date.now(); stopRec(false); } },250);
+  typingSend('v');   // v15 — le mate voit « enregistre un vocal… »
+  r.tick=setInterval(()=>{ const s=(Date.now()-t0)/1000; const b=bar.querySelector('b'); if(b) b.textContent=`${vTime(s)} / ${vTime(vmax)}`; typingSend('v');
+    if(s>=vmax){ r.t1=Date.now(); stopRec(true); } else if(!document.body.contains(form)){ r.t1=Date.now(); stopRec(false); } },250);
   try{ mr.start(); }catch(e){ r.t1=Date.now(); stopRec(false); toast("L'enregistrement n'a pas pu démarrer."); }
 }
 window.addEventListener('hashchange',()=>{ if(REC){ REC.t1=Date.now(); stopRec(false); } if(VPLAY){ try{ VPLAY.audio.pause(); }catch(e){} VPLAY=null; } });
@@ -5819,7 +6000,7 @@ function msgBody(m,kind,owner,mine){
   const jn=jumboN(m.text); if(jn) return `<span class="jumbo j${jn}">${esc(String(m.text).trim())}</span>`;
   return `<span>${esc(m.text)}</span>${mine?'':msgWarn({from:m.from,text:m.text})}`; }
 // le bas d'une bulle : l'heure, « modifié », et le bouton d'options (tous les messages : répondre, copier ; les miens : modifier, supprimer)
-const msgMeta = (m,mine,kind,owner) => `${ago(m.at)}${m.edited&&!m.del?' · modifié':''}${m.id&&!m.del?`<button type="button" class="msg-more" data-mm="${esc(m.id)}" data-mk="${kind}" data-mo="${esc(owner)}" aria-label="Actions sur ce message" aria-haspopup="menu" title="Options du message">${MORE_SVG}</button>`:''}`;
+const msgMeta = (m,mine,kind,owner,tag='') => `${ago(m.at)}${m.edited&&!m.del?' · modifié':''}${tag}${m.id&&!m.del?`<button type="button" class="msg-more" data-mm="${esc(m.id)}" data-mk="${kind}" data-mo="${esc(owner)}" aria-label="Actions sur ce message" aria-haspopup="menu" title="Options du message">${MORE_SVG}</button>`:''}`;
 /* ---- v13 — Appui long sur un message, façon TikTok ----
    On garde le doigt sur un message (ou clic droit, ou le bouton ⋯) : le reste de l'écran s'assombrit, le message reste en avant
    et un menu s'ouvre juste à côté : Répondre et Copier sur tous les messages, Modifier et Supprimer sur les miens.
@@ -5969,12 +6150,15 @@ function submitEdit(t){ if(!EDIT) return false; const e=EDIT; endEdit(true); if(
 function renderChat(id){
   const box=document.getElementById('chatbox'); if(!box) return; const msgs=S.chats[id]||[]; dmRefresh(); setTimeout(photoWatch,0); setTimeout(stickerWatch,0);
   const keep=chatKeep(box,msgs);   // v14 — un message modifié (réaction…) : on reste au même endroit ; un nouveau message : on descend
-  box.innerHTML = msgs.length ? msgs.map(m=>{ const mine=m.from==='me';
-      return `<div class="bubble${mine?' me':''}${m.del?' del':''}"${m.id?` data-mid="${esc(m.id)}"`:''}${m.id&&!m.del?` data-msg="c|${esc(id)}|${esc(m.id)}"`:''}${mine&&m.id&&!m.del?` data-own="c|${esc(id)}|${esc(m.id)}"`:''}>${replyQuote(m,'c',id)}${msgBody(m,'c',id,mine)}<small>${msgMeta(m,mine,'c',id)}</small>${reactsHTML(m,'c',id)}</div>`; }).join('')
+  // v15 — « Vu » : sous mon dernier message que le mate a lu
+  let seenK=-1; { const os=seenOf(id); if(os) for(let k=msgs.length-1;k>=0;k--){ if(msgs[k].from==='me'&&msgs[k].at<=os){ seenK=k; break; } } }
+  box.innerHTML = msgs.length ? msgs.map((m,k)=>{ const mine=m.from==='me';
+      return `<div class="bubble${mine?' me':''}${m.del?' del':''}"${m.id?` data-mid="${esc(m.id)}"`:''}${m.id&&!m.del?` data-msg="c|${esc(id)}|${esc(m.id)}"`:''}${mine&&m.id&&!m.del?` data-own="c|${esc(id)}|${esc(m.id)}"`:''}>${replyQuote(m,'c',id)}${msgBody(m,'c',id,mine)}<small>${msgMeta(m,mine,'c',id,k===seenK?' · <span class="seen-tag">Vu</span>':'')}</small>${reactsHTML(m,'c',id)}</div>`; }).join('')
     : `<div class="chat-empty"><p class="muted">Première partie ensemble ? Propose un créneau 🎮</p><div class="chips">${QUICK_MSGS.map(t=>`<button type="button" class="chip" data-quick="${esc(t)}">${esc(t)}</button>`).join('')}</div></div>`;
   box.scrollTop=keep==null?box.scrollHeight:keep;
   { const lm=msgs[msgs.length-1]; QR.key='c:'+id; QR.last=lm?{id:lm.id,at:lm.at,mine:lm.from==='me',del:!!lm.del}:null; qrUpdate(); }
   { const p=PLAYERS.find(x=>x.id===id), fh=document.getElementById('flame-hint'); if(fh) fh.innerHTML=flameHint(id,p?p.name:'Ton mate'); }
+  seenMark('c',id);
 }
 
 /* ---- Sessions d'un soir (anciennes « escouades ») ---- */
@@ -6201,7 +6385,7 @@ function viewGroup(id){ EDIT=null; chatMotif();
   (S.gseen=S.gseen||{})[id]=Date.now(); save(); renderNotifBadge();
   app.innerHTML=`<div class="dm-shell g-shell">${gSide('g:'+id)}<div class="wrap page chat-page"><div class="chat-head">${backLink('#/groupe','Groupes')}<button class="chat-who g-who" type="button" id="ginfo">${gAvatar(g,44)}<div><b>${esc(g.name)}</b><span class="muted" style="font-size:12px">${g.members.length} membre${g.members.length>1?'s':''} · infos</span></div></button>
       ${g.members.length<GROUP_MAX?`<div class="chat-calls"><button class="btn btn-ac g-add-btn" type="button" id="g-add" aria-label="Ajouter des mates" title="Ajouter des mates">${ADDMATE_SVG}<span>Ajouter des mates</span></button></div>`:''}</div>
-    <div class="chat-box" id="chatbox"><p class="muted" style="margin:auto">Chargement des messages…</p></div>${qrHTML()}
+    <div class="chat-box" id="chatbox"><p class="muted" style="margin:auto">Chargement des messages…</p></div>${typingHTML()}${qrHTML()}
     ${composerHTML('Message au groupe…',!gHasMinor(g))}${cpanelHTML()}</div></div>`;
   dmFit(); document.getElementById('ginfo').onclick=()=>groupInfo(id);
   document.getElementById('g-add')?.addEventListener('click',()=>groupInvite(id));
@@ -6216,20 +6400,29 @@ function viewGroup(id){ EDIT=null; chatMotif();
     if(myGroupNow()==='minor'&&hasPhone(t)){ toast('Pour ta sécurité, les numéros de téléphone ne peuvent pas être envoyés ici.'); return; }
     if(gHasMinor(gById(id))&&hasPhone(t)){ toast('Il y a des 13-17 ans dans ce groupe : les numéros de téléphone ne peuvent pas être envoyés ici.',3500); return; }
     if(submitEdit(t)) return;   // c'était une modification
-    i.value=''; sendG(t); });
+    i.value=''; DB._typ=null; sendG(t); });
   DB.fetchPlayers(g.members).then(ch=>{ if(location.hash!=='#/groupe/'+id) return; if(gHasMinor(gById(id))) noMedia(); if(ch) renderGroupChat(id); }).catch(()=>{});
-  DB.listenGroup(id,()=>{ if(location.hash==='#/groupe/'+id){ (S.gseen=S.gseen||{})[id]=Date.now(); renderGroupChat(id); } });
+  let lastId=null;
+  DB.listenGroup(id,()=>{ if(location.hash==='#/groupe/'+id){ (S.gseen=S.gseen||{})[id]=Date.now(); const lm=(GMSGS[id]||[]).slice(-1)[0]; if(lm&&lm.from!==myId()&&lm.id!==lastId) typingClear(lm.from); lastId=lm?lm.id:null; renderGroupChat(id); } });
+  // v15 — « Vu par… » et « écrit… »
+  document.getElementById('chatin').addEventListener('input',e=>{ if(e.target.value.trim()&&!EDIT) DB.typing('g',id,'w'); });
+  DB.listenMeta('g',id,chg=>{ if(location.hash!=='#/groupe/'+id) return; if(chg) renderGroupChat(id); else seenMark('g',id); typingRender(); });
 }
 let GMSGS={};   // messages du groupe ouvert
 function renderGroupChat(id){ const box=document.getElementById('chatbox'), g=gById(id); if(!box||!g) return; setTimeout(photoWatch,0); setTimeout(stickerWatch,0); const me=myId(), msgs=(GMSGS[id]||[]).filter(m=>!S.blocked.includes(m.from));
   const keep=chatKeep(box,msgs);   // v14 — voir renderChat
+  // v15 — « Vu par… » : sous mon dernier message, le nombre de membres qui l'ont lu
+  let seenK=-1, seenTag=''; if(META&&META.key==='g:'+id){ for(let k=msgs.length-1;k>=0;k--){ if(msgs[k].from===me){ if(!msgs[k].del) seenK=k; break; } }
+    if(seenK>=0){ const others=g.members.filter(u=>u!==me), n=others.filter(u=>(META.seen[u]||0)>=msgs[seenK].at).length;
+      seenTag=n?` · <span class="seen-tag">${others.length===1?'Vu':n>=others.length?'Vu par tous':'Vu par '+n}</span>`:''; } }
   box.innerHTML = msgs.length ? msgs.map((m,k)=>{ const mine=m.from===me, p=gPlayer(m.from), same=k>0&&msgs[k-1].from===m.from&&m.at-msgs[k-1].at<5*60e3, role=gRole(g,m.from);
       return `<div class="gmsg${mine?' me':''}${same?' same':''}">${mine?'':(same?'<i class="g-gap"></i>':(p?`<a href="#/joueur/${esc(m.from)}">${avatar(p,32)}</a>`:'<span class="av" style="width:32px;height:32px;--h:220">?</span>'))}<div>${same||mine?'':`<small class="g-from">${p?np(p):'Ancien membre'}${ROLE_TAG[role]||''}</small>`}
-        <div class="bubble${mine?' me':''}${m.del?' del':''}"${m.id?` data-mid="${esc(m.id)}"`:''}${m.id&&!m.del?` data-msg="g|${esc(id)}|${esc(m.id)}"`:''}${mine&&m.id&&!m.del?` data-own="g|${esc(id)}|${esc(m.id)}"`:''}>${replyQuote(m,'g',id)}${msgBody(m,'g',id,mine)}<small>${msgMeta(m,mine,'g',id)}</small>${reactsHTML(m,'g',id)}</div></div></div>`; }).join('')
+        <div class="bubble${mine?' me':''}${m.del?' del':''}"${m.id?` data-mid="${esc(m.id)}"`:''}${m.id&&!m.del?` data-msg="g|${esc(id)}|${esc(m.id)}"`:''}${mine&&m.id&&!m.del?` data-own="g|${esc(id)}|${esc(m.id)}"`:''}>${replyQuote(m,'g',id)}${msgBody(m,'g',id,mine)}<small>${msgMeta(m,mine,'g',id,k===seenK?seenTag:'')}</small>${reactsHTML(m,'g',id)}</div></div></div>`; }).join('')
     : `<div class="chat-empty"><p class="muted">Le groupe est tout neuf. ${g.members.length<2?'Ajoute tes mates, puis lance la discussion 👋':'Lance la discussion 👋'}</p>${g.members.length<2&&g.members.length<GROUP_MAX?`<button class="btn btn-ac" type="button" data-g-add>${ADDMATE_SVG} Ajouter des mates</button>`:''}${(g.invited||[]).length?`<p class="muted">${g.invited.length} invitation${g.invited.length>1?'s':''} en attente.</p>`:''}</div>`;
   box.scrollTop=keep==null?box.scrollHeight:keep;
   { const lm=msgs[msgs.length-1]; QR.key='g:'+id; QR.last=lm?{id:lm.id,at:lm.at,mine:lm.from===me,del:!!lm.del}:null; qrUpdate(); }
   box.querySelector('[data-g-add]')?.addEventListener('click',()=>groupInvite(id));
+  seenMark('g',id);
 }
 // Infos du groupe : membres, rôles, invitations, réglages
 function groupInfo(id){ const g=gById(id); if(!g) return; const me=myId(), role=gRole(g,me), admin=role==='admin';
@@ -6524,6 +6717,9 @@ function viewHelp(){
     ['Pourquoi je ne vois pas certains joueurs ?','Tu ne vois pas les joueurs que tu as bloqués, ni ceux masqués par la modération.'],
     ['Comment contacter un joueur ?','Envoie-lui une demande de mate. S\'il accepte, vous pouvez vous écrire dans Messages et vous retrouver dans des groupes. Tout se passe dans Coopô : aucun numéro ni pseudo d\'un autre réseau n\'est demandé.'],
     ['Comment créer un groupe avec mes mates ?','Va dans l\'onglet Groupes et appuie sur « Créer un groupe ». Donne-lui un nom, puis coche les mates à ajouter : ils reçoivent une invitation et rejoignent le groupe en un clic. Plus tard, le bouton « Ajouter des mates » en haut du groupe permet d\'en inviter d\'autres.'],
+    ['Comment épingler un mate ?','Dans Messages, garde le doigt sur un mate (ou fais un clic droit sur ordinateur), puis choisis « Épingler en haut ». Il reste en haut de ta liste. Tu peux épingler 5 mates au plus, et toi seul le vois.'],
+    ['Que veulent dire « Vu » et « écrit… » ?','« Vu » s\'affiche sous ton dernier message quand ton mate l\'a lu (dans un groupe : « Vu par 3 »). « écrit… » ou « enregistre un vocal… » apparaît en bas de la conversation pendant que ton mate prépare un message.'],
+    ['Comment appeler à plusieurs ?','Pendant un appel vocal, appuie sur « Ajouter » et choisis un mate : il reçoit ton appel et rejoint la discussion. Vous pouvez être 4 au plus. Si la personne qui a ajouté un mate raccroche, ce mate quitte l\'appel avec elle. Un message vocal peut durer jusqu\'à 2 minutes.'],
     ['Adultes et 13-17 ans peuvent-ils jouer ensemble ?','Oui. Mais avec un joueur de moins de 18 ans, c\'est lui qui envoie la demande de mate : un adulte ne peut pas commencer une conversation avec lui. Entre un adulte et un 13-17 ans, les messages écrits, les vocaux et les appels vocaux sont possibles, mais pas les appels vidéo ni les photos. Les pseudos en jeu d\'un 13-17 ans ne sont montrés qu\'aux 13-17 ans et à ses mates.'],
     ['Mon e-mail ou ma date de naissance sont-ils visibles ?','Non, jamais. Les autres joueurs ne voient que ton pseudo, ton avatar, tes jeux et tes habitudes de jeu.'],
     ['À quoi servent les annonces ?','À trouver vite des joueurs pour une partie précise : « Je cherche 2 joueurs Free Fire ce soir ». Clique sur « Je suis partant » : l\'auteur est prévenu et reçoit une demande de mate (si l\'auteur a moins de 18 ans et toi plus, tu es seulement noté partant : c\'est lui qui choisit de t\'ajouter). Les annonces disparaissent toutes seules après la partie.'],
@@ -6845,6 +7041,7 @@ const DB = {
       const prevMe=S.me||{};
       if(prof.exists){ const pd=prof.data(), pv=priv.exists?priv.data():{};
         S.me=normP({...pd,id:'me',dob:pv.dob||''}); if(S.me._langLost){ delete S.me._langLost; S.langAsk=true; }   // une de ses langues a été retirée de la liste : on lui proposera d'en choisir une autre
+        if(Array.isArray(pv.pins)) S.pins=pv.pins.filter(x=>typeof x==='string').slice(0,PIN_MAX);   // v15 — mates épinglés
         if(pv.tags&&typeof pv.tags==='object') S.me.tags=pv.tags;   // pseudos en jeu : la copie privée fait foi (la copie publique est vide quand ils sont masqués)
         if(pd.privacy&&typeof pd.privacy==='object') ['tags','online'].forEach(k=>{ if(typeof pd.privacy[k]==='boolean') S.privacy[k]=pd.privacy[k]; });   // confidentialité : les réglages du compte, sur tous les appareils
         { const sk=pd.skin; if(sk&&SKINS[sk]) S.skinWanted=sk; else if(sk) S.skinWanted='defaut'; if(RETIRED_SKINS.includes(sk)) this._retired=sk; } S.profiles[uid]=S.me; }
@@ -7041,7 +7238,7 @@ const DB = {
     try{ const base=kind==='g'?this.db.collection('groups').doc(owner):this.db.collection('chats').doc(this.pairId(owner)); const d=await base.collection('voices').doc(vid).get();
       if(!d.exists) return null; const data=String(d.data().data||''); if(Object.keys(VOICES).length>40) Object.keys(VOICES).slice(0,20).forEach(k=>{ if(!VPLAY||VPLAY.id!==k) delete VOICES[k]; }); VOICES[vid]=data; return data; }
     catch(e){ console.error(e); return null; } },
-  stopChat(){ if(this._chatUnsub){ try{ this._chatUnsub(); }catch(e){} this._chatUnsub=null; } },
+  stopChat(){ if(this._chatUnsub){ try{ this._chatUnsub(); }catch(e){} this._chatUnsub=null; } if(META&&META.kind==='c') this.stopMeta(); },
   // Notifications lues : enregistré sur le compte, pour ne pas les revoir « non lues » sur un autre appareil
   markRead(ids){ if(!this.live&&AUTH_LIVE){ if(ids.length) this.ready().then(ok=>{ if(ok) this.markRead(ids); }); return; } if(!this.live||!this.uid()) return; const col=this.db.collection('notifications').doc(this.uid()).collection('items'); [...new Set(ids)].slice(0,40).forEach(id=>col.doc(id).update({read:true}).catch(()=>{})); },
   async saveSquad(s){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ await this.db.collection('squads').doc(s.id).set({...s,owner:this.uid(),members:[this.uid()]}); }catch(e){ console.error(e); } },
@@ -7079,6 +7276,7 @@ const DB = {
       try{ for(let k=0;k<6;k++){ const q=await ref.collection('messages').limit(300).get(); if(q.empty) break; const b=this.db.batch(); q.forEach(x=>b.delete(x.ref)); await b.commit(); }   // les messages d'abord, puis le groupe
         try{ for(let k=0;k<30;k++){ const q=await ref.collection('voices').limit(8).get(); if(q.empty) break; const b=this.db.batch(); q.forEach(x=>b.delete(x.ref)); await b.commit(); } }catch(e){ console.error(e); }   // les sons des messages vocaux
         try{ for(let k=0;k<40;k++){ const q=await ref.collection('photos').limit(4).get(); if(q.empty) break; const b=this.db.batch(); q.forEach(x=>b.delete(x.ref)); await b.commit(); } }catch(e){ console.error(e); }   // les photos
+        try{ const q=await ref.collection('meta').limit(60).get(); if(!q.empty){ const b=this.db.batch(); q.forEach(x=>b.delete(x.ref)); await b.commit(); } }catch(e){ console.error(e); }   // v15 — les « Vu » et « écrit… »
         await ref.delete(); }catch(e){ console.error(e); toast("Le groupe n'a pas pu être supprimé."); return false; } }
     GROUPS=GROUPS.filter(g=>g.id!==id); delete GMSGS[id]; return true; },
   async sendGroupMessage(id,text,voice,photo,sticker,reply){ const m={from:myId(),text,at:Date.now()}; if(voice) m.voice=voice; if(photo) m.photo=photo; if(sticker) m.sticker=sticker; if(reply) m.reply=reply;
@@ -7143,6 +7341,32 @@ const DB = {
     if(!AUTH_LIVE) return; if(!this.live&&!(await this.ready())){ apply(before); return; }
     try{ await this.msgRef(kind,owner,mid).update({['re.'+k]:emo||firebase.firestore.FieldValue.delete()}); }
     catch(e){ console.error(e); apply(before); toast("La réaction n'est pas partie, réessaie."); } },
+  // v15 — mates épinglés : dans la partie privée du compte
+  async savePins(){ if(!this.live||!this.uid()) return; try{ await this.db.collection('private').doc(this.uid()).update({pins:pins().slice(0,PIN_MAX)}); }catch(e){ console.error(e); } },
+  // v15 — « Vu » et « écrit… » (voir plus haut). kind : 'c' conversation privée, 'g' groupe. cb(chg) : chg = un « Vu » a bougé.
+  metaCol(kind,id){ return (kind==='g'?this.db.collection('groups').doc(id):this.db.collection('chats').doc(this.pairId(id))).collection('meta'); },
+  listenMeta(kind,id,cb){ this.stopMeta(); if(!this.live) return; const key=kind+':'+id, me=this.uid(); let first=true;
+    const M=META={key,kind,id,seen:{},typ:{},mine:0,ready:false};
+    this._metaUnsub=this.metaCol(kind,id).onSnapshot(snap=>{ if(META!==M) return; const now=Date.now(); let chg=false;
+      snap.forEach(d=>{ const x=d.data()||{}, u=d.id, seen=+x.seen||0;
+        if(u===me){ M.mine=Math.max(M.mine,seen); return; }
+        if((M.seen[u]||0)!==seen){ M.seen[u]=seen; chg=true; }
+        const t=x.t==='w'||x.t==='v'?x.t:'', tAt=+x.tAt||0, old=M.typ[u];
+        if(!t){ if(old) delete M.typ[u]; M['_'+u]=tAt; }
+        else if(M['_'+u]!==tAt){ M['_'+u]=tAt; if(!first||Math.abs(now-tAt)<TYPING_MS) M.typ[u]={t,tAt,until:now+TYPING_MS}; } });
+      first=false; M.ready=true; cb(chg); },e=>console.error(e)); },
+  stopMeta(){ if(this._metaUnsub){ try{ this._metaUnsub(); }catch(e){} this._metaUnsub=null; } META=null; clearTimeout(TYP_T); },
+  markSeen(kind,id,at){ if(!this.live||!META||META.key!==kind+':'+id||!META.ready||!(at>META.mine)||document.hidden) return; META.mine=at;
+    this.metaCol(kind,id).doc(this.uid()).set({seen:at},{merge:true}).catch(e=>console.error(e)); },
+  typing(kind,id,t){ if(!this.live||!META||META.key!==kind+':'+id) return; const now=Date.now(), last=this._typ||{}, same=last.key===META.key;
+    if(t ? (same&&last.t===t&&now-last.at<TYPING_EVERY) : !(same&&last.t)) return;   // un signal toutes les 5 secondes au plus ; rien à effacer si rien n'a été signalé
+    this._typ={key:META.key,t,at:now}; this.metaCol(kind,id).doc(this.uid()).set({t,tAt:now},{merge:true}).catch(e=>console.error(e)); },
+  // « Vu » dans la liste : jusqu'où ces mates ont lu (une lecture par mate, une fois par minute au plus). Rend les mates dont le « Vu » a avancé.
+  async peekSeen(ids){ if(!this.live) return []; const pk=this._peek=this._peek||{}, now=Date.now(), out=[];
+    await Promise.all(ids.filter(id=>!(now-(pk[id]||0)<60000)).map(async id=>{ pk[id]=now;
+      try{ const d=await this.db.collection('chats').doc(this.pairId(id)).collection('meta').doc(this.toUid(id)).get(); const s=d.exists?+d.data().seen||0:0;
+        if(s>seenOf(id)){ (S.seenBy=S.seenBy||{})[id]=s; out.push(id); } }catch(e){} }));
+    if(out.length) save(); return out; },
   // v14 — adresse de notification de cet appareil, dans private/{uid}.push (5 appareils au plus)
   async savePush(tok){ if(!this.live) return; const ref=this.db.collection('private').doc(this.uid()), d=(await ref.get()).data()||{};
     const list=(Array.isArray(d.push)?d.push:[]).filter(x=>typeof x==='string'&&x!==tok); list.push(tok);
@@ -7154,7 +7378,7 @@ const DB = {
   listenGroup(id,cb){ this.stopGroup(); if(!this.live){ cb(); return; }   // les 100 derniers messages, en temps réel
     this._groupUnsub=this.db.collection('groups').doc(id).collection('messages').orderBy('at').limitToLast(100).onSnapshot(snap=>{ GMSGS[id]=[]; snap.forEach(x=>{ const m=x.data(); const o={id:x.id,from:m.from,text:m.text,at:m.at}; msgExtra(o,m); if(m.voice&&m.voice.id){ o.voice={id:String(m.voice.id),dur:+m.voice.dur||0}; if(VW_RE.test(String(m.voice.w||''))) o.voice.w=m.voice.w; } if(m.photo&&m.photo.id) o.photo={id:String(m.photo.id),w:+m.photo.w||4,h:+m.photo.h||3}; GMSGS[id].push(o); }); cb(); },
       e=>{ console.error(e); this.stopGroup(); this.loadGroups(true).then(()=>{ if(location.hash==='#/groupe/'+id) route(); }); }); },   // plus le droit de lire (retiré du groupe, groupe supprimé) : on recharge la liste
-  stopGroup(){ if(this._groupUnsub){ try{ this._groupUnsub(); }catch(e){} this._groupUnsub=null; } },
+  stopGroup(){ if(this._groupUnsub){ try{ this._groupUnsub(); }catch(e){} this._groupUnsub=null; } if(META&&META.kind==='g') this.stopMeta(); },
   async saveNotif(toId,n){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ await this.db.collection('notifications').doc(this.toUid(toId)).collection('items').add({...n,from:this.toUid(n.from),at:Date.now(),read:false}); }catch(e){ console.error(e); } },
   // « Rejouerait avec lui » : le +1 n'est compté qu'une fois par joueur (champ counted, vérifié aussi par les règles Firestore)
   async rate(id,v){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; const db=this.db, uid=this.uid(), ref=db.collection('ratings').doc(`${uid}_${id}`), counted=!!(S.rated&&S.rated[id]);
