@@ -4,12 +4,13 @@
      (la nouvelle version continue d'arriver en arrière-plan et sera là à la prochaine ouverture).
    - Hors connexion, la dernière version enregistrée s'affiche.
    - Firebase, Google, CinetPay et les polices ne sont jamais mis en cache ici. */
-const CACHE = 'coopo-v50';
+const CACHE = 'coopo-v51';
 const WAIT_MS = 3000;
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/v2/icon-192.png', './icons/v2/icon-512.png'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  // { cache: 'reload' } : à chaque nouvelle version, ces fichiers sont redemandés au serveur (jamais une vieille copie gardée par le navigateur)
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {
@@ -50,19 +51,19 @@ self.addEventListener('push', e => {
   let p = {}; try { p = e.data ? e.data.json() : {}; } catch (x) {}
   const d = (p && p.data) || {};
   if (d.type !== 'call' || !d.pair || !d.from) return;
-  const reg = self.registration, tag = 'call-' + d.pair, icon = 'icons/v2/icon-192.png', who = String(d.name || 'Ton mate').slice(0, 40);
+  const reg = self.registration, tag = 'call-' + d.pair, icon = 'icons/v2/icon-192.png', badge = 'icons/v2/badge-96.png', who = String(d.name || 'Ton mate').slice(0, 40);
   const url = reg.scope + '#/messages/' + encodeURIComponent(d.from), at = +d.at || Date.now();
   e.waitUntil((async () => {
     const shown = await reg.getNotifications({ tag });
     if (d.step === 'end') {
       shown.forEach(n => n.close());
-      if (d.missed === '1') await reg.showNotification('Appel manqué', { body: who + " a essayé de t'appeler.", tag: 'missed-' + d.pair, icon, badge: icon, timestamp: at, data: { url } });
+      if (d.missed === '1') await reg.showNotification('Appel manqué', { body: who + " a essayé de t'appeler.", tag: 'missed-' + d.pair, icon, badge, timestamp: at, data: { url } });
       return;
     }
     const wins = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     if (shown.length || wins.some(w => w.visibilityState === 'visible')) return;   // déjà affichée, ou Coopô est à l'écran (elle sonne déjà)
     await reg.showNotification((d.kind === 'video' ? 'Appel vidéo' : 'Appel vocal') + ' de ' + who, { body: 'Touche pour répondre', tag, renotify: true,
-      requireInteraction: true, vibrate: [500, 250, 500, 250, 500, 250, 500], icon, badge: icon, timestamp: at, data: { url } });
+      requireInteraction: true, vibrate: [500, 250, 500, 250, 500, 250, 500], icon, badge, timestamp: at, data: { url } });
   })());
 });
 
