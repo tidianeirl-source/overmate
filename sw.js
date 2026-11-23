@@ -4,9 +4,9 @@
      (la nouvelle version continue d'arriver en arrière-plan et sera là à la prochaine ouverture).
    - Hors connexion, la dernière version enregistrée s'affiche.
    - Firebase, Google, CinetPay et les polices ne sont jamais mis en cache ici. */
-const CACHE = 'coopo-v49';
+const CACHE = 'coopo-v50';
 const WAIT_MS = 3000;
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
+const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/v2/icon-192.png', './icons/v2/icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -50,7 +50,7 @@ self.addEventListener('push', e => {
   let p = {}; try { p = e.data ? e.data.json() : {}; } catch (x) {}
   const d = (p && p.data) || {};
   if (d.type !== 'call' || !d.pair || !d.from) return;
-  const reg = self.registration, tag = 'call-' + d.pair, icon = 'icons/icon-192.png', who = String(d.name || 'Ton mate').slice(0, 40);
+  const reg = self.registration, tag = 'call-' + d.pair, icon = 'icons/v2/icon-192.png', who = String(d.name || 'Ton mate').slice(0, 40);
   const url = reg.scope + '#/messages/' + encodeURIComponent(d.from), at = +d.at || Date.now();
   e.waitUntil((async () => {
     const shown = await reg.getNotifications({ tag });
