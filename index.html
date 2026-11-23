@@ -7,12 +7,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- Logo de l'appli : pour un nouveau logo, mettre les images dans un nouveau dossier (icons/v3/…), sinon les applis déjà installées gardent l'ancien. -->
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#150F3F">
+<meta name="theme-color" content="#FFFFFF">
 <link rel="apple-touch-icon" href="icons/v2/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Coopô">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Coopô</title>
 <meta name="description" content="Coopô réunit les gamers d'Afrique francophone : trouve des joueurs qui jouent aux mêmes jeux, aux mêmes heures et avec le même style que toi.">
 <meta property="og:title" content="Coopô">
@@ -1103,22 +1103,23 @@ html[data-skin="esth"] .mcard:hover::before{ opacity:1; }
 .rank.role{ opacity:.8; }
 </style>
 <style id="coopo-themes">
-/* ==== Coopô : thème clair (défaut) et thème sombre, même famille de couleurs ==== */
+/* ==== Coopô : thème clair (défaut) et thème sombre, même famille de couleurs ====
+   Depuis le 23 novembre 2026 : couleurs unies « noir et blanc » (choix d'Aki). Le décor est retiré dans le bloc « coopo-uni », en bas. */
 html[data-skin="defaut"]{
-  --frame:#ECEAF5; --frame-bg:#ECEAF5;
-  --bg:#F6F5FB; --s1:#FFFFFF; --s2:#F0EEF8; --line:#E3E0EE; --tx:#16131F; --mu:#5F5A72;
-  --pk:#6A4BFF; --pk2:#5A3EE8; --on-pk:#FFFFFF; --field:#FFFFFF; --glass:rgba(255,255,255,.88); --glass-solid:#FFFFFF;
-  --hi:#5E9E00; --mid:#7E62FF; --warm:#9C86FF; --lo:#F0476A;
+  --frame:#FFFFFF; --frame-bg:#FFFFFF;
+  --bg:#FFFFFF; --s1:#F4F4F5; --s2:#EBEBEE; --line:#E4E4E8; --tx:#141416; --mu:#5C5C66;
+  --pk:#141416; --pk2:#141416; --on-pk:#FFFFFF; --field:#FFFFFF; --glass:#F4F4F5; --glass-solid:#F4F4F5;
+  --hi:#5E9E00; --mid:#A86A00; --warm:#C2410C; --lo:#F0476A;
   --art-bg:radial-gradient(circle at 75% 35%,#6A4BFF,#2A1F5C 55%,#1A1433);
   --art-tint:linear-gradient(200deg,transparent 50%,rgba(106,75,255,.18));
   --title:#fff; --title-shadow:0 0 30px rgba(106,75,255,.5);
   color-scheme:light;
 }
 html[data-skin="sombre"]{
-  --frame:#0C0A14; --frame-bg:#0C0A14;
-  --bg:#0C0A14; --s1:#16131F; --s2:#201C2C; --line:#2D2840; --tx:#F4F2FA; --mu:#A9A4BC;
-  --pk:#7856FF; --pk2:#B9A6FF; --on-pk:#FFFFFF; --field:#100E19; --glass:rgba(22,19,31,.88); --glass-solid:#16131F;
-  --hi:#D4FF3F; --mid:#E2FF8F; --warm:#B9A6FF; --lo:#FF5A7A;
+  --frame:#000000; --frame-bg:#000000;
+  --bg:#000000; --s1:#141416; --s2:#1F1F23; --line:#2C2C31; --tx:#F4F4F5; --mu:#A6A6B0;
+  --pk:#F4F4F5; --pk2:#FFFFFF; --on-pk:#111113; --field:#0B0B0D; --glass:#141416; --glass-solid:#141416;
+  --hi:#D4FF3F; --mid:#FFC23D; --warm:#FF8A3D; --lo:#FF5A7A;
   --fd:'Outfit',sans-serif; --fdw:700; --fb:'Inter','Segoe UI',sans-serif; --case:none;
   --rf:28px; --rc:18px; --ri:12px; --r:24px;
   --art-bg:radial-gradient(circle at 75% 35%,#6A4BFF,#241B4D 55%,#0C0A14);
@@ -2675,6 +2676,60 @@ dialog.sheet[open]{ display:flex; flex-direction:column; animation:sheetIn .3s c
 .ps-tile:focus-visible,.ps-x:focus-visible{ outline:2px solid var(--pk); outline-offset:-2px; }
 .ps-foot{ flex:none; padding:10px 12px 0; } .ps-send{ width:100%; min-height:50px; font-size:16px; }
 </style>
+<style id="coopo-uni">
+/* ==== Thèmes Coopô (clair) et Sombre en couleurs unies (23 novembre 2026, choix d'Aki : « noir et blanc ») ====
+   Plus de décor dessiné (ciel, ville, sol, particules) : un fond d'une seule couleur, des cartes à peine plus foncées (ou plus claires),
+   des boutons pleins sans reflet. Le citron reste pour « Je suis dispo » et le point « en ligne ». Les autres thèmes ne changent pas.
+   --scrim, --scrim2, --w-top : la couleur du « monde » devient celle du fond (barre du téléphone, en-tête, bas de page). */
+html:is([data-skin="defaut"],[data-skin="sombre"]){ --w-v:0; --w-sh:0; --w-halo:none; background:var(--bg) !important; }
+html[data-skin="defaut"]{ --scrim:255,255,255; --scrim2:255,255,255; --w-top:255,255,255; --cta-b:#141416; --cta-t:#FFFFFF; --hair:#E4E4E8; --sp-a:212,255,63; --sp-b:20,20,22; }
+html[data-skin="sombre"]{ --scrim:0,0,0; --scrim2:0,0,0; --w-top:0,0,0; --cta-b:#F4F4F5; --cta-t:#111113; --hair:#2C2C31; --sp-a:212,255,63; --sp-b:160,160,170; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) body{ background:var(--bg) !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) :is(#world,#world-top,#ground,#fx){ display:none !important; }
+/* textes qui étaient posés sur le décor (blancs avec un halo) : la couleur du texte du thème */
+html:is([data-skin="defaut"],[data-skin="sombre"]) body :is(.page-head h2,.page-head p,.wrap.page > h3,.home-sec > .dispo-head h3,.dispo-sec > .dispo-empty,.home-sec .linkbtn,.back,.sort-lbl,.pulse > b,.count,.count .linklike,.wrap.page > .hint,.foot,.foot a, .chat-who b,.chat-who .muted,.chat-who .online,.pp-head h1,.pp-meta,.pp-meta .muted,.pp-meta .rejoue,.pp-meta .online,.wl-hero h1,.wl-hero p,.wl-cap,.wl-legal,.wl-legal a,.wl-cta .linkbtn,.top-right,.top-right small,.top-right a){ color:var(--tx) !important; text-shadow:none !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) body :is(.page-head p,.dispo-sec > .dispo-empty,.wl-hero p,.foot,.foot a,.wl-cap,.wl-legal,.pp-meta .muted,.chat-who .muted,.sort-lbl,.pulse > b,.wrap.page > .hint){ color:var(--mu) !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) body :is(.on-world,.shop-cur label,.shop-sec > h3){ color:var(--tx) !important; text-shadow:none !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) body .shop-sec > p{ color:var(--mu) !important; text-shadow:none !important; }
+/* en-tête : fond uni quand la page défile, boutons de la cloche, de l'inventaire et de la boutique sur une pastille */
+html:is([data-skin="defaut"],[data-skin="sombre"]) .top::before{ background:var(--bg) !important; -webkit-backdrop-filter:none !important; backdrop-filter:none !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .top :is(.notif-btn,.skin-btn,.inv-btn){ background:var(--s1) !important; color:var(--tx) !important; border:1px solid var(--line) !important; box-shadow:none !important; -webkit-backdrop-filter:none !important; backdrop-filter:none !important; }
+/* accueil : plus de dessin au-dessus du bonjour, il remonte */
+html:is([data-skin="defaut"],[data-skin="sombre"]) .mh{ min-height:0 !important; padding-top:6px !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .mh :is(.mh-hello,h1){ color:var(--tx) !important; text-shadow:none !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) :is(.mh .mh-online,.pill-live,.wl-kicker){ background:var(--s1) !important; color:var(--tx) !important; border:1px solid var(--line) !important; -webkit-backdrop-filter:none !important; backdrop-filter:none !important; }
+/* en-tête des conversations : posé sur la barre de la conversation */
+html:is([data-skin="defaut"],[data-skin="sombre"]) body .chat-head :is(.chat-who b,.chat-who .online,.back){ color:var(--tx) !important; text-shadow:none !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) body .chat-head .chat-who .muted{ color:var(--mu) !important; text-shadow:none !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .form-actions{ background:var(--bg) !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .back:hover{ background:var(--s2) !important; }
+/* boutons pleins : plus de reflet ni d'ombre en dégradé */
+html:is([data-skin="defaut"],[data-skin="sombre"]) .btn{ background-image:none !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .btn::after{ display:none !important; }
+/* pastilles de tri et d'onglets, jeux du moment : sur une carte, plus en verre sur le décor */
+html:is([data-skin="defaut"],[data-skin="sombre"]) :is(.sort-row,.board-tabs) .chip:not([aria-pressed="true"]), html:is([data-skin="defaut"],[data-skin="sombre"]) .pulse-chip:not(.on){ background:var(--s1) !important; border-color:var(--line) !important; color:var(--tx) !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .pulse-chip:not(.on) i{ color:var(--mu) !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .board-tabs .chip:not([aria-pressed="true"]) .cnt{ background:var(--tx) !important; color:var(--bg) !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .top-right{ background:var(--s1) !important; border-color:var(--line) !important; }
+/* fiche d'un joueur : « dispo maintenant » et l'étiquette modérateur */
+html:is([data-skin="defaut"],[data-skin="sombre"]) .pp-dispo{ background:var(--s1) !important; border-color:var(--line) !important; color:var(--tx) !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .pp-dispo em{ color:var(--mu) !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .pp-meta .mod-tag{ background:var(--tx) !important; color:var(--bg) !important; }
+/* page d'arrivée (hors connexion) : fond uni, sans la scène dessinée */
+html:is([data-skin="defaut"],[data-skin="sombre"]) .showcase{ background:var(--bg) !important; color:var(--tx); }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .showcase .cscene{ display:none !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .sc-text h1{ color:var(--tx) !important; text-shadow:none !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .sc-text p{ color:var(--mu) !important; text-shadow:none !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .sc-stat{ background:var(--s1) !important; border-color:var(--line) !important; -webkit-backdrop-filter:none !important; backdrop-filter:none !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .sc-stat span{ color:var(--tx) !important; }
+html[data-skin="defaut"] .sc-stat b{ color:#3F7D00 !important; }
+/* écran d'ouverture : fond uni, la planète et le nom à la couleur du texte */
+html:is([data-skin="defaut"],[data-skin="sombre"]) .sp-veil{ background:var(--bg) !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) #splash{ color:var(--tx); }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .sp-fish .sp-art .sp-p{ background:var(--tx) !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) :is(.sp-name,.sp-msg,.sp-tip){ text-shadow:none !important; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) :is(.sp-msg,.sp-tip){ color:var(--mu) !important; }
+</style>
 </head>
 <body>
 <div id="splash" role="status" aria-live="polite">
@@ -4162,12 +4217,12 @@ const POND=(()=>{
   return { sync, ptr, get running(){ return on; }, get kind(){ return kind; }, get fish(){ return fish; }, get level(){ return q; } };
 })();
 const SKINS = {
-  defaut:{label:'Coopô',   desc:'Officiel : clair, violet et citron',     sw:['#F6F5FB','#FFFFFF','#6A4BFF'], art:shapesSVG},
+  defaut:{label:'Coopô',   desc:'Officiel : blanc, noir et citron',     sw:['#FFFFFF','#F4F4F5','#141416'], art:shapesSVG},
   samurai:{label:'Samouraï',  desc:'Rouge, crème et vagues japonaises', sw:['#C41E3A','#F4ECE1','#17110F'], art:samuraiSVG},
   soft:  {label:'Soft',       desc:'Rose pastel et fleurs',            sw:['#E9779E','#FFFFFF','#D9478A'], art:()=>bloomSVG()},
   lofi:  {label:'Lo-fi',      desc:'Ciel d\'été, nuages et herbes au vent', sw:['#1F86C2','#FFFFFF','#6CBF3A'], art:lofiSVG},
   esth:  {label:'Esthétique', desc:'Pastels et soleil rétro',          sw:['#C9B8FF','#FCFAFF','#8A6CF0'], art:esthSVG},
-  sombre:{label:'Sombre',     desc:'La version nuit du thème officiel',             sw:['#0C0A14','#16131F','#D4FF3F'], art:shapesSVG},
+  sombre:{label:'Sombre',     desc:'La version nuit du thème officiel',             sw:['#000000','#141416','#F4F4F5'], art:shapesSVG},
   ocean: {label:'Lotus',      desc:'Nénuphars et carpes koï qui te suivent',     sw:['#0A3D62','#FFFFFF','#0B8452'], art:pondSVG, artTop:pondTopSVG},
 };
 /* ---- Boutique (prix identiques à lib/catalogue.js du serveur de paiement) ---- */
