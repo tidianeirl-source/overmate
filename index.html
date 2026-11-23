@@ -2730,6 +2730,177 @@ html:is([data-skin="defaut"],[data-skin="sombre"]) .sp-fish .sp-art .sp-p{ backg
 html:is([data-skin="defaut"],[data-skin="sombre"]) :is(.sp-name,.sp-msg,.sp-tip){ text-shadow:none !important; }
 html:is([data-skin="defaut"],[data-skin="sombre"]) :is(.sp-msg,.sp-tip){ color:var(--mu) !important; }
 </style>
+<style id="coopo-affiches">
+/* ==== v17 — Accueil en affiches : de grandes cartes de couleur qu'on fait glisser du doigt ====
+   Les couleurs viennent du thème : une affiche sur deux prend la couleur des boutons (--pk), l'autre une couleur d'appoint.
+   Thèmes Coopô et Sombre : noir (ou blanc la nuit) et citron. Rien en 3D : du HTML et du dessin vectoriel, léger sur les petits téléphones. */
+.aff-wrap{ position:relative; margin-top:8px; }
+.aff-track{ display:flex; gap:10px; overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory; overscroll-behavior-x:contain; scrollbar-width:none; -webkit-overflow-scrolling:touch; border-radius:30px; outline:none; }
+.aff-track::-webkit-scrollbar{ display:none; }
+.aff{ --af-bg:var(--pk); --af-tx:var(--on-pk,#fff); --af-cta:var(--on-pk,#fff); --af-cta-tx:var(--pk); --af-live:#22C55E;
+  flex:0 0 100%; scroll-snap-align:center; scroll-snap-stop:always; position:relative; box-sizing:border-box; display:flex; flex-direction:column; min-width:0;
+  height:clamp(380px,calc(100vh - 256px),580px); height:clamp(380px,calc(100svh - 256px),580px); padding:16px 18px 20px; border-radius:30px; overflow:hidden;
+  background:var(--af-bg); color:var(--af-tx); }
+.aff.alt{ --af-bg:var(--s2); --af-tx:var(--tx); --af-cta:var(--tx); --af-cta-tx:var(--bg); --af-live:#0B7A3B; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .aff.alt{ --af-bg:#D4FF3F; --af-tx:#141416; --af-cta:#141416; --af-cta-tx:#FFFFFF; }
+html:is([data-skin="defaut"],[data-skin="sombre"]) .af-p{ color:var(--af-mu); }   /* noir, blanc et citron : assez de contraste pour un texte un peu plus doux */
+.aff{ --af-mu:color-mix(in srgb,var(--af-tx) 82%,var(--af-bg)); --af-line:color-mix(in srgb,var(--af-tx) 24%,transparent); --af-soft:color-mix(in srgb,var(--af-tx) 10%,transparent); }
+.af-art{ position:relative; flex:1 1 auto; min-height:0; display:grid; place-items:center; container-type:size; }
+.af-body{ flex:none; display:flex; flex-direction:column; align-items:center; text-align:center; min-width:0; }
+.af-tag{ position:absolute; top:0; left:0; z-index:2; padding:7px 12px; border-radius:999px; background:var(--af-tx); color:var(--af-bg); font:700 12px/1 var(--fb); letter-spacing:.01em; white-space:nowrap; }
+.af-dots{ display:flex; justify-content:center; gap:6px; margin:12px 0 12px; }
+.af-dots button{ width:7px; height:7px; padding:0; border:0; border-radius:99px; background:var(--af-line); cursor:pointer; transition:width .25s cubic-bezier(.23,1,.32,1), background-color .25s ease; }
+.af-dots button.on{ width:22px; background:var(--af-tx); }
+.aff .af-h{ margin:0; max-width:100%; font:var(--fdw) 27px/1.08 var(--fd); letter-spacing:-.02em; text-transform:var(--case); color:inherit; text-wrap:balance; overflow-wrap:anywhere;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+html[data-skin="samurai"] .aff .af-h{ letter-spacing:.01em; }
+.aff .af-h::before,.aff .af-h::after{ content:none; }   /* pas de décor de titre du thème (étoile d'Esthétique…) sur les affiches */
+.af-p{ margin:8px 0 0; max-width:32ch; font-size:15px; line-height:1.4; color:var(--af-tx); text-wrap:balance; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.af-cta{ margin-top:16px; display:inline-flex; align-items:center; justify-content:center; min-height:48px; max-width:100%; padding:0 26px; border:0; border-radius:999px; background:var(--af-cta); color:var(--af-cta-tx);
+  font:700 15px/1.15 var(--fb); text-decoration:none; text-align:center; cursor:pointer; -webkit-tap-highlight-color:transparent; transition:transform .16s cubic-bezier(.23,1,.32,1); }
+.af-cta:active{ transform:scale(.97); }
+.aff .af-cta:focus-visible{ outline:3px solid var(--af-tx); outline-offset:3px; }
+/* — le radar de « Qui est dispo » — */
+.af-radar{ position:relative; width:230px; height:230px; width:min(100cqw,100cqh,330px); height:min(100cqw,100cqh,330px); }
+.af-rg{ position:absolute; inset:0; margin:auto; border-radius:50%; border:1.5px solid var(--af-line); }
+.af-rg.r1{ width:44%; height:44%; } .af-rg.r2{ width:72%; height:72%; } .af-rg.r3{ width:100%; height:100%; border-style:dashed; }
+.af-sweep{ position:absolute; inset:0; border-radius:50%; background:conic-gradient(from 0deg,transparent 0 290deg,var(--af-soft) 360deg); opacity:0; }
+.aff.on .af-sweep{ opacity:1; animation:afSweep 5s linear infinite; }
+@media (prefers-reduced-motion:reduce){ .af-sweep{ display:none; } } html.lite .af-sweep{ display:none; }
+@keyframes afSweep{ to{ transform:rotate(1turn); } }
+.af-me,.af-rp{ position:absolute; transform:translate(-50%,-50%); line-height:0; }
+.af-me{ left:50%; top:50%; }
+.af-me .av,.af-rp .av{ border-radius:50% !important; box-shadow:0 0 0 3px var(--af-bg); }
+.af-rp .av{ width:min(46px,19cqmin) !important; height:min(46px,19cqmin) !important; font-size:min(16px,7cqmin) !important; }   /* le radar rapetisse sur les petits écrans : les photos aussi */
+.af-me .av{ width:min(76px,31cqmin) !important; height:min(76px,31cqmin) !important; font-size:min(27px,11cqmin) !important; }
+.af-rp0{ left:76%; top:22%; } .af-rp1{ left:16%; top:36%; } .af-rp2{ left:31%; top:86%; } .af-rp3{ left:93%; top:60%; } .af-rp4{ left:50%; top:7%; } .af-rp5{ left:74%; top:91%; }
+.af-on{ position:absolute; right:1px; bottom:1px; width:12px; height:12px; border-radius:50%; background:var(--af-live); box-shadow:0 0 0 2.5px var(--af-bg); }
+.af-rq{ display:grid; place-items:center; width:44px; height:44px; width:min(44px,19cqmin); height:min(44px,19cqmin); border-radius:50%; border:1.5px dashed var(--af-line); font:700 17px/1 var(--fb); color:var(--af-mu); background:var(--af-bg); }
+/* — l'appel à plusieurs — */
+.af-call{ position:relative; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; width:min(100%,280px); margin-bottom:18px; }
+.af-tile{ display:grid; justify-items:center; align-content:center; gap:6px; min-width:0; height:88px; height:min(108px,calc(50cqh - 22px)); padding:6px; border-radius:20px; background:var(--af-soft); }
+.af-tile .av{ width:46px !important; height:46px !important; font-size:16px !important; }
+.af-tile b{ max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font:600 12px/1.2 var(--fb); }
+.af-tile.talk .av{ box-shadow:0 0 0 3px var(--af-bg),0 0 0 5px var(--af-live); }
+.af-tile.add{ background:none; border:1.5px dashed var(--af-line); }
+.af-tile.add i{ display:grid; place-items:center; width:42px; height:42px; border-radius:50%; background:var(--af-soft); font:600 24px/1 var(--fb); font-style:normal; }
+.af-ph{ position:absolute; left:50%; bottom:-18px; transform:translateX(-50%); display:grid; place-items:center; width:48px; height:48px; border-radius:50%; background:#16A34A; color:#fff; box-shadow:0 0 0 4px var(--af-bg); }
+.af-ph svg{ width:24px; height:24px; }
+/* — le tournoi, le cadeau, l'astuce — */
+.af-cup,.af-gift,.af-tip{ position:relative; display:grid; place-items:center; }
+.af-cup svg,.af-gift svg{ width:150px; height:150px; width:min(150px,72cqh); height:min(150px,72cqh); }
+.af-gift svg{ width:min(150px,calc(100cqh - 50px)); height:min(150px,calc(100cqh - 50px)); }
+.af-date{ position:absolute; right:-14px; bottom:4px; display:grid; justify-items:center; min-width:58px; padding:8px 10px; border-radius:16px; background:var(--af-tx); color:var(--af-bg); font:700 12px/1.1 var(--fb); text-transform:uppercase; }
+.af-date b{ font:var(--fdw) 24px/1 var(--fd); }
+.af-slots{ display:flex; gap:8px; margin-top:8px; }
+.af-slots i{ display:grid; place-items:center; width:34px; height:34px; border-radius:50%; border:1.5px dashed var(--af-line); font:700 13px/1 var(--fb); font-style:normal; color:var(--af-mu); }
+.af-slots i.ok{ border:0; background:var(--af-tx); color:var(--af-bg); }
+.af-tip{ width:150px; height:150px; width:min(160px,88cqh); height:min(160px,88cqh); border-radius:50%; background:var(--af-soft); }
+.af-tip svg{ width:56%; height:56%; }
+/* — les plaques — */
+.af-plq{ display:grid; gap:8px; width:min(100%,290px); }
+.af-plq .plq-demo{ min-height:50px; padding:7px 10px; border-radius:14px; background:var(--af-bg); color:var(--af-tx); box-shadow:0 10px 22px -14px rgba(0,0,0,.5); }
+.af-plq .plq-demo:nth-child(1){ transform:rotate(-3deg); } .af-plq .plq-demo:nth-child(2){ transform:translateX(10px) rotate(2deg); } .af-plq .plq-demo:nth-child(3){ transform:rotate(-1deg); }
+/* — le noir et blanc : deux petits écrans — */
+.af-look{ position:relative; display:flex; align-items:center; justify-content:center; height:100%; max-height:200px; }
+.af-mp{ position:relative; display:flex; flex-direction:column; gap:7px; width:96px; height:170px; padding:14px 11px; box-sizing:border-box; border-radius:20px; box-shadow:0 18px 30px -16px rgba(0,0,0,.55); }
+.af-mp.lt{ background:#FFFFFF; transform:rotate(-7deg) translateX(10px); border:1.5px solid #E4E4E8; }
+.af-mp.dk{ background:#000000; transform:rotate(6deg) translate(-10px,10px); border:1.5px solid #3A3A40; z-index:1; }
+.af-mp i{ display:block; flex:none; border-radius:6px; }
+.af-mp .mp-a{ width:24px; height:24px; border-radius:50%; }
+.af-mp .mp-l{ height:8px; width:80%; } .af-mp .mp-l.s{ width:55%; }
+.af-mp .mp-c{ height:26px; border-radius:8px; }
+.af-mp .mp-b{ margin-top:auto; height:18px; border-radius:99px; background:#D4FF3F; }
+.af-mp.lt .mp-a,.af-mp.lt .mp-l{ background:#141416; } .af-mp.lt .mp-c{ background:#F4F4F5; }
+.af-mp.dk .mp-a,.af-mp.dk .mp-l{ background:#F4F4F5; } .af-mp.dk .mp-c{ background:#1F1F23; }
+/* — petit téléphone : quand le dessin a peu de hauteur, il se resserre — */
+@container (max-height:200px){
+  .af-tile{ gap:0; } .af-tile b{ display:none; }
+  .af-tile .av{ width:min(40px,calc(50cqh - 24px)) !important; height:min(40px,calc(50cqh - 24px)) !important; font-size:12px !important; }
+  .af-tile.add i{ width:30px; height:30px; font-size:18px; }
+  .af-call{ gap:6px; margin-bottom:12px; }
+  .af-ph{ width:38px; height:38px; bottom:-12px; } .af-ph svg{ width:19px; height:19px; }
+  .af-plq .plq-demo:nth-child(3){ display:none; }
+  .af-look{ transform:scale(.74); }
+}
+@container (max-height:150px){
+  .af-tag{ display:none; }
+  .af-plq .plq-demo:nth-child(2){ display:none; }
+  .af-look{ transform:scale(.62); }
+}
+@media (max-width:860px) and (max-height:700px){
+  .aff .af-h{ font-size:23px; }
+  .af-p{ font-size:14px; line-height:1.35; }
+  .af-dots{ margin:8px 0 9px; }
+  .af-cta{ margin-top:12px; min-height:44px; }
+}
+/* — flèches (ordinateur et souris seulement : au doigt, on glisse) — */
+.aff-nav{ display:none; }
+@media (hover:hover) and (pointer:fine){
+  .aff-nav{ position:absolute; top:50%; z-index:3; display:grid; place-items:center; width:44px; height:44px; margin-top:-22px; padding:0; border:1px solid var(--line); border-radius:50%;
+    background:var(--bg); color:var(--tx); cursor:pointer; box-shadow:0 10px 24px -14px rgba(0,0,0,.45); transition:opacity .2s ease, transform .16s cubic-bezier(.23,1,.32,1); }
+  .aff-nav svg{ width:20px; height:20px; }
+  .aff-nav:active{ transform:scale(.94); }
+  .aff-nav:disabled{ opacity:0; pointer-events:none; }
+  .aff-prev{ left:-14px; } .aff-next{ right:-14px; }
+}
+/* — téléphone : les affiches vont d'un bord à l'autre, on voit dépasser la suivante — */
+@media (max-width:860px){
+  .aff-wrap{ width:auto; margin-inline:calc(50% - 50vw); }
+  .aff-track{ padding-inline:20px; scroll-padding-inline:20px; border-radius:0; }
+  .home .mh{ min-height:clamp(96px,16vh,150px); padding-top:6px; }   /* thèmes illustrés : un peu de décor reste visible au-dessus des affiches (Coopô et Sombre : le bonjour seul) */
+  html:not([data-skin="defaut"]):not([data-skin="sombre"]) .aff{ height:clamp(360px,calc(100vh - 300px),560px); height:clamp(360px,calc(100svh - 300px),560px); }   /* … et l'affiche tient en entier au-dessus de la barre du bas */
+  html:is([data-skin="defaut"],[data-skin="sombre"]) .mh-body h1:not(.long){ font-size:clamp(26px,8vw,34px); }
+}
+/* — ordinateur : l'affiche en largeur, le texte à gauche, le dessin à droite — */
+@media (min-width:861px){
+  .aff{ height:380px; flex-direction:row-reverse; align-items:stretch; gap:36px; padding:34px 44px; border-radius:32px; }
+  .aff-track{ border-radius:32px; }
+  .af-art{ flex:1 1 55%; position:static; }
+  .af-tag{ top:28px; right:32px; left:auto; }
+  .af-body{ flex:1 1 45%; align-items:flex-start; justify-content:center; text-align:left; }
+  .af-dots{ order:9; margin:26px 0 0; }
+  .aff .af-h{ font-size:clamp(32px,3.3vw,46px); -webkit-line-clamp:3; }
+  .af-p{ font-size:17px; max-width:36ch; }
+  .af-cta{ margin-top:24px; }
+  .af-radar{ width:290px; height:290px; }
+  .af-cup svg,.af-gift svg{ width:190px; height:190px; }
+  .af-tip{ width:210px; height:210px; }
+  .af-call{ width:340px; } .af-tile{ height:112px; } .af-tile .av{ width:54px !important; height:54px !important; font-size:19px !important; }
+  .af-plq{ width:350px; gap:10px; } .af-plq .plq-demo{ min-height:56px; }
+  .af-look{ max-height:none; transform:scale(1.3); }
+}
+/* — v17 — barre du bas du téléphone : 5 onglets, l'Accueil au milieu, plus grand ; ta photo en haut à droite ouvre ton profil — */
+.me-btn{ display:none; }
+@media (max-width:860px){
+  .tabbar{ grid-template-columns:repeat(5,minmax(0,1fr)); }
+  .tabbar a.tb-home{ overflow:visible; }
+  .tabbar .tb-home .tb-ico{ width:58px; max-width:none; height:58px; margin:-30px 0 2px; border-radius:50%; background:var(--s2); color:var(--tx); box-shadow:0 0 0 5px var(--s1),0 10px 22px -12px rgba(12,10,28,.55); }
+  .tabbar .tb-home svg{ width:27px; height:27px; }
+  .tabbar .tb-home[aria-current="page"] .tb-ico{ background:var(--pk); color:var(--on-pk); box-shadow:0 0 0 5px var(--s1),0 12px 24px -10px color-mix(in srgb,var(--pk) 80%,transparent); }
+  .tabbar .tb-home:active .tb-ico{ transform:scale(.92); }
+  @media (max-width:400px){ .tabbar a{ font-size:11px; } .tabbar .tb-ico{ width:50px; } html[data-skin="samurai"] .tabbar a{ font-size:10px; } }
+  @media (max-width:340px){ .tabbar a{ font-size:10px; } .tabbar .tb-ico{ width:44px; } html[data-skin="samurai"] .tabbar a{ font-size:9px; } }
+  .frame{ padding-bottom:118px; }
+  body.has-profile .me-btn{ display:grid; }
+  .me-btn{ place-items:center; flex:none; width:44px; height:44px; border-radius:50%; text-decoration:none; -webkit-tap-highlight-color:transparent; transition:transform .16s cubic-bezier(.23,1,.32,1); }
+  .me-btn .av{ width:38px !important; height:38px !important; font-size:14px !important; box-shadow:0 0 0 1px var(--line); }
+  .me-btn[aria-current="page"] .av{ box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--tx); }
+  .me-btn:active{ transform:scale(.94); }
+  .top .me-btn{ margin-left:auto; }
+  body[data-route="accueil"] .top .me-btn{ margin-left:0; }
+  /* Pages où la barre du haut n'a rien d'autre que ta photo : elle se pose à droite de la première ligne de la page, sans ajouter de hauteur */
+  body:not([data-route="accueil"]):not([data-route="profil"]):not([data-route="parametres"]):not([data-route="boutique"]):not([data-route="inventaire"]) .top{ position:relative; }
+  body:not([data-route="accueil"]):not([data-route="profil"]):not([data-route="parametres"]):not([data-route="boutique"]):not([data-route="inventaire"]) .top .me-btn{ position:absolute; top:calc(100% + 8px); right:4px; margin:0; }
+  /* une souris sur un écran étroit : les flèches restent dans l'écran */
+  @media (hover:hover) and (pointer:fine){ .aff-prev{ left:6px; } .aff-next{ right:6px; } }
+}
+/* Messages sur un petit téléphone : le titre, 3 boutons et ta photo tiennent sur une ligne */
+@media (max-width:400px){ .page-head.sn-top{ gap:6px; } .sn-top .sn-round,.sn-top .me-btn{ width:40px; height:40px; } .sn-top .me-btn .av{ width:36px !important; height:36px !important; }
+  body .page-head.sn-top h2::after{ display:none !important; }   /* le petit décor après le titre laisse la place */
+  html[data-skin="samurai"] .sn-top h2{ font-size:22px; } }   /* « MESSAGES » en capitales espacées est plus large */
+@media (max-width:340px){ .sn-top a.sn-round[href="#/matchs"]{ display:none; } }   /* Matchs reste dans la barre du bas */
+</style>
 </head>
 <body>
 <div id="splash" role="status" aria-live="polite">
@@ -2770,6 +2941,7 @@ setTimeout(function(){try{if(SPLASH.armed)return;}catch(e){}if(!s)return;s.class
   <button class="notif-btn" type="button" aria-label="Notifications" title="Notifications"></button>
   <button class="inv-btn skin-btn" type="button" aria-label="Inventaire : mes thèmes et plaques" title="Inventaire" data-inv-go></button>
   <button class="skin-btn" type="button" aria-label="Boutique : thèmes et plaques" title="Boutique"></button>
+  <a class="me-btn" href="#/profil" aria-label="Mon profil" title="Mon profil"></a>
 </header>
 <main id="app" tabindex="-1"></main>
 <div class="install-foot" data-install-foot hidden><button class="btn btn-ac" type="button" data-install-go><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M12 7v7m-3-3 3 3 3-3M10 18h4"/></svg>Installer l'application</button></div>
@@ -2991,9 +3163,11 @@ function updateFavicon(){ const draw=()=>{ try{ const cs=getComputedStyle(docume
   let l=document.querySelector('link[rel="icon"]'); if(!l){ l=document.createElement('link'); l.rel='icon'; document.head.appendChild(l); } l.type='image/png'; l.href=c.toDataURL('image/png'); }catch(e){} };
   _favImg.complete ? draw() : _favImg.onload=draw; }
 // 6 onglets : la recherche se range dans Matchs, les réglages dans Profil. « groupes » = la Communauté (ancien nom), « groupe » = l'onglet Groupes.
+// v17 — sur téléphone, 5 onglets : l'Accueil au milieu (et plus grand) ; le Profil s'ouvre avec ta photo, en haut à droite de chaque page.
 const NAV=[['accueil','Accueil'],['matchs','Matchs'],['groupes','Communauté'],['messages','Messages'],['groupe','Groupes'],['profil','Profil']];
 const NAV_PARENT={recherche:'matchs',parametres:'profil',boutique:'profil',inventaire:'profil','faux-paiement':'profil',paiement:'profil',aide:'profil',contact:'profil',app:'profil',cgu:'profil',confidentialite:'profil',cookies:'profil',remboursement:'profil',moderation:'profil'};   // page secondaire → onglet allumé
 const TAB_LBL={groupes:'Commu'};
+const NAV_PHONE=['matchs','groupes','accueil','messages','groupe'];
 function renderNav(active){
   const navItems = isAdmin() ? [...NAV,['moderation','Modération']] : NAV;
   const top = navItems.some(([r])=>r===active) ? active : (NAV_PARENT[active]||active);   // menu du haut (ordinateur) : « Modération » y a son propre onglet
@@ -3011,7 +3185,11 @@ function renderNav(active){
   const online=visible().filter(p=>isOnline(p)).length;
   const liveTxt = online ? `${online} joueur${online>1?'s':''} en ligne` : (S.auth ? 'Bienvenue sur Coopô' : 'Nouveau : rejoins les premiers');
   document.querySelectorAll('.top-right').forEach(t=>t.innerHTML=`<span class="live">${liveTxt}</span><small>${S.auth?'connecté : '+esc(S.me?.name||S.auth.name):S.me?'profil : '+esc(S.me.name):'<a href="#/connexion">se connecter</a>'}</small>`);
-  document.getElementById('tabbar').innerHTML = NAV.map(([r,l])=>`<a href="#/${r}" data-nav="${r}" ${cur(r)}><i class="tb-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[r]}</svg></i><span>${TAB_LBL[r]||l}</span></a>`).join('');
+  const lbl=Object.fromEntries(NAV);
+  document.getElementById('tabbar').innerHTML = NAV_PHONE.map(r=>`<a href="#/${r}" data-nav="${r}" ${cur(r)}${r==='accueil'?' class="tb-home"':''}><i class="tb-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[r]}</svg></i><span>${TAB_LBL[r]||lbl[r]}</span></a>`).join('');
+  // Ta photo, en haut à droite (téléphone) : elle ouvre ton profil, entourée quand tu y es
+  const meAv=S.me?avatar(publicMe(),38):'';
+  document.querySelectorAll('.me-btn').forEach(b=>{ b.innerHTML=meAv; if(active==='profil') b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
   renderNotifBadge();
 }
 const app=document.getElementById('app');
@@ -3108,18 +3286,141 @@ function viewHome(){
   if(DB.live&&S.me&&DB._loaded){ DB.refreshPlayers().then(changed=>{ if(changed&&(location.hash==='#/accueil'||location.hash===''||location.hash==='#/')) refreshAfterData(); }).catch(()=>{}); }
   const featured = S.me ? ranked().slice(0,3) : [];
   // Accueil allégé : un bandeau court, ce qu'il y a à traiter, qui est dispo, les meilleurs matchs, un mot de la communauté. Le reste vit dans son onglet.
-  app.innerHTML = `<div class="home">${homeBannerHTML()}
+  if(!document.getElementById('aff-track')) AFF.i=0;   // v17 — on arrive sur l'accueil : la première affiche ; la page se redessine (nouvelles données) : on reste sur la même
+  app.innerHTML = `<div class="home">${homeBannerHTML()}${affHTML()}
   <div class="wrap home-top">${todoStrip()}${dispoSection()}${bestMatchesHTML(featured)}${boardsTeaser()}</div></div>`;
+  affWire();
 }
-// Bandeau d'accueil : le dessin du thème en fond, un bonjour, le nombre de joueurs en ligne
+// Bandeau d'accueil : le dessin du thème en fond et un bonjour (v17 : le nombre de joueurs en ligne est passé sur la première affiche)
 function homeBannerHTML(){
-  const online=visible().filter(p=>isOnline(p)).length;
   const h=new Date().getHours(), hello = h<5?'Bonsoir':h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir';
   return `<section class="mh" id="showcase">
-    <div class="mh-body"><p class="mh-hello">${hello},</p><h1${S.me&&S.me.name.length>12?' class="long"':''}>${esc(S.me?S.me.name:'bienvenue')}</h1>
-      <p class="mh-online">${online?`<i class="dot-live"></i>${online} joueur${online>1?'s':''} en ligne`:'Invite tes amis pour jouer ensemble'}</p></div>
+    <div class="mh-body"><p class="mh-hello">${hello},</p><h1${S.me&&S.me.name.length>12?' class="long"':''}>${esc(S.me?S.me.name:'bienvenue')}</h1></div>
   </section>`;
 }
+/* ---- v17 — Accueil en affiches : de grandes cartes de couleur qu'on fait glisser du doigt (infos en direct, nouveautés, astuces) ----
+   Une affiche = un dessin, un titre, une phrase et un bouton. Ordre : qui est dispo, le prochain tournoi, les nouveautés, le parrainage, une astuce.
+   Pour en ajouter une : un objet de plus dans affList() { id, tag, art, title, text, cta:[texte du bouton, attributs du lien ou du bouton] }.
+   Une nouveauté disparaît toute seule après sa date « until ». */
+const AFF={ i:0, at:0, down:false, t:0 };   // i : l'affiche regardée (gardée quand la page se redessine) · at, down : le doigt fait glisser les affiches
+const affBusy = () => AFF.down || Date.now()-AFF.at < 900;   // pendant un glissement, la page attend avant de se redessiner
+const affNew = until => Date.now() < Date.parse(until+'T23:59:59Z');
+const AF_SVG = (d,w=2.2) => `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const AF_ART = {
+  trophy:'<path d="M20 10h24v14a12 12 0 0 1-24 0z"/><path d="M20 14h-7v3a8 8 0 0 0 8 8M44 14h7v3a8 8 0 0 1-8 8"/><path d="M32 36v8M24 54h16M27 54l1.5-10h7L37 54"/>',
+  gift:'<rect x="10" y="24" width="44" height="11" rx="2.5"/><path d="M14 35v19h36V35M32 24v30"/><path d="M32 24c-2-7-13-10-13-3.5 0 3.5 6 4 13 3.5zm0 0c2-7 13-10 13-3.5 0 3.5-6 4-13 3.5z"/>',
+  phone:'<path d="M19 13h8l4 10-5 3a22 22 0 0 0 10 10l3-5 10 4v8a4 4 0 0 1-4 4A32 32 0 0 1 15 17a4 4 0 0 1 4-4z"/>',
+  bell:'<path d="M18 42V30a14 14 0 0 1 28 0v12l5 5H13z"/><path d="M27 52a5 5 0 0 0 10 0"/>',
+  tag:'<path d="M12 20h40v24H12z"/><path d="M20 28h12M20 36h20"/><circle cx="45" cy="28" r="2.5"/>',
+  mega:'<path d="M14 26h8l20-12v36L22 38h-8z"/><path d="M22 38l4 13h6l-3-13M50 26a8 8 0 0 1 0 12"/>',
+  users:'<circle cx="24" cy="22" r="8"/><circle cx="44" cy="25" r="6"/><path d="M8 50c1.5-9 7.5-14 16-14s14.5 5 16 14M40 38c7 0 12 4 14 11"/>',
+  pin:'<path d="M26 10h12l-2 14 8 8H20l8-8z"/><path d="M32 32v20"/>'
+};
+// Le radar de « Qui est dispo » : toi au milieu, les joueurs dispo (ou en ligne) autour
+function affRadar(me,ppl){
+  const pos=ppl.slice(0,6).map((p,k)=>`<span class="af-rp af-rp${k}">${avatar(p,46)}${isOnline(p)||dispoActive(p)?'<i class="af-on"></i>':''}</span>`).join('');
+  const empty=ppl.length?'':[0,1,2].map(k=>`<span class="af-rp af-rp${k} af-rq">?</span>`).join('');
+  return `<div class="af-radar"><i class="af-rg r1"></i><i class="af-rg r2"></i><i class="af-rg r3"></i><i class="af-sweep"></i><span class="af-me">${me?avatar(me,76):''}${dispoActive(S.me)?'<i class="af-on"></i>':''}</span>${pos}${empty}</div>`;
+}
+// L'appel à plusieurs : 4 cases comme pendant un vrai appel
+function affCallArt(me){
+  const mates=matesList(), pool=(mates.length>=2||!S.me?mates:[...mates,...ranked().map(x=>x.p)]).filter((p,k,a)=>a.findIndex(q=>q.id===p.id)===k).slice(0,2);
+  const tile=(p,lbl,cls='')=>`<span class="af-tile${cls}">${avatar(p,50)}<b>${esc(lbl)}</b></span>`;
+  const tiles=[me?tile(me,'Toi',' talk'):'', ...pool.map(p=>tile(p,p.name))].filter(Boolean);
+  while(tiles.length<4) tiles.push(`<span class="af-tile add"><i>+</i><b>Ajouter</b></span>`);
+  return `<div class="af-call">${tiles.join('')}<span class="af-ph">${AF_SVG(AF_ART.phone,3)}</span></div>`;
+}
+// Deux petits écrans : Coopô en blanc et en noir
+const affLookArt = () => `<div class="af-look">${['lt','dk'].map(c=>`<span class="af-mp ${c}"><i class="mp-a"></i><i class="mp-l"></i><i class="mp-l s"></i><i class="mp-c"></i><i class="mp-c"></i><i class="mp-b"></i></span>`).join('')}</div>`;
+function affList(){
+  const me=S.me?publicMe():null, L=[];
+  const on=visible().filter(isOnline), dl=dispoList(), mine=dispoActive(S.me);
+  const nOn = on.length ? `${on.length} joueur${on.length>1?'s':''} en ligne. ` : '';
+  // 1. Qui est dispo, en direct
+  L.push({ id:'dispo', tag:'En direct', art:affRadar(me,dl.length?dl:on),
+    title: mine ? 'Tu es dispo' : dl.length ? `${dl.length} joueur${dl.length>1?'s':''} dispo maintenant` : 'Sois le premier dispo',
+    text: mine ? `Pour ${esc(S.me.dispo.game)}, jusqu'à ${fmtUntil(S.me.dispo.until)}. Les joueurs compatibles te voient en premier.`
+      : `${nOn}Dis que tu es dispo : les joueurs compatibles te verront tout de suite.`,
+    cta: mine ? ['Voir qui est dispo','data-aff-dispo'] : S.me ? ['Je suis dispo','data-dispo-go'] : ['Créer mon profil','href="#/profil"'] });
+  // 2. Le prochain tournoi ouvert
+  let t=null; try{ t=tournoisAll().find(x=>x.status==='open'&&x.date>Date.now()&&tournoiOpenTo(x)); }catch(e){}
+  if(t){ const d=new Date(t.date), day=d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}), n=(t.players||[]).length;
+    L.push({ id:'tournoi', tag:'Tournoi', art:`<div class="af-cup">${AF_SVG(AF_ART.trophy,2)}<span class="af-date"><b>${d.getDate()}</b>${esc(d.toLocaleDateString('fr-FR',{month:'short'}))}</span></div>`,
+      title:esc(t.title), text:`${esc(t.game)} · ${esc(day)} · ${n}/${+t.max||0} inscrits${t.prize?`. À gagner : ${esc(t.prize)}`:''}`, cta:['Voir le tournoi','href="#/groupes/tournois"'] }); }
+  // 3. Nouveauté : les appels à plusieurs
+  if(canCall()&&affNew('2027-01-31')) L.push({ id:'appels', tag:'Nouveau', art:affCallArt(me), title:'Appelle jusqu\'à 4 mates',
+    text:'Pendant un appel vocal, touche « Ajouter » pour faire venir un autre mate.', cta:['Ouvrir mes messages','href="#/messages"'] });
+  // 4. Les plaques illustrées : « Bientôt » tant qu'elles sont en préparation (soon:true), puis « Nouveau » jusqu'à la date
+  const pl=['koi','soleil','nuages'].filter(k=>PLATES[k]&&!RETIRED_PLATES.includes(k)), soon=pl.some(k=>PLATES[k].soon);
+  if(pl.length&&me&&(soon||affNew('2027-01-31'))){ const names=pl.map(k=>PLATES[k].label), nm=names.length>1?names.slice(0,-1).join(', ')+' et '+names[names.length-1]:names[0];
+    L.push({ id:'plaques', tag:soon?'Bientôt':'Nouveau', art:`<div class="af-plq">${pl.map(plqDemo).join('')}</div>`,
+      title:soon?'De nouvelles plaques arrivent':'Nouvelles plaques dans la boutique', text:`${esc(nm)} : ${soon?'regarde-les déjà':'essaie-les'} avec ton pseudo.`,
+      cta:[soon?'Voir l\'aperçu':'Voir les plaques','href="#/boutique/plaques"'] }); }
+  // 5. Nouveauté : le noir et blanc
+  if(affNew('2027-01-15')){ const sk=S.skin;
+    L.push({ id:'look', tag:'Nouveau', art:affLookArt(), title:'Coopô passe au noir et blanc',
+      text: sk==='defaut' ? 'Un look plus net. Envie d\'un fond noir ? Essaie le thème Sombre.' : sk==='sombre' ? 'Un look plus net, de jour comme de nuit. Le thème Coopô existe aussi en blanc.' : 'Les thèmes Coopô et Sombre ont un nouveau look, tout en noir et blanc.',
+      cta: sk==='defaut' ? ['Essayer le sombre','data-use-skin="sombre"'] : sk==='sombre' ? ['Passer en clair','data-use-skin="defaut"'] : ['Voir mes thèmes','href="#/inventaire"'] }); }
+  // 6. Le parrainage (jusqu'à ce que tous les thèmes soient débloqués)
+  const rn=(S.rewards||{}).referrals||0;
+  if(me&&rn<REF_REWARD.all){ const left=REF_REWARD.all-rn, slots=Array.from({length:REF_REWARD.all},(x,k)=>`<i class="${k<rn?'ok':''}">${k<rn?'✓':k+1}</i>`).join('');
+    L.push({ id:'parrain', tag:'Cadeau', art:`<div class="af-gift">${AF_SVG(AF_ART.gift,2)}<span class="af-slots">${slots}</span></div>`,
+      title: rn ? `Plus que ${left} ami${left>1?'s':''} pour tous les thèmes` : 'Invite un ami, gagne un thème',
+      text: rn ? `Tu as déjà invité ${rn} ami${rn>1?'s':''}. À ${REF_REWARD.all}, tu débloques tous les thèmes de la boutique.` : `Quand un ami crée son compte avec ton lien, le thème ${esc(SKINS[REF_REWARD.one].label)} est à toi. À ${REF_REWARD.all} amis : tous les thèmes.`,
+      cta:['Inviter mes amis','data-ref-share'] }); }
+  // 7. Une astuce (celles qui te servent d'abord, sinon une différente chaque jour)
+  if(L.length<7&&me){ const tips=[], hasTags=Object.values(S.me.tags||{}).some(Boolean);
+    let nt=false; try{ nt='Notification' in window&&Notification.permission!=='denied'&&!(S.notifyOn&&Notification.permission==='granted'); }catch(e){}
+    if(!hasTags) tips.push({ic:'tag',title:'Ajoute tes pseudos en jeu',text:'Tes mates te retrouvent plus vite dans la partie.',cta:['Modifier mon profil','href="#/profil/modifier"']});
+    if(nt) tips.push({ic:'bell',title:'Active les notifications',text:'Tes appels et tes messages arrivent même quand Coopô est fermée.',cta:['Ouvrir les réglages','href="#/parametres"']});
+    const daily=[{ic:'mega',title:'Publie une annonce',text:'« Je cherche 2 joueurs ce soir » : les joueurs intéressés te répondent.',cta:['Voir les annonces','href="#/groupes/annonces"']},
+      {ic:'users',title:'Crée ton groupe',text:'Un salon pour ton équipe : messages, vocaux et appels à plusieurs.',cta:['Mes groupes','href="#/groupe"']},
+      {ic:'pin',title:'Épingle tes mates préférés',text:'Dans Messages, garde le doigt sur un mate pour le garder en haut de la liste.',cta:['Ouvrir mes messages','href="#/messages"']}];
+    const tip=tips[0]||daily[Math.floor(Date.now()/864e5)%daily.length];
+    L.push({ id:'astuce', tag:'Astuce', art:`<div class="af-tip">${AF_SVG(AF_ART[tip.ic],2.2)}</div>`, title:tip.title, text:tip.text, cta:tip.cta }); }
+  return L;
+}
+const affNb = t => String(t).replace(/ ([:;!?»])/g,'\u00A0$1').replace(/« /g,'«\u00A0');   // espaces insécables du français : « Ajouter » et les deux-points restent collés au mot
+function affHTML(){
+  const L=affList(), n=L.length; if(!n) return '';
+  const dots=k=>n>1?`<div class="af-dots" aria-hidden="true">${L.map((x,j)=>`<button type="button" tabindex="-1" data-aff-to="${j}"${j===k?' class="on"':''}></button>`).join('')}</div>`:'';
+  const cta=c=>/(^|\s)href=/.test(c[1]) ? `<a class="af-cta" ${c[1]}>${c[0]}</a>` : `<button class="af-cta" type="button" ${c[1]}>${c[0]}</button>`;
+  return `<section class="wrap aff-wrap" aria-roledescription="carrousel" aria-label="À la une">
+    <div class="aff-track" id="aff-track">${L.map((x,k)=>`<article class="aff${k%2?' alt':''}" data-aff="${x.id}" aria-roledescription="affiche" aria-label="${k+1} sur ${n}${x.tag?' · '+x.tag:''}">
+      <div class="af-art" aria-hidden="true">${x.tag?`<span class="af-tag">${x.tag}</span>`:''}${x.art}</div>
+      <div class="af-body">${dots(k)}<h2 class="af-h">${affNb(x.title)}</h2><p class="af-p">${affNb(x.text)}</p>${cta(x.cta)}</div></article>`).join('')}</div>
+    ${n>1?`<button class="aff-nav aff-prev" type="button" data-aff-step="-1" aria-label="Affiche précédente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <button class="aff-nav aff-next" type="button" data-aff-step="1" aria-label="Affiche suivante"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>`:''}
+  </section>`;
+}
+// Après l'affichage : revenir sur la bonne affiche, suivre le doigt, animer seulement l'affiche visible
+function affWire(){
+  const tr=document.getElementById('aff-track'); if(!tr) return;
+  const n=tr.children.length; AFF.i=Math.max(0,Math.min(n-1,AFF.i));
+  if(AFF.i) tr.scrollLeft=AFF.i*affStep(tr);
+  affMark(tr);
+  let raf=0;
+  tr.addEventListener('scroll',()=>{ AFF.at=Date.now(); if(raf) return; raf=requestAnimationFrame(()=>{ raf=0; const i=Math.max(0,Math.min(n-1,Math.round(tr.scrollLeft/affStep(tr)))); if(i!==AFF.i){ AFF.i=i; affMark(tr); } }); },{passive:true});
+  tr.addEventListener('pointerdown',()=>{ AFF.down=true; AFF.at=Date.now(); },{passive:true});
+  ['pointerup','pointercancel','touchend'].forEach(ev=>tr.addEventListener(ev,()=>{ AFF.down=false; AFF.at=Date.now(); },{passive:true}));
+  tr.addEventListener('keydown',e=>{ if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight') return; e.preventDefault(); affGo(AFF.i+(e.key==='ArrowRight'?1:-1),true); });
+}
+const affStep = tr => tr.children.length>1 ? tr.children[1].offsetLeft-tr.children[0].offsetLeft : tr.clientWidth;
+function affMark(tr){
+  [...tr.children].forEach((a,k)=>{ a.classList.toggle('on',k===AFF.i); a.querySelectorAll('.plq-demo').forEach(d=>d.classList.toggle('plq-live',k===AFF.i)); });
+  const w=tr.closest('.aff-wrap'); if(!w) return;
+  const p=w.querySelector('.aff-prev'), x=w.querySelector('.aff-next'); if(p) p.disabled=AFF.i<=0; if(x) x.disabled=AFF.i>=tr.children.length-1;
+}
+function affGo(i,focus){
+  const tr=document.getElementById('aff-track'); if(!tr) return; i=Math.max(0,Math.min(tr.children.length-1,i));
+  AFF.at=Date.now(); tr.scrollTo({left:i*affStep(tr), behavior:reduced()?'auto':'smooth'});
+  if(focus){ const c=tr.children[i].querySelector('.af-cta'); if(c) c.focus({preventScroll:true}); }
+}
+document.addEventListener('click',e=>{
+  const to=e.target.closest('[data-aff-to]'); if(to){ affGo(+to.dataset.affTo); return; }
+  const st=e.target.closest('[data-aff-step]'); if(st){ affGo(AFF.i+(+st.dataset.affStep)); return; }
+  if(e.target.closest('[data-aff-dispo]')){ const d=document.getElementById('dispo'); if(d) d.scrollIntoView({behavior:reduced()?'auto':'smooth',block:'start'}); }
+});
 // Ce qui attend une réponse : demandes de mate reçues et messages non lus (rien ne s'affiche s'il n'y a rien)
 function todoStrip(){
   const pend=pendingReceived().length, unread=Object.values(S.unread||{}).reduce((a,b)=>a+(+b||0),0);
@@ -3378,6 +3679,7 @@ function publicMe(){ return {...S.me, online:S.privacy.online, lastSeen:Date.now
 let _lastRefresh=0;
 function refreshAfterData(){
   splashSync();   // les données sont là : l'écran d'ouverture peut se retirer
+  if(document.body.classList.contains('is-home') && affBusy()){ clearTimeout(AFF.t); AFF.t=setTimeout(refreshAfterData,950); return; }   // v17 — le doigt fait glisser les affiches : on redessine juste après
   // Un écran de chargement (squelette) est affiché : on le remplace toujours par la vraie page, quelle que soit la page
   const waiting=!!document.querySelector('#app [aria-busy="true"]');
   if(!waiting && Date.now()-_lastRefresh<800) return; _lastRefresh=Date.now();
@@ -4520,7 +4822,7 @@ function dispoSection(){
   return `<section class="home-sec dispo-sec reveal" id="dispo"><div class="dispo-head"><h3>Dispo maintenant</h3>${S.me&&list.length?`<span class="pill-live">${list.length} joueur${list.length>1?'s':''}</span>`:''}</div>${head}${body}</section>`;
 }
 document.addEventListener('click',e=>{
-  if(e.target.closest('#dispo-go')) dispoModal();
+  if(e.target.closest('#dispo-go,[data-dispo-go]')) dispoModal();
   if(e.target.closest('#dispo-stop')) dispoStop();
   const m=e.target.closest('[data-dispo-mate]'); if(m){ const p=PLAYERS.find(x=>x.id===m.dataset.dispoMate); if(p&&canAsk(p)){ sendRequest(p); route(); } }
 });
@@ -5342,7 +5644,7 @@ function snList(mates){
     return `<a class="sn-row${u?' unread':''}${plqOn(p)}" href="#/messages/${p.id}" data-f="${u?'unread ':''}${on?'online ':''}${fl?'flame':''}" data-n="${esc(String(p.name||'').toLowerCase())}">${plq(p)}<span class="sn-av">${avatar(p,56)}${on?'<span class="online" title="En ligne"></span>':''}</span><div class="sn-mid"><b><span>${esc(p.name)}</span>${modBadge(p)}${pin?PIN_SVG+'<span class="sr-only">épinglé</span>':''}</b>
       <span class="sn-st ${st[0]}">${last||u?'<i></i>':''}<span class="t">${st[1]}</span><span class="x">${last?'· '+shortAgo(last.at):''}${fl?` · ${f.count} ${f.warn?'⏳':'🔥'}`:''}</span></span></div><span class="sn-end">${u?`<span class="badge static">${u}</span>`:CHAT_SVG}</span></a>`; }).join('');
   const chip=(k,l,n)=>`<button type="button" class="chip" data-snf="${k}" aria-pressed="${k==='all'}">${l}${n?` <span class="cnt">${n}</span>`:''}</button>`;
-  return `${notifBanHTML()}<div class="page-head sn-top"><div><h2>Messages</h2></div>${canCall()&&AUTH_LIVE?`<button class="btn sn-round" type="button" data-calls aria-label="Voir mes appels" title="Mes appels">${CALLS_SVG}</button>`:''}<button class="btn sn-round" type="button" id="sn-find" aria-label="Chercher une conversation" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button><a class="btn sn-round" href="#/matchs" aria-label="Trouver de nouveaux mates" title="Trouver de nouveaux mates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9.5" cy="8" r="3.5"/><path d="M3 20c.5-3.5 3-5.5 6.5-5.5s6 2 6.5 5.5M19 7v6M16 10h6"/></svg></a></div>
+  return `${notifBanHTML()}<div class="page-head sn-top"><div><h2>Messages</h2></div>${canCall()&&AUTH_LIVE?`<button class="btn sn-round" type="button" data-calls aria-label="Voir mes appels" title="Mes appels">${CALLS_SVG}</button>`:''}<button class="btn sn-round" type="button" id="sn-find" aria-label="Chercher une conversation" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button><a class="btn sn-round" href="#/matchs" aria-label="Trouver de nouveaux mates" title="Trouver de nouveaux mates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9.5" cy="8" r="3.5"/><path d="M3 20c.5-3.5 3-5.5 6.5-5.5s6 2 6.5 5.5M19 7v6M16 10h6"/></svg></a><a class="me-btn" href="#/profil" aria-label="Mon profil" title="Mon profil">${avatar(publicMe(),38)}</a></div>
     <input class="sn-search" id="sn-q" type="search" placeholder="Chercher un mate" autocomplete="off" aria-label="Chercher un mate" hidden>
     <div class="sn-chips" role="group" aria-label="Filtrer les conversations">${chip('all','Tous')}${chip('unread','Non lus',nU)}${chip('online','En ligne')}${chip('flame','Flammes 🔥')}</div>
     ${items.length?`<div class="sn-list" id="sn-list">${rows}<p class="muted sn-none" id="sn-none" hidden>Aucune conversation ici.</p></div>${items.length>=3&&!pins().length?`<p class="muted sn-tip">Astuce : garde le doigt sur un mate (ou clic droit) pour l'épingler en haut.</p>`:''}`
@@ -6869,7 +7171,7 @@ function viewHelp(){
     ['À quoi servent les annonces ?','À trouver vite des joueurs pour une partie précise : « Je cherche 2 joueurs Free Fire ce soir ». Clique sur « Je suis partant » : l\'auteur est prévenu et reçoit une demande de mate (si l\'auteur a moins de 18 ans et toi plus, tu es seulement noté partant : c\'est lui qui choisit de t\'ajouter). Les annonces disparaissent toutes seules après la partie.'],
     ['Comment participer à un tournoi ?','Dans Communauté › Tournois, clique sur « S\'inscrire ». Ton pseudo en jeu est transmis à l\'organisateur pour qu\'il puisse t\'inviter.'],
     ['Que faire face à un comportement toxique ?','Utilise Signaler sur son profil : l\'équipe de modération examine chaque signalement. Tu peux aussi le bloquer immédiatement.'],
-    ['Comment supprimer mon compte ?','Dans Profil, puis Réglages, tout en bas. Tes données sont effacées définitivement.']];
+    ['Comment supprimer mon compte ?','Dans Profil (sur téléphone : ta photo, en haut à droite), puis Réglages, tout en bas. Tes données sont effacées définitivement.']];
   app.innerHTML=`<div class="wrap page" style="max-width:800px">${backAuto()}<div class="page-head"><div><h2>Aide</h2><p>Comment ça marche, et les questions fréquentes.</p></div></div>
     <section class="panel"><h3>Comment ça marche</h3><ol class="steps">
       <li><b>Crée ton compte</b><span>Avec Google ou un e-mail. Il faut avoir au moins ${CONFIG.minAge} ans.</span></li>
