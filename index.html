@@ -2545,6 +2545,16 @@ html.lite .stk-msg.anim{ animation:none; }
 @keyframes msgFlash{ 0%,55%{ box-shadow:0 0 0 3px color-mix(in srgb,var(--pk) 60%,transparent); } 100%{ box-shadow:0 0 0 3px transparent; } }
 .reply-x{ min-width:44px; font-size:22px; line-height:1; }
 
+/* ==== v16 — Historique des appels ==== */
+.call-line{ display:flex; align-items:center; gap:10px; min-width:0; } .call-line i{ flex:none; width:34px; height:34px; border-radius:50%; display:grid; place-items:center; background:color-mix(in srgb,currentColor 14%,transparent); } .call-line svg{ width:18px; height:18px; }
+.call-line b{ display:block; font-size:14px; line-height:1.25; } .call-line small{ display:block; font-size:12px; opacity:.8; font-weight:500; }
+.call-line.bad i{ color:#E5484D; background:color-mix(in srgb,#E5484D 16%,transparent); } .bubble.me .call-line.bad i{ color:inherit; background:color-mix(in srgb,currentColor 14%,transparent); }
+.cl-list{ display:flex; flex-direction:column; gap:2px; margin-top:12px; max-height:60vh; overflow:auto; }
+.cl-row{ display:flex; align-items:center; gap:12px; padding:8px; border-radius:12px; color:inherit; text-decoration:none; min-height:56px; }
+.cl-row > div{ flex:1; min-width:0; } .cl-row > div > b{ display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .cl-row > div > span{ display:block; font-size:13px; } .cl-row.bad > div > span{ color:#C4343A; font-weight:700; }
+.cl-row time{ flex:none; font-size:12px; opacity:.75; }
+@media (hover:hover) and (pointer:fine){ .cl-row:hover{ background:color-mix(in srgb,var(--pk) 8%,transparent); } }
+.dm-side h3{ display:flex; align-items:center; justify-content:space-between; gap:8px; } .dm-calls{ border:0; background:none; color:inherit; cursor:pointer; padding:6px; margin:-6px; border-radius:8px; display:grid; place-items:center; } .dm-calls svg{ width:18px; height:18px; }
 /* ==== v15 — Appel à plusieurs ==== */
 #call-ov .co-who.multi{ margin-top:3vh; width:100%; }
 .co-grid{ display:flex; flex-wrap:wrap; justify-content:center; gap:18px 20px; max-width:440px; margin:0 auto; }
@@ -2841,8 +2851,8 @@ const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>
 const ring = (p,size='') => `<div class="ring ${size}${p>=80?' glow':''}" data-count="${p}" style="--p:${p};--c:${tier(p)}" role="img" aria-label="${p} % compatible"><span>${p}<small>%</small></span></div>`;
 function avatar(u,size=48){
   const a=u.avatar||{hue:260};
-  const minor = u.ageGroup==='minor' || (u.dob && ageGroup(u)==='minor');   // jamais de photo pour les 13-17 ans
-  if(a.src && !minor && /^data:image\/(png|jpeg|webp);base64,/.test(a.src)) return `<img class="av" src="${esc(a.src)}" alt="" loading="lazy" decoding="async" width="${size}" height="${size}" style="width:${size}px;height:${size}px">`;
+  // v16 — les 13-17 ans peuvent aussi mettre une photo de profil, vue par tous (décision d'Aki). Elle se signale comme un profil.
+  if(a.src && /^data:image\/(png|jpeg|webp);base64,/.test(a.src)) return `<img class="av" src="${esc(a.src)}" alt="" loading="lazy" decoding="async" width="${size}" height="${size}" style="width:${size}px;height:${size}px">`;
   return `<span class="av" aria-hidden="true" style="width:${size}px;height:${size}px;--h:${(Number(a.hue)||0)%360};font-size:${Math.round(size*.36)}px">${esc((u.name||'?').slice(0,2).toUpperCase())}</span>`;
 }
 const list = (arr,map) => arr.length ? arr.map(map).join(' • ') : '—';
@@ -3113,7 +3123,7 @@ function viewProfile(tab){
       </div>`}
       <div class="field"><span class="lbl">Avatar</span>
         <div class="avatar-pick" id="avpick">${hues.map(h=>`<button type="button" data-hue="${h}" aria-label="Avatar couleur ${h}" aria-pressed="${!draft.avatar.src&&draft.avatar.hue===h}">${avatar({name:draft.name||'Toi',avatar:{hue:h}},48)}</button>`).join('')}
-          ${ageGroup(draft)==='minor'?'<span class="hint">Les photos sont désactivées pour les 13-17 ans, pour ta sécurité.</span>':'<span class="btn btn-ghost btn-sm upload">Importer une image<input type="file" accept="image/*" id="f-av" aria-label="Importer une image d\'avatar"></span>'}
+          <span class="btn btn-ghost btn-sm upload">Importer une image<input type="file" accept="image/*" id="f-av" aria-label="Importer une image d\'avatar"></span>${ageGroup(draft)==='minor'?'<span class="hint">Ta photo est vue par tous les joueurs. Choisis-en une qui ne montre ni ton adresse, ni ton école.</span>':''}
           <span id="av-prev">${draft.avatar.src?avatar(draft,48):''}</span></div></div>
     </section>
     <section class="panel"><h3>Jeux joués</h3>
@@ -4862,7 +4872,7 @@ function clearSession(){
   DB._loaded=false; DB._checked=false; DB._notifReady=false; DB._refWait=false; DB._miss={};
   S.auth=null; S.me=null; S.rewards=null; S.owned=null;
   if(AUTH_LIVE){ try{ localStorage.removeItem('coopo_cache'); }catch(e){} PLAYERS.length=0; ADMINS.length=0; ANNONCES=[]; TOURNOIS=[];
-    S.requests=[]; S.notifs=[]; S.chats={}; S.unread={}; S.ratings={}; S.rated={}; S.blocked=[]; S.hidden=[]; S.banned=[]; S.reports=[]; S.squads=[]; S.joined=[]; S.profiles={}; S.dobs={}; S.streaks={}; S.gseen={}; S.flameSeen={}; S.flameNudged={}; S.pins=[]; S.seenBy={}; }
+    S.requests=[]; S.notifs=[]; S.chats={}; S.unread={}; S.ratings={}; S.rated={}; S.blocked=[]; S.hidden=[]; S.banned=[]; S.reports=[]; S.squads=[]; S.joined=[]; S.profiles={}; S.dobs={}; S.streaks={}; S.gseen={}; S.flameSeen={}; S.flameNudged={}; S.pins=[]; S.seenBy={}; S.callLog=[]; }
   save(); splashSync();   // plus de compte à attendre : l'écran d'ouverture se retire
 }
 function onSignedOut(){ clearSession(); applySkin('defaut'); splashSync(); if(location.hash!=='#/connexion') location.hash='#/connexion'; else route(); }
@@ -5210,7 +5220,7 @@ function lastMsg(id){ const m=(S.chats[id]||[]).slice(-1)[0]||null, n=S.notifs.f
 /* Colonne des conversations (ordinateur seulement) : les mates puis les groupes, le plus récent en haut. key = 'c:<joueur>' ou 'g:<groupe>'. */
 function dmSideInner(key){
   const mates=pinSort(matesList().sort((a,b)=>{ const la=lastMsg(a.id), lb=lastMsg(b.id); return (lb?lb.at:0)-(la?la.at:0); }));   // v15 — les mates épinglés en haut
-  return `<h3>Messages privés</h3>${mates.length?mates.map((p,i)=>{ const last=lastMsg(p.id), u=S.unread[p.id]||0;   // les plaques des 12 premières lignes sont animées (au-delà : au survol)
+  return `<h3><span>Messages privés</span>${canCall()&&AUTH_LIVE?`<button class="dm-calls" type="button" data-calls aria-label="Voir mes appels" title="Mes appels">${CALLS_SVG}</button>`:''}</h3>${mates.length?mates.map((p,i)=>{ const last=lastMsg(p.id), u=S.unread[p.id]||0;   // les plaques des 12 premières lignes sont animées (au-delà : au survol)
       return `<a class="dm-row${key==='c:'+p.id?' on':''}${u?' unread':''}${plqOn(p,i<12)}" href="#/messages/${p.id}"${key==='c:'+p.id?' aria-current="page"':''}>${plq(p)}${avatar(p,36)}<div><b><span>${esc(p.name)}</span>${isOnline(p)?'<span class="online"></span>':''}${isPinned(p.id)?PIN_SVG+'<span class="sr-only">épinglé</span>':''}</b><span class="muted">${last?esc((last.from==='me'?'Toi : ':'')+last.text):'Dis bonjour 👋'}</span></div>${u?`<span class="badge static">${u}</span>`:''}</a>`; }).join(''):'<p class="muted dm-none">Pas encore de mates.</p>'}`; }
 // Les groupes dans la colonne de gauche du site (ordinateur) : un rond par groupe, puis « + »
 function railGroups(){ if(!S.auth||!S.me) return ''; const m=location.hash.match(/^#\/groupe\/([^/?]+)/), cur=m?decodeURIComponent(m[1]):'';
@@ -5246,7 +5256,7 @@ function snList(mates){
     return `<a class="sn-row${u?' unread':''}${plqOn(p)}" href="#/messages/${p.id}" data-f="${u?'unread ':''}${on?'online ':''}${fl?'flame':''}" data-n="${esc(String(p.name||'').toLowerCase())}">${plq(p)}<span class="sn-av">${avatar(p,56)}${on?'<span class="online" title="En ligne"></span>':''}</span><div class="sn-mid"><b><span>${esc(p.name)}</span>${modBadge(p)}${pin?PIN_SVG+'<span class="sr-only">épinglé</span>':''}</b>
       <span class="sn-st ${st[0]}">${last||u?'<i></i>':''}<span class="t">${st[1]}</span><span class="x">${last?'· '+shortAgo(last.at):''}${fl?` · ${f.count} ${f.warn?'⏳':'🔥'}`:''}</span></span></div><span class="sn-end">${u?`<span class="badge static">${u}</span>`:CHAT_SVG}</span></a>`; }).join('');
   const chip=(k,l,n)=>`<button type="button" class="chip" data-snf="${k}" aria-pressed="${k==='all'}">${l}${n?` <span class="cnt">${n}</span>`:''}</button>`;
-  return `${notifBanHTML()}<div class="page-head sn-top"><div><h2>Messages</h2></div><button class="btn sn-round" type="button" id="sn-find" aria-label="Chercher une conversation" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button><a class="btn sn-round" href="#/matchs" aria-label="Trouver de nouveaux mates" title="Trouver de nouveaux mates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9.5" cy="8" r="3.5"/><path d="M3 20c.5-3.5 3-5.5 6.5-5.5s6 2 6.5 5.5M19 7v6M16 10h6"/></svg></a></div>
+  return `${notifBanHTML()}<div class="page-head sn-top"><div><h2>Messages</h2></div>${canCall()&&AUTH_LIVE?`<button class="btn sn-round" type="button" data-calls aria-label="Voir mes appels" title="Mes appels">${CALLS_SVG}</button>`:''}<button class="btn sn-round" type="button" id="sn-find" aria-label="Chercher une conversation" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button><a class="btn sn-round" href="#/matchs" aria-label="Trouver de nouveaux mates" title="Trouver de nouveaux mates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9.5" cy="8" r="3.5"/><path d="M3 20c.5-3.5 3-5.5 6.5-5.5s6 2 6.5 5.5M19 7v6M16 10h6"/></svg></a></div>
     <input class="sn-search" id="sn-q" type="search" placeholder="Chercher un mate" autocomplete="off" aria-label="Chercher un mate" hidden>
     <div class="sn-chips" role="group" aria-label="Filtrer les conversations">${chip('all','Tous')}${chip('unread','Non lus',nU)}${chip('online','En ligne')}${chip('flame','Flammes 🔥')}</div>
     ${items.length?`<div class="sn-list" id="sn-list">${rows}<p class="muted sn-none" id="sn-none" hidden>Aucune conversation ici.</p></div>${items.length>=3&&!pins().length?`<p class="muted sn-tip">Astuce : garde le doigt sur un mate (ou clic droit) pour l'épingler en haut.</p>`:''}`
@@ -5332,6 +5342,36 @@ function typingRender(){ const el=document.getElementById('typing'); if(!el) ret
 function seenMark(kind,id){ const me=kind==='g'?myId():'me', msgs=kind==='g'?(GMSGS[id]||[]):(S.chats[id]||[]); let at=0; msgs.forEach(m=>{ if(m.from!==me&&m.at>at) at=m.at; }); if(at) DB.markSeen(kind,id,at); }
 document.addEventListener('visibilitychange',()=>{ if(document.hidden) return; const h=chatHere(); if(h) seenMark(h[0],h[1]);
   if(CALL&&CALL.mix) sndCtx(); });   // appel à plusieurs : au retour sur Coopô, le mélange des voix reprend s'il s'était mis en veille
+/* ---- v16 — Historique des appels ----
+   1) Dans la conversation : à la fin d'un appel, celui qui a appelé laisse une ligne (un message avec call = { k: 'audio'|'video', s: résultat, d: durée en secondes }).
+      Les deux mates la voient, sur tous leurs appareils : « Appel vocal · 3 min 12 s », « Appel manqué »…
+   2) Dans Messages, le bouton téléphone ouvre la liste des derniers appels passés, reçus et manqués (gardée sur cet appareil, 60 au plus). */
+const CALL_ST=['ok','missed','refused','busy','fail'], CALL_LOG_MAX=60;
+const callDur = d => d>=3600 ? `${Math.floor(d/3600)} h ${Math.floor(d%3600/60)} min` : d>=60 ? `${Math.floor(d/60)} min ${String(d%60).padStart(2,'0')} s` : `${d} s`;
+// ce que dit une ligne d'appel : mine = c'est moi qui ai appelé
+const callWord = (c,mine) => c.s==='ok' ? callDur(c.d) : c.s==='refused' ? (mine?'Refusé':'Tu as refusé') : c.s==='busy' ? (mine?'Déjà en appel':'Manqué (tu étais en appel)') : c.s==='fail' ? 'Connexion impossible' : (mine?'Pas de réponse':'Manqué');
+const callBad = (c,mine) => c.s==='fail' || (!mine && (c.s==='missed'||c.s==='busy'));
+function callLineHTML(c,mine){ const vid=c.k==='video';
+  return `<span class="call-line${callBad(c,mine)?' bad':''}"><i aria-hidden="true">${vid?CAM_SVG:PHONE_SVG}</i><span><b>${vid?'Appel vidéo':'Appel vocal'}</b><small>${callWord(c,mine)}</small></span></span>`; }
+const callText = c => (c.k==='video'?'📹 Appel vidéo':'📞 Appel vocal')+(c.s==='ok'?'':c.s==='refused'?' refusé':c.s==='fail'?' (connexion impossible)':' manqué');
+// Fin d'un lien d'appel : on le note sur l'appareil, et celui qui a appelé laisse la ligne dans la conversation
+function callDone(c,L,why){ if(!L||L.logged||!L.id) return; L.logged=true; const out=!(L===c&&c.role==='in'), kind=L===c?c.kind:'audio';
+  const d=L.tA?Math.max(1,Math.round((Date.now()-L.tA)/1000)):0;
+  const st=L.tA?'ok':why==='refused'?'refused':why==='busy'?'busy':why==='fail'?'fail':'missed';
+  if((out&&!L.sent)||why==='elsewhere') return;   // l'appel n'est jamais parti (micro refusé…), ou il a été pris sur un autre appareil
+  (S.callLog=Array.isArray(S.callLog)?S.callLog:[]).unshift({id:L.id,k:kind,o:out?1:0,s:st,d,at:Date.now()}); S.callLog=S.callLog.slice(0,CALL_LOG_MAX); save();
+  if(!out||!L.sent||!AUTH_LIVE||!isMate(L.id)) return;
+  const id=L.id, m={from:'me',text:callText({k:kind,s:st}),call:{k:kind,s:st,d}}, here=()=>location.hash==='#/messages/'+id;
+  DB.queueSend(async()=>{ m.at=Date.now(); (S.chats[id]||(S.chats[id]=[])).push(m); save(); if(here()) renderChat(id); await DB.sendMessage(id,m); if(here()) renderChat(id); else dmRefresh(); }); }
+const CALLS_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/><path d="M15 3.5V8h4.5M15 8l5.5-5.5"/></svg>';
+function callsModal(){ const log=(Array.isArray(S.callLog)?S.callLog:[]).filter(x=>x&&x.id&&!S.blocked.includes(x.id));
+  modal(`<h3>Appels</h3><p class="muted">Tes derniers appels passés, reçus et manqués sur cet appareil.</p>
+    ${log.length?`<div class="cl-list">${log.map(x=>{ const p=PLAYERS.find(y=>y.id===x.id)||S.profiles[x.id]||{id:x.id,name:'Un joueur'}, mine=!!x.o, c={k:x.k,s:x.s,d:+x.d||0}, bad=callBad(c,mine);
+      return `<a class="cl-row${bad?' bad':''}" href="#/messages/${esc(x.id)}" data-close>${avatar(p,44)}<div><b>${esc(p.name||'Un joueur')}</b><span>${mine?'↗ Passé':'↙ Reçu'}${x.k==='video'?' · vidéo':''} · ${callWord(c,mine)}</span></div><time>${shortAgo(x.at)}</time></a>`; }).join('')}</div>`
+      :'<p class="muted" style="margin-top:14px">Aucun appel pour le moment. Ouvre une conversation et appuie sur le téléphone pour appeler un mate.</p>'}
+    <div class="dlg-actions">${log.length?'<button class="btn btn-ghost" type="button" id="cl-clear">Vider la liste</button>':''}<button class="btn" type="button" data-close>Fermer</button></div>`,
+    d=>d.querySelector('#cl-clear')?.addEventListener('click',ev=>{ const b=ev.currentTarget; if(!b.dataset.sure){ b.dataset.sure=1; b.textContent='Confirmer : vider'; return; } S.callLog=[]; save(); d.close(); toast('Liste des appels vidée'); })); }
+document.addEventListener('click',e=>{ if(e.target.closest&&e.target.closest('[data-calls]')) callsModal(); });
 /* ---- Appels vocaux et vidéo ----
    Deux mates s'appellent directement, de téléphone à téléphone (WebRTC). Le son et l'image ne passent pas par Coopô.
    Pour se trouver, les deux téléphones s'échangent leurs réglages dans calls/{paire} :
@@ -5361,7 +5401,7 @@ const callMediaErr = (e,kind) => toast(e&&e.name==='NotAllowedError'?`Autorise l
    Chaque mate reçoit sa voix mélangée à celles des autres (jamais la sienne). Rien ne change dans la base : chaque lien est un appel à deux entre mates.
    L'appel = c (le premier lien : c.id, c.pair, c.pc…) + c.extra (les liens ajoutés, de la même forme). Si celui qui relie raccroche, les autres sont séparés.
    Un petit canal (c.dc) permet à chacun de dire à ses voisins qui est dans l'appel : pour afficher les noms, et pour s'arrêter à 4. */
-const CALL_MAX=4, LINK_KEYS=['id','pair','at','pc','remote','sent','answered','status','lost','ringT','src','srcOf','srcTo','out','behind','dc'];
+const CALL_MAX=4, LINK_KEYS=['id','pair','at','pc','remote','sent','answered','status','lost','ringT','src','srcOf','srcTo','out','behind','dc','tA','logged'];
 const callLinks = c => [c,...(c.extra||[])];
 const linkOf = (c,pc) => callLinks(c).find(x=>x.pc===pc);
 const callAge = id => { const p=PLAYERS.find(x=>x.id===id); return p?ageGroup(p):''; };
@@ -5391,6 +5431,7 @@ function linkEnd(c,pc,why){ const L=linkOf(c,pc); if(CALL!==c||!L) return; if(L=
 function dropLink(c,L,why,tell,quiet){ if(CALL!==c||!callLinks(c).includes(L)) return; const name=callName(L), wasLive=L.status==='active';
   const upd=tell&&(L.sent||(L===c&&c.role==='in')) ? DB.db.collection('calls').doc(L.pair).update({status:'ended',why:why||'hangup',endedBy:DB.uid()}).catch(e=>console.error(e)) : null;
   if(L.sent&&!wasLive&&!L.answered&&!(L===c&&c.role==='in')){ const x={id:L.id,at:L.at}; (upd||Promise.resolve()).then(()=>pushCall(x,'end')); }   // il n'a pas décroché : sa notification devient « Appel manqué »
+  callDone(c,L,why||'hangup');   // v16 — historique
   clearTimeout(L.ringT); try{ L.src&&L.src.disconnect(); }catch(e){} try{ L.out&&c.mix&&c.mix.mic.disconnect(L.out); }catch(e){} try{ L.pc&&L.pc.close(); }catch(e){}
   if(L===c){ const N=c.extra.find(x=>x.status==='active')||c.extra[0]; c.extra=c.extra.filter(x=>x!==N); LINK_KEYS.forEach(k=>{ c[k]=N[k]; }); c.role='out'; }   // le premier lien est parti : un autre prend sa place
   else c.extra=c.extra.filter(x=>x!==L);
@@ -5421,7 +5462,7 @@ function callPc(c,servers,L=c){ const pc=L.pc=new RTCPeerConnection({iceServers:
   try{ L.dc=rosterWire(c,pc,pc.createDataChannel('coopo',{negotiated:true,id:0})); }catch(e){}   // v15 — le petit canal « qui est dans l'appel »
   pc.ontrack=e=>{ const X=linkOf(c,pc); if(!X) return; X.remote=e.streams[0]||new MediaStream([e.track]); callAttach(); mixSync(c); };
   pc.onconnectionstatechange=()=>{ const X=linkOf(c,pc); if(CALL!==c||!X) return; const st=pc.connectionState;
-    if(st==='connected'){ if(X.status!=='active'){ X.status='active'; c.t0=c.t0||Date.now(); clearTimeout(X.ringT); if(X===c) callRing(false); mixSync(c); rosterSend(c); } X.lost=false; renderCall(); }
+    if(st==='connected'){ if(X.status!=='active'){ X.status='active'; X.tA=X.tA||Date.now(); c.t0=c.t0||Date.now(); clearTimeout(X.ringT); if(X===c) callRing(false); mixSync(c); rosterSend(c); } X.lost=false; renderCall(); }
     else if(st==='disconnected'){ X.lost=true; renderCall(); }
     else if(st==='failed'){ linkEnd(c,pc,'fail'); } };
   return pc; }
@@ -5459,8 +5500,9 @@ function endCall(why){ const c=CALL; if(!c) return;
   closeCall(c.role==='in'&&why==='refused'?'':c.role==='out'&&why==='hangup'&&c.status!=='active'?'Appel annulé.':CALL_WHY[why]||CALL_WHY.hangup, why, upd); }
 // why : pourquoi l'appel s'arrête ; upd : l'enregistrement « terminé » en cours (on attend qu'il soit fait avant de prévenir le serveur)
 function closeCall(msg,why,upd){ const c=CALL; if(!c) return; CALL=null; clearTimeout(c.ringT); clearInterval(c.tick); callRing(false);
+  callDone(c,c,why); (c.extra||[]).forEach(L=>callDone(c,L,'hangup'));   // v16 — historique
   // v14 — notifications : on enlève la sonnerie affichée ; un appel reçu qui n'a pas été décroché (ni refusé) devient « Appel manqué »
-  callNotify(c,c.role==='in'&&c.status==='ringing'&&why!=='refused'?'missed':'end');
+  callNotify(c,c.role==='in'&&c.status==='ringing'&&why!=='refused'&&why!=='elsewhere'?'missed':'end');
   if(c.role==='out'&&c.sent&&c.status!=='active'&&!c.answered) (upd||Promise.resolve()).then(()=>pushCall(c,'end'));
   try{ c.stream&&c.stream.getTracks().forEach(t=>t.stop()); }catch(e){} try{ c.pc&&c.pc.close(); }catch(e){}
   (c.extra||[]).forEach(L=>{ clearTimeout(L.ringT); try{ L.pc&&L.pc.close(); }catch(e){} }); c.extra=[];   // v15
@@ -5470,8 +5512,9 @@ function closeCall(msg,why,upd){ const c=CALL; if(!c) return; CALL=null; clearTi
 function onCallDoc(pair,d){ if(!d) return; const me=DB.uid(), c=CALL;
   const L=c&&callLinks(c).find(x=>x.pair===pair&&x.at===d.at);   // v15 — le lien concerné : le premier, ou un mate ajouté
   if(L){ const why=d.why==='refused'||d.why==='busy'||d.why==='fail'?d.why:'';
+    if(L===c&&c.role==='in'&&c.status==='ringing'&&d.status==='active'){ closeCall('Appel pris sur un autre appareil.','elsewhere'); return; }   // v16
     if(d.status==='ended'&&d.endedBy!==me){
-      if(L===c&&!(c.extra||[]).length) closeCall(c.role==='in'&&c.status==='ringing'?'':CALL_WHY[why||'hangup'],'remote');
+      if(L===c&&!(c.extra||[]).length) closeCall(c.role==='in'&&c.status==='ringing'?'':CALL_WHY[why||'hangup'],why||'remote');
       else dropLink(c,L,why,false);   // un mate quitte l'appel : il continue avec les autres
       return; }
     if((L!==c||c.role==='out')&&d.status==='active'&&d.answer&&!L.answered&&L.pc){ const pc=L.pc; L.answered=true; if(L===c) callRing(false); L.status='connecting'; renderCall();
@@ -5525,10 +5568,21 @@ async function callNotify(c,step){ try{
   (await reg.getNotifications({tag})).forEach(n=>n.close());
   if(step==='missed'&&document.hidden) await reg.showNotification('Appel manqué',{body:`${callName(c)} a essayé de t'appeler.`,tag:'missed-'+c.pair,icon,badge:icon,timestamp:c.at,data:{url}});
 }catch(e){} }
+/* ---- v16 — Haut-parleur ----
+   Un site ne peut choisir où sort le son que si le navigateur lui montre les sorties du téléphone (haut-parleur, écouteur du haut).
+   Quand c'est le cas, un bouton « Haut-parleur » apparaît pendant l'appel. Sinon, pas de bouton : le téléphone choisit seul. */
+const SPK_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a7.8 7.8 0 0 1 0 11"/></svg>';
+async function callOuts(c){ try{ if(c.outs!==undefined||!('setSinkId' in HTMLMediaElement.prototype)||!navigator.mediaDevices.enumerateDevices){ c.outs=c.outs||null; return; } c.outs=null;
+    const ds=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='audiooutput'&&d.deviceId&&d.deviceId!=='default'&&d.deviceId!=='communications');
+    const spk=ds.find(d=>/speaker|haut[- ]?parleur/i.test(d.label)), ear=ds.find(d=>/earpiece|receiver|handset|[ée]couteur|iphone/i.test(d.label));
+    if(spk&&ear&&CALL===c){ c.outs={spk:spk.deviceId,ear:ear.deviceId}; renderCall(); } }catch(e){ c.outs=null; } }
+function callSink(c){ if(!c.outs||c.spk===undefined) return; const id=c.spk?c.outs.spk:c.outs.ear;
+  document.querySelectorAll('#call-ov audio, #call-ov #call-remote').forEach(el=>{ if(el.sinkId!==id&&el.setSinkId) el.setSinkId(id).catch(()=>{}); }); }
 // L'écran d'appel (posé par-dessus tout le site : il reste si on change de page)
 function callAttach(){ const c=CALL; if(!c) return; const r=document.getElementById(c.kind==='video'?'call-remote':'call-audio'), l=document.getElementById('call-local');
   if(r&&c.remote&&r.srcObject!==c.remote){ r.srcObject=c.remote; r.play&&r.play().catch(()=>{}); } if(l&&c.stream&&l.srcObject!==c.stream){ l.srcObject=c.stream; l.play&&l.play().catch(()=>{}); }
-  document.querySelectorAll('#call-ov audio[data-ca]').forEach(a=>{ const L=(c.extra||[])[+a.dataset.ca]; if(L&&L.remote&&a.srcObject!==L.remote){ a.srcObject=L.remote; a.play&&a.play().catch(()=>{}); } }); }   // v15 — les mates ajoutés
+  document.querySelectorAll('#call-ov audio[data-ca]').forEach(a=>{ const L=(c.extra||[])[+a.dataset.ca]; if(L&&L.remote&&a.srcObject!==L.remote){ a.srcObject=L.remote; a.play&&a.play().catch(()=>{}); } });
+  callSink(c); if(c.status==='active'&&c.outs===undefined) callOuts(c); }   // v15 — les mates ajoutés ; v16 — haut-parleur
 function renderCall(){ const c=CALL; if(!c) return; let ov=document.getElementById('call-ov'); if(!ov){ ov=document.createElement('div'); ov.id='call-ov'; ov.setAttribute('role','dialog'); ov.setAttribute('aria-modal','true'); document.body.appendChild(ov); }
   const p=visible().find(x=>x.id===c.id)||S.profiles[c.id]||{id:c.id,name:'Ton mate'}, live=c.status==='active', video=c.kind==='video';
   const state=()=>c.lost?'Reconnexion…':live?vTime((Date.now()-c.t0)/1000):c.status==='calling'?'Préparation de l\'appel…':c.status==='connecting'?'Connexion…':c.role==='in'?(video?'Appel vidéo entrant':'Appel vocal entrant'):'Ça sonne…';
@@ -5543,13 +5597,14 @@ function renderCall(){ const c=CALL; if(!c) return; let ov=document.getElementBy
     ${multi?`<div class="co-who multi"><div class="co-grid">${others.map(x=>{ const q=who(x); return `<div class="co-p${x.ring?' ring':''}">${avatar(q,72)}<span>${esc(q.name||'Un joueur')}</span>${x.ring?'<small>Ça sonne…</small>':''}</div>`; }).join('')}</div><div><b>Appel à ${others.length+1}</b><div class="co-state" id="co-state" aria-live="polite">${state()}</div></div></div>`
       :`<div class="co-who">${avatar(p,96)}<div><b>${esc(p.name||'Ton mate')}</b><div class="co-state" id="co-state" aria-live="polite">${state()}</div></div></div>`}
     <div class="co-btns">${c.role==='in'&&c.status==='ringing' ? b('no','end','Refuser',HANG_SVG)+b('yes','yes','Répondre',video?CAM_SVG:PHONE_SVG)
-      : b('mute',c.muted?'off':'',c.muted?'Micro coupé':'Micro',MIC_SVG)+(video?b('cam',c.camOff?'off':'',c.camOff?'Caméra coupée':'Caméra',CAM_SVG):'')+(callCanAdd(c)?b('add',c.picking?'off':'','Ajouter',ADDMATE_SVG):'')+b('end','end','Raccrocher',HANG_SVG)}</div>
+      : b('mute',c.muted?'off':'',c.muted?'Micro coupé':'Micro',MIC_SVG)+(video?b('cam',c.camOff?'off':'',c.camOff?'Caméra coupée':'Caméra',CAM_SVG):'')+(c.outs?b('spk',c.spk?'off':'',c.spk?'Haut-parleur activé':'Haut-parleur',SPK_SVG):'')+(callCanAdd(c)?b('add',c.picking?'off':'','Ajouter',ADDMATE_SVG):'')+b('end','end','Raccrocher',HANG_SVG)}</div>
     ${pick?`<div class="co-pick" role="dialog" aria-label="Ajouter un mate à l'appel"><div class="co-pick-head"><h3>Ajouter un mate</h3><button type="button" class="co-pick-x" data-co="pickx" aria-label="Fermer la liste">×</button></div>
       <p>${pick.length?`Il reçoit ton appel et rejoint la discussion. ${CALL_MAX} personnes au plus.`:'Aucun autre mate à ajouter pour le moment.'}</p>
       <div class="co-pick-list">${pick.map(m=>`<button type="button" class="co-pick-row" data-co-add="${esc(m.id)}">${avatar(m,40)}<b>${esc(m.name)}</b>${isOnline(m)?'<small>En ligne</small>':''}</button>`).join('')}</div></div>`:''}`;
   if(pick){ const pl=ov.querySelector('.co-pick-list'); pl.scrollTop=py; if(!hadPick) (pl.querySelector('button')||ov.querySelector('.co-pick-x')).focus(); }
   ov.querySelectorAll('[data-co-add]').forEach(x=>x.onclick=()=>{ c.picking=false; addToCall(x.dataset.coAdd); if(CALL===c) renderCall(); });
   ov.querySelectorAll('[data-co]').forEach(x=>x.onclick=()=>{ const a=x.dataset.co;
+    if(a==='spk'){ c.spk=!c.spk; renderCall(); return; }
     if(a==='add'){ c.picking=!c.picking; renderCall(); return; } if(a==='pickx'){ c.picking=false; renderCall(); ov.querySelector('[data-co="add"]')?.focus(); return; }
     if(a==='yes') acceptCall(); else if(a==='no') endCall('refused'); else if(a==='end') endCall('hangup');
     else if(a==='mute'){ c.muted=!c.muted; c.stream&&c.stream.getAudioTracks().forEach(t=>t.enabled=!c.muted); renderCall(); }
@@ -5984,7 +6039,7 @@ let EDIT=null;   // le message en cours de modification : { kind:'c' (privé) | 
 const MSG_DEL_TEXT='Message supprimé';
 const msgList = (kind,owner) => kind==='g' ? (GMSGS[owner]||[]) : (S.chats[owner]||[]);
 const msgFind = (kind,owner,mid) => msgList(kind,owner).find(m=>m.id===mid);
-const msgEditable = m => !!m && !m.del && !m.voice && !m.photo && !m.sticker;
+const msgEditable = m => !!m && !m.del && !m.voice && !m.photo && !m.sticker && !m.call;
 const MORE_SVG='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5.5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="18.5" cy="12" r="1.9"/></svg>';
 // le contenu d'une bulle
 // v11 — un message fait seulement d'1 à 3 emojis s'affiche en grand, sans bulle (comme sur TikTok)
@@ -5994,6 +6049,7 @@ function jumboN(t){ t=String(t||'').trim(); if(!t||t.length>40||!EMO_ONLY.test(t
   return n>=1&&n<=3?n:0; }
 function msgBody(m,kind,owner,mine){
   if(m.del) return `<span class="msg-del">${MSG_DEL_TEXT}</span>`;
+  if(m.call) return callLineHTML(m.call,mine);
   if(m.voice) return voiceBubble(m.voice,kind,owner);
   if(m.photo) return photoBubble(m.photo,kind,owner);
   if(m.sticker) return stickerBubble(m.sticker,mine);
@@ -6100,7 +6156,7 @@ const uidLocal = (kind,uid) => kind==='g'||!DB.live ? uid : DB.fromUid(uid);    
 function replyWho(kind,owner,uid){ const f=uidLocal(kind,uid);
   if(kind==='g'){ if(f===myId()) return 'Toi'; const p=gPlayer(f); return p&&p.name?p.name:'Un ancien membre'; }
   if(f==='me') return 'Toi'; const p=PLAYERS.find(x=>x.id===f)||PLAYERS.find(x=>x.id===owner); return p&&p.name?p.name:'Ton mate'; }
-const replyText = m => m.del ? MSG_DEL_TEXT : m.photo ? PHOTO_TEXT : m.voice ? VOICE_TEXT : m.sticker ? STICKER_TEXT : String(m.text||'').replace(/\s+/g,' ').trim();
+const replyText = m => m.del ? MSG_DEL_TEXT : m.call ? callText(m.call) : m.photo ? PHOTO_TEXT : m.voice ? VOICE_TEXT : m.sticker ? STICKER_TEXT : String(m.text||'').replace(/\s+/g,' ').trim();
 const cut = (t,n) => t.length>n ? t.slice(0,n)+'…' : t;
 function startReply(kind,owner,m){ const f=document.getElementById('chatform'), i=document.getElementById('chatin'); if(!f||!i||!m||!m.id) return;
   if(EDIT) endEdit(true);
@@ -6156,7 +6212,7 @@ function renderChat(id){
       return `<div class="bubble${mine?' me':''}${m.del?' del':''}"${m.id?` data-mid="${esc(m.id)}"`:''}${m.id&&!m.del?` data-msg="c|${esc(id)}|${esc(m.id)}"`:''}${mine&&m.id&&!m.del?` data-own="c|${esc(id)}|${esc(m.id)}"`:''}>${replyQuote(m,'c',id)}${msgBody(m,'c',id,mine)}<small>${msgMeta(m,mine,'c',id,k===seenK?' · <span class="seen-tag">Vu</span>':'')}</small>${reactsHTML(m,'c',id)}</div>`; }).join('')
     : `<div class="chat-empty"><p class="muted">Première partie ensemble ? Propose un créneau 🎮</p><div class="chips">${QUICK_MSGS.map(t=>`<button type="button" class="chip" data-quick="${esc(t)}">${esc(t)}</button>`).join('')}</div></div>`;
   box.scrollTop=keep==null?box.scrollHeight:keep;
-  { const lm=msgs[msgs.length-1]; QR.key='c:'+id; QR.last=lm?{id:lm.id,at:lm.at,mine:lm.from==='me',del:!!lm.del}:null; qrUpdate(); }
+  { const lm=msgs[msgs.length-1]; QR.key='c:'+id; QR.last=lm&&!lm.call?{id:lm.id,at:lm.at,mine:lm.from==='me',del:!!lm.del}:null; qrUpdate(); }   // v16 — pas de « réponds avec un sticker » après une ligne d'appel
   { const p=PLAYERS.find(x=>x.id===id), fh=document.getElementById('flame-hint'); if(fh) fh.innerHTML=flameHint(id,p?p.name:'Ton mate'); }
   seenMark('c',id);
 }
@@ -6253,6 +6309,7 @@ const tsMs = v => v&&typeof v.toMillis==='function' ? v.toMillis() : (+v||0);
 function msgExtra(o,m){ if(Array.isArray(m.hist)&&m.hist.length) o.hist=m.hist.filter(x=>typeof x==='string').slice(-20);
   if(m.reply&&typeof m.reply.id==='string'&&/^[A-Za-z0-9]{8,40}$/.test(m.reply.id)&&typeof m.reply.from==='string'&&m.reply.from.length<=128) o.reply={id:m.reply.id,from:m.reply.from};   // v13 — réponse à un message
   if(m.edited) o.edited=tsMs(m.edited)||1; if(m.del===true) o.del=true;
+  if(m.call&&typeof m.call==='object'&&CALL_ST.includes(m.call.s)) o.call={k:m.call.k==='video'?'video':'audio',s:m.call.s,d:Math.max(0,Math.min(86400,Math.round(+m.call.d||0)))};   // v16 — ligne d'appel
   if(m.sticker&&typeof m.sticker.id==='string'&&/^[A-Za-z0-9]{8,40}$/.test(m.sticker.id)) o.sticker={id:m.sticker.id,n:Math.max(1,Math.min(30,+m.sticker.n||1))};
   if(m.re&&typeof m.re==='object'&&!Array.isArray(m.re)){ const re={}; let n=0;   // v14 — réactions { identifiant : emoji }
     for(const [k,v] of Object.entries(m.re)){ if(n>=60) break; if(/^[A-Za-z0-9_-]{1,128}$/.test(k)&&typeof v==='string'&&RX_OK.test(v)){ re[k]=v; n++; } } if(n) o.re=re; }
@@ -6719,6 +6776,7 @@ function viewHelp(){
     ['Comment créer un groupe avec mes mates ?','Va dans l\'onglet Groupes et appuie sur « Créer un groupe ». Donne-lui un nom, puis coche les mates à ajouter : ils reçoivent une invitation et rejoignent le groupe en un clic. Plus tard, le bouton « Ajouter des mates » en haut du groupe permet d\'en inviter d\'autres.'],
     ['Comment épingler un mate ?','Dans Messages, garde le doigt sur un mate (ou fais un clic droit sur ordinateur), puis choisis « Épingler en haut ». Il reste en haut de ta liste. Tu peux épingler 5 mates au plus, et toi seul le vois.'],
     ['Que veulent dire « Vu » et « écrit… » ?','« Vu » s\'affiche sous ton dernier message quand ton mate l\'a lu (dans un groupe : « Vu par 3 »). « écrit… » ou « enregistre un vocal… » apparaît en bas de la conversation pendant que ton mate prépare un message.'],
+    ['Où voir mes appels ?','Chaque appel laisse une ligne dans la conversation : sa durée, ou « Manqué ». Dans Messages, le bouton téléphone en haut ouvre la liste de tes derniers appels passés, reçus et manqués sur cet appareil. Pendant un appel, le bouton « Haut-parleur » apparaît quand ton téléphone permet à Coopô de choisir la sortie du son.'],
     ['Comment appeler à plusieurs ?','Pendant un appel vocal, appuie sur « Ajouter » et choisis un mate : il reçoit ton appel et rejoint la discussion. Vous pouvez être 4 au plus. Si la personne qui a ajouté un mate raccroche, ce mate quitte l\'appel avec elle. Un message vocal peut durer jusqu\'à 2 minutes.'],
     ['Adultes et 13-17 ans peuvent-ils jouer ensemble ?','Oui. Mais avec un joueur de moins de 18 ans, c\'est lui qui envoie la demande de mate : un adulte ne peut pas commencer une conversation avec lui. Entre un adulte et un 13-17 ans, les messages écrits, les vocaux et les appels vocaux sont possibles, mais pas les appels vidéo ni les photos. Les pseudos en jeu d\'un 13-17 ans ne sont montrés qu\'aux 13-17 ans et à ses mates.'],
     ['Mon e-mail ou ma date de naissance sont-ils visibles ?','Non, jamais. Les autres joueurs ne voient que ton pseudo, ton avatar, tes jeux et tes habitudes de jeu.'],
@@ -7209,13 +7267,13 @@ const DB = {
     this._sq=this._sq.then(run,run); return out.then(p=>p); },
   async sendMessage(id,m){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; const db=this.db;
     try{ const F=firebase.firestore.FieldValue, pair=this.pairId(id);
-      const mk=st=>{ const b=db.batch(), mref=db.collection('chats').doc(pair).collection('messages').doc(); b.set(mref,{from:this.uid(),text:m.text,at:m.at,...(m.voice?{voice:m.voice}:{}),...(m.photo?{photo:m.photo}:{}),...(m.sticker?{sticker:m.sticker}:{}),...(m.reply?{reply:m.reply}:{})});
+      const mk=st=>{ const b=db.batch(), mref=db.collection('chats').doc(pair).collection('messages').doc(); b.set(mref,{from:this.uid(),text:m.text,at:m.at,...(m.voice?{voice:m.voice}:{}),...(m.photo?{photo:m.photo}:{}),...(m.sticker?{sticker:m.sticker}:{}),...(m.reply?{reply:m.reply}:{}),...(m.call?{call:m.call}:{})});
         if(m.photo) b.set(db.collection('chats').doc(pair).collection('photos').doc(m.photo.id),{from:this.uid(),data:PHOTOS[m.photo.id]||'',w:m.photo.w,h:m.photo.h,at:m.at});   // la photo part dans le même envoi que le message
         if(m.voice) b.set(db.collection('chats').doc(pair).collection('voices').doc(m.voice.id),{from:this.uid(),data:VOICES[m.voice.id]||'',dur:m.voice.dur,at:m.at});   // le son part dans le même envoi que le message
         if(st) st.msg=mref.id;   // la flamme cite le message envoyé dans le même lot : sans vrai message, les règles la refusent
         b.set(db.collection('limits').doc(this.uid()),{lastMsg:F.serverTimestamp()},{merge:true});   // 1 message par seconde maximum
         if(st) b.set(db.collection('streaks').doc(pair),st); return b; };
-      let st=this.streakData(id), sent=false;
+      let st=m.call?null:this.streakData(id), sent=false;   // v16 — une ligne d'appel ne compte pas pour les flammes
       // Le jour est celui du serveur (heure d'Abidjan). Si l'horloge du téléphone est décalée, on réessaie avec le jour d'après puis d'avant.
       for(const sh of (st?[0,1,-1]:[])){ if(sh) st=this.streakData(id,sh); if(!st) break;
         try{ await mk(st).commit(); sent=true; if(sh) DAY_SHIFT+=sh; break; }
@@ -7224,7 +7282,7 @@ const DB = {
         try{ await mk(null).commit(); }
         catch(e){ if(!(m.voice&&m.voice.w&&String(e&&e.code).includes('permission'))) throw e; delete m.voice.w; await mk(null).commit(); } }   // ondes refusées (anciennes règles) : le vocal part sans elles
       if(st){ (S.streaks=S.streaks||{})[id]={last:st.last,both:st.both,count:st.count}; save(); flameMilestone(id); }
-      if(!this._lastNotifTo||this._lastNotifTo[id]==null||Date.now()-this._lastNotifTo[id]>60000){ (this._lastNotifTo=this._lastNotifTo||{})[id]=Date.now(); await this.saveNotif(id,{type:'message',from:'me',text:`${S.me.name} : ${m.text.slice(0,80)}`}); }
+      if(!(m.call&&m.call.s==='ok')&&(!this._lastNotifTo||this._lastNotifTo[id]==null||Date.now()-this._lastNotifTo[id]>60000)){ (this._lastNotifTo=this._lastNotifTo||{})[id]=Date.now(); await this.saveNotif(id,{type:'message',from:'me',text:`${S.me.name} : ${m.text.slice(0,80)}`}); }   // v16 — un appel réussi n'envoie pas de notification
     }catch(e){ console.error(e); toast(String(e&&e.code).includes('permission')?'Doucement : attends une seconde entre deux messages.':"Le message n'est pas parti, réessaie."); } },
   listenChat(id,cb){ if(!this.live) return; this.stopChat();   // les 200 derniers messages (et plus les 200 premiers)
     this._chatUnsub=this.db.collection('chats').doc(this.pairId(id)).collection('messages').orderBy('at').limitToLast(200).onSnapshot(snap=>{ S.chats[id]=[]; snap.forEach(d=>{ const m=d.data(); const o={id:d.id,from:this.fromUid(m.from),text:m.text,at:m.at}; msgExtra(o,m); if(m.voice&&m.voice.id){ o.voice={id:String(m.voice.id),dur:+m.voice.dur||0}; if(VW_RE.test(String(m.voice.w||''))) o.voice.w=m.voice.w; } if(m.photo&&m.photo.id) o.photo={id:String(m.photo.id),w:+m.photo.w||4,h:+m.photo.h||3}; S.chats[id].push(o); }); save(); cb(); },e=>console.error(e)); },
