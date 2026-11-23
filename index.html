@@ -2901,6 +2901,21 @@ html[data-skin="samurai"] .aff .af-h{ letter-spacing:.01em; }
   html[data-skin="samurai"] .sn-top h2{ font-size:22px; } }   /* « MESSAGES » en capitales espacées est plus large */
 @media (max-width:340px){ .sn-top a.sn-round[href="#/matchs"]{ display:none; } }   /* Matchs reste dans la barre du bas */
 </style>
+<style id="coopo-glisser">
+/* ==== v18 — Entrer dans une conversation et en sortir en glissant (téléphone) ====
+   #nav-under : la page d'avant, gardée telle quelle sous la conversation (entre le décor du thème et le cadre de la page).
+   Invisible tant que la conversation la couvre ; visible pendant qu'elle arrive, qu'on la tire ou qu'elle s'en va. */
+#nav-under{ position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; visibility:hidden; }
+#nav-under.on{ visibility:visible; }
+#nav-under .nav-page{ position:absolute; margin:0; }
+#nav-under .nav-dim{ position:absolute; inset:0; z-index:99; background:rgba(0,0,0,.16); opacity:0; pointer-events:none; }
+body:has(#nav-under.on) #ground{ visibility:hidden; } body:has(#nav-under.on) .frame{ box-shadow:none; }   /* le bas du décor du cadre ne passe pas sur la page d'avant */
+@media (max-width:999px){
+  /* le doigt qui va de côté est pour le geste ; vers le haut ou le bas, la conversation défile comme avant */
+  .chat-page, .chat-page .chat-box{ touch-action:pan-y pinch-zoom; }
+  .chat-page.nav-mv{ box-shadow:-18px 0 36px -10px rgba(0,0,0,.34); will-change:transform; }
+}
+</style>
 </head>
 <body>
 <div id="splash" role="status" aria-live="polite">
@@ -3225,6 +3240,7 @@ function route(){
   if(name.startsWith('@')){ let nm=''; try{ nm=decodeURIComponent(name.slice(1)).toLowerCase(); }catch(e){} const p=PLAYERS.find(x=>x.name.toLowerCase()===nm); document.body.classList.remove('is-home'); document.body.dataset.route='joueur'; viewPlayer(S.me&&S.me.name.toLowerCase()===nm?'me':(p?p.id:'?')); renderNav(''); window.scrollTo(0,0); app.firstElementChild?.classList.add('page-in'); animateAfterRender(); return; }
   const v = views[name] || viewHome;
   clearInterval(scTimer);
+  const navH=location.hash||'#/accueil'; navBefore(navH);   // v18 — vers une conversation : la page qu'on quitte passe dessous
   document.body.classList.toggle('is-home', v===viewHome);
   document.body.dataset.route = views[name] ? name : 'accueil';   // la page affichée : sert à ne montrer la cloche et la boutique que là où elles servent
   v(arg);
@@ -3233,11 +3249,115 @@ function route(){
       if(kids.length && kids.some(c=>!c.matches('.panel'))){ const sh=document.createElement('div'); sh.className='sheet'; kids[0].before(sh); kids.forEach(k=>sh.appendChild(k)); } } }
   renderNav(name==='joueur' ? '' : (views[name]?name:'accueil'));
   window.scrollTo(0,0);
-  app.firstElementChild?.classList.add('page-in');
+  const slid=navAfter(navH);   // v18 — entrée dans une conversation, ou retour en glissant : pas d'autre animation de page
+  if(!slid) app.firstElementChild?.classList.add('page-in');
   animateAfterRender();
   renderGoogleButtons(app);
-  playWipe();
+  if(!slid) playWipe();
 }
+/* ---- v18 — Entrer dans une conversation et en sortir en glissant (téléphone), comme dans Discord ----
+   On ouvre une conversation : elle arrive par la droite, par-dessus la page d'où l'on vient, qui reste dessous telle quelle.
+   On fait glisser le doigt de la gauche vers la droite : la conversation suit le doigt et laisse voir la page d'avant ;
+   lâchée assez loin, ou lancée d'un geste rapide, elle sort par la droite et l'on revient sur cette page, au même endroit ;
+   sinon elle reprend sa place. Le bouton ‹ en haut fait la même sortie. On peut rattraper la conversation en plein mouvement.
+   Seulement quand la conversation prend tout l'écran (téléphone, petite tablette), et sans animation si l'appareil demande moins d'animations.
+   La page d'avant n'est pas redessinée : ses éléments passent dans un calque dessous (#nav-under), puis la vraie page revient à la place. */
+const NAVX={ under:null, from:'', y:0, w:0, prev:'', anim:null, drag:false, leaving:false, back:false, push:false, eat:0 };
+const navPhone = () => matchMedia('(max-width:999px)').matches;
+const navMotion = () => !matchMedia('(prefers-reduced-motion: reduce)').matches;
+const chatHash = h => /^#\/(messages|groupe)\/[^/]+$/.test(h||'') && h!=='#/groupe/nouveau';
+const chatParent = h => /^#\/groupe\//.test(h) ? '#/groupe' : '#/messages';
+const navBusy = () => NAVX.drag || NAVX.leaving || !!NAVX.anim;   // un glissement est en cours : la page attend avant de se redessiner
+const NAV_EASE='cubic-bezier(.23,1,.32,1)';
+// Une copie figée d'un élément fixe (barre du haut, barre du bas), telle qu'on la voyait
+function navFreeze(el){ const r=el.getBoundingClientRect(), k=el.cloneNode(true), a=[el,...el.querySelectorAll('*')], b=[k,...k.querySelectorAll('*')];
+  a.forEach((s,i)=>{ const t=b[i], cs=getComputedStyle(s); if(!t) return; t.removeAttribute('id'); t.style.setProperty('display',cs.display,'important');
+    if(cs.position==='absolute') ['top','right','left'].forEach(p=>t.style.setProperty(p,cs[p],'important')); });
+  [['position','fixed'],['left',r.left+'px'],['top',r.top+'px'],['width',r.width+'px'],['right','auto'],['bottom','auto'],['margin','0']].forEach(([p,v])=>k.style.setProperty(p,v,'important'));
+  return k; }
+// La page qu'on quitte passe dessous, telle quelle (elle n'est pas redessinée : même défilement, mêmes affiches)
+function navCapture(from){ navDrop();
+  const kids=[...app.childNodes]; if(!kids.length) return;
+  const y=scrollY, ar=app.getBoundingClientRect(), sc=[];   // lus avant de déplacer la page (sans elle, la fenêtre ne défile plus)
+  app.querySelectorAll('*').forEach(el=>{ if(el.scrollLeft||el.scrollTop) sc.push([el,el.scrollLeft,el.scrollTop]); });
+  const top=document.querySelector('.frame > .top'), tb=document.getElementById('tabbar');
+  const fixed=[top,tb].filter(el=>el&&getComputedStyle(el).display!=='none').map(navFreeze);   // copiées avant de déplacer la page : la barre du haut reste collée en haut
+  const u=document.createElement('div'); u.id='nav-under'; u.setAttribute('aria-hidden','true'); u.inert=true;
+  const box=document.createElement('div'); box.className='nav-page'; box.style.cssText=`left:${ar.left}px;top:${ar.top}px;width:${ar.width}px`;
+  kids.forEach(n=>box.appendChild(n)); u.appendChild(box); fixed.forEach(k=>u.appendChild(k));
+  u.insertAdjacentHTML('beforeend','<i class="nav-dim"></i>');
+  document.body.appendChild(u);
+  sc.forEach(([el,l,t])=>{ el.scrollLeft=l; el.scrollTop=t; });
+  Object.assign(NAVX,{ under:u, from, y, w:innerWidth }); }
+function navDrop(){ if(NAVX.anim){ try{ NAVX.anim.cancel(); }catch(e){} NAVX.anim=null; } if(NAVX.under) NAVX.under.remove(); NAVX.under=null; NAVX.from=''; }
+// route() : juste avant d'afficher la nouvelle page
+function navBefore(hash){ const prev=NAVX.prev; NAVX.push=false;
+  if(hash===prev) return;   // la même page se redessine (nouvelles données) : rien ne change
+  if(chatHash(hash)&&navPhone()&&prev&&!chatHash(prev)&&app.firstChild&&!app.querySelector('[aria-busy="true"]')){ navCapture(prev); NAVX.push=!!NAVX.under; }
+  else if(chatHash(hash)) navDrop(); }
+// route() : la nouvelle page est affichée. Vrai si un glissement s'en est chargé (pas d'autre animation de page)
+function navAfter(hash){ const prev=NAVX.prev; NAVX.prev=hash;
+  if(hash===prev) return false;
+  if(chatHash(hash)){ if(!NAVX.push) return false; NAVX.push=false; return navSlideIn(); }
+  const slid=NAVX.back; NAVX.back=false; NAVX.leaving=false;
+  if(!NAVX.under) return false;
+  const again=NAVX.from===hash, y=NAVX.y; navDrop();
+  if(again) scrollTo(0,y);   // retour sur la page d'avant : au même endroit
+  return again&&slid; }
+const navX = c => { const t=getComputedStyle(c).transform; if(!t||t==='none') return 0; try{ return new DOMMatrixReadOnly(t).m41; }catch(e){ return 0; } };
+const navDimEl = () => NAVX.under&&NAVX.under.querySelector('.nav-dim');
+function navDim(x){ const d=navDimEl(); if(d) d.style.opacity=String(Math.max(0,1-x/innerWidth)); }
+function navSlideIn(){ const c=app.querySelector('.chat-page'), u=NAVX.under; if(!u) return false;
+  if(!c){ navDrop(); return false; }
+  if(!navMotion()) return true;
+  u.classList.add('on'); c.classList.add('nav-mv');
+  const W=innerWidth, a=c.animate([{transform:`translate3d(${W}px,0,0)`},{transform:'translate3d(0,0,0)'}],{duration:320,easing:NAV_EASE}), d=navDimEl();
+  if(d) d.animate([{opacity:0},{opacity:1}],{duration:320,easing:NAV_EASE});
+  NAVX.anim=a; a.finished.then(()=>{ if(NAVX.anim!==a) return; NAVX.anim=null; c.classList.remove('nav-mv'); u.classList.remove('on'); }).catch(()=>{});
+  return true; }
+// Le doigt (ou le bouton ‹) prend la conversation, là où elle est, même en plein mouvement
+function navGrab(c){ let x=0; const d0=navDimEl();
+  if(NAVX.anim){ x=navX(c); try{ NAVX.anim.cancel(); }catch(e){} NAVX.anim=null; }
+  if(d0) d0.getAnimations().forEach(a=>a.cancel());
+  if(!NAVX.under){ const u=document.createElement('div'); u.id='nav-under'; u.setAttribute('aria-hidden','true'); u.inert=true; u.innerHTML='<i class="nav-dim"></i>'; document.body.appendChild(u); Object.assign(NAVX,{ under:u, from:'', w:innerWidth }); }   // conversation ouverte directement : un fond uni dessous
+  NAVX.under.classList.add('on'); c.classList.add('nav-mv'); c.style.transform=`translate3d(${x}px,0,0)`; navDim(x); return x; }
+// Pas assez loin : la conversation reprend sa place
+function navSettle(c,x){ NAVX.drag=false; const u=NAVX.under, d=navDimEl();
+  const done=()=>{ c.style.transform=''; c.classList.remove('nav-mv'); if(d) d.style.opacity=''; if(u) u.classList.remove('on'); if(u&&!NAVX.from) navDrop(); };
+  if(!navMotion()||x<1){ done(); return; }
+  const dur=Math.round(Math.min(300,Math.max(180,x*.9))), a=c.animate([{transform:`translate3d(${x}px,0,0)`},{transform:'translate3d(0,0,0)'}],{duration:dur,easing:NAV_EASE});
+  c.style.transform=''; if(d){ d.animate([{opacity:Math.max(0,1-x/innerWidth)},{opacity:1}],{duration:dur,easing:NAV_EASE}); d.style.opacity='1'; }
+  NAVX.anim=a; a.finished.then(()=>{ if(NAVX.anim!==a) return; NAVX.anim=null; done(); }).catch(()=>{}); }
+// Assez loin, ou lancée : la conversation sort par la droite à la vitesse du doigt, et l'on revient sur la page d'avant
+function navLeave(c,x,v){ NAVX.drag=false; NAVX.leaving=true; const W=innerWidth, d=navDimEl(), h=location.hash;
+  const go=()=>{ NAVX.back=true; const to=NAVX.from;
+    if(to){ history.back(); setTimeout(()=>{ if(NAVX.leaving&&location.hash===h) location.hash=to; },700); }   // filet : si le retour n'a rien donné
+    else location.hash=chatParent(h); };
+  if(!navMotion()){ c.style.transform=`translate3d(${W}px,0,0)`; if(d) d.style.opacity='0'; go(); return; }
+  const dur=Math.round(Math.min(360,Math.max(160,4*(W-x)/Math.max(v,.6)))), a=c.animate([{transform:`translate3d(${x}px,0,0)`},{transform:`translate3d(${W}px,0,0)`}],{duration:dur,easing:'cubic-bezier(.2,.8,.2,1)'});
+  c.style.transform=`translate3d(${W}px,0,0)`; if(d){ d.animate([{opacity:Math.max(0,1-x/W)},{opacity:0}],{duration:dur,easing:'cubic-bezier(.2,.8,.2,1)'}); d.style.opacity='0'; }
+  NAVX.anim=a; a.finished.then(()=>{ if(NAVX.anim!==a) return; NAVX.anim=null; go(); }).catch(()=>{ NAVX.leaving=false; }); }
+// Le geste : de la gauche vers la droite, n'importe où dans la conversation (sauf la zone où l'on écrit) ; vers le haut ou le bas, c'est la conversation qui défile
+{ let d=null; const skip='.chat-form,.cpanel,.qr-stk,.edit-bar,.reply-bar,.rec-bar,input,textarea,select,[contenteditable],[data-noswipe]';
+  document.addEventListener('pointerdown',e=>{ d=null;
+    if(e.pointerType==='mouse'||!e.isPrimary||NAVX.leaving||!navPhone()) return;
+    const c=e.target.closest&&e.target.closest('.chat-page'); if(!c||e.target.closest(skip)||(typeof dlg!=='undefined'&&dlg.open)) return;
+    d={ id:e.pointerId, c, x:e.clientX, y:e.clientY, on:false, base:0, x0:0, cur:0, pts:[[e.timeStamp,e.clientX]] }; },{passive:true});
+  document.addEventListener('pointermove',e=>{ if(!d||e.pointerId!==d.id) return; const dx=e.clientX-d.x, dy=e.clientY-d.y;
+    if(!d.on){ if(Math.abs(dy)>10&&Math.abs(dy)>=Math.abs(dx)){ d=null; return; }   // vers le haut ou le bas : on laisse défiler
+      if(dx<10||dx<Math.abs(dy)*1.2) return;
+      d.on=true; NAVX.drag=true; d.base=navGrab(d.c); d.x0=e.clientX; try{ d.c.setPointerCapture(e.pointerId); }catch(er){} }
+    const x=Math.max(0,d.base+e.clientX-d.x0); d.cur=x; d.c.style.transform=`translate3d(${x}px,0,0)`; navDim(x);
+    d.pts.push([e.timeStamp,e.clientX]); if(d.pts.length>6) d.pts.shift(); },{passive:true});
+  const end=e=>{ if(!d||e.pointerId!==d.id) return; const g=d; d=null; if(!g.on) return; NAVX.eat=Date.now();
+    const a=g.pts[0], b=g.pts[g.pts.length-1], v=(b[1]-a[1])/Math.max(1,b[0]-a[0]), W=innerWidth;
+    if(e.type!=='pointercancel'&&(g.cur>W*.33||(v>.4&&g.cur>24))) navLeave(g.c,g.cur,v); else navSettle(g.c,g.cur); };
+  document.addEventListener('pointerup',end); document.addEventListener('pointercancel',end);
+  document.addEventListener('click',e=>{
+    if(NAVX.eat&&Date.now()-NAVX.eat<450){ NAVX.eat=0; e.preventDefault(); e.stopPropagation(); return; }   // le doigt qui lâche la conversation n'ouvre rien
+    const b=e.target.closest&&e.target.closest('.chat-page .chat-head .back'); if(!b||!navPhone()||NAVX.leaving||!NAVX.under||NAVX.from!==b.getAttribute('href')) return;   // on ne vient pas de là : le lien fait comme avant
+    e.preventDefault(); const c=b.closest('.chat-page'); navLeave(c,navGrab(c),0); },true);
+  addEventListener('resize',()=>{ if(NAVX.under&&!navBusy()&&innerWidth!==NAVX.w) navDrop(); }); }   // l'écran a tourné : la page d'avant n'est plus à sa place
 /* --- Animations pilotées en JS --- */
 function countUp(el){
   const target=+el.dataset.count, span=el.querySelector('span'); if(!span||reduced()) return;
@@ -3679,7 +3799,7 @@ function publicMe(){ return {...S.me, online:S.privacy.online, lastSeen:Date.now
 let _lastRefresh=0;
 function refreshAfterData(){
   splashSync();   // les données sont là : l'écran d'ouverture peut se retirer
-  if(document.body.classList.contains('is-home') && affBusy()){ clearTimeout(AFF.t); AFF.t=setTimeout(refreshAfterData,950); return; }   // v17 — le doigt fait glisser les affiches : on redessine juste après
+  if((document.body.classList.contains('is-home') && affBusy()) || navBusy()){ clearTimeout(AFF.t); AFF.t=setTimeout(refreshAfterData,950); return; }   // v17 — le doigt fait glisser les affiches (v18 : ou une conversation) : on redessine juste après
   // Un écran de chargement (squelette) est affiché : on le remplace toujours par la vraie page, quelle que soit la page
   const waiting=!!document.querySelector('#app [aria-busy="true"]');
   if(!waiting && Date.now()-_lastRefresh<800) return; _lastRefresh=Date.now();
@@ -4255,7 +4375,7 @@ const WORLD_LAYERS={ 'cs-sky':[.22,0], 'cs-far':[.15,0], 'cs-mid':[.08,0], 'cs-n
 let _wLast=-1, _wTick=false, _wH=0, _wLayers=null, _wCam2=null;
 function worldScroll(force){
   _wTick=false; const w=document.getElementById('world'); if(!w) return;
-  const r=document.documentElement, y=window.scrollY; r.classList.toggle('scrolled', y>10);
+  const r=document.documentElement, y=NAVX.under&&NAVX.from?NAVX.y:window.scrollY; r.classList.toggle('scrolled', y>10);   // v18 — dans une conversation, le décor reste où était la page d'avant (on la revoit en glissant)
   const par=!reduced(); if(r.classList.contains('world-par')!==par) r.classList.toggle('world-par',par);
   const cam=w.firstElementChild; if(force||!_wH){ _wH=(cam&&cam.offsetHeight)||400; _wLayers=[...w.querySelectorAll('.cs-l')].map(l=>[l,WORLD_LAYERS[[...l.classList].find(c=>WORLD_LAYERS[c])]]).filter(x=>x[1]); _wCam2=document.querySelector('#world-top > .w-cam'); }
   POND.sync();   // thème Océan : les carpes ne nagent que lorsqu'on voit l'eau, et s'arrêtent dans les autres thèmes (appelée ici car on passe par cette fonction à chaque changement de thème, de mode léger, de taille et de défilement)
