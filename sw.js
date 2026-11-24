@@ -4,9 +4,13 @@
      (la nouvelle version continue d'arriver en arrière-plan et sera là à la prochaine ouverture).
    - Hors connexion, la dernière version enregistrée s'affiche.
    - Firebase, Google, CinetPay et les polices ne sont jamais mis en cache ici. */
-const CACHE = 'coopo-v56';
+// v22 — Le code du site est dans js/ : à chaque mise en ligne, changer V ici ET le ?v= des balises <script> d'index.html (même nombre).
+// Ainsi une page est toujours servie avec le code de sa version (jamais une page neuve avec un vieux fichier gardé en cache).
+const V = 57;
+const CACHE = 'coopo-v' + V;
 const WAIT_MS = 3000;
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/v2/icon-192.png', './icons/v2/icon-512.png'];
+const JS = ['base', 'navigation', 'pages', 'themes', 'boutique', 'appareil', 'apparence', 'connexion', 'mates', 'messages', 'appels', 'medias', 'sessions-flammes', 'groupes', 'communaute', 'pages-infos', 'firebase', 'demarrage'];   // dans l'ordre d'index.html
+const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/v2/icon-192.png', './icons/v2/icon-512.png', ...JS.map(n => './js/' + n + '.js?v=' + V)];
 
 self.addEventListener('install', e => {
   // { cache: 'reload' } : à chaque nouvelle version, ces fichiers sont redemandés au serveur (jamais une vieille copie gardée par le navigateur)
@@ -42,7 +46,7 @@ self.addEventListener('fetch', e => {
     e.waitUntil(net.then(() => saved, () => {}));           // la mise à jour du cache se termine même si la page est déjà affichée
     return;
   }
-  e.respondWith(caches.match(req).then(hit => hit || fetch(req)));   // icônes et manifeste : cache d'abord
+  e.respondWith(caches.match(req).then(hit => hit || fetch(req)));   // icônes, manifeste et code (js/…?v=) : cache d'abord
 });
 
 // v14 — Notifications « push » (envoyées par le serveur via Firebase Cloud Messaging) : un appel arrive même quand Coopô est fermée.
