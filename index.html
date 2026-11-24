@@ -3066,6 +3066,9 @@ const ageGroup = p => { const a=ageOf(p); if(a==null && p && p.ageGroup) return 
 const ONLINE_MS = 5*60*1000;
 const isOnline = p => !!p && !!p.online && (!p.lastSeen || Date.now()-p.lastSeen < ONLINE_MS);
 // Joueur hors ligne : « Vu il y a 2 h » s'il affiche son statut et qu'il est passé depuis moins de 30 jours, sinon « Hors ligne »
+// v21 — ce que les pages montrent des joueurs, pour savoir si une nouvelle liste change quelque chose : tout le profil, sauf l'heure de
+// dernière activité (elle bouge sans cesse) remplacée par « en ligne » ; l'ordre des joueurs et des champs ne compte pas
+const playersSig = () => PLAYERS.map(p=>JSON.stringify(Object.keys(p).sort().filter(k=>p[k]!==undefined&&k!=='lastSeen'&&k!=='updatedAt'&&k[0]!=='_').map(k=>[k,p[k]]).concat([['$on',isOnline(p)]]))).sort().join('\n');
 const seenTxt = p => { const t=+p.lastSeen||0, d=Date.now()-t; return t>0&&d>=0&&d<30*864e5 ? 'Vu '+ago(t) : 'Hors ligne'; };
 // Sans profil avec âge, on ne montre que des profils adultes.
 const sameGroup = p => !CONFIG.separateMinors || (S.me && S.me.dob ? ageGroup(p)===ageGroup(S.me) : ageGroup(p)==='adult');
@@ -3219,6 +3222,7 @@ function renderNav(active){
 }
 const app=document.getElementById('app');
 let NAV_COUNT=0;   // nombre de pages vues dans cette visite (sert au bouton Retour)
+let PAGE_T0=0, PAGE_IN=false;   // v21 — l'heure où la page affichée est apparue, et si elle est entrée en fondu (voir keepIn)
 // Profil complet = pseudo, date de naissance et au moins un jeu
 const profileComplete = () => !!(S.me && S.me.name && S.me.dob && Array.isArray(S.me.games) && S.me.games.length);
 // Pages accessibles sans être connecté (connexion, pages légales, aide, contact, installation)
@@ -3250,7 +3254,10 @@ function route(){
   if(name.startsWith('@')){ let nm=''; try{ nm=decodeURIComponent(name.slice(1)).toLowerCase(); }catch(e){} const p=PLAYERS.find(x=>x.name.toLowerCase()===nm); document.body.classList.remove('is-home'); document.body.dataset.route='joueur'; viewPlayer(S.me&&S.me.name.toLowerCase()===nm?'me':(p?p.id:'?')); renderNav(''); window.scrollTo(0,0); app.firstElementChild?.classList.add('page-in'); animateAfterRender(); return; }
   const v = views[name] || viewHome;
   clearInterval(scTimer);
-  const navH=location.hash||'#/accueil'; navBefore(navH);   // v18 — vers une conversation : la page qu'on quitte passe dessous
+  const navH=location.hash||'#/accueil';
+  // v21 — la même page qui se redessine (nouvelles données) : on note ce qui était déjà apparu, pour ne rien refaire apparaître
+  const again=NAVX.prev===navH, shown=again?[...app.querySelectorAll('.reveal')].map(el=>el.classList.contains('in')):null;
+  navBefore(navH);   // v18 — vers une conversation : la page qu'on quitte passe dessous
   document.body.classList.toggle('is-home', v===viewHome);
   document.body.dataset.route = views[name] ? name : 'accueil';   // la page affichée : sert à ne montrer la cloche et la boutique que là où elles servent
   v(arg);
@@ -3262,11 +3269,21 @@ function route(){
   const prevH=NAVX.prev, slid=navAfter(navH);   // v18 — entrée dans une conversation, ou retour en glissant : pas d'autre animation de page
   // v19 — pas d'animation de page non plus quand la même page se redessine (nouvelles données), ni d'une conversation à l'autre (Messages, Groupes)
   const calm = slid || prevH===navH || (MSG_AREA.test(prevH)&&MSG_AREA.test(navH));
-  if(!calm) app.firstElementChild?.classList.add('page-in');
-  animateAfterRender();
+  if(!again){ PAGE_T0=performance.now(); PAGE_IN=!calm; }   // v21 — l'heure où la page est apparue, et si elle est entrée en fondu
+  if(!calm||(again&&PAGE_IN)) app.firstElementChild?.classList.add('page-in');
+  animateAfterRender(app, again?PAGE_T0:0);
+  if(again) keepIn(shown);   // v21 — rien ne repart de zéro : cartes, cercles et apparitions continuent là où ils en étaient
   renderGoogleButtons(app);
   if(!calm) playWipe();
 }
+/* v21 — Une page qui se redessine parce que de nouvelles données sont arrivées (un joueur qui se connecte…) ne doit pas
+   avoir l'air de se recharger : chaque animation d'entrée (cartes qui montent, cercles qui se remplissent, titres, fondu)
+   reprend exactement où elle en était depuis l'arrivée sur la page, et se termine tout de suite si elle était finie.
+   Les animations qui tournent en boucle (décor, plaques…) ne sont pas touchées. */
+function keepIn(shown){ const t=Math.max(0,performance.now()-PAGE_T0);
+  if(shown) app.querySelectorAll('.reveal').forEach((el,i)=>{ if(shown[i]) el.classList.add('in'); });   // déjà apparu : reste là, sans refaire l'apparition
+  [app,document.getElementById('tabbar'),document.getElementById('siderail')].forEach(root=>{ let list=[]; try{ list=root&&root.getAnimations?root.getAnimations({subtree:true}):[]; }catch(e){}
+    list.forEach(a=>{ try{ if(a.effect.getComputedTiming().iterations===Infinity) return; if(window.CSSTransition&&a instanceof CSSTransition) a.finish(); else a.currentTime=t; }catch(e){} }); }); }
 const MSG_AREA=/^#\/(messages|groupe)(\/|$)/;   // la messagerie : la liste des messages, la page des groupes et leurs conversations
 /* ---- v18 — Entrer dans une conversation et en sortir en glissant (téléphone), comme dans Discord ----
    On ouvre une conversation : elle arrive par la droite, par-dessus la page d'où l'on vient, qui reste dessous telle quelle.
@@ -3372,17 +3389,17 @@ function navLeave(c,x,v){ NAVX.drag=false; NAVX.leaving=true; const W=innerWidth
     e.preventDefault(); const c=b.closest('.chat-page'); navLeave(c,navGrab(c),0); },true);
   addEventListener('resize',()=>{ if(NAVX.under&&!navBusy()&&innerWidth!==NAVX.w) navDrop(); }); }   // l'écran a tourné : la page d'avant n'est plus à sa place
 /* --- Animations pilotées en JS --- */
-function countUp(el){
+function countUp(el,base){   // base (v21) : l'heure où la page est apparue, quand elle se redessine : le compte reprend où il en était
   const target=+el.dataset.count, span=el.querySelector('span'); if(!span||reduced()) return;
   const card=el.closest('.mcard'), delay=(card?+(card.style.getPropertyValue('--i')||0)*70+150:el.closest('.float-match')?900:0);
-  const dur=1200, t0=performance.now()+delay;
+  const dur=1200, t0=(base||performance.now())+delay;
   const tick=t=>{ const k=Math.min(1,Math.max(0,(t-t0)/dur)), e=1-Math.pow(1-k,3);
     span.firstChild.nodeValue=Math.round(target*e); if(k<1) requestAnimationFrame(tick); };
-  span.firstChild.nodeValue='0'; requestAnimationFrame(tick);
+  tick(performance.now());
 }
 const io = 'IntersectionObserver' in window ? new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }),{threshold:.2}) : null;
-function animateAfterRender(root=app){
-  root.querySelectorAll('.ring[data-count]').forEach(countUp);
+function animateAfterRender(root=app,base=0){
+  root.querySelectorAll('.ring[data-count]').forEach(el=>countUp(el,base));
   root.querySelectorAll('.reveal').forEach(el=> io ? io.observe(el) : el.classList.add('in'));
   root.querySelectorAll('.panel').forEach((p,i)=>p.style.setProperty('--i',i));
 }
@@ -8024,7 +8041,8 @@ const DB = {
   async setDispo(d){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live||!this.uid()) return; try{ await this.db.collection('profiles').doc(this.uid()).update({dispo:d||null}); }catch(e){ console.error(e); toast('Statut non enregistré en ligne'); } },
   async refreshPlayers(){ if(!this.live||!this.uid()||!S.me||!S.me.dob) return false; if(this._refreshing||(this._lastPlayers&&Date.now()-this._lastPlayers<180000)) return false; this._lastPlayers=Date.now(); this._refreshing=true;
     try{ const uid=this.uid(); const ps=await this.db.collection('profiles').where('hidden','==',false).limit(300).get();   // v7 — tous les âges
-      const fresh=[]; ps.forEach(d=>{ if(d.id!==uid) fresh.push(normP({...d.data(),id:d.id,age:undefined})); }); const keep=PLAYERS.filter(p=>(p._reported||p._extra)&&!fresh.some(f=>f.id===p.id)); PLAYERS.length=0; fresh.concat(keep).forEach(p=>PLAYERS.push(p)); return true; }catch(e){ console.error(e); return false; } finally{ this._refreshing=false; } },
+      const before=playersSig();   // v21 — « changé » seulement si ce que les pages montrent a changé : sinon la page ne se redessine pas pour rien
+      const fresh=[]; ps.forEach(d=>{ if(d.id!==uid) fresh.push(normP({...d.data(),id:d.id,age:undefined})); }); const keep=PLAYERS.filter(p=>(p._reported||p._extra)&&!fresh.some(f=>f.id===p.id)); PLAYERS.length=0; fresh.concat(keep).forEach(p=>PLAYERS.push(p)); return playersSig()!==before; }catch(e){ console.error(e); return false; } finally{ this._refreshing=false; } },
   // Parrainage : validé une seule fois, quand le filleul a un profil ET une adresse e-mail vérifiée (les comptes Google le sont d'office).
   // Tant que l'e-mail n'est pas vérifié, le code est gardé et retesté au prochain chargement.
   async applyReferral(){ if(!this.live||!this.uid()||!S.me) return; let code=''; try{ code=(localStorage.getItem('coopo_ref')||'').toLowerCase(); }catch(e){} if(!code) return;
