@@ -2870,8 +2870,7 @@ html[data-skin="samurai"] .aff .af-h{ letter-spacing:.01em; }
   .af-plq{ width:350px; gap:10px; } .af-plq .plq-demo{ min-height:56px; }
   .af-look{ max-height:none; transform:scale(1.3); }
 }
-/* — v17 — barre du bas du téléphone : 5 onglets, l'Accueil au milieu, plus grand ; ta photo en haut à droite ouvre ton profil — */
-.me-btn{ display:none; }
+/* — v17 — barre du bas du téléphone : 5 onglets, l'Accueil au milieu, plus grand (v20 : le Profil, avec ta photo, à la place de Groupes) — */
 @media (max-width:860px){
   .tabbar{ grid-template-columns:repeat(5,minmax(0,1fr)); }
   .tabbar a.tb-home{ overflow:visible; }
@@ -2882,21 +2881,11 @@ html[data-skin="samurai"] .aff .af-h{ letter-spacing:.01em; }
   @media (max-width:400px){ .tabbar a{ font-size:11px; } .tabbar .tb-ico{ width:50px; } html[data-skin="samurai"] .tabbar a{ font-size:10px; } }
   @media (max-width:340px){ .tabbar a{ font-size:10px; } .tabbar .tb-ico{ width:44px; } html[data-skin="samurai"] .tabbar a{ font-size:9px; } }
   .frame{ padding-bottom:118px; }
-  body.has-profile .me-btn{ display:grid; }
-  .me-btn{ place-items:center; flex:none; width:44px; height:44px; border-radius:50%; text-decoration:none; -webkit-tap-highlight-color:transparent; transition:transform .16s cubic-bezier(.23,1,.32,1); }
-  .me-btn .av{ width:38px !important; height:38px !important; font-size:14px !important; box-shadow:0 0 0 1px var(--line); }
-  .me-btn[aria-current="page"] .av{ box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--tx); }
-  .me-btn:active{ transform:scale(.94); }
-  .top .me-btn{ margin-left:auto; }
-  body[data-route="accueil"] .top .me-btn{ margin-left:0; }
-  /* Pages où la barre du haut n'a rien d'autre que ta photo : elle se pose à droite de la première ligne de la page, sans ajouter de hauteur */
-  body:not([data-route="accueil"]):not([data-route="profil"]):not([data-route="parametres"]):not([data-route="boutique"]):not([data-route="inventaire"]) .top{ position:relative; }
-  body:not([data-route="accueil"]):not([data-route="profil"]):not([data-route="parametres"]):not([data-route="boutique"]):not([data-route="inventaire"]) .top .me-btn{ position:absolute; top:calc(100% + 8px); right:4px; margin:0; }
   /* une souris sur un écran étroit : les flèches restent dans l'écran */
   @media (hover:hover) and (pointer:fine){ .aff-prev{ left:6px; } .aff-next{ right:6px; } }
 }
-/* Messages sur un petit téléphone : le titre, 3 boutons et ta photo tiennent sur une ligne */
-@media (max-width:400px){ .page-head.sn-top{ gap:6px; } .sn-top .sn-round,.sn-top .me-btn{ width:40px; height:40px; } .sn-top .me-btn .av{ width:36px !important; height:36px !important; }
+/* Messages sur un petit téléphone : le titre et les 3 boutons tiennent sur une ligne */
+@media (max-width:400px){ .page-head.sn-top{ gap:6px; } .sn-top .sn-round{ width:40px; height:40px; }
   body .page-head.sn-top h2::after{ display:none !important; }   /* le petit décor après le titre laisse la place */
   html[data-skin="samurai"] .sn-top h2{ font-size:22px; } }   /* « MESSAGES » en capitales espacées est plus large */
 @media (max-width:340px){ .sn-top a.sn-round[href="#/matchs"]{ display:none; } }   /* Matchs reste dans la barre du bas */
@@ -2909,12 +2898,33 @@ html[data-skin="samurai"] .aff .af-h{ letter-spacing:.01em; }
 #nav-under.on{ visibility:visible; }
 #nav-under .nav-page{ position:absolute; margin:0; }
 #nav-under .nav-dim{ position:absolute; inset:0; z-index:99; background:rgba(0,0,0,.16); opacity:0; pointer-events:none; }
+/* v19 — les bulles ne « sautent » plus quand on ouvre une conversation, qu'on en change ou qu'elle se redessine : seulement un message qui vient d'arriver (.pop-in) */
+.chat-box .bubble:not(.pop-in):not(.flash){ animation:none; }
 body:has(#nav-under.on) #ground{ visibility:hidden; } body:has(#nav-under.on) .frame{ box-shadow:none; }   /* le bas du décor du cadre ne passe pas sur la page d'avant */
 @media (max-width:999px){
   /* le doigt qui va de côté est pour le geste ; vers le haut ou le bas, la conversation défile comme avant */
   .chat-page, .chat-page .chat-box{ touch-action:pan-y pinch-zoom; }
   .chat-page.nav-mv{ box-shadow:-18px 0 36px -10px rgba(0,0,0,.34); will-change:transform; }
 }
+</style>
+<style id="coopo-messages-groupes">
+/* ==== v20 — Sur téléphone, les groupes sont dans Messages (une seule liste, comme sur Snapchat) ; le Profil prend la place de Groupes dans la barre du bas ==== */
+/* l'onglet Profil montre ta photo, ronde ; entourée quand tu es sur ton profil */
+.tabbar .tb-me .tb-ico > .av{ width:26px !important; height:26px !important; font-size:10px !important; border-radius:50% !important; box-shadow:0 0 0 1.5px var(--line); text-transform:none; letter-spacing:0; }
+.tabbar .tb-me[aria-current="page"] .tb-ico > .av{ box-shadow:0 0 0 2px var(--on-pk,#fff); animation:hop .45s cubic-bezier(.3,1.6,.5,1); }
+/* les invitations aux groupes, juste au-dessus de la liste */
+.sn-inv{ margin:0 0 14px; } .sn-inv[hidden]{ display:none; } .sn-inv .g-h{ margin:2px 0 8px; font-size:17px; }
+/* « Trouver un groupe », tout en bas de la liste */
+.sn-row.sn-more{ min-height:68px; border-top:1px solid var(--hair); }
+.sn-more .sn-av{ height:auto; display:grid; place-items:center; }
+.sn-more .sn-av > .sn-more-ico{ width:48px; height:48px; border-radius:16px !important; display:grid; place-items:center; background:color-mix(in srgb,var(--pk) 14%,transparent); color:var(--pk2,var(--pk)); }
+.sn-more-ico svg{ width:22px; height:22px; }
+.sn-more .sn-mid b{ font-size:16px; }
+/* le bouton + ne cache pas le bas de la liste */
+.dm-list-page:has(.sn-fab){ padding-bottom:84px; }
+/* la page des groupes : un retour vers Messages, sur téléphone seulement */
+.g-back{ margin:0 0 4px; }
+@media (min-width:1000px){ .g-back{ display:none; } }
 </style>
 </head>
 <body>
@@ -2956,7 +2966,6 @@ setTimeout(function(){try{if(SPLASH.armed)return;}catch(e){}if(!s)return;s.class
   <button class="notif-btn" type="button" aria-label="Notifications" title="Notifications"></button>
   <button class="inv-btn skin-btn" type="button" aria-label="Inventaire : mes thèmes et plaques" title="Inventaire" data-inv-go></button>
   <button class="skin-btn" type="button" aria-label="Boutique : thèmes et plaques" title="Boutique"></button>
-  <a class="me-btn" href="#/profil" aria-label="Mon profil" title="Mon profil"></a>
 </header>
 <main id="app" tabindex="-1"></main>
 <div class="install-foot" data-install-foot hidden><button class="btn btn-ac" type="button" data-install-go><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M12 7v7m-3-3 3 3 3-3M10 18h4"/></svg>Installer l'application</button></div>
@@ -3178,16 +3187,19 @@ function updateFavicon(){ const draw=()=>{ try{ const cs=getComputedStyle(docume
   let l=document.querySelector('link[rel="icon"]'); if(!l){ l=document.createElement('link'); l.rel='icon'; document.head.appendChild(l); } l.type='image/png'; l.href=c.toDataURL('image/png'); }catch(e){} };
   _favImg.complete ? draw() : _favImg.onload=draw; }
 // 6 onglets : la recherche se range dans Matchs, les réglages dans Profil. « groupes » = la Communauté (ancien nom), « groupe » = l'onglet Groupes.
-// v17 — sur téléphone, 5 onglets : l'Accueil au milieu (et plus grand) ; le Profil s'ouvre avec ta photo, en haut à droite de chaque page.
+// v17 — sur téléphone, 5 onglets : l'Accueil au milieu (et plus grand).
+// v20 — sur téléphone : Matchs · Commu · Accueil · Messages · Profil (avec ta photo). Les groupes sont dans Messages, avec les mates, comme sur Snapchat.
 const NAV=[['accueil','Accueil'],['matchs','Matchs'],['groupes','Communauté'],['messages','Messages'],['groupe','Groupes'],['profil','Profil']];
 const NAV_PARENT={recherche:'matchs',parametres:'profil',boutique:'profil',inventaire:'profil','faux-paiement':'profil',paiement:'profil',aide:'profil',contact:'profil',app:'profil',cgu:'profil',confidentialite:'profil',cookies:'profil',remboursement:'profil',moderation:'profil'};   // page secondaire → onglet allumé
 const TAB_LBL={groupes:'Commu'};
-const NAV_PHONE=['matchs','groupes','accueil','messages','groupe'];
+const NAV_PHONE=['matchs','groupes','accueil','messages','profil'];
+const NAV_PHONE_PARENT={groupe:'messages'};   // téléphone : les pages des groupes allument l'onglet Messages
 function renderNav(active){
   const navItems = isAdmin() ? [...NAV,['moderation','Modération']] : NAV;
   const top = navItems.some(([r])=>r===active) ? active : (NAV_PARENT[active]||active);   // menu du haut (ordinateur) : « Modération » y a son propre onglet
   active=NAV_PARENT[active]||active;
-  const cur = r => r===active ? 'aria-current="page"' : '';
+  const tabOn=NAV_PHONE_PARENT[active]||active;
+  const cur = r => r===tabOn ? 'aria-current="page"' : '';
   document.querySelectorAll('.navpill').forEach(n=>n.innerHTML = navItems.map(([r,l])=>`<a href="#/${r}" data-nav="${r}" ${r===top?'aria-current="page"':''}>${l}</a>`).join(''));
   // Colonne de gauche (ordinateur) : logo, pages en icônes, groupes, puis cloche et boutique
   const rail=document.getElementById('siderail');
@@ -3200,11 +3212,9 @@ function renderNav(active){
   const online=visible().filter(p=>isOnline(p)).length;
   const liveTxt = online ? `${online} joueur${online>1?'s':''} en ligne` : (S.auth ? 'Bienvenue sur Coopô' : 'Nouveau : rejoins les premiers');
   document.querySelectorAll('.top-right').forEach(t=>t.innerHTML=`<span class="live">${liveTxt}</span><small>${S.auth?'connecté : '+esc(S.me?.name||S.auth.name):S.me?'profil : '+esc(S.me.name):'<a href="#/connexion">se connecter</a>'}</small>`);
-  const lbl=Object.fromEntries(NAV);
-  document.getElementById('tabbar').innerHTML = NAV_PHONE.map(r=>`<a href="#/${r}" data-nav="${r}" ${cur(r)}${r==='accueil'?' class="tb-home"':''}><i class="tb-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[r]}</svg></i><span>${TAB_LBL[r]||lbl[r]}</span></a>`).join('');
-  // Ta photo, en haut à droite (téléphone) : elle ouvre ton profil, entourée quand tu y es
-  const meAv=S.me?avatar(publicMe(),38):'';
-  document.querySelectorAll('.me-btn').forEach(b=>{ b.innerHTML=meAv; if(active==='profil') b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
+  const lbl=Object.fromEntries(NAV), meAv=S.me?avatar(publicMe(),26):'';   // l'onglet Profil montre ta photo (sinon l'icône)
+  document.getElementById('tabbar').innerHTML = NAV_PHONE.map(r=>{ const me=r==='profil'&&meAv;
+    return `<a href="#/${r}" data-nav="${r}" ${cur(r)}${r==='accueil'?' class="tb-home"':me?' class="tb-me"':''}><i class="tb-ico">${me?meAv:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[r]}</svg>`}</i><span>${TAB_LBL[r]||lbl[r]}</span></a>`; }).join('');
   renderNotifBadge();
 }
 const app=document.getElementById('app');
@@ -3249,12 +3259,15 @@ function route(){
       if(kids.length && kids.some(c=>!c.matches('.panel'))){ const sh=document.createElement('div'); sh.className='sheet'; kids[0].before(sh); kids.forEach(k=>sh.appendChild(k)); } } }
   renderNav(name==='joueur' ? '' : (views[name]?name:'accueil'));
   window.scrollTo(0,0);
-  const slid=navAfter(navH);   // v18 — entrée dans une conversation, ou retour en glissant : pas d'autre animation de page
-  if(!slid) app.firstElementChild?.classList.add('page-in');
+  const prevH=NAVX.prev, slid=navAfter(navH);   // v18 — entrée dans une conversation, ou retour en glissant : pas d'autre animation de page
+  // v19 — pas d'animation de page non plus quand la même page se redessine (nouvelles données), ni d'une conversation à l'autre (Messages, Groupes)
+  const calm = slid || prevH===navH || (MSG_AREA.test(prevH)&&MSG_AREA.test(navH));
+  if(!calm) app.firstElementChild?.classList.add('page-in');
   animateAfterRender();
   renderGoogleButtons(app);
-  if(!slid) playWipe();
+  if(!calm) playWipe();
 }
+const MSG_AREA=/^#\/(messages|groupe)(\/|$)/;   // la messagerie : la liste des messages, la page des groupes et leurs conversations
 /* ---- v18 — Entrer dans une conversation et en sortir en glissant (téléphone), comme dans Discord ----
    On ouvre une conversation : elle arrive par la droite, par-dessus la page d'où l'on vient, qui reste dessous telle quelle.
    On fait glisser le doigt de la gauche vers la droite : la conversation suit le doigt et laisse voir la page d'avant ;
@@ -3266,7 +3279,7 @@ const NAVX={ under:null, from:'', y:0, w:0, prev:'', anim:null, drag:false, leav
 const navPhone = () => matchMedia('(max-width:999px)').matches;
 const navMotion = () => !matchMedia('(prefers-reduced-motion: reduce)').matches;
 const chatHash = h => /^#\/(messages|groupe)\/[^/]+$/.test(h||'') && h!=='#/groupe/nouveau';
-const chatParent = h => /^#\/groupe\//.test(h) ? '#/groupe' : '#/messages';
+const chatParent = () => '#/messages';   // v20 — sur téléphone, les groupes sont dans la liste des messages : on y revient toujours
 const navBusy = () => NAVX.drag || NAVX.leaving || !!NAVX.anim;   // un glissement est en cours : la page attend avant de se redessiner
 const NAV_EASE='cubic-bezier(.23,1,.32,1)';
 // Une copie figée d'un élément fixe (barre du haut, barre du bas), telle qu'on la voyait
@@ -5696,10 +5709,11 @@ const unreadCount = () => { const pf=pendFrom(); return S.notifs.filter(n=>!n.re
 const BELL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>';
 function renderNotifBadge(){ const n=unreadCount(); try{ if('setAppBadge' in navigator){ n?navigator.setAppBadge(n):navigator.clearAppBadge(); } }catch(e){} document.querySelectorAll('.notif-btn').forEach(b=>{ b.innerHTML=BELL+(n?`<span class="badge">${n>9?'9+':n}</span>`:''); b.classList.toggle('has',n>0); });
   const um=Object.values(S.unread||{}).reduce((a,b)=>a+(+b||0),0);   // messages non lus : pastille sur l'onglet Messages
-  const tabBadge=(nav,k,label)=>document.querySelectorAll(`[data-nav="${nav}"]`).forEach(a=>{ let b=a.querySelector('.tb-badge'); if(!k){ if(b) b.remove(); return; } if(!b){ b=document.createElement('span'); b.className='tb-badge'; a.appendChild(b); } b.textContent=k>9?'9+':k; b.setAttribute('aria-label',label); });
-  tabBadge('messages',um,um+(um>1?' messages non lus':' message non lu'));
-  let gk=0; try{ gk=GROUPS.filter(gUnread).length+gInvites().length; }catch(e){}   // onglet Groupes : groupes avec du nouveau + invitations
-  tabBadge('groupe',gk,gk+(gk>1?' groupes avec du nouveau':' groupe avec du nouveau')); }
+  let gk=0; try{ gk=GROUPS.filter(gUnread).length+gInvites().length; }catch(e){}   // groupes avec du nouveau + invitations : pastille sur l'onglet Groupes (ordinateur)
+  const badge=(a,k,label)=>{ let b=a.querySelector('.tb-badge'); if(!k){ if(b) b.remove(); return; } if(!b){ b=document.createElement('span'); b.className='tb-badge'; a.appendChild(b); } b.textContent=k>9?'9+':k; b.setAttribute('aria-label',label); };
+  // v20 — sur téléphone, les groupes sont dans Messages : la pastille de l'onglet Messages compte aussi les groupes avec du nouveau et les invitations
+  document.querySelectorAll('[data-nav="messages"]').forEach(a=>{ const k=a.closest('#tabbar')?um+gk:um; badge(a,k,k===um?um+(um>1?' messages non lus':' message non lu'):k+(k>1?' nouveautés':' nouveauté')); });
+  document.querySelectorAll('[data-nav="groupe"]').forEach(a=>badge(a,gk,gk+(gk>1?' groupes avec du nouveau':' groupe avec du nouveau'))); }
 const ago = t => { const m=Math.round((Date.now()-t)/60000); return m<1?'à l\'instant':m<60?`il y a ${m} min`:m<1440?`il y a ${Math.round(m/60)} h`:`il y a ${Math.round(m/1440)} j`; };
 function notifLink(n){ return n.type==='message'?'#/messages/'+n.from : n.type==='squad'?'#/groupes/sessions' : n.type==='group'&&n.gid?'#/groupe/'+n.gid : n.type==='flame'?'#/messages/'+n.from : n.type==='annonce'?'#/groupes/annonces' : n.from?'#/joueur/'+n.from : '#/matchs'; }
 function notifCenter(){
@@ -5748,41 +5762,62 @@ function dmFit(){ const sh=document.querySelector('.dm-shell'); if(!sh) return; 
 window.addEventListener('resize',dmFit);
 // Téléphone : la conversation prend exactement la hauteur visible, même quand le clavier est ouvert
 (function(){ const vv=window.visualViewport; if(!vv) return; const fit=()=>{ document.documentElement.style.setProperty('--vvh',Math.round(vv.height)+'px'); const b=document.getElementById('chatbox'); if(b&&document.activeElement&&document.activeElement.id==='chatin') b.scrollTop=b.scrollHeight; }; vv.addEventListener('resize',fit); fit(); })();
-/* Liste des messages sur téléphone : les mates (les groupes ont leur propre onglet), avec l'état du dernier message. */
+/* Liste des messages sur téléphone, avec l'état du dernier message.
+   v20 — comme sur Snapchat : les mates et les groupes dans une seule liste, le plus récent en haut (les mates épinglés d'abord).
+   Juste au-dessus : les invitations aux groupes. Tout en bas : « Trouver un groupe ». Le bouton + crée un groupe.
+   (Sur ordinateur, cette liste est cachée : les mates et les groupes sont dans les colonnes de gauche.) */
 const CHAT_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>';
 const shortAgo = t => ago(t).replace('il y a ','');
-// Une ligne de groupe façon liste de messages (onglet Groupes, sur téléphone)
+// Une ligne de groupe façon liste de messages (téléphone : dans Messages, et sur la page des groupes)
 const gRowSn = g => { const u=gUnread(g);
-  return `<a class="sn-row grp${u?' unread':''}" href="#/groupe/${esc(g.id)}" data-n="${esc(g.name.toLowerCase())}"><span class="sn-av">${gAvatar(g,56)}</span><div class="sn-mid"><b><span>${esc(g.name)}</span>${g.private?'<span class="g-lock" title="Groupe privé">'+LOCK_SVG+'</span>':''}</b>
+  return `<a class="sn-row grp${u?' unread':''}" href="#/groupe/${esc(g.id)}" data-f="group${u?' unread':''}" data-n="${esc(g.name.toLowerCase())}"><span class="sn-av">${gAvatar(g,56)}</span><div class="sn-mid"><b><span>${esc(g.name)}</span>${g.private?'<span class="g-lock" title="Groupe privé">'+LOCK_SVG+'</span>':''}</b>
     <span class="sn-st${u?' new':''}"><i></i><span class="t">${u?'Nouveaux messages':esc(g.game||'Tous les jeux')}</span><span class="x">${u&&g.lastAt?'· '+shortAgo(tsMs(g.lastAt)):`· ${g.members.length} membre${g.members.length>1?'s':''}${g.lastAt?' · '+shortAgo(tsMs(g.lastAt)):''}`}</span></span></div><span class="sn-end">${u?'<span class="badge static" aria-label="Nouveaux messages">•</span>':CHAT_SVG}</span></a>`; };
+let SN_F='all';   // v20 — le filtre choisi (Tous, Non lus, Groupes…) : gardé quand la liste se redessine et quand on revient d'une conversation
+const CHEV_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
 function snList(mates){
-  const items=pinSort(mates.map(p=>({p,at:(lastMsg(p.id)||{}).at||0})).sort((x,y)=>y.at-x.at),x=>x.p.id);   // v15 — les mates épinglés en haut
-  const nU=mates.filter(p=>S.unread[p.id]).length;
-  const rows=items.map(it=>{
+  const groups=gMine(), inv=gInvites();
+  const items=pinSort(mates.map(p=>({p,at:(lastMsg(p.id)||{}).at||0})).concat(groups.map(g=>({g,at:tsMs(g.lastAt||g.at)}))).sort((x,y)=>y.at-x.at),x=>x.p?x.p.id:'');   // v15 — les mates épinglés en haut
+  const nU=mates.filter(p=>S.unread[p.id]).length+groups.filter(gUnread).length;
+  const rows=items.map(it=>{ if(it.g) return gRowSn(it.g);
     const p=it.p, last=lastMsg(p.id), u=S.unread[p.id]||0, f=flameState(p.id), on=isOnline(p), fl=f&&f.count>=FLAME_FROM;
     const pin=isPinned(p.id), st=u?['new',u>1?`${u} nouveaux messages`:'Nouveau message']:!last?['','Dis bonjour 👋']:last.from==='me'?(seenOf(p.id)>=last.at?['seen','Vu']:['sent','Envoyé']):['','Reçu'];   // v15 — « Vu » quand le mate a lu
     return `<a class="sn-row${u?' unread':''}${plqOn(p)}" href="#/messages/${p.id}" data-f="${u?'unread ':''}${on?'online ':''}${fl?'flame':''}" data-n="${esc(String(p.name||'').toLowerCase())}">${plq(p)}<span class="sn-av">${avatar(p,56)}${on?'<span class="online" title="En ligne"></span>':''}</span><div class="sn-mid"><b><span>${esc(p.name)}</span>${modBadge(p)}${pin?PIN_SVG+'<span class="sr-only">épinglé</span>':''}</b>
       <span class="sn-st ${st[0]}">${last||u?'<i></i>':''}<span class="t">${st[1]}</span><span class="x">${last?'· '+shortAgo(last.at):''}${fl?` · ${f.count} ${f.warn?'⏳':'🔥'}`:''}</span></span></div><span class="sn-end">${u?`<span class="badge static">${u}</span>`:CHAT_SVG}</span></a>`; }).join('');
-  const chip=(k,l,n)=>`<button type="button" class="chip" data-snf="${k}" aria-pressed="${k==='all'}">${l}${n?` <span class="cnt">${n}</span>`:''}</button>`;
-  return `${notifBanHTML()}<div class="page-head sn-top"><div><h2>Messages</h2></div>${canCall()&&AUTH_LIVE?`<button class="btn sn-round" type="button" data-calls aria-label="Voir mes appels" title="Mes appels">${CALLS_SVG}</button>`:''}<button class="btn sn-round" type="button" id="sn-find" aria-label="Chercher une conversation" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button><a class="btn sn-round" href="#/matchs" aria-label="Trouver de nouveaux mates" title="Trouver de nouveaux mates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9.5" cy="8" r="3.5"/><path d="M3 20c.5-3.5 3-5.5 6.5-5.5s6 2 6.5 5.5M19 7v6M16 10h6"/></svg></a><a class="me-btn" href="#/profil" aria-label="Mon profil" title="Mon profil">${avatar(publicMe(),38)}</a></div>
-    <input class="sn-search" id="sn-q" type="search" placeholder="Chercher un mate" autocomplete="off" aria-label="Chercher un mate" hidden>
-    <div class="sn-chips" role="group" aria-label="Filtrer les conversations">${chip('all','Tous')}${chip('unread','Non lus',nU)}${chip('online','En ligne')}${chip('flame','Flammes 🔥')}</div>
-    ${items.length?`<div class="sn-list" id="sn-list">${rows}<p class="muted sn-none" id="sn-none" hidden>Aucune conversation ici.</p></div>${items.length>=3&&!pins().length?`<p class="muted sn-tip">Astuce : garde le doigt sur un mate (ou clic droit) pour l'épingler en haut.</p>`:''}`
-      :`<div class="empty"><h3>Pas encore de mates</h3><p class="muted">Envoie une demande à un joueur compatible. Dès qu'il accepte, vous pouvez discuter ici.</p><a class="btn btn-ac" href="#/matchs">Voir mes matchs</a></div>`}`; }
-function snWire(){ const list=document.getElementById('sn-list'), q=document.getElementById('sn-q'), find=document.getElementById('sn-find'); let f='all';
-  const apply=()=>{ if(!list) return; const t=(q&&!q.hidden?q.value:'').trim().toLowerCase(); let n=0;
-    list.querySelectorAll('.sn-row').forEach(r=>{ const ok=(f==='all'||(' '+r.dataset.f+' ').includes(' '+f+' '))&&(!t||r.dataset.n.includes(t)); r.hidden=!ok; if(ok) n++; });
-    const none=document.getElementById('sn-none'); if(none) none.hidden=n>0; };
-  document.querySelectorAll('[data-snf]').forEach(c=>c.onclick=()=>{ f=c.dataset.snf; document.querySelectorAll('[data-snf]').forEach(x=>x.setAttribute('aria-pressed',x===c)); apply(); });
-  if(find&&q){ find.onclick=()=>{ q.hidden=!q.hidden; find.setAttribute('aria-expanded',!q.hidden); if(q.hidden){ q.value=''; apply(); } else q.focus(); }; q.oninput=apply; } }
+  const chip=(k,l,n)=>`<button type="button" class="chip" data-snf="${k}" aria-pressed="${k===SN_F}">${l}${n?` <span class="cnt">${n}</span>`:''}</button>`;
+  const more=`<a class="sn-row sn-more" id="sn-more" href="#/groupe"><span class="sn-av"><span class="sn-more-ico">${FIND_SVG}</span></span><div class="sn-mid"><b><span>Trouver un groupe</span></b><span class="sn-st"><span class="t">Rejoins un groupe public</span></span></div><span class="sn-end">${CHEV_SVG}</span></a>`;
+  return `${notifBanHTML()}<div class="page-head sn-top"><div><h2>Messages</h2></div>${canCall()&&AUTH_LIVE?`<button class="btn sn-round" type="button" data-calls aria-label="Voir mes appels" title="Mes appels">${CALLS_SVG}</button>`:''}<button class="btn sn-round" type="button" id="sn-find" aria-label="Chercher une conversation" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button><a class="btn sn-round" href="#/matchs" aria-label="Trouver de nouveaux mates" title="Trouver de nouveaux mates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9.5" cy="8" r="3.5"/><path d="M3 20c.5-3.5 3-5.5 6.5-5.5s6 2 6.5 5.5M19 7v6M16 10h6"/></svg></a></div>
+    <input class="sn-search" id="sn-q" type="search" placeholder="Chercher un mate ou un groupe" autocomplete="off" aria-label="Chercher un mate ou un groupe" hidden>
+    <div class="sn-chips" role="group" aria-label="Filtrer les conversations">${chip('all','Tous')}${chip('unread','Non lus',nU)}${chip('group','Groupes')}${chip('online','En ligne')}${chip('flame','Flammes 🔥')}</div>
+    ${inv.length?`<section class="sn-inv" id="sn-inv" aria-label="Invitations aux groupes"><h3 class="on-world g-h">${inv.length>1?'Invitations à des groupes':'Invitation à un groupe'}</h3><div class="chat-list">${inv.map(gInvRow).join('')}</div></section>`:''}
+    ${items.length?`<div class="sn-list" id="sn-list">${rows}<p class="muted sn-none" id="sn-none" hidden>Aucune conversation ici.</p>${more}</div>${mates.length>=3&&!pins().length?`<p class="muted sn-tip">Astuce : garde le doigt sur un mate (ou clic droit) pour l'épingler en haut.</p>`:''}`
+      :`<div class="empty"><h3>Pas encore de mates</h3><p class="muted">Envoie une demande à un joueur compatible. Dès qu'il accepte, vous pouvez discuter ici. Tu peux aussi rejoindre un groupe.</p><a class="btn btn-ac" href="#/matchs">Voir mes matchs</a><a class="btn btn-ghost" href="#/groupe">Trouver un groupe</a></div>`}
+    <button class="btn btn-ac sn-fab" type="button" data-g-new aria-label="Créer un groupe" title="Créer un groupe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>`; }
+function snWire(){ const list=document.getElementById('sn-list'), q=document.getElementById('sn-q'), find=document.getElementById('sn-find'), inv=document.getElementById('sn-inv'), more=document.getElementById('sn-more');
+  const apply=()=>{ const f=SN_F, t=(q&&!q.hidden?q.value:'').trim().toLowerCase();
+    if(inv) inv.hidden=!!t||!['all','unread','group'].includes(f);   // les invitations : avec Tous, Non lus et Groupes
+    if(!list) return; let n=0;
+    list.querySelectorAll('.sn-row:not(.sn-more)').forEach(r=>{ const ok=(f==='all'||(' '+r.dataset.f+' ').includes(' '+f+' '))&&(!t||r.dataset.n.includes(t)); r.hidden=!ok; if(ok) n++; });
+    if(more) more.hidden=!!t||!['all','group'].includes(f);   // « Trouver un groupe » : avec Tous et Groupes
+    const none=document.getElementById('sn-none'); if(none){ none.hidden=n>0; none.textContent=f==='group'&&!t?'Tu n\'es dans aucun groupe pour l\'instant. Crée le tien avec le bouton +, ou rejoins-en un juste en dessous.':'Aucune conversation ici.'; } };
+  document.querySelectorAll('[data-snf]').forEach(c=>c.onclick=()=>{ SN_F=c.dataset.snf; document.querySelectorAll('[data-snf]').forEach(x=>x.setAttribute('aria-pressed',x===c)); apply(); });
+  if(find&&q){ find.onclick=()=>{ q.hidden=!q.hidden; find.setAttribute('aria-expanded',!q.hidden); if(q.hidden){ q.value=''; apply(); } else q.focus(); }; q.oninput=apply; }
+  apply(); }
+// v20 — redessine la liste des messages quand les groupes ont changé (sauf pendant une recherche, un glissement ou une fenêtre ouverte)
+function snRefresh(){ const q=document.getElementById('sn-q'); if(location.hash!=='#/messages'||(dlg&&dlg.open)||navBusy()||(q&&!q.hidden&&q.value)) return; const y=scrollY; viewMessages(); scrollTo(0,y); }
 function viewMessages(id){
   if(dataPending()) return loadingView('Messages');
   if(!S.me) return needProfile('Messages');
   if(id) return viewChat(id);
+  if(!MSG_AREA.test(NAVX.prev||'')) SN_F='all';   // v20 — on arrive d'une autre page : tous les messages
   const mates=matesList().sort((a,b)=>{ const la=lastMsg(a.id), lb=lastMsg(b.id); return (lb?lb.at:0)-(la?la.at:0); });
   app.innerHTML=`<div class="dm-shell">${dmSide('')}<div class="dm-empty"><div><h3>Choisis une conversation</h3><p class="muted">Tes mates sont dans la colonne de gauche. Tes groupes sont dans l'onglet Groupes.</p></div></div><div class="wrap page dm-list-page" style="max-width:720px">${snList(mates)}</div></div>`;
   snWire();
+  { const lp=app.querySelector('.dm-list-page');   // v20 — le + crée un groupe ; les invitations se règlent ici
+    lp.querySelectorAll('[data-g-new]').forEach(b=>b.onclick=()=>groupForm());
+    gInvWire(lp,()=>viewMessages()); }
   dmFit();
+  // v20 — en arrivant sur la liste, mes groupes et mes invitations sont relus (quelques lectures, au plus toutes les 30 s) : la liste se redessine s'ils ont changé
+  if(NAVX.prev!==location.hash){ const sig=gSig(); DB.loadMyGroups().then(ch=>{ if(!ch||gSig()===sig) return; renderNotifBadge(); railGroupsRefresh(); snRefresh(); }).catch(()=>{}); }
   // v15 — « Vu » dans la liste : pour les conversations où mon message est le dernier, on regarde si le mate l'a lu (12 au plus, une fois par minute)
   { const need=mates.filter(p=>{ const lm=lastMsg(p.id); return lm&&lm.from==='me'&&!(seenOf(p.id)>=lm.at); }).slice(0,12).map(p=>p.id);
     if(need.length) DB.peekSeen(need).then(ids=>{ if(location.hash!=='#/messages') return; (ids||[]).forEach(i=>{ const lm=lastMsg(i), st=document.querySelector(`.sn-row[href="#/messages/${CSS.escape(i)}"] .sn-st.sent`);
@@ -6711,14 +6746,19 @@ function submitEdit(t){ if(!EDIT) return false; const e=EDIT; endEdit(true); if(
   document.addEventListener('keydown',e=>{ if(e.key!=='Escape'||!e.target||e.target.id!=='chatin') return;
     if(EDIT){ e.preventDefault(); endEdit(true); } else if(REPLY){ e.preventDefault(); endReply(); } });
   addEventListener('hashchange',()=>{ EDIT=null; REPLY=null; stop(); }); }
+// v19 — une bulle ne « saute » que si son message vient d'arriver : ouvrir une conversation, en changer ou la redessiner n'anime rien (ordinateur ; sur téléphone, rien ne saute)
+const bubbleSeen = box => ({ n:box.querySelectorAll('.bubble').length, ids:new Set([...box.querySelectorAll('.bubble[data-mid]')].map(b=>b.dataset.mid)), drawn:!!box.dataset.drawn });
+function bubbleNew(box,was){ box.dataset.drawn='1'; if(!was.drawn) return;
+  const bs=[...box.querySelectorAll('.bubble')], add=bs.length-was.n; if(add>0&&add<=3) bs.slice(-add).forEach(b=>{ if(!b.dataset.mid||!was.ids.has(b.dataset.mid)) b.classList.add('pop-in'); }); }   // beaucoup d'un coup : la conversation qui finit de se charger, pas des messages qui arrivent
 function renderChat(id){
-  const box=document.getElementById('chatbox'); if(!box) return; const msgs=S.chats[id]||[]; dmRefresh(); setTimeout(photoWatch,0); setTimeout(stickerWatch,0);
+  const box=document.getElementById('chatbox'); if(!box) return; const msgs=S.chats[id]||[]; dmRefresh(); setTimeout(photoWatch,0); setTimeout(stickerWatch,0); const was=bubbleSeen(box);
   const keep=chatKeep(box,msgs);   // v14 — un message modifié (réaction…) : on reste au même endroit ; un nouveau message : on descend
   // v15 — « Vu » : sous mon dernier message que le mate a lu
   let seenK=-1; { const os=seenOf(id); if(os) for(let k=msgs.length-1;k>=0;k--){ if(msgs[k].from==='me'&&msgs[k].at<=os){ seenK=k; break; } } }
   box.innerHTML = msgs.length ? msgs.map((m,k)=>{ const mine=m.from==='me';
       return `<div class="bubble${mine?' me':''}${m.del?' del':''}"${m.id?` data-mid="${esc(m.id)}"`:''}${m.id&&!m.del?` data-msg="c|${esc(id)}|${esc(m.id)}"`:''}${mine&&m.id&&!m.del?` data-own="c|${esc(id)}|${esc(m.id)}"`:''}>${replyQuote(m,'c',id)}${msgBody(m,'c',id,mine)}<small>${msgMeta(m,mine,'c',id,k===seenK?' · <span class="seen-tag">Vu</span>':'')}</small>${reactsHTML(m,'c',id)}</div>`; }).join('')
     : `<div class="chat-empty"><p class="muted">Première partie ensemble ? Propose un créneau 🎮</p><div class="chips">${QUICK_MSGS.map(t=>`<button type="button" class="chip" data-quick="${esc(t)}">${esc(t)}</button>`).join('')}</div></div>`;
+  bubbleNew(box,was);
   box.scrollTop=keep==null?box.scrollHeight:keep;
   { const lm=msgs[msgs.length-1]; QR.key='c:'+id; QR.last=lm&&!lm.call?{id:lm.id,at:lm.at,mine:lm.from==='me',del:!!lm.del}:null; qrUpdate(); }   // v16 — pas de « réponds avec un sticker » après une ligne d'appel
   { const p=PLAYERS.find(x=>x.id===id), fh=document.getElementById('flame-hint'); if(fh) fh.innerHTML=flameHint(id,p?p.name:'Ton mate'); }
@@ -6837,9 +6877,11 @@ const ROLE_TAG={ admin:'<em class="g-role admin">Admin</em>', mod:'<em class="g-
    #/groupe : invitations, mes groupes, groupes publics, et le bouton « Créer un groupe »
    #/groupe/nouveau : la même page, avec la création d'un groupe ouverte
    #/groupe/{id} : la discussion du groupe
-   Ordinateur : la colonne de gauche liste mes groupes (comme les mates dans Messages), le groupe ouvert est à droite. */
+   Ordinateur : la colonne de gauche liste mes groupes (comme les mates dans Messages), le groupe ouvert est à droite.
+   v20 — Téléphone : pas d'onglet Groupes ; mes groupes sont dans la liste des messages, avec les mates ; #/groupe s'ouvre par « Trouver un groupe ». */
 const gMine = () => GROUPS.filter(gIn).sort((a,b)=>tsMs(b.lastAt||b.at)-tsMs(a.lastAt||a.at));
 const gInvites = () => GROUPS.filter(g=>!gIn(g)&&(g.invited||[]).includes(myId()));
+const gSig = () => [...gMine(),...gInvites()].map(g=>[g.id,tsMs(g.lastAt||g.at),gIn(g)?1:0,g.name,g.members.length,g.private?1:0,(g.image||'').length].join(':')).sort().join('|');   // v20 — pour savoir si mes groupes ont changé
 const gPublic = () => GROUPS.filter(g=>!gIn(g)&&!g.private&&!(g.invited||[]).includes(myId())&&!(g.kicked||[]).includes(myId())&&!S.blocked.includes(g.owner)).sort((a,b)=>b.members.length-a.members.length);
 const ADDMATE_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9.5" cy="8" r="3.5"/><path d="M3 20c.5-3.5 3-5.5 6.5-5.5s6 2 6.5 5.5M19 7v6M16 10h6"/></svg>';
 const FIND_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>';
@@ -6855,7 +6897,11 @@ function gSideInner(key){ const mine=gMine(), inv=gInvites().length;
 const gSide = key => `<nav class="dm-side g-side" id="g-side" aria-label="Groupes" data-key="${esc(key||'')}">${gSideInner(key||'')}</nav>`;
 function gSideRefresh(){ const s=document.getElementById('g-side'); if(s&&s.offsetParent!==null){ const y=s.scrollTop; s.innerHTML=gSideInner(s.dataset.key||''); s.scrollTop=y; } }
 const gInvRow = g => `<div class="chat-row g-inv">${gAvatar(g,52)}<div><b>${esc(g.name)}</b><span class="muted">${esc(g.game||'Tous les jeux')} · ${g.members.length} membre${g.members.length>1?'s':''}</span></div><span class="nact"><button class="btn btn-sm btn-ac" data-gjoin="${esc(g.id)}">Rejoindre</button><button class="btn btn-sm btn-ghost" data-gdecline="${esc(g.id)}">Refuser</button></span></div>`;
-// La page de l'onglet Groupes
+// Rejoindre (une invitation ou un groupe public) et refuser une invitation : sur la page des groupes, et dans la liste des messages (téléphone)
+function gInvWire(root,after){ if(!root) return;
+  root.querySelectorAll('[data-gjoin]').forEach(b=>b.onclick=async()=>{ b.disabled=true; if(await DB.joinGroup(b.dataset.gjoin)){ toast('Tu as rejoint le groupe'); location.hash='#/groupe/'+b.dataset.gjoin; } else b.disabled=false; });
+  root.querySelectorAll('[data-gdecline]').forEach(b=>b.onclick=async()=>{ b.disabled=true; await DB.declineGroup(b.dataset.gdecline); renderNotifBadge(); after(); }); }
+// La page des groupes (ordinateur : l'onglet Groupes ; téléphone : « Trouver un groupe », en bas de Messages)
 function viewGroupsHome(openNew){
   if(dataPending()) return loadingView('Groupes');
   if(!S.me) return needProfile('Groupes');
@@ -6863,6 +6909,7 @@ function viewGroupsHome(openNew){
   if(openNew){ try{ history.replaceState(null,'','#/groupe'); }catch(e){} }   // l'adresse redevient #/groupe : le « + » rouvre la création à chaque clic
   const mine=gMine(), inv=gInvites(), pub=gPublic();
   app.innerHTML=`<div class="dm-shell g-shell">${gSide('home')}<div class="wrap page g-home">
+    <div class="g-back">${backLink('#/messages','Messages')}</div>
     <div class="page-head g-top"><div><h2>Groupes</h2><p>Des salons pour discuter à plusieurs, par jeu ou entre amis.</p></div><button class="btn btn-ac" type="button" data-g-new>Créer un groupe</button></div>
     ${inv.length?`<h3 class="on-world g-h">Invitations</h3><div class="chat-list">${inv.map(gInvRow).join('')}</div>`:''}
     <section class="g-mine-sec"><h3 class="on-world g-h">Mes groupes</h3>
@@ -6873,8 +6920,7 @@ function viewGroupsHome(openNew){
       :'<p class="on-world g-pub-none">Aucun autre groupe public pour le moment.</p>'}
     <button class="btn btn-ac sn-fab" type="button" data-g-new aria-label="Créer un groupe" title="Créer un groupe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></div></div>`;
   app.querySelectorAll('[data-g-new]').forEach(b=>b.onclick=()=>groupForm());
-  app.querySelectorAll('[data-gjoin]').forEach(b=>b.onclick=async()=>{ b.disabled=true; if(await DB.joinGroup(b.dataset.gjoin)){ toast('Tu as rejoint le groupe'); location.hash='#/groupe/'+b.dataset.gjoin; } else b.disabled=false; });
-  app.querySelectorAll('[data-gdecline]').forEach(b=>b.onclick=async()=>{ await DB.declineGroup(b.dataset.gdecline); viewGroupsHome(); });
+  gInvWire(app,()=>viewGroupsHome());
   dmFit();
   if(openNew) groupForm();
   else DB.loadGroups().then(ch=>{ if(ch&&location.hash==='#/groupe'&&!(dlg&&dlg.open)) viewGroupsHome(); });   // les groupes ont peut-être changé depuis le dernier passage
@@ -6948,7 +6994,7 @@ function viewGroup(id){ EDIT=null; chatMotif();
     dmFit();
     document.getElementById('gjoin')?.addEventListener('click',async ev=>{ ev.currentTarget.disabled=true; if(await DB.joinGroup(id)){ toast('Tu as rejoint le groupe'); route(); } else ev.currentTarget.disabled=false; }); return; }
   (S.gseen=S.gseen||{})[id]=Date.now(); save(); renderNotifBadge();
-  app.innerHTML=`<div class="dm-shell g-shell">${gSide('g:'+id)}<div class="wrap page chat-page"><div class="chat-head">${backLink('#/groupe','Groupes')}<button class="chat-who g-who" type="button" id="ginfo">${gAvatar(g,44)}<div><b>${esc(g.name)}</b><span class="muted" style="font-size:12px">${g.members.length} membre${g.members.length>1?'s':''} · infos</span></div></button>
+  app.innerHTML=`<div class="dm-shell g-shell">${gSide('g:'+id)}<div class="wrap page chat-page"><div class="chat-head">${backLink('#/messages','Messages')}<button class="chat-who g-who" type="button" id="ginfo">${gAvatar(g,44)}<div><b>${esc(g.name)}</b><span class="muted" style="font-size:12px">${g.members.length} membre${g.members.length>1?'s':''} · infos</span></div></button>
       ${g.members.length<GROUP_MAX?`<div class="chat-calls"><button class="btn btn-ac g-add-btn" type="button" id="g-add" aria-label="Ajouter des mates" title="Ajouter des mates">${ADDMATE_SVG}<span>Ajouter des mates</span></button></div>`:''}</div>
     <div class="chat-box" id="chatbox"><p class="muted" style="margin:auto">Chargement des messages…</p></div>${typingHTML()}${qrHTML()}
     ${composerHTML('Message au groupe…',!gHasMinor(g))}${cpanelHTML()}</div></div>`;
@@ -6974,7 +7020,7 @@ function viewGroup(id){ EDIT=null; chatMotif();
   DB.listenMeta('g',id,chg=>{ if(location.hash!=='#/groupe/'+id) return; if(chg) renderGroupChat(id); else seenMark('g',id); typingRender(); });
 }
 let GMSGS={};   // messages du groupe ouvert
-function renderGroupChat(id){ const box=document.getElementById('chatbox'), g=gById(id); if(!box||!g) return; setTimeout(photoWatch,0); setTimeout(stickerWatch,0); const me=myId(), msgs=(GMSGS[id]||[]).filter(m=>!S.blocked.includes(m.from));
+function renderGroupChat(id){ const box=document.getElementById('chatbox'), g=gById(id); if(!box||!g) return; setTimeout(photoWatch,0); setTimeout(stickerWatch,0); const me=myId(), msgs=(GMSGS[id]||[]).filter(m=>!S.blocked.includes(m.from)), was=bubbleSeen(box);
   const keep=chatKeep(box,msgs);   // v14 — voir renderChat
   // v15 — « Vu par… » : sous mon dernier message, le nombre de membres qui l'ont lu
   let seenK=-1, seenTag=''; if(META&&META.key==='g:'+id){ for(let k=msgs.length-1;k>=0;k--){ if(msgs[k].from===me){ if(!msgs[k].del) seenK=k; break; } }
@@ -6984,6 +7030,7 @@ function renderGroupChat(id){ const box=document.getElementById('chatbox'), g=gB
       return `<div class="gmsg${mine?' me':''}${same?' same':''}">${mine?'':(same?'<i class="g-gap"></i>':(p?`<a href="#/joueur/${esc(m.from)}">${avatar(p,32)}</a>`:'<span class="av" style="width:32px;height:32px;--h:220">?</span>'))}<div>${same||mine?'':`<small class="g-from">${p?np(p):'Ancien membre'}${ROLE_TAG[role]||''}</small>`}
         <div class="bubble${mine?' me':''}${m.del?' del':''}"${m.id?` data-mid="${esc(m.id)}"`:''}${m.id&&!m.del?` data-msg="g|${esc(id)}|${esc(m.id)}"`:''}${mine&&m.id&&!m.del?` data-own="g|${esc(id)}|${esc(m.id)}"`:''}>${replyQuote(m,'g',id)}${msgBody(m,'g',id,mine)}<small>${msgMeta(m,mine,'g',id,k===seenK?seenTag:'')}</small>${reactsHTML(m,'g',id)}</div></div></div>`; }).join('')
     : `<div class="chat-empty"><p class="muted">Le groupe est tout neuf. ${g.members.length<2?'Ajoute tes mates, puis lance la discussion 👋':'Lance la discussion 👋'}</p>${g.members.length<2&&g.members.length<GROUP_MAX?`<button class="btn btn-ac" type="button" data-g-add>${ADDMATE_SVG} Ajouter des mates</button>`:''}${(g.invited||[]).length?`<p class="muted">${g.invited.length} invitation${g.invited.length>1?'s':''} en attente.</p>`:''}</div>`;
+  bubbleNew(box,was);
   box.scrollTop=keep==null?box.scrollHeight:keep;
   { const lm=msgs[msgs.length-1]; QR.key='g:'+id; QR.last=lm?{id:lm.id,at:lm.at,mine:lm.from===me,del:!!lm.del}:null; qrUpdate(); }
   box.querySelector('[data-g-add]')?.addEventListener('click',()=>groupInvite(id));
@@ -7005,8 +7052,8 @@ function groupInfo(id){ const g=gById(id); if(!g) return; const me=myId(), role=
     d.querySelector('#g-edit')?.addEventListener('click',()=>groupForm(g));
     d.querySelectorAll('[data-gkick]').forEach(b=>b.onclick=async()=>{ if(!b.dataset.sure){ b.dataset.sure=1; b.textContent='Confirmer ?'; return; } b.disabled=true; if(await DB.kickFromGroup(id,b.dataset.gkick)){ toast('Membre retiré du groupe'); re(); } else b.disabled=false; });
     d.querySelectorAll('[data-gmod]').forEach(b=>b.onclick=async()=>{ b.disabled=true; const on=!(g.mods||[]).includes(b.dataset.gmod); if(await DB.setGroupMod(id,b.dataset.gmod,on)){ toast(on?'Modérateur nommé':'Modérateur retiré'); re(); } else b.disabled=false; });
-    d.querySelector('#g-leave')?.addEventListener('click',async ev=>{ const b=ev.currentTarget; if(!b.dataset.sure){ b.dataset.sure=1; b.textContent='Confirmer : quitter'; return; } b.disabled=true; if(await DB.leaveGroup(id)){ d.close(); toast('Tu as quitté le groupe'); location.hash='#/groupe'; } else b.disabled=false; });
-    d.querySelector('#g-del')?.addEventListener('click',async ev=>{ const b=ev.currentTarget; if(!b.dataset.sure){ b.dataset.sure=1; b.textContent='Confirmer : tout supprimer'; return; } b.disabled=true; b.textContent='Suppression…'; if(await DB.deleteGroup(id)){ d.close(); toast('Groupe supprimé'); location.hash='#/groupe'; } else { b.disabled=false; b.textContent='Supprimer le groupe'; } }); }); }
+    d.querySelector('#g-leave')?.addEventListener('click',async ev=>{ const b=ev.currentTarget; if(!b.dataset.sure){ b.dataset.sure=1; b.textContent='Confirmer : quitter'; return; } b.disabled=true; if(await DB.leaveGroup(id)){ d.close(); toast('Tu as quitté le groupe'); location.hash=navPhone()?'#/messages':'#/groupe'; } else b.disabled=false; });
+    d.querySelector('#g-del')?.addEventListener('click',async ev=>{ const b=ev.currentTarget; if(!b.dataset.sure){ b.dataset.sure=1; b.textContent='Confirmer : tout supprimer'; return; } b.disabled=true; b.textContent='Suppression…'; if(await DB.deleteGroup(id)){ d.close(); toast('Groupe supprimé'); location.hash=navPhone()?'#/messages':'#/groupe'; } else { b.disabled=false; b.textContent='Supprimer le groupe'; } }); }); }
 // « Ajouter des mates » : les mates cochés reçoivent une invitation et entrent dans le groupe en un clic (fromInfo : ouvert depuis les infos du groupe)
 function groupInvite(id,fromInfo){ const g=gById(id); if(!g) return; const can=matesList().filter(p=>!g.members.includes(p.id)&&!(g.kicked||[]).includes(p.id)).sort((a,b)=>String(a.name).localeCompare(String(b.name),'fr')), left=GROUP_MAX-g.members.length;
   const free=can.filter(p=>!(g.invited||[]).includes(p.id));
@@ -7281,7 +7328,7 @@ function viewHelp(){
   const faq=[['Comment est calculé le pourcentage de compatibilité ?','Chaque critère vaut un nombre de points (jeux en commun, horaires, style, jours, plateforme, rang, langue, pays). Le total est ramené sur 100. Sur le profil d\'un joueur, tu vois le détail critère par critère.'],
     ['Pourquoi je ne vois pas certains joueurs ?','Tu ne vois pas les joueurs que tu as bloqués, ni ceux masqués par la modération.'],
     ['Comment contacter un joueur ?','Envoie-lui une demande de mate. S\'il accepte, vous pouvez vous écrire dans Messages et vous retrouver dans des groupes. Tout se passe dans Coopô : aucun numéro ni pseudo d\'un autre réseau n\'est demandé.'],
-    ['Comment créer un groupe avec mes mates ?','Va dans l\'onglet Groupes et appuie sur « Créer un groupe ». Donne-lui un nom, puis coche les mates à ajouter : ils reçoivent une invitation et rejoignent le groupe en un clic. Plus tard, le bouton « Ajouter des mates » en haut du groupe permet d\'en inviter d\'autres.'],
+    ['Comment créer un groupe avec mes mates ?','Dans Messages, touche le bouton + (sur ordinateur : dans l\'onglet Groupes, « Créer un groupe »). Donne-lui un nom, puis coche les mates à ajouter : ils reçoivent une invitation et rejoignent le groupe en un clic. Plus tard, le bouton « Ajouter des mates » en haut du groupe permet d\'en inviter d\'autres.'],
     ['Comment épingler un mate ?','Dans Messages, garde le doigt sur un mate (ou fais un clic droit sur ordinateur), puis choisis « Épingler en haut ». Il reste en haut de ta liste. Tu peux épingler 5 mates au plus, et toi seul le vois.'],
     ['Que veulent dire « Vu » et « écrit… » ?','« Vu » s\'affiche sous ton dernier message quand ton mate l\'a lu (dans un groupe : « Vu par 3 »). « écrit… » ou « enregistre un vocal… » apparaît en bas de la conversation pendant que ton mate prépare un message.'],
     ['Où voir mes appels ?','Chaque appel laisse une ligne dans la conversation : sa durée, ou « Manqué ». Dans Messages, le bouton téléphone en haut ouvre la liste de tes derniers appels passés, reçus et manqués sur cet appareil. Pendant un appel, le bouton « Haut-parleur » apparaît quand ton téléphone permet à Coopô de choisir la sortie du son.'],
@@ -7291,7 +7338,7 @@ function viewHelp(){
     ['À quoi servent les annonces ?','À trouver vite des joueurs pour une partie précise : « Je cherche 2 joueurs Free Fire ce soir ». Clique sur « Je suis partant » : l\'auteur est prévenu et reçoit une demande de mate (si l\'auteur a moins de 18 ans et toi plus, tu es seulement noté partant : c\'est lui qui choisit de t\'ajouter). Les annonces disparaissent toutes seules après la partie.'],
     ['Comment participer à un tournoi ?','Dans Communauté › Tournois, clique sur « S\'inscrire ». Ton pseudo en jeu est transmis à l\'organisateur pour qu\'il puisse t\'inviter.'],
     ['Que faire face à un comportement toxique ?','Utilise Signaler sur son profil : l\'équipe de modération examine chaque signalement. Tu peux aussi le bloquer immédiatement.'],
-    ['Comment supprimer mon compte ?','Dans Profil (sur téléphone : ta photo, en haut à droite), puis Réglages, tout en bas. Tes données sont effacées définitivement.']];
+    ['Comment supprimer mon compte ?','Dans Profil, puis Réglages, tout en bas. Tes données sont effacées définitivement.']];
   app.innerHTML=`<div class="wrap page" style="max-width:800px">${backAuto()}<div class="page-head"><div><h2>Aide</h2><p>Comment ça marche, et les questions fréquentes.</p></div></div>
     <section class="panel"><h3>Comment ça marche</h3><ol class="steps">
       <li><b>Crée ton compte</b><span>Avec Google ou un e-mail. Il faut avoir au moins ${CONFIG.minAge} ans.</span></li>
@@ -7657,8 +7704,8 @@ const DB = {
             if(!n.read&&n.type==='message'&&!open) S.unread[from]=(S.unread[from]||0)+1;   // message non lu : pastille sur la conversation
             if(this._notifReady&&!n.read){ deviceNotify(n); if(n.type==='group') gNew=true; } }
           else if(ch.type==='modified'&&ex&&n.read) ex.read=true; });   // lu sur un autre appareil
-        // nouvelle invitation dans un groupe : on recharge les groupes pour la pastille de l'onglet Groupes
-        if(gNew) this.loadGroups(true).then(ch=>{ if(!ch) return; renderNotifBadge(); railGroupsRefresh(); if(location.hash==='#/groupe'&&!(dlg&&dlg.open)) viewGroupsHome(); }).catch(()=>{});
+        // nouvelle invitation dans un groupe : on recharge les groupes pour la pastille (onglet Groupes sur ordinateur, Messages sur téléphone)
+        if(gNew) this.loadGroups(true).then(ch=>{ if(!ch) return; renderNotifBadge(); railGroupsRefresh(); if(location.hash==='#/groupe'&&!(dlg&&dlg.open)) viewGroupsHome(); else snRefresh(); }).catch(()=>{});
         this._notifReady=true;
         S.notifs.sort((a,b)=>(b.at||0)-(a.at||0)); S.notifs=S.notifs.slice(0,60); save(); renderNotifBadge(); },lerr));
       // Demandes de mate, dans les deux sens : une demande acceptée par l'autre joueur apparaît tout de suite chez celui qui l'a envoyée
@@ -7817,6 +7864,15 @@ const DB = {
     const qs=await Promise.all([col.where('members','array-contains',uid).get(), col.where('invited','array-contains',uid).get(), col.where('private','==',false).limit(60).get()].map(p=>p.catch(e=>{ console.error(e); return null; })));
     if(qs.every(q=>!q)) return false;
     qs.forEach(q=>q&&q.forEach(x=>{ out[x.id]=normG({...x.data(),id:x.id}); })); GROUPS=Object.values(out); return true; },
+  // v20 — seulement mes groupes et mes invitations (liste des messages) : quelques lectures, au plus toutes les 30 s. Les groupes publics déjà chargés restent.
+  async loadMyGroups(){ if(!this.live||!this.uid()||!S.me||!S.me.dob) return false; if(this._lastMine&&Date.now()-this._lastMine<30000) return false; this._lastMine=Date.now();
+    const uid=this.uid(), me=myId(), col=this.db.collection('groups'), out={};
+    const qs=await Promise.all([col.where('members','array-contains',uid).get(), col.where('invited','array-contains',uid).get()].map(p=>p.catch(e=>{ console.error(e); return null; })));
+    if(qs.some(q=>!q)) return false;
+    qs.forEach(q=>q.forEach(x=>{ out[x.id]=normG({...x.data(),id:x.id}); }));
+    // un groupe dont je ne suis plus membre ni invité : retiré s'il est privé, sinon il reste dans les groupes publics, sans moi
+    GROUPS=GROUPS.map(g=>out[g.id]||(!(gIn(g)||(g.invited||[]).includes(me))?g:g.private?null:{...g,members:g.members.filter(x=>x!==me),invited:(g.invited||[]).filter(x=>x!==me)})).filter(Boolean);
+    Object.values(out).forEach(g=>{ if(!GROUPS.some(x=>x.id===g.id)) GROUPS.push(g); }); return true; },
   async createGroup(data){ const id='g'+Date.now().toString(36)+Math.random().toString(36).slice(2,8), me=myId();
     const doc={...data,owner:me,mods:[],members:[me],invited:[],kicked:[],ageGroup:myGroupNow(),at:Date.now()};
     if(AUTH_LIVE){ if(!this.live&&!(await this.ready())) return null; try{ await this.db.collection('groups').doc(id).set(doc); }catch(e){ console.error(e); return null; } }
