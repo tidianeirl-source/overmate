@@ -47,9 +47,10 @@ function renderNav(active){
   const cur = r => r===tabOn ? 'aria-current="page"' : '';
   document.querySelectorAll('.navpill').forEach(n=>n.innerHTML = navItems.map(([r,l])=>`<a href="#/${r}" data-nav="${r}" ${r===top?'aria-current="page"':''}>${l}</a>`).join(''));
   // Colonne de gauche (ordinateur) : logo, pages en icônes, groupes, puis cloche et boutique
+  // v23 — pas d'onglet Groupes dans cette colonne (demande d'Aki) : les ronds des groupes et le « + » juste en dessous suffisent (voir railGroups)
   const rail=document.getElementById('siderail');
   if(rail) rail.innerHTML=`<a class="logo" href="#/accueil" aria-label="Coopô, retour à l'accueil" title="Coopô"></a>
-    <nav class="sr-nav" aria-label="Navigation principale">${navItems.map(([r,l])=>`<a class="sr-i" href="#/${r}" data-nav="${r}" ${r===top?'aria-current="page"':''} title="${esc(l)}" aria-label="${esc(l)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[r]||ICONS.accueil}</svg></a>`).join('')}</nav>
+    <nav class="sr-nav" aria-label="Navigation principale">${navItems.filter(([r])=>r!=='groupe').map(([r,l])=>`<a class="sr-i" href="#/${r}" data-nav="${r}" ${r===top?'aria-current="page"':''} title="${esc(l)}" aria-label="${esc(l)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[r]||ICONS.accueil}</svg></a>`).join('')}</nav>
     <span class="dm-sep" aria-hidden="true"></span><nav class="sr-groups" id="sr-groups" aria-label="Mes groupes">${railGroups()}</nav>
     <div class="sr-foot"><button class="notif-btn" type="button" aria-label="Notifications" title="Notifications"></button><button class="inv-btn skin-btn" type="button" aria-label="Inventaire : mes thèmes et plaques" title="Inventaire" data-inv-go></button><button class="skin-btn" type="button" aria-label="Boutique : thèmes et plaques" title="Boutique"></button></div>`;
   document.querySelectorAll('.logo').forEach(l=>l.innerHTML=LOGO);

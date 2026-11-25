@@ -16,7 +16,19 @@ function dmSideInner(key){
 function railGroups(){ if(!S.auth||!S.me) return ''; const m=location.hash.match(/^#\/groupe\/([^/?]+)/), cur=m?decodeURIComponent(m[1]):'';
   const groups=GROUPS.filter(gIn).sort((a,b)=>tsMs(b.lastAt||b.at)-tsMs(a.lastAt||a.at));
   return groups.map(g=>`<a class="dm-ico${cur===g.id?' on':''}${gUnread(g)?' unread':''}" href="#/groupe/${esc(g.id)}" title="${esc(g.name)}" aria-label="Groupe ${esc(g.name)}${gUnread(g)?' (nouveaux messages)':''}"${cur===g.id?' aria-current="page"':''}>${gAvatar(g,48)}${gUnread(g)?'<span class="dm-dot" aria-hidden="true">•</span>':''}</a>`).join('')
-    +`<a class="dm-ico plus" href="#/groupe/nouveau" title="Créer un groupe" aria-label="Créer un groupe">+</a>`; }
+    +railPlus(); }
+// v23 — Le « + » sous les groupes (colonne de gauche, ordinateur), qui remplace l'onglet Groupes : il crée un groupe.
+// S'il y a des invitations, il porte une pastille et mène à la page des groupes, où elles sont en haut (avec les groupes publics et « Créer un groupe »).
+// Sur la page des groupes, c'est lui qui est marqué comme la page ouverte.
+function railPlusInfo(){ let inv=0; try{ inv=gInvites().length; }catch(e){}
+  const on=location.hash==='#/groupe'||location.hash==='#/groupe/nouveau';
+  return { inv, on, href:inv?'#/groupe':'#/groupe/nouveau', label:inv?`Groupes : ${inv} invitation${inv>1?'s':''}`:'Créer un groupe' }; }
+function railPlus(){ const i=railPlusInfo();
+  return `<a class="dm-ico plus${i.on?' on':''}" href="${i.href}" title="${i.label}" aria-label="${i.label}"${i.on?' aria-current="page"':''}>+${i.inv?`<span class="dm-dot" aria-hidden="true">${i.inv>9?'9+':i.inv}</span>`:''}</a>`; }
+// Met le « + » à jour sans le redessiner (une invitation arrive, est acceptée ou refusée)
+function railPlusSync(){ document.querySelectorAll('#sr-groups .dm-ico.plus').forEach(a=>{ const i=railPlusInfo();
+  a.setAttribute('href',i.href); a.title=i.label; a.setAttribute('aria-label',i.label); a.classList.toggle('on',i.on); if(i.on) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current');
+  let d=a.querySelector('.dm-dot'); if(!i.inv){ if(d) d.remove(); return; } if(!d){ d=document.createElement('span'); d.className='dm-dot'; d.setAttribute('aria-hidden','true'); a.appendChild(d); } d.textContent=i.inv>9?'9+':String(i.inv); }); }
 const railGroupsRefresh = () => { const el=document.getElementById('sr-groups'); if(el) el.innerHTML=railGroups(); gSideRefresh(); };
 // Barre des groupes (ordinateur) : le bouton des messages privés, puis un rond par groupe, puis « + »
 function dmRailInner(key){ const groups=GROUPS.filter(gIn).sort((a,b)=>tsMs(b.lastAt||b.at)-tsMs(a.lastAt||a.at)); const dmU=Object.values(S.unread||{}).reduce((n,x)=>n+(+x||0),0);
@@ -78,7 +90,7 @@ function viewMessages(id){
   if(id) return viewChat(id);
   if(!MSG_AREA.test(NAVX.prev||'')) SN_F='all';   // v20 — on arrive d'une autre page : tous les messages
   const mates=matesList().sort((a,b)=>{ const la=lastMsg(a.id), lb=lastMsg(b.id); return (lb?lb.at:0)-(la?la.at:0); });
-  app.innerHTML=`<div class="dm-shell">${dmSide('')}<div class="dm-empty"><div><h3>Choisis une conversation</h3><p class="muted">Tes mates sont dans la colonne de gauche. Tes groupes sont dans l'onglet Groupes.</p></div></div><div class="wrap page dm-list-page" style="max-width:720px">${snList(mates)}</div></div>`;
+  app.innerHTML=`<div class="dm-shell">${dmSide('')}<div class="dm-empty"><div><h3>Choisis une conversation</h3><p class="muted">Tes mates sont dans la liste à gauche. Tes groupes sont les ronds tout à gauche, et le « + » sert à en créer un.</p></div></div><div class="wrap page dm-list-page" style="max-width:720px">${snList(mates)}</div></div>`;
   snWire();
   { const lp=app.querySelector('.dm-list-page');   // v20 — le + crée un groupe ; les invitations se règlent ici
     lp.querySelectorAll('[data-g-new]').forEach(b=>b.onclick=()=>groupForm());
