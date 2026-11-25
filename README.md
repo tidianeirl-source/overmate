@@ -38,7 +38,7 @@ Les fichiers de `js/` sont des scripts classiques, pas des modules : `index.html
 
 Changer le numéro de version au même endroit dans les deux fichiers :
 
-- `sw.js` : `const V = 57;`
-- `index.html` : le `?v=57` de chaque balise `<script src="js/…">`
+- `sw.js` : `const V = 58;`
+- `index.html` : le `?v=58` de chaque balise `<script src="js/…">`
 
 Ainsi, la page et son code vont toujours ensemble : jamais une page neuve avec un vieux fichier gardé en cache.
