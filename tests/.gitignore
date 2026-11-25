@@ -1,0 +1,7 @@
+# Ce que les vérifications fabriquent en tournant : jamais envoyé sur GitHub
+journaux/
+shots*/
+*.png
+*.webm
+*.log
+node_modules/

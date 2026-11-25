@@ -1,0 +1,38 @@
+const { launch, seed, open, nav, overflow, mkSeed } = require('./lib');
+(async () => {
+  const W = +(process.env.W || 360);
+  const { browser, page, log } = await launch({ width: W, height: 740, mobile: true, touch: true });
+  const sd = mkSeed(); const now = Date.now();
+  sd.db['requests/a01_a03'] = { from: 'a01', to: 'a03', participants: ['a01', 'a03'], status: 'accepted', at: now - 1e6 };
+  sd.db['requests/a01_a04'] = { from: 'a01', to: 'a04', participants: ['a01', 'a04'], status: 'accepted', at: now - 2e6 };
+  sd.db['requests/a09_a01'] = { from: 'a09', to: 'a01', participants: ['a09', 'a01'], status: 'pending', at: now - 5e5 };
+  sd.db['requests/a01_a12'] = { from: 'a01', to: 'a12', participants: ['a01', 'a12'], status: 'pending', at: now - 5e5 };
+  sd.db['requests/a01_a14'] = { from: 'a01', to: 'a14', participants: ['a01', 'a14'], status: 'pending', at: now - 6e5 };
+  sd.db['chats/a01_a03/messages/m1'] = { from: 'a03', text: 'Salut ! On joue ce soir ?', at: now - 9e5 };
+  sd.db['notifications/a01/items/n1'] = { type: 'message', from: 'a03', text: 'DjeliSniper : Salut ! On joue ce soir ?', at: now - 9e5, read: false };
+  sd.db['notifications/a01/items/n2'] = { type: 'request', from: 'a09', text: 'TchopKing veut devenir ton mate', at: now - 5e5, read: false };
+  sd.db['profiles/a02'].online = false; sd.db['profiles/a02'].lastSeen = now - 3 * 3600e3;
+  await seed(page, sd.db, sd.users);
+  await open(page, '', 600); await page.evaluate(() => window.__mock.signIn('a01@test.ci')); await page.waitForTimeout(1300);
+  const shot = async n => { await page.waitForTimeout(250); await page.screenshot({ path: `shots/v-${W}-${n}.png` }); const o = await overflow(page); if (o.bad.length || o.scrollW > o.w + 1) console.log('⚠ débordement', n, JSON.stringify(o)); };
+  await page.evaluate(() => window.scrollTo(0, 330)); await shot('accueil');
+  await page.locator('.notif-btn:visible').first().click(); await page.evaluate(() => { const d = document.querySelector('.sent-reqs'); if (d) d.open = true; }); await shot('notifs');
+  console.log('notifs:', await page.evaluate(() => document.getElementById('dlg').innerText.replace(/\n+/g, ' | ').slice(0, 400)));
+  await page.click('[data-cancel-req="a12"]'); await page.waitForTimeout(400);
+  console.log('annulation:', await page.evaluate(() => [document.getElementById('toast').textContent, (document.querySelector('.sent-reqs summary') || {}).textContent, !!window.__mock.db['requests/a01_a12'], S.requests.length]));
+  await page.evaluate(() => document.getElementById('dlg').close());
+  await nav(page, 'messages/a04', 500); await shot('chat-vide');
+  await page.click('[data-quick]'); console.log('message rapide:', await page.inputValue('#chatin'));
+  await nav(page, 'messages', 400); await shot('messages');
+  await nav(page, 'joueur/a02', 400); await shot('joueur-vu'); console.log('vu:', await page.evaluate(() => document.querySelector('.pp-meta').innerText.replace(/\n+/g, ' ')));
+  await nav(page, 'parametres', 400); await shot('parametres');
+  await nav(page, 'parametres/themes', 500); console.log('ancien lien thèmes →', await page.evaluate(() => location.hash));
+  await nav(page, 'profil', 500); await shot('profil');
+  await nav(page, 'groupes', 400); await shot('commu');
+  // sélecteur de thème depuis l'en-tête puis thème payant : la fenêtre d'achat remplace bien la première
+  await nav(page, 'boutique/themes', 500); await page.click('[data-shop-prev="theme:ocean"]'); await page.waitForTimeout(700); await shot('apercu');
+  console.log('aperçu:', await page.evaluate(() => [document.documentElement.dataset.skin, document.getElementById('pv-bar').innerText.replace(/\n+/g, ' | ')]));
+  await page.click('[data-pv-end]'); await page.waitForTimeout(500);
+  const e = log.errors, c = log.console.filter(x => !/Service Worker|preloaded using/.test(x)); if (e.length || c.length) console.log('⚠ erreurs', JSON.stringify({ e, c }).slice(0, 900));
+  await browser.close();
+})().catch(e => { console.error('TEST FAIL', e); process.exit(1); });
