@@ -5,3 +5,6 @@ shots*/
 *.webm
 *.log
 node_modules/
+# sauf les images et la vidéo de test, qui servent aux vérifications
+!media/
+!media/*
