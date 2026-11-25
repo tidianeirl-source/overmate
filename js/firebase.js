@@ -83,7 +83,7 @@ const DB = {
             if(!n.read&&n.type==='message'&&!open) S.unread[from]=(S.unread[from]||0)+1;   // message non lu : pastille sur la conversation
             if(this._notifReady&&!n.read){ deviceNotify(n); if(n.type==='group') gNew=true; } }
           else if(ch.type==='modified'&&ex&&n.read) ex.read=true; });   // lu sur un autre appareil
-        // nouvelle invitation dans un groupe : on recharge les groupes pour la pastille (onglet Groupes sur ordinateur, Messages sur téléphone)
+        // nouvelle invitation dans un groupe : on recharge les groupes pour la pastille (le « + » de la colonne sur ordinateur, Messages sur téléphone)
         if(gNew) this.loadGroups(true).then(ch=>{ if(!ch) return; renderNotifBadge(); railGroupsRefresh(); if(location.hash==='#/groupe'&&!(dlg&&dlg.open)) viewGroupsHome(); else snRefresh(); }).catch(()=>{});
         this._notifReady=true;
         S.notifs.sort((a,b)=>(b.at||0)-(a.at||0)); S.notifs=S.notifs.slice(0,60); save(); renderNotifBadge(); },lerr));

@@ -146,11 +146,12 @@ const unreadCount = () => { const pf=pendFrom(); return S.notifs.filter(n=>!n.re
 const BELL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>';
 function renderNotifBadge(){ const n=unreadCount(); try{ if('setAppBadge' in navigator){ n?navigator.setAppBadge(n):navigator.clearAppBadge(); } }catch(e){} document.querySelectorAll('.notif-btn').forEach(b=>{ b.innerHTML=BELL+(n?`<span class="badge">${n>9?'9+':n}</span>`:''); b.classList.toggle('has',n>0); });
   const um=Object.values(S.unread||{}).reduce((a,b)=>a+(+b||0),0);   // messages non lus : pastille sur l'onglet Messages
-  let gk=0; try{ gk=GROUPS.filter(gUnread).length+gInvites().length; }catch(e){}   // groupes avec du nouveau + invitations : pastille sur l'onglet Groupes (ordinateur)
+  let gk=0; try{ gk=GROUPS.filter(gUnread).length+gInvites().length; }catch(e){}   // groupes avec du nouveau + invitations : pastille sur l'onglet Groupes (menu du haut, petite tablette) ; v23 — ordinateur : les invitations sont sur le « + » de la colonne
   const badge=(a,k,label)=>{ let b=a.querySelector('.tb-badge'); if(!k){ if(b) b.remove(); return; } if(!b){ b=document.createElement('span'); b.className='tb-badge'; a.appendChild(b); } b.textContent=k>9?'9+':k; b.setAttribute('aria-label',label); };
   // v20 — sur téléphone, les groupes sont dans Messages : la pastille de l'onglet Messages compte aussi les groupes avec du nouveau et les invitations
   document.querySelectorAll('[data-nav="messages"]').forEach(a=>{ const k=a.closest('#tabbar')?um+gk:um; badge(a,k,k===um?um+(um>1?' messages non lus':' message non lu'):k+(k>1?' nouveautés':' nouveauté')); });
-  document.querySelectorAll('[data-nav="groupe"]').forEach(a=>badge(a,gk,gk+(gk>1?' groupes avec du nouveau':' groupe avec du nouveau'))); }
+  document.querySelectorAll('[data-nav="groupe"]').forEach(a=>badge(a,gk,gk+(gk>1?' groupes avec du nouveau':' groupe avec du nouveau')));
+  try{ railPlusSync(); }catch(e){} }   // v23 — ordinateur : les invitations aux groupes sur le « + » de la colonne de gauche
 const ago = t => { const m=Math.round((Date.now()-t)/60000); return m<1?'à l\'instant':m<60?`il y a ${m} min`:m<1440?`il y a ${Math.round(m/60)} h`:`il y a ${Math.round(m/1440)} j`; };
 function notifLink(n){ return n.type==='message'?'#/messages/'+n.from : n.type==='squad'?'#/groupes/sessions' : n.type==='group'&&n.gid?'#/groupe/'+n.gid : n.type==='flame'?'#/messages/'+n.from : n.type==='annonce'?'#/groupes/annonces' : n.from?'#/joueur/'+n.from : '#/matchs'; }
 function notifCenter(){

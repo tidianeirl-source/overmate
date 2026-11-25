@@ -2252,13 +2252,15 @@ html.lite .flame.warn, html.lite .flame-big{ animation:none; }
    Le menu du haut (Accueil, Matchs…) devient une colonne d'icônes, réunie avec la barre des groupes.
    De haut en bas : logo, pages, groupes, « + », puis la cloche et la boutique tout en bas.
    Sur téléphone et pour un visiteur non connecté, rien ne change.
+   v23 — Pendant la création du profil (« Bienvenue sur Coopô », body.no-profile), pas de colonne non plus (demande d'Aki) :
+   il n'y a encore nulle part où aller, la page prend toute la largeur, comme l'inscription.
    ========================================================= */
 .siderail{ display:none; }
 @media (min-width:1000px){
-  body:not(.logged-out) .siderail{ position:fixed; left:0; top:0; bottom:0; z-index:60; width:76px; box-sizing:border-box; display:flex; flex-direction:column; align-items:center; gap:8px; padding:12px 0; overflow-y:auto; scrollbar-width:none; background:var(--s1); border-right:1px solid var(--hair); }
+  body:not(.logged-out):not(.no-profile) .siderail{ position:fixed; left:0; top:0; bottom:0; z-index:60; width:76px; box-sizing:border-box; display:flex; flex-direction:column; align-items:center; gap:8px; padding:12px 0; overflow-y:auto; scrollbar-width:none; background:var(--s1); border-right:1px solid var(--hair); }
   .siderail::-webkit-scrollbar{ display:none; }
   body:not(.logged-out) .top{ display:none !important; }
-  html body:not(.logged-out) .frame{ margin-left:76px !important; width:calc(100% - 76px) !important; }
+  html body:not(.logged-out):not(.no-profile) .frame{ margin-left:76px !important; width:calc(100% - 76px) !important; }
   .siderail .logo{ width:48px; height:48px; margin-bottom:2px; } .siderail .logo svg{ width:28px; height:28px; } .siderail .logo img{ width:36px; height:36px; }
   .sr-nav, .sr-groups, .sr-foot{ display:flex; flex-direction:column; align-items:center; gap:8px; flex:none; }
   .sr-foot{ margin-top:auto; padding-top:8px; }
@@ -2979,24 +2981,24 @@ setTimeout(function(){try{if(SPLASH.armed)return;}catch(e){}if(!s)return;s.class
 <div id="wipe" aria-hidden="true"></div>
 
 <!-- v22 — Le code du site est dans js/ : ces fichiers sont chargés dans cet ordre et se partagent tout ce qu'ils déclarent.
-     ?v=57 : à changer à chaque mise en ligne, avec V dans sw.js, pour que la page et son code aillent toujours ensemble. -->
-<script src="js/base.js?v=57"></script>
-<script src="js/navigation.js?v=57"></script>
-<script src="js/pages.js?v=57"></script>
-<script src="js/themes.js?v=57"></script>
-<script src="js/boutique.js?v=57"></script>
-<script src="js/appareil.js?v=57"></script>
-<script src="js/apparence.js?v=57"></script>
-<script src="js/connexion.js?v=57"></script>
-<script src="js/mates.js?v=57"></script>
-<script src="js/messages.js?v=57"></script>
-<script src="js/appels.js?v=57"></script>
-<script src="js/medias.js?v=57"></script>
-<script src="js/sessions-flammes.js?v=57"></script>
-<script src="js/groupes.js?v=57"></script>
-<script src="js/communaute.js?v=57"></script>
-<script src="js/pages-infos.js?v=57"></script>
-<script src="js/firebase.js?v=57"></script>
-<script src="js/demarrage.js?v=57"></script>
+     ?v=58 : à changer à chaque mise en ligne, avec V dans sw.js, pour que la page et son code aillent toujours ensemble. -->
+<script src="js/base.js?v=58"></script>
+<script src="js/navigation.js?v=58"></script>
+<script src="js/pages.js?v=58"></script>
+<script src="js/themes.js?v=58"></script>
+<script src="js/boutique.js?v=58"></script>
+<script src="js/appareil.js?v=58"></script>
+<script src="js/apparence.js?v=58"></script>
+<script src="js/connexion.js?v=58"></script>
+<script src="js/mates.js?v=58"></script>
+<script src="js/messages.js?v=58"></script>
+<script src="js/appels.js?v=58"></script>
+<script src="js/medias.js?v=58"></script>
+<script src="js/sessions-flammes.js?v=58"></script>
+<script src="js/groupes.js?v=58"></script>
+<script src="js/communaute.js?v=58"></script>
+<script src="js/pages-infos.js?v=58"></script>
+<script src="js/firebase.js?v=58"></script>
+<script src="js/demarrage.js?v=58"></script>
 </body>
 </html>
