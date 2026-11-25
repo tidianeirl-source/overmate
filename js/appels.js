@@ -192,7 +192,7 @@ const callName = c => { const p=visible().find(x=>x.id===c.id)||S.profiles[c.id]
 async function callNotify(c,step){ try{
   if(!('Notification' in window)||Notification.permission!=='granted'||!S.notifyOn) return;
   const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration(); if(!reg||!reg.showNotification) return;
-  const tag='call-'+c.pair, url=location.origin+location.pathname+'#/messages/'+c.id, icon='icons/v2/icon-192.png', badge='icons/v2/badge-96.png';   // badge : la petite silhouette blanche de la barre d'état d'Android
+  const tag='call-'+c.pair, url=location.origin+location.pathname+'#/messages/'+c.id, icon='icons/v3/icon-192.png', badge='icons/v3/badge-96.png';   // badge : la petite silhouette blanche de la barre d'état d'Android
   if(step==='ring'){ if(!document.hidden||(await reg.getNotifications({tag})).length) return;
     await reg.showNotification(`${c.kind==='video'?'Appel vidéo':'Appel vocal'} de ${callName(c)}`,{body:'Touche pour répondre',tag,renotify:true,requireInteraction:true,vibrate:[400,200,400,200,400],icon,badge,timestamp:c.at,data:{url}}); return; }
   (await reg.getNotifications({tag})).forEach(n=>n.close());

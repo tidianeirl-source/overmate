@@ -6,7 +6,7 @@
 async function deviceNotify(n){
   try{ if(!('Notification' in window)||Notification.permission!=='granted'||!S.notifyOn) return; if(!document.hidden) return;
     const title=n.type==='request'?'Nouvelle demande de mate':n.type==='message'?'Nouveau message':n.type==='annonce'?'Réponse à ton annonce':n.type==='flame'?'Ta flamme va s\'éteindre':n.type==='group'?'Invitation dans un groupe':'Coopô';
-    const opt={ body:String(n.text||'').slice(0,120), icon:'icons/v2/icon-192.png', badge:'icons/v2/badge-96.png', tag:'coopo-'+(n.type||'n'), data:{url:location.origin+location.pathname+(n.type==='message'||n.type==='flame'?'#/messages':n.type==='group'?(n.gid?'#/groupe/'+n.gid:'#/groupe'):'#/matchs')} };
+    const opt={ body:String(n.text||'').slice(0,120), icon:'icons/v3/icon-192.png', badge:'icons/v3/badge-96.png', tag:'coopo-'+(n.type||'n'), data:{url:location.origin+location.pathname+(n.type==='message'||n.type==='flame'?'#/messages':n.type==='group'?(n.gid?'#/groupe/'+n.gid:'#/groupe'):'#/matchs')} };
     const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration(); if(reg) reg.showNotification(title,opt); else new Notification(title,opt);
   }catch(e){} }
 function notifySettingHTML(){

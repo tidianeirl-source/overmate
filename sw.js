@@ -6,11 +6,11 @@
    - Firebase, Google, CinetPay et les polices ne sont jamais mis en cache ici. */
 // v22 — Le code du site est dans js/ : à chaque mise en ligne, changer V ici ET le ?v= des balises <script> d'index.html (même nombre).
 // Ainsi une page est toujours servie avec le code de sa version (jamais une page neuve avec un vieux fichier gardé en cache).
-const V = 58;
+const V = 59;
 const CACHE = 'coopo-v' + V;
 const WAIT_MS = 3000;
 const JS = ['base', 'navigation', 'pages', 'themes', 'boutique', 'appareil', 'apparence', 'connexion', 'mates', 'messages', 'appels', 'medias', 'sessions-flammes', 'groupes', 'communaute', 'pages-infos', 'firebase', 'demarrage'];   // dans l'ordre d'index.html
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/v2/icon-192.png', './icons/v2/icon-512.png', ...JS.map(n => './js/' + n + '.js?v=' + V)];
+const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/v3/icon-192.png', './icons/v3/icon-512.png', ...JS.map(n => './js/' + n + '.js?v=' + V)];
 
 self.addEventListener('install', e => {
   // { cache: 'reload' } : à chaque nouvelle version, ces fichiers sont redemandés au serveur (jamais une vieille copie gardée par le navigateur)
@@ -55,7 +55,7 @@ self.addEventListener('push', e => {
   let p = {}; try { p = e.data ? e.data.json() : {}; } catch (x) {}
   const d = (p && p.data) || {};
   if (d.type !== 'call' || !d.pair || !d.from) return;
-  const reg = self.registration, tag = 'call-' + d.pair, icon = 'icons/v2/icon-192.png', badge = 'icons/v2/badge-96.png', who = String(d.name || 'Ton mate').slice(0, 40);
+  const reg = self.registration, tag = 'call-' + d.pair, icon = 'icons/v3/icon-192.png', badge = 'icons/v3/badge-96.png', who = String(d.name || 'Ton mate').slice(0, 40);
   const url = reg.scope + '#/messages/' + encodeURIComponent(d.from), at = +d.at || Date.now();
   e.waitUntil((async () => {
     const shown = await reg.getNotifications({ tag });

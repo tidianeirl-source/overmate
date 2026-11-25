@@ -17,7 +17,7 @@ const ICONS = {
   boutique:'<path d="M5 8h14l-1 12H6z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/>',
   parametres:'<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',
 };
-// LOGO_MASK (la planète Coopô) est défini dans l'en-tête de la page, avant le premier affichage
+// LOGO_MASK (le Check de Coopô) est défini dans l'en-tête de la page, avant le premier affichage
 const LOGO='<i class="logo-mark" aria-hidden="true"></i>';
 // Badge de certification des modérateurs
 const MOD_SVG='<svg class="mod-badge" viewBox="0 0 24 24" role="img" aria-label="Modérateur certifié Coopô"><title>Modérateur certifié Coopô</title><path class="mb-seal" d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path class="mb-check" d="m9 12 2 2 4-4"/></svg>';
