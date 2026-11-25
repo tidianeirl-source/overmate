@@ -1,0 +1,1 @@
+window.google={ accounts:{ id:{ initialize(o){ window.__gcb=o.callback; }, renderButton(el){ el.innerHTML='<button type="button" class="btn btn-ghost" data-mock-g>Continuer avec Google</button>'; }, disableAutoSelect(){} } } };
