@@ -111,7 +111,7 @@ function viewChat(id){ EDIT=null; chatMotif();
   S.unread[id]=0; { const seen=S.notifs.filter(n=>!n.read&&n.type==='message'&&n.from===id); seen.forEach(n=>n.read=true); DB.markRead(seen.map(n=>n.id)); } save(); renderNotifBadge();
   app.innerHTML=`<div class="dm-shell">${dmSide('c:'+id)}<div class="wrap page chat-page"><div class="chat-head">${backLink('#/messages','Messages')}<a class="chat-who${plqOn(p,1)}" href="#/joueur/${p.id}">${plq(p)}${avatar(p,44)}<div><b>${esc(p.name)}${modBadge(p)}</b>${isOnline(p)?'<span class="online">En ligne</span>':'<span class="muted" style="font-size:12px">Hors ligne</span>'}</div></a>${callBtns(p)}</div>
     <p class="flame-hint" id="flame-hint"></p>
-    ${crossAge(p)?`<p class="age-safe" role="note">${SHIELD_SVG}<span>Ne partage jamais ton adresse, ton école ni ton numéro. Quelque chose te gêne ? <button class="linkbtn" type="button" data-age-report>Signaler</button></span></p>`:''}
+    ${crossAge(p)?`<p class="age-safe" role="note">${SHIELD_SVG}<span>Ne partage jamais ton adresse, ton école ni ton numéro. Quelque chose te gêne&nbsp;? <button class="linkbtn" type="button" data-age-report>Signaler</button></span></p>`:''}
     <div class="chat-box" id="chatbox"></div>${typingHTML()}${qrHTML()}
     ${composerHTML('Message…',!minorP(p))}${cpanelHTML()}</div></div>`;
   dmFit();
