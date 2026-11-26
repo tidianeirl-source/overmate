@@ -363,6 +363,7 @@ input[type=range]{ width:100%; accent-color:var(--pk); }
 .gametag{ display:flex; justify-content:space-between; gap:8px; padding:11px 14px; background:var(--field); border:1.5px solid var(--line); border-radius:var(--ri); font-size:14px; font-weight:600; }
 .gametag.shared{ border-color:var(--hi); }
 .gametag em{ font-style:normal; color:var(--mu); overflow-wrap:anywhere; text-align:right; }
+.gametag > span{ min-width:0; } .gametag em.common{ flex:none; white-space:nowrap; overflow-wrap:normal; }   /* v24 — « En commun » n'est plus coupé sur trois lignes */
 .safety{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; border-top:1.5px solid var(--line); padding-top:14px; width:100%; }
 @media (max-width:900px){ .pp{ grid-template-columns:minmax(0,1fr); grid-template-areas:'head' 'side' 'main'; } .pp-side{ position:static; } }   /* téléphone : qui c'est, puis la compatibilité et le bouton, puis le détail */
 
@@ -2207,6 +2208,10 @@ button.g-who{ cursor:pointer; font:inherit; color:inherit; text-align:left; min-
 .flame{ display:inline-flex; align-items:center; gap:3px; flex:none; padding:1px 9px 1px 6px; border-radius:999px; background:#3A1404; color:#FFD9A8; font:700 13px/1.6 var(--fb); white-space:nowrap; text-shadow:none; }
 .flame b{ font:inherit; } .flame.warn{ background:#4A3A00; color:#FFE27A; animation:flamePulse 1.6s ease-in-out infinite; }
 .flame-hint:empty{ display:none; }
+/* v24 — bandeau de prudence : conversation privée entre un adulte et un 13-17 ans */
+.age-safe{ display:flex; align-items:flex-start; gap:8px; margin:0 0 10px; padding:8px 12px; border-radius:var(--ri); background:var(--field); border:1px solid var(--line); color:var(--tx); font-size:13px; line-height:1.4; }
+.age-safe svg{ flex:none; width:18px; height:18px; margin-top:1px; color:var(--pk); }
+.age-safe .linkbtn{ padding:0; border:0; background:none; font:inherit; font-weight:700; color:inherit; text-decoration:underline; cursor:pointer; }
 .g-name{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .flame-hint{ margin:0 0 10px; padding:8px 12px; border-radius:var(--ri); background:rgba(var(--w-top),.66); border:1px solid rgba(255,255,255,.2); color:#fff; font-size:13px; line-height:1.4; }
 .flame-party{ display:grid; gap:8px; justify-items:center; text-align:center; } .flame-big{ font-size:64px; line-height:1.1; animation:flameDance 1.2s ease-in-out infinite; }
@@ -2222,11 +2227,11 @@ html.lite .flame.warn, html.lite .flame-big{ animation:none; }
    - des angles plus nets (moins d'arrondis)
    ========================================================= */
 @media (max-width:999px){
-  body:has(.chat-page) .top, body:has(.dm-list-page) .top{ display:none; }
+  body:has(.chat-page) .top{ display:none; }   /* v24 — la liste des messages ne cache plus le menu du haut que sur téléphone (voir plus bas) */
   body:has(.chat-page) .tabbar{ display:none; }
   /* le bas de page (installer, liens) passait par-dessus la conversation entre 861 et 999 px et bloquait les boutons du haut */
   body:has(.chat-page) .foot, body:has(.chat-page) .install-foot{ display:none; }
-  body:has(.dm-list-page) .page{ padding-top:max(14px,env(safe-area-inset-top)); }
+  @media (max-width:860px){ body:has(.dm-list-page) .top{ display:none; } body:has(.dm-list-page) .page{ padding-top:max(14px,env(safe-area-inset-top)); } }
   .chat-page{ position:fixed; left:0; right:0; top:0; z-index:20; width:auto; max-width:none; height:var(--vvh,100dvh) !important; min-height:0; margin:0; padding:0 !important; display:flex; flex-direction:column; background:var(--s1); color:var(--tx); }
   .chat-page .chat-head{ flex:none; margin:0; padding:max(6px,env(safe-area-inset-top)) 6px 6px 2px; gap:4px; background:var(--s1); border-bottom:1px solid var(--hair); }
   .chat-page .chat-head .back{ margin:0; color:var(--tx); min-width:40px; min-height:44px; justify-content:center; font-size:0; gap:0; } .chat-page .chat-head .back svg{ width:22px; height:22px; }
@@ -2234,6 +2239,7 @@ html.lite .flame.warn, html.lite .flame-big{ animation:none; }
   .chat-page .chat-head, .chat-page .chat-head .back, .chat-page .chat-who:not(.plq-on), .chat-page .chat-who:not(.plq-on) b, .chat-page .chat-who:not(.plq-on) span:not(.online){ color:var(--tx) !important; text-shadow:none !important; }
   .chat-page .chat-calls{ gap:0; } .chat-page .call-btn{ background:none; border:0; box-shadow:none; border-radius:8px; color:var(--pk); } .chat-page .call-btn svg{ width:22px; height:22px; }
   .chat-page .flame-hint{ flex:none; margin:0; padding:4px 12px; } .chat-page .flame-hint:empty{ display:none; }
+  .chat-page .age-safe{ flex:none; margin:0; padding:6px 12px; border-width:0 0 1px; border-radius:0; font-size:12.5px; }
   .chat-page .chat-box{ flex:1 1 0; min-height:0; max-height:none; border:0; border-radius:0; padding:12px 10px; gap:6px; background:var(--s1); }
   .chat-page .chat-form{ flex:none; margin:0; gap:6px; padding:8px 8px max(8px,env(safe-area-inset-bottom)); border:0; border-top:1px solid var(--hair); border-radius:0; background:var(--s1); }
   .chat-page .chat-form > input{ border:1px solid var(--line) !important; background:var(--field) !important; border-radius:8px; padding:0 12px; min-height:44px; }
@@ -2704,6 +2710,8 @@ html:is([data-skin="defaut"],[data-skin="sombre"]) :is(.mh .mh-online,.pill-live
 html:is([data-skin="defaut"],[data-skin="sombre"]) body .chat-head :is(.chat-who b,.chat-who .online,.back){ color:var(--tx) !important; text-shadow:none !important; }
 html:is([data-skin="defaut"],[data-skin="sombre"]) body .chat-head .chat-who .muted{ color:var(--mu) !important; text-shadow:none !important; opacity:1 !important; }   /* « Hors ligne » : sans transparence, il reste lisible sur la barre claire */
 html:is([data-skin="defaut"],[data-skin="sombre"]) .form-actions{ background:var(--bg) !important; }
+/* v24 — la ligne de la flamme (« 🔥 12 jours d'affilée… ») : elle était blanche sur un voile devenu blanc dans le thème clair */
+html:is([data-skin="defaut"],[data-skin="sombre"]) .flame-hint{ background:var(--s1) !important; border-color:var(--line) !important; color:var(--tx) !important; }
 html:is([data-skin="defaut"],[data-skin="sombre"]) .back:hover{ background:var(--s2) !important; }
 /* boutons pleins : plus de reflet ni d'ombre en dégradé */
 html:is([data-skin="defaut"],[data-skin="sombre"]) .btn{ background-image:none !important; }
@@ -2981,24 +2989,24 @@ setTimeout(function(){try{if(SPLASH.armed)return;}catch(e){}if(!s)return;s.class
 <div id="wipe" aria-hidden="true"></div>
 
 <!-- v22 — Le code du site est dans js/ : ces fichiers sont chargés dans cet ordre et se partagent tout ce qu'ils déclarent.
-     ?v=58 : à changer à chaque mise en ligne, avec V dans sw.js, pour que la page et son code aillent toujours ensemble. -->
-<script src="js/base.js?v=58"></script>
-<script src="js/navigation.js?v=58"></script>
-<script src="js/pages.js?v=58"></script>
-<script src="js/themes.js?v=58"></script>
-<script src="js/boutique.js?v=58"></script>
-<script src="js/appareil.js?v=58"></script>
-<script src="js/apparence.js?v=58"></script>
-<script src="js/connexion.js?v=58"></script>
-<script src="js/mates.js?v=58"></script>
-<script src="js/messages.js?v=58"></script>
-<script src="js/appels.js?v=58"></script>
-<script src="js/medias.js?v=58"></script>
-<script src="js/sessions-flammes.js?v=58"></script>
-<script src="js/groupes.js?v=58"></script>
-<script src="js/communaute.js?v=58"></script>
-<script src="js/pages-infos.js?v=58"></script>
-<script src="js/firebase.js?v=58"></script>
-<script src="js/demarrage.js?v=58"></script>
+     ?v=59 : à changer à chaque mise en ligne, avec V dans sw.js, pour que la page et son code aillent toujours ensemble. -->
+<script src="js/base.js?v=59"></script>
+<script src="js/navigation.js?v=59"></script>
+<script src="js/pages.js?v=59"></script>
+<script src="js/themes.js?v=59"></script>
+<script src="js/boutique.js?v=59"></script>
+<script src="js/appareil.js?v=59"></script>
+<script src="js/apparence.js?v=59"></script>
+<script src="js/connexion.js?v=59"></script>
+<script src="js/mates.js?v=59"></script>
+<script src="js/messages.js?v=59"></script>
+<script src="js/appels.js?v=59"></script>
+<script src="js/medias.js?v=59"></script>
+<script src="js/sessions-flammes.js?v=59"></script>
+<script src="js/groupes.js?v=59"></script>
+<script src="js/communaute.js?v=59"></script>
+<script src="js/pages-infos.js?v=59"></script>
+<script src="js/firebase.js?v=59"></script>
+<script src="js/demarrage.js?v=59"></script>
 </body>
 </html>

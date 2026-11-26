@@ -53,6 +53,8 @@ const gRowSn = g => { const u=gUnread(g);
   return `<a class="sn-row grp${u?' unread':''}" href="#/groupe/${esc(g.id)}" data-f="group${u?' unread':''}" data-n="${esc(g.name.toLowerCase())}"><span class="sn-av">${gAvatar(g,56)}</span><div class="sn-mid"><b><span>${esc(g.name)}</span>${g.private?'<span class="g-lock" title="Groupe privé">'+LOCK_SVG+'</span>':''}</b>
     <span class="sn-st${u?' new':''}"><i></i><span class="t">${u?'Nouveaux messages':esc(g.game||'Tous les jeux')}</span><span class="x">${u&&g.lastAt?'· '+shortAgo(tsMs(g.lastAt)):`· ${g.members.length} membre${g.members.length>1?'s':''}${g.lastAt?' · '+shortAgo(tsMs(g.lastAt)):''}`}</span></span></div><span class="sn-end">${u?'<span class="badge static" aria-label="Nouveaux messages">•</span>':CHAT_SVG}</span></a>`; };
 let SN_F='all';   // v20 — le filtre choisi (Tous, Non lus, Groupes…) : gardé quand la liste se redessine et quand on revient d'une conversation
+// v24 — bandeau de prudence entre un adulte et un 13-17 ans (conversations privées)
+const SHIELD_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6z"/><path d="M9.5 12l1.8 1.8L15 10"/></svg>';
 const CHEV_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
 function snList(mates){
   const groups=gMine(), inv=gInvites();
@@ -109,9 +111,11 @@ function viewChat(id){ EDIT=null; chatMotif();
   S.unread[id]=0; { const seen=S.notifs.filter(n=>!n.read&&n.type==='message'&&n.from===id); seen.forEach(n=>n.read=true); DB.markRead(seen.map(n=>n.id)); } save(); renderNotifBadge();
   app.innerHTML=`<div class="dm-shell">${dmSide('c:'+id)}<div class="wrap page chat-page"><div class="chat-head">${backLink('#/messages','Messages')}<a class="chat-who${plqOn(p,1)}" href="#/joueur/${p.id}">${plq(p)}${avatar(p,44)}<div><b>${esc(p.name)}${modBadge(p)}</b>${isOnline(p)?'<span class="online">En ligne</span>':'<span class="muted" style="font-size:12px">Hors ligne</span>'}</div></a>${callBtns(p)}</div>
     <p class="flame-hint" id="flame-hint"></p>
+    ${crossAge(p)?`<p class="age-safe" role="note">${SHIELD_SVG}<span>Ne partage jamais ton adresse, ton école ni ton numéro. Quelque chose te gêne ? <button class="linkbtn" type="button" data-age-report>Signaler</button></span></p>`:''}
     <div class="chat-box" id="chatbox"></div>${typingHTML()}${qrHTML()}
     ${composerHTML('Message…',!minorP(p))}${cpanelHTML()}</div></div>`;
   dmFit();
+  app.querySelector('[data-age-report]')?.addEventListener('click',()=>reportDialog(p));   // v24 — bandeau de prudence : le même signalement que sur le profil
   // v11 — chaque envoi passe dans la file : un message par seconde au plus (règle Firebase), dans l'ordre, même avec plusieurs photos ou stickers d'affilée
   const here=()=>location.hash==='#/messages/'+id;
   const sendC=m=>{ const rp=takeReply('c',id); if(rp) m.reply=rp; return DB.queueSend(async()=>{ m.at=Date.now(); (S.chats[id]||(S.chats[id]=[])).push(m); save(); if(here()) renderChat(id);
