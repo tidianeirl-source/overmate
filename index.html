@@ -2946,7 +2946,50 @@ body:has(#nav-under.on) #ground{ visibility:hidden; } body:has(#nav-under.on) .f
 </style>
 <!-- v27 — version 61 : quatre blocs de styles, chacun rempli séparément. Ils sont les derniers de la page : ils passent après tous les autres. -->
 <style id="coopo-serre-msg">
-/* ==== v27 — Messages, conversations et groupes plus serrés (téléphone et ordinateur) ==== */
+/* ==== v27 — Messages, conversations et groupes plus serrés (téléphone et ordinateur) ====
+   Demande d'Aki : « tout est trop espacé ». Moins de vide, des listes d'un bord à l'autre, l'heure sur la ligne du message.
+   On ne touche ni aux couleurs ni aux thèmes. Les boutons qu'on touche au doigt gardent leur taille. */
+/* — l'heure sur la même ligne que le texte (bulles de texte simple) — */
+.bubble.b-txt{ display:flex; flex-wrap:wrap; align-items:baseline; justify-content:flex-end; column-gap:10px; row-gap:0; }
+.bubble.b-txt > span:not(.jumbo), .bubble.b-txt > .msg-del{ flex:0 1 auto; min-width:0; margin-right:auto; overflow-wrap:anywhere; }
+.bubble.b-txt > small{ flex:none; white-space:nowrap; }
+.bubble.b-txt > :is(.msg-reply,.bubble-warn,.msg-rx){ flex:1 1 100%; }
+.chat-box .bubble{ padding:6px 12px 5px; border-radius:16px 16px 16px 4px; } .chat-box .bubble.me{ border-radius:16px 16px 4px 16px; }
+.chat-box{ gap:3px; }
+/* peu de messages : ils restent en bas, près du champ pour écrire */
+.chat-box > :first-child{ margin-top:auto; }
+/* — téléphone et petite tablette : la liste va d'un bord à l'autre, lignes moins hautes — */
+@media (max-width:999px){
+  .dm-list-page .sn-list, .g-home .sn-list{ margin-inline:calc(50% - 50vw); border-width:0; border-radius:0; background:none; }
+  .sn-row{ min-height:62px; padding:7px 14px; grid-template-columns:46px minmax(0,1fr) auto; gap:11px; }
+  .sn-row .sn-av > :is(.av,img,.g-av){ width:46px !important; height:46px !important; }
+  .sn-row .sn-av > .av{ font-size:16px !important; }
+  .sn-row .sn-av{ width:46px; height:46px; } .sn-av .online{ border-radius:50%; border-color:var(--bg); }   /* le point « en ligne » suit la photo plus petite, et reste rond */
+  .sn-mid{ gap:1px; } .sn-mid b{ font-size:16px; }
+  .page-head.sn-top{ margin-bottom:6px; } .sn-chips{ margin-bottom:8px; }
+  .sn-chips .chip{ min-height:36px; padding:0 12px; font-size:13.5px; }
+  body:has(.dm-list-page) .page{ padding-top:max(10px,env(safe-area-inset-top)); }
+  .chat-page .chat-box{ padding:8px; gap:3px; }
+  .chat-page .chat-form{ padding:6px 8px max(6px,env(safe-area-inset-bottom)); }
+}
+/* — ordinateur : plus de cartes flottantes, la liste et la conversation collent aux bords, comme Discord — */
+@media (min-width:1000px){
+  html body:has(.dm-shell) .frame{ padding:0 !important; }
+  body:has(.dm-shell) .page{ padding-top:0; padding-bottom:0; }
+  body:has(.dm-shell) :is(.foot,.install-foot){ display:none; }
+  .dm-shell{ gap:0; padding:0; grid-template-columns:280px minmax(0,1fr) !important; }
+  .dm-shell .dm-side, .dm-shell .g-side{ margin-top:0; height:100vh; min-height:0; border-width:0 1px 0 0; border-radius:0; padding:10px 8px; }
+  .dm-shell .chat-page, .dm-shell .dm-empty, .g-shell .g-home{ margin-top:0; height:100vh; min-height:0; border-radius:0; border-width:0; }
+  .dm-shell .chat-page{ padding:0; gap:0; }
+  .dm-shell .chat-head{ margin:0; padding:8px 14px; border-bottom:1px solid var(--hair); background:var(--s1); }
+  .dm-shell .chat-head .chat-who{ padding:2px 10px 2px 2px; border:0; background:none; border-radius:10px; }
+  .dm-shell .chat-box{ border-radius:0; border:0; padding:12px 16px; }
+  .dm-shell .chat-form{ margin:0; padding:10px 14px; border-top:1px solid var(--hair); background:var(--s1); border-radius:0; }
+  .dm-shell :is(.age-safe,.flame-hint){ margin:0; border-radius:0; border-width:0 0 1px; }
+  .dm-shell .typing-wrap{ padding:0 16px; }
+  .dm-row{ min-height:44px; padding:5px 8px; }
+  html body .g-shell .g-home{ padding:18px 24px 28px; }
+}
 </style>
 <!-- -->
 <style id="coopo-serre-pages">

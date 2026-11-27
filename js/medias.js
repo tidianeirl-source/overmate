@@ -445,6 +445,8 @@ function msgBody(m,kind,owner,mine){
   if(m.sticker) return stickerBubble(m.sticker,mine);
   const jn=jumboN(m.text); if(jn) return `<span class="jumbo j${jn}">${esc(String(m.text).trim())}</span>`;
   return `<span>${esc(m.text)}</span>${mine?'':msgWarn({from:m.from,text:m.text})}`; }
+// v27 — bulle de texte simple (ou message supprimé) : l'heure passe sur la même ligne que le texte (classe b-txt). Photos, vocaux, stickers, appels et gros emojis gardent l'heure dessous.
+const bubTxt = m => m.del||!(m.call||m.voice||m.photo||m.sticker||jumboN(m.text)) ? ' b-txt' : '';
 // le bas d'une bulle : l'heure, « modifié », et le bouton d'options (tous les messages : répondre, copier ; les miens : modifier, supprimer)
 const msgMeta = (m,mine,kind,owner,tag='') => `${ago(m.at)}${m.edited&&!m.del?' · modifié':''}${tag}${m.id&&!m.del?`<button type="button" class="msg-more" data-mm="${esc(m.id)}" data-mk="${kind}" data-mo="${esc(owner)}" aria-label="Actions sur ce message" aria-haspopup="menu" title="Options du message">${MORE_SVG}</button>`:''}`;
 /* ---- v13 — Appui long sur un message, façon TikTok ----
@@ -603,7 +605,7 @@ function renderChat(id){
   // v15 — « Vu » : sous mon dernier message que le mate a lu
   let seenK=-1; { const os=seenOf(id); if(os) for(let k=msgs.length-1;k>=0;k--){ if(msgs[k].from==='me'&&msgs[k].at<=os){ seenK=k; break; } } }
   box.innerHTML = msgs.length ? msgs.map((m,k)=>{ const mine=m.from==='me';
-      return `<div class="bubble${mine?' me':''}${m.del?' del':''}"${m.id?` data-mid="${esc(m.id)}"`:''}${m.id&&!m.del?` data-msg="c|${esc(id)}|${esc(m.id)}"`:''}${mine&&m.id&&!m.del?` data-own="c|${esc(id)}|${esc(m.id)}"`:''}>${replyQuote(m,'c',id)}${msgBody(m,'c',id,mine)}<small>${msgMeta(m,mine,'c',id,k===seenK?' · <span class="seen-tag">Vu</span>':'')}</small>${reactsHTML(m,'c',id)}</div>`; }).join('')
+      return `<div class="bubble${mine?' me':''}${m.del?' del':''}${bubTxt(m)}"${m.id?` data-mid="${esc(m.id)}"`:''}${m.id&&!m.del?` data-msg="c|${esc(id)}|${esc(m.id)}"`:''}${mine&&m.id&&!m.del?` data-own="c|${esc(id)}|${esc(m.id)}"`:''}>${replyQuote(m,'c',id)}${msgBody(m,'c',id,mine)}<small>${msgMeta(m,mine,'c',id,k===seenK?' · <span class="seen-tag">Vu</span>':'')}</small>${reactsHTML(m,'c',id)}</div>`; }).join('')
     : `<div class="chat-empty"><p class="muted">Première partie ensemble ? Propose un créneau 🎮</p><div class="chips">${QUICK_MSGS.map(t=>`<button type="button" class="chip" data-quick="${esc(t)}">${esc(t)}</button>`).join('')}</div></div>`;
   bubbleNew(box,was);
   box.scrollTop=keep==null?box.scrollHeight:keep;
