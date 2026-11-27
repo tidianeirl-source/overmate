@@ -2617,6 +2617,12 @@ html.lite .stk-msg.anim{ animation:none; }
 .sn-row,.dm-row{ -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; -webkit-user-drag:none; }
 .sn-row.pressing,.dm-row.pressing{ transform:scale(.985); transition:transform .14s cubic-bezier(.23,1,.32,1); }
 .pin-ic{ flex:none; width:14px; height:14px; opacity:.75; }
+/* v25 — menu d'une conversation ou d'un groupe dans la liste (appui long, clic droit) : la ligne reste éclairée, le reste s'assombrit, le menu s'ouvre juste dessous */
+.mute-ic{ flex:none; width:14px; height:14px; opacity:.75; }
+.rm-catch{ position:absolute; inset:0; } .rm-ov .mm-menu:focus{ outline:none; }
+.rm-hole{ position:fixed; pointer-events:none; box-shadow:0 0 0 200vmax rgba(6,8,16,.58); animation:mmFade .16s ease-out; }
+.rm-ov .mm-menu .pin-ic{ width:22px; height:22px; opacity:1; }
+@media (prefers-reduced-motion:reduce){ .rm-hole{ animation:none; } }
 .sn-tip{ padding:14px 16px 4px; font-size:13px; text-align:center; }
 .row-menu-head{ display:flex; align-items:center; gap:12px; min-width:0; } .row-menu-head h3{ margin:0; overflow-wrap:anywhere; }
 .row-menu{ display:flex; flex-direction:column; gap:8px; margin-top:14px; } .row-menu .btn{ justify-content:flex-start; gap:10px; min-height:48px; } .row-menu .pin-ic{ width:18px; height:18px; opacity:1; }

@@ -549,11 +549,15 @@ function modAction(p,act,days,done){ const id=p.id, nm=esc(p.name), fin=()=>{ sa
   else if(act==='unban'){ DB.adminBan(id,false).then(ok=>{ if(ok){ p.banned=p.hidden=false; S.banned=S.banned.filter(x=>x!==id); S.hidden=S.hidden.filter(x=>x!==id); toast('Ban levé'); } else toast(fail); fin(); }); }
   else if(act==='hide'){ const h=!modState(p).hid; DB.adminHide(id,h).then(ok=>{ if(ok){ p.hidden=h; S.hidden=h?[...new Set([...S.hidden,id])]:S.hidden.filter(x=>x!==id); toast(h?'Profil masqué':'Profil rétabli'); } else toast(fail); fin(); }); } }
 // Signaler un joueur : depuis son profil, et depuis le bandeau de prudence d'une conversation (v24)
-function reportDialog(p){ modal(`<h3>Signaler ${esc(p.name)}</h3><p class="muted">La modération examine chaque signalement. ${esc(p.name)} n'est pas prévenu et disparaît tout de suite de ton côté.</p>
+function reportDialog(p,after){ modal(`<h3>Signaler ${esc(p.name)}</h3><p class="muted">La modération examine chaque signalement. ${esc(p.name)} n'est pas prévenu et disparaît tout de suite de ton côté.</p>
     <div class="radio-list">${['Comportement toxique ou harcèlement','Contenu inapproprié','Faux profil ou usurpation','Arnaque','Adulte qui contacte un mineur','Autre'].map((r,i)=>`<label><input type="radio" name="rr" value="${r}" ${i?'':'checked'}> ${r}</label>`).join('')}</div>
     <textarea id="rtxt" rows="3" placeholder="Détails (facultatif)" maxlength="500"></textarea>
     <div class="dlg-actions"><button class="btn btn-ghost" data-close>Annuler</button><button class="btn btn-ac" id="rsend">Envoyer le signalement</button></div>`,
-    d=>d.querySelector('#rsend').onclick=()=>{ submitReport(p.id,d.querySelector('[name=rr]:checked').value,d.querySelector('#rtxt').value); d.close(); toast('Signalement envoyé'); if(S.hidden.includes(p.id)) location.hash='#/matchs'; }); }
+    d=>d.querySelector('#rsend').onclick=()=>{ submitReport(p.id,d.querySelector('[name=rr]:checked').value,d.querySelector('#rtxt').value); d.close(); toast('Signalement envoyé'); if(after) after(); else if(S.hidden.includes(p.id)) location.hash='#/matchs'; }); }
+// Bloquer un joueur : depuis son profil, et depuis le menu d'une conversation dans la liste (v25)
+function blockDialog(p,after){ modal(`<h3>Bloquer ${esc(p.name)} ?</h3><p class="muted">Tu ne verras plus son profil, ${esc(p.name)} ne pourra plus te contacter et sera retiré de tes mates. Tu peux le débloquer dans les paramètres.</p>
+    <div class="dlg-actions"><button class="btn btn-ghost" data-close>Annuler</button><button class="btn btn-danger" id="bok">Bloquer</button></div>`,
+    d=>d.querySelector('#bok').onclick=()=>{ if(!S.blocked.includes(p.id)) S.blocked.push(p.id); removeRequest(p.id); save(); DB.saveBlock(p.id,true); d.close(); toast(`${p.name} est bloqué`); if(after) after(); else location.hash='#/matchs'; }); }
 function viewPlayer(id){
   const self = id==='me';
   const p = self ? publicMe() : (visible().find(x=>x.id===id) || (isAdmin() ? PLAYERS.find(x=>x.id===id) : null));   // la modération voit aussi les comptes masqués, suspendus ou bannis
@@ -607,9 +611,7 @@ function viewPlayer(id){
   app.querySelectorAll('[data-rate]').forEach(b=>b.onclick=()=>{ rate(id,+b.dataset.rate); re(); });
   app.querySelectorAll('[data-mod]').forEach(b=>b.onclick=()=>modAction(p,b.dataset.mod,+b.dataset.days||0,re));
   document.getElementById('report')?.addEventListener('click',()=>reportDialog(p));
-  document.getElementById('block')?.addEventListener('click',()=>modal(`<h3>Bloquer ${esc(p.name)} ?</h3><p class="muted">Tu ne verras plus son profil, ${esc(p.name)} ne pourra plus te contacter et sera retiré de tes mates. Tu peux le débloquer dans les paramètres.</p>
-    <div class="dlg-actions"><button class="btn btn-ghost" data-close>Annuler</button><button class="btn btn-danger" id="bok">Bloquer</button></div>`,
-    d=>d.querySelector('#bok').onclick=()=>{ S.blocked.push(id); removeRequest(id); save(); DB.saveBlock(id,true); d.close(); toast(`${p.name} est bloqué`); location.hash='#/matchs'; }));
+  document.getElementById('block')?.addEventListener('click',()=>blockDialog(p));
 }
 
 /* ----- Paramètres ----- */

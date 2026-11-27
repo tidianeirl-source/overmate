@@ -4,18 +4,18 @@
    Ce sont des scripts classiques (pas des modules) : ce que chacun déclare est partagé avec tous les autres. */
 /* ---- Messages privés (entre mates uniquement) ---- */
 // Dernier message connu d'une conversation : le dernier message chargé ou, s'il est plus récent, celui annoncé par une notification
-function lastMsg(id){ const m=(S.chats[id]||[]).slice(-1)[0]||null, n=S.notifs.filter(x=>x.type==='message'&&x.from===id).sort((a,b)=>(b.at||0)-(a.at||0))[0];
+function lastMsg(id){ const ca=clearedAt(id), m=(S.chats[id]||[]).filter(x=>!ca||(x.at||0)>ca).slice(-1)[0]||null, n=S.notifs.filter(x=>x.type==='message'&&x.from===id&&(!ca||(x.at||0)>ca)).sort((a,b)=>(b.at||0)-(a.at||0))[0];
   if(n&&(!m||(n.at||0)>(m.at||0))){ const t=String(n.text||''), i=t.indexOf(' : '); return {from:id,text:i>=0?t.slice(i+3):t,at:n.at||0}; }
   return m&&m.del ? {...m,text:MSG_DEL_TEXT} : m; }
 /* Colonne des conversations (ordinateur seulement) : les mates puis les groupes, le plus récent en haut. key = 'c:<joueur>' ou 'g:<groupe>'. */
 function dmSideInner(key){
   const mates=pinSort(matesList().sort((a,b)=>{ const la=lastMsg(a.id), lb=lastMsg(b.id); return (lb?lb.at:0)-(la?la.at:0); }));   // v15 — les mates épinglés en haut
   return `<h3><span>Messages privés</span>${canCall()&&AUTH_LIVE?`<button class="dm-calls" type="button" data-calls aria-label="Voir mes appels" title="Mes appels">${CALLS_SVG}</button>`:''}</h3>${mates.length?mates.map((p,i)=>{ const last=lastMsg(p.id), u=S.unread[p.id]||0;   // les plaques des 12 premières lignes sont animées (au-delà : au survol)
-      return `<a class="dm-row${key==='c:'+p.id?' on':''}${u?' unread':''}${plqOn(p,i<12)}" href="#/messages/${p.id}"${key==='c:'+p.id?' aria-current="page"':''}>${plq(p)}${avatar(p,36)}<div><b><span>${esc(p.name)}</span>${isOnline(p)?'<span class="online"></span>':''}${isPinned(p.id)?PIN_SVG+'<span class="sr-only">épinglé</span>':''}</b><span class="muted">${last?esc((last.from==='me'?'Toi : ':'')+last.text):'Dis bonjour 👋'}</span></div>${u?`<span class="badge static">${u}</span>`:''}</a>`; }).join(''):'<p class="muted dm-none">Pas encore de mates.</p>'}`; }
+      return `<a class="dm-row${key==='c:'+p.id?' on':''}${u?' unread':''}${plqOn(p,i<12)}" href="#/messages/${p.id}"${key==='c:'+p.id?' aria-current="page"':''}>${plq(p)}${avatar(p,36)}<div><b><span>${esc(p.name)}</span>${isOnline(p)?'<span class="online"></span>':''}${rowMarks('c',p.id)}</b><span class="muted">${last?esc((last.from==='me'?'Toi : ':'')+last.text):'Dis bonjour 👋'}</span></div>${u?`<span class="badge static">${u}</span>`:''}</a>`; }).join(''):'<p class="muted dm-none">Pas encore de mates.</p>'}`; }
 // Les groupes dans la colonne de gauche du site (ordinateur) : un rond par groupe, puis « + »
 function railGroups(){ if(!S.auth||!S.me) return ''; const m=location.hash.match(/^#\/groupe\/([^/?]+)/), cur=m?decodeURIComponent(m[1]):'';
   const groups=GROUPS.filter(gIn).sort((a,b)=>tsMs(b.lastAt||b.at)-tsMs(a.lastAt||a.at));
-  return groups.map(g=>`<a class="dm-ico${cur===g.id?' on':''}${gUnread(g)?' unread':''}" href="#/groupe/${esc(g.id)}" title="${esc(g.name)}" aria-label="Groupe ${esc(g.name)}${gUnread(g)?' (nouveaux messages)':''}"${cur===g.id?' aria-current="page"':''}>${gAvatar(g,48)}${gUnread(g)?'<span class="dm-dot" aria-hidden="true">•</span>':''}</a>`).join('')
+  return groups.map(g=>`<a class="dm-ico${cur===g.id?' on':''}${gLoud(g)?' unread':''}" href="#/groupe/${esc(g.id)}" title="${esc(g.name)}" aria-label="Groupe ${esc(g.name)}${gLoud(g)?' (nouveaux messages)':''}"${cur===g.id?' aria-current="page"':''}>${gAvatar(g,48)}${gLoud(g)?'<span class="dm-dot" aria-hidden="true">•</span>':''}</a>`).join('')
     +railPlus(); }
 // v23 — Le « + » sous les groupes (colonne de gauche, ordinateur), qui remplace l'onglet Groupes : il crée un groupe.
 // S'il y a des invitations, il porte une pastille et mène à la page des groupes, où elles sont en haut (avec les groupes publics et « Créer un groupe »).
@@ -31,9 +31,9 @@ function railPlusSync(){ document.querySelectorAll('#sr-groups .dm-ico.plus').fo
   let d=a.querySelector('.dm-dot'); if(!i.inv){ if(d) d.remove(); return; } if(!d){ d=document.createElement('span'); d.className='dm-dot'; d.setAttribute('aria-hidden','true'); a.appendChild(d); } d.textContent=i.inv>9?'9+':String(i.inv); }); }
 const railGroupsRefresh = () => { const el=document.getElementById('sr-groups'); if(el) el.innerHTML=railGroups(); gSideRefresh(); };
 // Barre des groupes (ordinateur) : le bouton des messages privés, puis un rond par groupe, puis « + »
-function dmRailInner(key){ const groups=GROUPS.filter(gIn).sort((a,b)=>tsMs(b.lastAt||b.at)-tsMs(a.lastAt||a.at)); const dmU=Object.values(S.unread||{}).reduce((n,x)=>n+(+x||0),0);
+function dmRailInner(key){ const groups=GROUPS.filter(gIn).sort((a,b)=>tsMs(b.lastAt||b.at)-tsMs(a.lastAt||a.at)); const dmU=Object.entries(S.unread||{}).reduce((n,[k,x])=>n+(rowMuted('c',k)?0:(+x||0)),0);
   return `<a class="dm-ico${key.startsWith('g:')?'':' on'}${dmU?' unread':''}" href="#/messages" title="Messages privés" aria-label="Messages privés${dmU?' ('+dmU+' non lus)':''}"${key.startsWith('g:')?'':' aria-current="page"'}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>${dmU?`<span class="dm-dot">${dmU>99?'99+':dmU}</span>`:''}</a><span class="dm-sep" aria-hidden="true"></span>
-    ${groups.map(g=>`<a class="dm-ico${key==='g:'+g.id?' on':''}${gUnread(g)?' unread':''}" href="#/groupe/${esc(g.id)}" title="${esc(g.name)}" aria-label="Groupe ${esc(g.name)}${gUnread(g)?' (nouveaux messages)':''}"${key==='g:'+g.id?' aria-current="page"':''}>${gAvatar(g,48)}${gUnread(g)?'<span class="dm-dot" aria-hidden="true">•</span>':''}</a>`).join('')}
+    ${groups.map(g=>`<a class="dm-ico${key==='g:'+g.id?' on':''}${gLoud(g)?' unread':''}" href="#/groupe/${esc(g.id)}" title="${esc(g.name)}" aria-label="Groupe ${esc(g.name)}${gLoud(g)?' (nouveaux messages)':''}"${key==='g:'+g.id?' aria-current="page"':''}>${gAvatar(g,48)}${gLoud(g)?'<span class="dm-dot" aria-hidden="true">•</span>':''}</a>`).join('')}
     <a class="dm-ico plus" href="#/groupe/nouveau" title="Créer un groupe" aria-label="Créer un groupe">+</a>`; }
 const dmSide = key => `<nav class="dm-rail" id="dm-rail" aria-label="Groupes" data-key="${esc(key||'')}">${dmRailInner(key||'')}</nav><nav class="dm-side" id="dm-side" aria-label="Messages privés" data-key="${esc(key||'')}">${dmSideInner(key)}</nav>`;
 const dmRefresh = () => { railGroupsRefresh(); const sd=document.getElementById('dm-side'); if(sd&&sd.offsetParent!==null){ const y=sd.scrollTop; sd.innerHTML=dmSideInner(sd.dataset.key); sd.scrollTop=y; const rl=document.getElementById('dm-rail'); if(rl){ const ry=rl.scrollTop; rl.innerHTML=dmRailInner(rl.dataset.key||''); rl.scrollTop=ry; } } };
@@ -47,10 +47,12 @@ window.addEventListener('resize',dmFit);
    Juste au-dessus : les invitations aux groupes. Tout en bas : « Trouver un groupe ». Le bouton + crée un groupe.
    (Sur ordinateur, cette liste est cachée : les mates et les groupes sont dans les colonnes de gauche.) */
 const CHAT_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>';
+// v25 — petites marques après le nom dans les listes : épinglé, en sourdine
+const rowMarks = (kind,id) => ((kind==='c'?isPinned(id):gPinned(id))?PIN_SVG+'<span class="sr-only">épinglé</span>':'')+(rowMuted(kind,id)?MUTE_IC+'<span class="sr-only">en sourdine</span>':'');
 const shortAgo = t => ago(t).replace('il y a ','');
 // Une ligne de groupe façon liste de messages (téléphone : dans Messages, et sur la page des groupes)
 const gRowSn = g => { const u=gUnread(g);
-  return `<a class="sn-row grp${u?' unread':''}" href="#/groupe/${esc(g.id)}" data-f="group${u?' unread':''}" data-n="${esc(g.name.toLowerCase())}"><span class="sn-av">${gAvatar(g,56)}</span><div class="sn-mid"><b><span>${esc(g.name)}</span>${g.private?'<span class="g-lock" title="Groupe privé">'+LOCK_SVG+'</span>':''}</b>
+  return `<a class="sn-row grp${u?' unread':''}" href="#/groupe/${esc(g.id)}" data-f="group${u?' unread':''}" data-n="${esc(g.name.toLowerCase())}"><span class="sn-av">${gAvatar(g,56)}</span><div class="sn-mid"><b><span>${esc(g.name)}</span>${g.private?'<span class="g-lock" title="Groupe privé">'+LOCK_SVG+'</span>':''}${rowMarks('g',g.id)}</b>
     <span class="sn-st${u?' new':''}"><i></i><span class="t">${u?'Nouveaux messages':esc(g.game||'Tous les jeux')}</span><span class="x">${u&&g.lastAt?'· '+shortAgo(tsMs(g.lastAt)):`· ${g.members.length} membre${g.members.length>1?'s':''}${g.lastAt?' · '+shortAgo(tsMs(g.lastAt)):''}`}</span></span></div><span class="sn-end">${u?'<span class="badge static" aria-label="Nouveaux messages">•</span>':CHAT_SVG}</span></a>`; };
 let SN_F='all';   // v20 — le filtre choisi (Tous, Non lus, Groupes…) : gardé quand la liste se redessine et quand on revient d'une conversation
 // v24 — bandeau de prudence entre un adulte et un 13-17 ans (conversations privées)
@@ -58,12 +60,13 @@ const SHIELD_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
 const CHEV_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
 function snList(mates){
   const groups=gMine(), inv=gInvites();
-  const items=pinSort(mates.map(p=>({p,at:(lastMsg(p.id)||{}).at||0})).concat(groups.map(g=>({g,at:tsMs(g.lastAt||g.at)}))).sort((x,y)=>y.at-x.at),x=>x.p?x.p.id:'');   // v15 — les mates épinglés en haut
+  const all=mates.map(p=>({p,at:(lastMsg(p.id)||{}).at||0})).concat(groups.map(g=>({g,at:tsMs(g.lastAt||g.at)}))).sort((x,y)=>y.at-x.at), up=x=>x.p?isPinned(x.p.id):gPinned(x.g.id);
+  const items=all.filter(up).concat(all.filter(x=>!up(x)));   // v15 — les mates épinglés en haut ; v25 — les groupes épinglés aussi
   const nU=mates.filter(p=>S.unread[p.id]).length+groups.filter(gUnread).length;
   const rows=items.map(it=>{ if(it.g) return gRowSn(it.g);
     const p=it.p, last=lastMsg(p.id), u=S.unread[p.id]||0, f=flameState(p.id), on=isOnline(p), fl=f&&f.count>=FLAME_FROM;
-    const pin=isPinned(p.id), st=u?['new',u>1?`${u} nouveaux messages`:'Nouveau message']:!last?['','Dis bonjour 👋']:last.from==='me'?(seenOf(p.id)>=last.at?['seen','Vu']:['sent','Envoyé']):['','Reçu'];   // v15 — « Vu » quand le mate a lu
-    return `<a class="sn-row${u?' unread':''}${plqOn(p)}" href="#/messages/${p.id}" data-f="${u?'unread ':''}${on?'online ':''}${fl?'flame':''}" data-n="${esc(String(p.name||'').toLowerCase())}">${plq(p)}<span class="sn-av">${avatar(p,56)}${on?'<span class="online" title="En ligne"></span>':''}</span><div class="sn-mid"><b><span>${esc(p.name)}</span>${modBadge(p)}${pin?PIN_SVG+'<span class="sr-only">épinglé</span>':''}</b>
+    const st=u?['new',u>1?`${u} nouveaux messages`:'Nouveau message']:!last?['','Dis bonjour 👋']:last.from==='me'?(seenOf(p.id)>=last.at?['seen','Vu']:['sent','Envoyé']):['','Reçu'];   // v15 — « Vu » quand le mate a lu
+    return `<a class="sn-row${u?' unread':''}${plqOn(p)}" href="#/messages/${p.id}" data-f="${u?'unread ':''}${on?'online ':''}${fl?'flame':''}" data-n="${esc(String(p.name||'').toLowerCase())}">${plq(p)}<span class="sn-av">${avatar(p,56)}${on?'<span class="online" title="En ligne"></span>':''}</span><div class="sn-mid"><b><span>${esc(p.name)}</span>${modBadge(p)}${rowMarks('c',p.id)}</b>
       <span class="sn-st ${st[0]}">${last||u?'<i></i>':''}<span class="t">${st[1]}</span><span class="x">${last?'· '+shortAgo(last.at):''}${fl?` · ${f.count} ${f.warn?'⏳':'🔥'}`:''}</span></span></div><span class="sn-end">${u?`<span class="badge static">${u}</span>`:CHAT_SVG}</span></a>`; }).join('');
   const chip=(k,l,n)=>`<button type="button" class="chip" data-snf="${k}" aria-pressed="${k===SN_F}">${l}${n?` <span class="cnt">${n}</span>`:''}</button>`;
   const more=`<a class="sn-row sn-more" id="sn-more" href="#/groupe"><span class="sn-av"><span class="sn-more-ico">${FIND_SVG}</span></span><div class="sn-mid"><b><span>Trouver un groupe</span></b><span class="sn-st"><span class="t">Rejoins un groupe public</span></span></div><span class="sn-end">${CHEV_SVG}</span></a>`;

@@ -81,7 +81,7 @@ const DB = {
           if(ch.type==='added'&&!ex){ const from=this.fromUid(n.from), open=n.type==='message'&&location.hash==='#/messages/'+from;
             S.notifs.push({...n,id:ch.doc.id,from,read:!!n.read||open}); if(open&&!n.read) this.markRead([ch.doc.id]);   // conversation ouverte : lu tout de suite
             if(!n.read&&n.type==='message'&&!open) S.unread[from]=(S.unread[from]||0)+1;   // message non lu : pastille sur la conversation
-            if(this._notifReady&&!n.read){ deviceNotify(n); if(n.type==='group') gNew=true; } }
+            if(this._notifReady&&!n.read){ if(!(n.type==='message'&&rowMuted('c',from))) deviceNotify(n); if(n.type==='group') gNew=true; } }   // v25 — pas de notification du téléphone pour une conversation en sourdine
           else if(ch.type==='modified'&&ex&&n.read) ex.read=true; });   // lu sur un autre appareil
         // nouvelle invitation dans un groupe : on recharge les groupes pour la pastille (le « + » de la colonne sur ordinateur, Messages sur téléphone)
         if(gNew) this.loadGroups(true).then(ch=>{ if(!ch) return; renderNotifBadge(); railGroupsRefresh(); if(location.hash==='#/groupe'&&!(dlg&&dlg.open)) viewGroupsHome(); else snRefresh(); }).catch(()=>{});
@@ -180,7 +180,7 @@ const DB = {
   async deleteRequest(r){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ await this.db.collection('requests').doc(`${this.toUid(r.from)}_${this.toUid(r.to)}`).delete(); }catch(e){ console.error(e); } },
   async saveBlock(id,on){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ const ref=this.db.collection('blocks').doc(this.uid()).collection('list').doc(id); on?await ref.set({at:Date.now()}):await ref.delete(); }catch(e){ console.error(e); } },
   async saveReport(rep){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; const db=this.db;
-    try{ const msgs=(S.chats[rep.id]||[]).slice(-10).map(m=>({mine:m.from==='me',text:((m.del?'[supprimé] ':'')+(m.hist&&m.hist.length?`[modifié, avant : « ${m.hist.join(' » puis « ')} »] `:'')+String(m.text||'')).slice(0,300),at:m.at||0}));
+    try{ const msgs=(rep.group?[]:(S.chats[rep.id]||[])).slice(-10).map(m=>({mine:m.from==='me',text:((m.del?'[supprimé] ':'')+(m.hist&&m.hist.length?`[modifié, avant : « ${m.hist.join(' » puis « ')} »] `:'')+String(m.text||'')).slice(0,300),at:m.at||0}));
       const data={target:rep.id,by:this.uid(),reason:rep.reason,details:rep.details||'',at:rep.at,status:'open'}; if(msgs.length) data.messages=msgs;
       await db.collection('reports').add(data);
       if(msgs.length) await db.collection('reportedChats').doc(this.pairId(rep.id)).set({by:this.uid(),target:rep.id,at:Date.now()});   // autorise la modération à lire cette conversation
@@ -219,7 +219,8 @@ const DB = {
       if(!(m.call&&m.call.s==='ok')&&(!this._lastNotifTo||this._lastNotifTo[id]==null||Date.now()-this._lastNotifTo[id]>60000)){ (this._lastNotifTo=this._lastNotifTo||{})[id]=Date.now(); await this.saveNotif(id,{type:'message',from:'me',text:`${S.me.name} : ${m.text.slice(0,80)}`}); }   // v16 — un appel réussi n'envoie pas de notification
     }catch(e){ console.error(e); toast(String(e&&e.code).includes('permission')?'Doucement : attends une seconde entre deux messages.':"Le message n'est pas parti, réessaie."); } },
   listenChat(id,cb){ if(!this.live) return; this.stopChat();   // les 200 derniers messages (et plus les 200 premiers)
-    this._chatUnsub=this.db.collection('chats').doc(this.pairId(id)).collection('messages').orderBy('at').limitToLast(200).onSnapshot(snap=>{ S.chats[id]=[]; snap.forEach(d=>{ const m=d.data(); const o={id:d.id,from:this.fromUid(m.from),text:m.text,at:m.at}; msgExtra(o,m); if(m.voice&&m.voice.id){ o.voice={id:String(m.voice.id),dur:+m.voice.dur||0}; if(VW_RE.test(String(m.voice.w||''))) o.voice.w=m.voice.w; } if(m.photo&&m.photo.id) o.photo={id:String(m.photo.id),w:+m.photo.w||4,h:+m.photo.h||3}; S.chats[id].push(o); }); save(); cb(); },e=>console.error(e)); },
+    this._chatUnsub=this.db.collection('chats').doc(this.pairId(id)).collection('messages').orderBy('at').limitToLast(200).onSnapshot(snap=>{ S.chats[id]=[]; const ca=clearedAt(id); snap.forEach(d=>{ const m=d.data(); if(ca&&(+m.at||0)<=ca) return;   // v25 — conversation supprimée de mon côté : ses anciens messages restent dans la base, mais ne s'affichent plus ici
+      const o={id:d.id,from:this.fromUid(m.from),text:m.text,at:m.at}; msgExtra(o,m); if(m.voice&&m.voice.id){ o.voice={id:String(m.voice.id),dur:+m.voice.dur||0}; if(VW_RE.test(String(m.voice.w||''))) o.voice.w=m.voice.w; } if(m.photo&&m.photo.id) o.photo={id:String(m.photo.id),w:+m.photo.w||4,h:+m.photo.h||3}; S.chats[id].push(o); }); save(); cb(); },e=>console.error(e)); },
   // Image d'un message photo : en mémoire si elle a déjà été vue, sinon téléchargée
   async loadPhoto(kind,owner,pid){ if(PHOTOS[pid]) return PHOTOS[pid]; if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return null;
     try{ const base=kind==='g'?this.db.collection('groups').doc(owner):this.db.collection('chats').doc(this.pairId(owner)); const d=await base.collection('photos').doc(pid).get();

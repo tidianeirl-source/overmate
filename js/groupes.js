@@ -31,6 +31,7 @@ const gIn = g => !!g && g.members.includes(myId());
 const gRole = (g,uid) => g.owner===uid?'admin':(g.mods||[]).includes(uid)?'mod':'';
 const gCanMod = g => gIn(g) && !!gRole(g,myId());
 const gUnread = g => gIn(g) && tsMs(g.lastAt) > ((S.gseen||{})[g.id]||0);
+const gLoud = g => gUnread(g) && !rowMuted('g',g.id);   // v25 — un groupe aux notifications coupées ne fait plus de pastille
 const gPlayer = uid => uid===myId() ? publicMe() : PLAYERS.find(p=>p.id===uid);
 function gAvatar(g,size=48){ if(g.image&&g.ageGroup!=='minor'&&/^data:image\/(png|jpeg|webp);base64,/.test(g.image)) return `<img class="av g-av" src="${esc(g.image)}" alt="" width="${size}" height="${size}" style="width:${size}px;height:${size}px">`;
   let h=0; for(const c of String(g.id)) h=(h*31+c.charCodeAt(0))%360;
@@ -50,13 +51,13 @@ const gPublic = () => GROUPS.filter(g=>!gIn(g)&&!g.private&&!(g.invited||[]).inc
 const ADDMATE_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9.5" cy="8" r="3.5"/><path d="M3 20c.5-3.5 3-5.5 6.5-5.5s6 2 6.5 5.5M19 7v6M16 10h6"/></svg>';
 const FIND_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>';
 // Colonne de gauche (ordinateur) : créer, trouver, puis mes groupes
-function gSideInner(key){ const mine=gMine(), inv=gInvites().length;
+function gSideInner(key){ const mine=gPinSort(gMine()), inv=gInvites().length;
   return `<h3>Groupes</h3>
     <a class="dm-row g-act g-act-new" href="#/groupe/nouveau"><span class="g-act-ico" aria-hidden="true">+</span><div><b>Créer un groupe</b><span class="muted">et ajouter tes mates</span></div></a>
     <a class="dm-row g-act${key==='home'?' on':''}" href="#/groupe"${key==='home'?' aria-current="page"':''}><span class="g-act-ico" aria-hidden="true">${FIND_SVG}</span><div><b>Trouver un groupe</b><span class="muted">${inv?`${inv} invitation${inv>1?'s':''} · `:''}groupes publics</span></div>${inv?`<span class="badge static">${inv}</span>`:''}</a>
     <h3>Mes groupes</h3>
     ${mine.length?mine.map(g=>{ const u=gUnread(g), on=key==='g:'+g.id;
-      return `<a class="dm-row g-row${on?' on':''}${u?' unread':''}" href="#/groupe/${esc(g.id)}"${on?' aria-current="page"':''}>${gAvatar(g,36)}<div><b><span>${esc(g.name)}</span>${g.private?'<span class="g-lock" title="Groupe privé">'+LOCK_SVG+'</span>':''}</b><span class="muted">${u?'Nouveaux messages':`${esc(g.game||'Tous les jeux')} · ${g.members.length} membre${g.members.length>1?'s':''}`}</span></div>${u?'<span class="badge static" aria-label="Nouveaux messages">•</span>':''}</a>`; }).join('')
+      return `<a class="dm-row g-row${on?' on':''}${u?' unread':''}" href="#/groupe/${esc(g.id)}"${on?' aria-current="page"':''}>${gAvatar(g,36)}<div><b><span>${esc(g.name)}</span>${g.private?'<span class="g-lock" title="Groupe privé">'+LOCK_SVG+'</span>':''}${rowMarks('g',g.id)}</b><span class="muted">${u?'Nouveaux messages':`${esc(g.game||'Tous les jeux')} · ${g.members.length} membre${g.members.length>1?'s':''}`}</span></div>${u?'<span class="badge static" aria-label="Nouveaux messages">•</span>':''}</a>`; }).join('')
       :'<p class="muted dm-none">Tu n\'es dans aucun groupe pour l\'instant.</p>'}`; }
 const gSide = key => `<nav class="dm-side g-side" id="g-side" aria-label="Groupes" data-key="${esc(key||'')}">${gSideInner(key||'')}</nav>`;
 function gSideRefresh(){ const s=document.getElementById('g-side'); if(s&&s.offsetParent!==null){ const y=s.scrollTop; s.innerHTML=gSideInner(s.dataset.key||''); s.scrollTop=y; } }
@@ -77,7 +78,7 @@ function viewGroupsHome(openNew){
     <div class="page-head g-top"><div><h2>Groupes</h2><p>Des salons pour discuter à plusieurs, par jeu ou entre amis.</p></div><button class="btn btn-ac" type="button" data-g-new>Créer un groupe</button></div>
     ${inv.length?`<h3 class="on-world g-h">Invitations</h3><div class="chat-list">${inv.map(gInvRow).join('')}</div>`:''}
     <section class="g-mine-sec"><h3 class="on-world g-h">Mes groupes</h3>
-      ${mine.length?`<div class="sn-list">${mine.map(gRowSn).join('')}</div>`:`<div class="empty"><h3>Tu n'es dans aucun groupe</h3><p class="muted">Crée ton groupe et ajoutes-y tes mates, ou rejoins un groupe public.</p><button class="btn btn-ac" type="button" data-g-new>Créer un groupe</button></div>`}</section>
+      ${mine.length?`<div class="sn-list">${gPinSort(mine).map(gRowSn).join('')}</div>`:`<div class="empty"><h3>Tu n'es dans aucun groupe</h3><p class="muted">Crée ton groupe et ajoutes-y tes mates, ou rejoins un groupe public.</p><button class="btn btn-ac" type="button" data-g-new>Créer un groupe</button></div>`}</section>
     <h3 class="on-world g-h">Groupes publics</h3>
     ${pub.length?`<div class="grid">${pub.slice(0,40).map((g,i)=>`<article class="mcard g-card" style="--i:${i};--c:var(--pk)"><div class="g-card-head">${gAvatar(g,56)}<div><h3>${esc(g.name)}</h3><span class="muted">${esc(g.game||'Tous les jeux')} · ${g.members.length}/${GROUP_MAX}</span></div></div>
       ${g.desc?`<p class="muted g-desc">${esc(g.desc)}</p>`:''}<div class="sq-act">${g.members.length>=GROUP_MAX?'<span class="muted">Complet</span>':`<button class="btn btn-sm btn-ac" data-gjoin="${esc(g.id)}">Rejoindre</button>`}</div></article>`).join('')}</div>`
