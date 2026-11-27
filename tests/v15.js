@@ -43,7 +43,7 @@ const { launch, seed, open, nav, overflow, mkSeed } = require('./lib');
   const rows = () => ev(() => [...document.querySelectorAll('.sn-row')].map(r => r.querySelector('b span').textContent + (r.querySelector('.pin-ic') ? ' 📌' : '') + ' | ' + r.querySelector('.sn-st').className.replace('sn-st', '').trim() + ' ' + r.querySelector('.sn-st .t').textContent));
   out.push(['liste', await rows(), await ev(() => (document.querySelector('.sn-tip') || {}).textContent)]);
   // appui long (clic droit) sur DjeliSniper puis sur un autre
-  const pinIt = async id => { await ev(i => { const r = document.querySelector(`.sn-row[href="#/messages/${i}"]`); r.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })); }, id); await page.waitForTimeout(250); const t = await ev(() => document.querySelector('#rm-pin').textContent); await page.click('#rm-pin'); await page.waitForTimeout(450); return t; };
+  const pinIt = async id => { await ev(i => { const r = document.querySelector(`.sn-row[href="#/messages/${i}"]`); r.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })); }, id); await page.waitForTimeout(250); const t = await ev(() => document.querySelector('#rm-ov [data-rm="pin"]').textContent); await page.click('#rm-ov [data-rm="pin"]'); await page.waitForTimeout(450); return t; };
   out.push(['menu', await pinIt('a05')]); await pinIt('a07');
   out.push(['épinglés', await rows(), await ev(() => window.__mock.db['private/a01'].pins), await ev(() => document.getElementById('toast').textContent), await overflow(page)]);
   await page.screenshot({ path: `shots_v15/v2-liste-${W}.png` });
@@ -55,7 +55,7 @@ const { launch, seed, open, nav, overflow, mkSeed } = require('./lib');
   if (W < 800) { const box = await (await page.$('.sn-row[href="#/messages/a08"]')).boundingBox(); const cdp = await page.context().newCDPSession(page);
     await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: box.x + 80, y: box.y + 20 }] }); await page.waitForTimeout(650);
     await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] }); await page.waitForTimeout(300);
-    out.push(['appui long au doigt', await ev(() => ({ menu: !!document.querySelector('#rm-pin'), open: document.querySelector('dialog').open, hash: location.hash }))]); await ev(() => document.querySelector('dialog').close()); }
+    out.push(['appui long au doigt', await ev(() => ({ menu: !!document.querySelector('#rm-ov [data-rm="pin"]'), open: !!document.getElementById('rm-ov'), hash: location.hash }))]); await ev(() => rmClose()); }
   // rechargement : les épingles reviennent du compte
   await ev(() => { S.pins = []; save(); }); await open(page, 'messages', 3200);
   out.push(['après rechargement', await ev(() => S.pins), (await rows()).slice(0, 5)]);

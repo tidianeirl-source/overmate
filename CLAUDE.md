@@ -38,7 +38,7 @@ Claude Code lit ce fichier tout seul au début de chaque conversation. Il rempla
 1. Pars de `main` à jour (`git pull`), puis crée une branche.
 2. **Avant de changer quoi que ce soit**, lance les vérifications sur `main` : `node tests/tout.js avant`.
 3. Fais le changement, et seulement lui.
-4. **Change le numéro de version** aux deux endroits : `const V` dans `sw.js` et le `?v=` de chaque `<script src="js/…">` dans `index.html`. Il est à **58** : la prochaine mise en ligne sera 59. Sans ça, les joueurs gardent l'ancien code en cache. `tests/coherence.js` vérifie que les deux sont pareils.
+4. **Change le numéro de version** aux deux endroits : `const V` dans `sw.js` et le `?v=` de chaque `<script src="js/…">` dans `index.html`. Il est à **59** : la prochaine mise en ligne sera 60. Sans ça, les joueurs gardent l'ancien code en cache. `tests/coherence.js` vérifie que les deux sont pareils.
 5. Relance `node tests/tout.js apres`, puis `node tests/comparer.js avant apres`. Tout doit être « même », sauf ce que tu as voulu changer. Si une ancienne vérification n'a plus de sens, adapte-la et dis pourquoi dans la PR.
 6. Regarde le résultat pour de vrai, avec des captures : téléphone (360 px de large) et ordinateur (1280 px), dans les thèmes Coopô et Sombre.
 7. Ouvre la PR en français (ce qui change, comment c'est vérifié), fusionne-la, puis vérifie que GitHub Pages a bien publié et que le site en ligne sert la nouvelle version.
@@ -46,7 +46,7 @@ Claude Code lit ce fichier tout seul au début de chaque conversation. Il rempla
 
 ## Les vérifications (dossier `tests/`)
 
-- 42 vérifications automatiques, dans un navigateur sans fenêtre (Playwright). Elles utilisent un faux Firebase (`tests/fbmock.js`) : **aucune ne touche la vraie base**.
+- 43 vérifications automatiques, dans un navigateur sans fenêtre (Playwright). Elles utilisent un faux Firebase (`tests/fbmock.js`) : **aucune ne touche la vraie base**.
 - Il faut Node.js et Playwright : `npm install playwright` puis `npx playwright install chromium` (une seule fois).
 - Le mode d'emploi est dans `tests/README.md`.
 
@@ -56,11 +56,10 @@ Claude Code lit ce fichier tout seul au début de chaque conversation. Il rempla
 - Feuilles : **Choses à faire** (une ligne par demande : titre, demande, avancement, taille, état, priorité), **Choses à retenir**, **Limites**, **Journal** (une ligne par jour, la plus récente en haut), **Dépenses**.
 - Si tu ne peux pas l'ouvrir d'ici, dis-le à Aki et donne-lui, à la fin, les lignes à ajouter.
 
-## Où on en est (25 novembre 2026)
+## Où on en est (27 novembre 2026)
 
-- **Dernière mise en ligne : version 58** (PR #50). Sur ordinateur, plus de colonne de gauche pendant la création du profil. Plus d'onglet Groupes dans la colonne : les ronds des groupes et le « + » suffisent, et le « + » montre les invitations.
+- **Dernière mise en ligne : version 59**. Le texte de la flamme se lit dans le thème Coopô clair (ligne 67). L'étiquette « En commun » reste sur une ligne (ligne 56). Bandeau de prudence, avec un bouton Signaler, dans les conversations privées entre un adulte et un 13-17 ans (ligne 25). La page Messages garde le menu du haut entre 861 et 999 px de large. Menu d'une conversation ou d'un groupe dans la liste (appui long, clic droit), d'après une vidéo d'Aki, sans « Archiver » : épingler, marquer comme lu, sourdine, bloquer, signaler, supprimer (ligne 72). Sourdine, épingles de groupes et conversations supprimées sont gardées sur l'appareil (`S.rowp`), sans toucher aux règles Firebase ; « Supprimer » une conversation ne supprime aucun message dans la base.
 - **Logo** : planche de propositions https://claude.ai/artifact/G5tZa7pFHpHzcrkXD4vSop. Page « Nouvelles idées » : Le Check, La Manette, Le Lien, Pixel ; page « Premières idées » : Le Mate, La Flamme, La Bulle, Le Chat. On attend le choix d'Aki. Ensuite, le mettre partout : icônes de l'appli (`icons/`, encore lilas), `manifest.webmanifest`, onglet du navigateur, écran d'ouverture.
-- **En attente d'un oui d'Aki** : le texte de la flamme est invisible dans le thème Coopô clair (blanc sur blanc), ligne 67.
 - **Plaques Koï, Soleil rouge et Nuages** : la PR #6 de `coopo-paiement` (catalogue du serveur) doit être fusionnée par Aki. Ensuite, dans `js/boutique.js`, retirer `soon:true` de ces plaques et passer la ligne 55 à « Fait ».
-- **Autres lignes ouvertes** : 56 (l'étiquette « En commun » est coupée sur ordinateur), 59 (passer Vercel en Pro ou déplacer le serveur de paiement), et la page Messages entre 861 et 999 px de large, sans barres de navigation.
+- **Autres lignes ouvertes** : 59 (passer Vercel en Pro ou déplacer le serveur de paiement), 21 (envoi de vidéos : il faut un service de stockage). Les autres attendent une décision d'Aki (12, 17, 31, 32, 7).
 - La liste complète et à jour est dans le Excel.
