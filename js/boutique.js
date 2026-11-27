@@ -6,12 +6,14 @@
 // enabled : true -> les objets payants sont verrouillés (false -> tout est gratuit)
 // api     : adresse du serveur de paiement (Vercel). C'est lui qui dit si le paiement est ouvert (voir payInit) et lui seul qui débloque un achat.
 const SHOP = { enabled:true, api:'https://coopo-paiement.vercel.app/api', region:'europe-west1', currencies:['XOF'] };   // currencies : devises proposées tant que le serveur n'a pas répondu
+// Tarifs du 27 novembre 2026 (tableau de l'équipe, choix d'Aki) : thème 2 000 F, Lotus 3 000 F, tous les thèmes 9 000 F, plaque en édition limitée 5 000 F.
+// ATTENTION : le serveur de paiement (coopo-paiement, lib/catalogue.js) encaisse SES prix : les deux doivent changer ensemble.
 // Prix par devise : theme/pack = thèmes · p1..p5 = plaques (couleur, dégradé ou motif, brillant, édition limitée, illustrée) · k1..k4 = packs de plaques
 const CURRENCIES = {
-  XOF:{ label:'F CFA (BCEAO)', unit:'F CFA', theme:1500,  premium:3000,  pack:7500,  p1:500, p2:800, p3:1000, p4:2000, p5:1500, k1:2000, k2:2500, k3:2400, k4:6000, countries:['CI','SN','ML','BF','BJ','TG','NE'] },
-  XAF:{ label:'F CFA (BEAC)',  unit:'F CFA', theme:1500,  premium:3000,  pack:7500,  p1:500, p2:800, p3:1000, p4:2000, p5:1500, k1:2000, k2:2500, k3:2400, k4:6000, countries:['CM','GA','CG'] },
-  GNF:{ label:'Franc guinéen', unit:'GNF',   theme:21000, premium:42000, pack:105000, p1:7000, p2:11000, p3:14000, p4:28000, p5:21000, k1:28000, k2:35000, k3:33500, k4:84000, countries:['GN'] },
-  CDF:{ label:'Franc congolais', unit:'FC',  theme:7500, premium:15000,  pack:37500, p1:2500, p2:4000, p3:5000, p4:10000, p5:7500, k1:10000, k2:12500, k3:12000, k4:30000, countries:['CD'] },
+  XOF:{ label:'F CFA (BCEAO)', unit:'F CFA', theme:2000,  premium:3000,  pack:9000,  p1:500, p2:800, p3:1000, p4:5000, p5:1500, k1:2000, k2:2500, k3:2400, k4:6000, countries:['CI','SN','ML','BF','BJ','TG','NE'] },
+  XAF:{ label:'F CFA (BEAC)',  unit:'F CFA', theme:2000,  premium:3000,  pack:9000,  p1:500, p2:800, p3:1000, p4:5000, p5:1500, k1:2000, k2:2500, k3:2400, k4:6000, countries:['CM','GA','CG'] },
+  GNF:{ label:'Franc guinéen', unit:'GNF',   theme:28000, premium:42000, pack:126000, p1:7000, p2:11000, p3:14000, p4:70000, p5:21000, k1:28000, k2:35000, k3:33500, k4:84000, countries:['GN'] },
+  CDF:{ label:'Franc congolais', unit:'FC',  theme:10000, premium:15000,  pack:45000, p1:2500, p2:4000, p3:5000, p4:25000, p5:7500, k1:10000, k2:12500, k3:12000, k4:30000, countries:['CD'] },
 };
 const curOK = c => !SHOP.currencies || SHOP.currencies.includes(c);
 function curCode(){
