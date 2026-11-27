@@ -3030,7 +3030,18 @@ body:has(#nav-under.on) #ground{ visibility:hidden; } body:has(#nav-under.on) .f
 </style>
 <!-- -->
 <style id="coopo-statut-roles">
-/* ==== v27 — Statut « joue à… » et rôles colorés dans les groupes ==== */
+/* ==== v27 — Statut « joue à… » et rôles colorés dans les groupes ====
+   Statut : il suit « Je suis dispo » (le jeu choisi). Rôles : le nom du créateur et des modos d'un groupe a sa couleur, comme sur Discord.
+   Deux couleurs par thème, lisibles sur ses fonds, jamais de violet. */
+html{ --role-admin:#7A4E00; --role-mod:#0B6478; --play:#2F7A00; }
+html[data-skin="sombre"]{ --role-admin:#D4FF3F; --role-mod:#6FD3F0; --play:#D4FF3F; }
+.play-ic{ flex:none; width:15px; height:15px; }
+.play-st{ display:inline-flex; align-items:center; gap:5px; min-width:0; font-size:12px; font-weight:600; color:var(--play); }
+.play-st > span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.play-mk{ display:inline-flex; flex:none; color:var(--play); }
+.g-members .play-st{ font-size:12px; }
+.g-from.r-admin, .g-members b.r-admin .r-name{ color:var(--role-admin); font-weight:700; }
+.g-from.r-mod, .g-members b.r-mod .r-name{ color:var(--role-mod); font-weight:700; }
 </style>
 <!-- -->
 <style id="coopo-commu">
