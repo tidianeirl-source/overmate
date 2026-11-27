@@ -231,3 +231,59 @@ function groupInvite(id,fromInfo){ const g=gById(id); if(!g) return; const can=m
       send.disabled=true; send.textContent='Envoi…'; const n=await DB.inviteToGroup(id,ids);
       toast(n?`${n} mate${n>1?'s':''} invité${n>1?'s':''} : ${n>1?'ils rejoignent':'il rejoint'} le groupe dès qu'${n>1?'ils acceptent':'il accepte'}`:'Les invitations n\'ont pas pu partir',3500);
       if(fromInfo) groupInfo(id); else { d.close(); if(location.hash==='#/groupe/'+id) renderGroupChat(id); } }); }); }
+
+/* ---- v27 — Onglet « Communautés » (Communauté › Communautés) : découvrir les groupes publics, disposé comme la page Découverte de Root ----
+   En haut : des catégories (les jeux des groupes) et une recherche. Puis un grand titre, les plus grandes communautés, un tri, et une grille de cartes :
+   une bannière, la photo du groupe à cheval dessus, le nom, « jeu · membres », la description.
+   Une communauté = un groupe public qui existe déjà : rien de nouveau n'est enregistré, et les groupes listés sont exactement ceux de gPublic().
+   La bannière est dessinée à partir du nom du groupe (les groupes n'ont pas d'image de bannière).
+   PLUS TARD (boosts) : une décoration animée de bannière pourra se poser dans <i class="cm-deco" data-deco="…"> — voir .cm-deco dans le bloc de styles « coopo-commu ». */
+const CM={ cat:'', q:'', sort:'members' };
+const cmHue = g => { let h=0; for(const c of String(g.name||g.id)) h=(h*33+c.charCodeAt(0))%360; return h; };
+const cmGame = g => String(g.game||'').trim();
+const cmMeta = g => `${esc(cmGame(g)||'Tous les jeux')} · ${g.members.length} membre${g.members.length>1?'s':''}`;
+function cmList(){ const q=CM.q.trim().toLowerCase(); let l=gPublic();
+  if(CM.cat==='*') { const top=cmCats().map(c=>c[0]); l=l.filter(g=>!top.includes(cmGame(g))); } else if(CM.cat) l=l.filter(g=>cmGame(g)===CM.cat);
+  if(q) l=l.filter(g=>[g.name,g.game,g.desc].some(x=>String(x||'').toLowerCase().includes(q)));
+  return CM.sort==='active' ? l.sort((a,b)=>tsMs(b.lastAt||b.at)-tsMs(a.lastAt||a.at)) : l.sort((a,b)=>b.members.length-a.members.length||tsMs(b.lastAt||b.at)-tsMs(a.lastAt||a.at)); }
+// les catégories : les jeux les plus présents parmi les groupes publics (6 au plus)
+function cmCats(){ const n={}; gPublic().forEach(g=>{ const k=cmGame(g); if(k) n[k]=(n[k]||0)+1; }); return Object.entries(n).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,6); }
+const cmCard = (g,mine) => `<article class="cm-card" data-cm="${esc(g.id)}" tabindex="0" role="button" aria-label="${esc(g.name)}, ${cmMeta(g)}">
+    <div class="cm-banner" style="--h:${cmHue(g)}"><i class="cm-deco" data-deco="" aria-hidden="true"></i></div>
+    <div class="cm-body"><span class="cm-av">${gAvatar(g,52)}</span>${mine?'<em class="cm-in">Membre</em>':''}
+      <h3>${esc(g.name)}</h3><span class="cm-meta">${cmMeta(g)}</span>${g.desc?`<p class="cm-desc">${esc(g.desc)}</p>`:''}</div></article>`;
+function cmGridHTML(){ const l=cmList();
+  return l.length ? l.slice(0,60).map(g=>cmCard(g)).join('')
+    : `<div class="empty cm-none"><h3>${gPublic().length?'Aucune communauté ne correspond':'Pas encore de communauté publique'}</h3><p class="muted">${gPublic().length?'Essaie une autre catégorie ou un autre mot.':'Crée la première : un groupe public apparaît ici, et tout le monde peut le rejoindre.'}</p>${S.me?'<button class="btn btn-ac" type="button" data-g-new>Créer une communauté</button>':''}</div>`; }
+function viewCommus(){
+  const me=S.me, cats=cmCats(), pub=gPublic(), mine=me?gMine():[], top=[...pub].sort((a,b)=>b.members.length-a.members.length).slice(0,3);
+  if(CM.cat&&CM.cat!=='*'&&!cats.some(c=>c[0]===CM.cat)) CM.cat='';
+  const others=pub.some(g=>!cats.some(c=>c[0]===cmGame(g)));
+  const chip=(k,l)=>`<button type="button" class="chip" data-cm-cat="${esc(k)}" aria-pressed="${CM.cat===k}">${esc(l)}</button>`;
+  app.innerHTML=`<div class="wrap page cm-page">${boardHead('communautes','Des groupes publics à rejoindre, par jeu ou par envie.',me?'<button class="btn btn-ac" type="button" data-g-new>Créer une communauté</button>':'<a class="btn btn-ac" href="#/inscription">Créer mon compte</a>')}
+    <div class="cm-bar"><div class="cm-cats" role="group" aria-label="Catégories">${chip('','Toutes')}${cats.map(c=>chip(c[0],c[0])).join('')}${others&&cats.length?chip('*','Autres'):''}</div>
+      <label class="cm-search"><span class="sr-only">Rechercher des communautés</span><input type="search" id="cm-q" placeholder="Rechercher des communautés" autocomplete="off" value="${esc(CM.q)}" maxlength="40"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></label></div>
+    <section class="cm-hero"><div class="cm-hero-txt"><span class="cm-kicker">Découverte de communautés</span><h3 class="cm-title">Trouve ta communauté, <b>rejoins la conversation.</b></h3>
+        <p>Des groupes publics autour de tes jeux. Chaque communauté ici a choisi d'être visible.</p></div>
+      ${top.length?`<aside class="cm-top" aria-label="Les plus grandes communautés"><span class="cm-top-h">Les plus grandes</span>${top.map(g=>`<button type="button" class="cm-top-row" data-cm="${esc(g.id)}">${gAvatar(g,40)}<span><b>${esc(g.name)}</b><small>${g.members.length} membre${g.members.length>1?'s':''}</small></span></button>`).join('')}</aside>`:''}</section>
+    ${mine.length?`<section class="cm-mine" aria-label="Tes communautés"><h3 class="cm-h on-world">Tes communautés</h3><div class="cm-mine-row">${gPinSort(mine).map(g=>`<a class="cm-mine-it" href="#/groupe/${esc(g.id)}">${gAvatar(g,40)}<span><b>${esc(g.name)}</b><small>${g.members.length} membre${g.members.length>1?'s':''}${gUnread(g)?' · nouveau':''}</small></span></a>`).join('')}</div></section>`:''}
+    <div class="cm-sort" role="group" aria-label="Trier">${[['members','Plus de membres'],['active','Plus actives']].map(([k,l])=>`<button type="button" class="chip" data-cm-sort="${k}" aria-pressed="${CM.sort===k}">${l}</button>`).join('')}</div>
+    <div class="cm-grid" id="cm-grid">${cmGridHTML()}</div></div>`;
+  const grid=document.getElementById('cm-grid'), redraw=()=>{ grid.innerHTML=cmGridHTML(); grid.querySelectorAll('[data-g-new]').forEach(b=>b.onclick=()=>groupForm()); };
+  app.querySelectorAll('[data-g-new]').forEach(b=>b.onclick=()=>groupForm());
+  app.querySelectorAll('[data-cm-cat]').forEach(b=>b.onclick=()=>{ CM.cat=b.dataset.cmCat; app.querySelectorAll('[data-cm-cat]').forEach(x=>x.setAttribute('aria-pressed',x===b)); redraw(); });
+  app.querySelectorAll('[data-cm-sort]').forEach(b=>b.onclick=()=>{ CM.sort=b.dataset.cmSort; app.querySelectorAll('[data-cm-sort]').forEach(x=>x.setAttribute('aria-pressed',x===b)); redraw(); });
+  document.getElementById('cm-q').oninput=e=>{ CM.q=e.target.value; redraw(); };
+  const openCm=e=>{ const c=e.target.closest('[data-cm]'); if(c) cmPreview(c.dataset.cm); };
+  app.querySelector('.cm-page').addEventListener('click',openCm);
+  app.querySelector('.cm-page').addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&e.target.matches('.cm-card')){ e.preventDefault(); openCm(e); } });
+  if(me) DB.loadGroups().then(ch=>{ if(ch&&/^#\/groupes(\/communautes)?$/.test(location.hash)&&!(dlg&&dlg.open)) viewCommus(); }).catch(()=>{});   // les groupes ont peut-être changé depuis le dernier passage
+}
+// Aperçu d'une communauté : sa bannière, sa description, quelques membres, et « Rejoindre » (le même geste que sur la page des groupes)
+function cmPreview(id){ const g=gById(id); if(!g) return; const inn=gIn(g), full=g.members.length>=GROUP_MAX, kicked=(g.kicked||[]).includes(myId());
+  const mem=g.members.slice(0,6).map(u=>gPlayer(u)).filter(Boolean);
+  modal(`<div class="cm-pv"><div class="cm-banner" style="--h:${cmHue(g)}"><i class="cm-deco" data-deco="" aria-hidden="true"></i></div><span class="cm-av">${gAvatar(g,64)}</span>
+      <h3>${esc(g.name)}</h3><span class="cm-meta">${cmMeta(g)}${full?' · complet':''}</span>${g.desc?`<p class="cm-pv-desc">${esc(g.desc)}</p>`:''}
+      ${mem.length?`<div class="cm-pv-mem" aria-label="Quelques membres">${mem.map(p=>avatar(p,30)).join('')}${g.members.length>mem.length?`<span class="muted">+${g.members.length-mem.length}</span>`:''}</div>`:''}</div>
+    <div class="dlg-actions"><button class="btn btn-ghost" type="button" data-close>Fermer</button>${inn?`<a class="btn btn-ac" href="#/groupe/${esc(g.id)}" data-close>Ouvrir</a>`:kicked?'<span class="muted">Tu ne peux plus rejoindre ce groupe.</span>':full?'<span class="muted">Complet</span>':!S.me?'<a class="btn btn-ac" href="#/inscription" data-close>Créer mon compte</a>':'<button class="btn btn-ac" type="button" id="cm-join">Rejoindre</button>'}</div>`,
+    d=>d.querySelector('#cm-join')?.addEventListener('click',async ev=>{ const b=ev.currentTarget; b.disabled=true; if(await DB.joinGroup(g.id)){ d.close(); toast('Tu as rejoint le groupe'); location.hash='#/groupe/'+g.id; } else b.disabled=false; }), 'cm-dlg'); }
