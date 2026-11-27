@@ -2993,7 +2993,40 @@ body:has(#nav-under.on) #ground{ visibility:hidden; } body:has(#nav-under.on) .f
 </style>
 <!-- -->
 <style id="coopo-serre-pages">
-/* ==== v27 — Les autres pages plus serrées (téléphone et ordinateur) ==== */
+/* ==== v27 — Les autres pages plus serrées (téléphone et ordinateur) ====
+   Même demande d'Aki (« tout est trop espacé », « fais-le sur toutes les pages ») : moins de marges sur les côtés, des blocs moins gonflés,
+   moins de vide entre les sections. Ni les couleurs, ni les textes, ni la taille des boutons qu'on touche ne changent. */
+@media (max-width:860px){
+  /* marge des côtés : 22 px → 12 px */
+  body:not(.logged-out) .frame{ padding-left:4px; padding-right:4px; }
+  .dz-row{ margin-inline:-12px; padding-inline:12px; scroll-padding-inline:12px; } .aff-track{ padding-inline:12px; scroll-padding-inline:12px; }
+  .sn-chips{ margin-inline:-12px; padding-inline:12px; }
+  .page{ padding-top:10px; }
+  .page-head{ margin-bottom:10px; gap:8px; } .page-head p{ margin-top:2px; }
+  .panel{ padding:14px; gap:12px; border-radius:16px; }
+  .mcard{ padding:14px; gap:10px; } .grid{ gap:10px; }
+  .pp{ gap:12px; } .pp-head{ gap:12px; } .pp-main{ gap:12px; } .pp-side{ padding:16px; gap:10px; }
+  .filters{ padding:12px; margin-bottom:12px; gap:10px; }
+  .chips.sort-row, .chips.board-tabs{ margin-bottom:10px; }
+  .search-entry, .nudge{ margin-bottom:10px; } .online-strip{ margin-bottom:8px; padding-bottom:8px; } .mates-strip{ margin-bottom:14px; }
+  .pulse{ margin-bottom:10px; } p.count{ margin-bottom:8px; }
+  .form{ gap:12px; } .shop-sec{ margin-top:16px; } .fold-body{ margin-top:10px; gap:10px; }
+  nav.menu{ margin-top:10px; } .menu-out{ margin-top:10px; }
+  ol.steps{ margin-top:10px; } .help-contact{ margin-top:10px; } p.hint{ margin-top:10px; }
+  .mh{ gap:10px; } .home-top{ padding-top:8px; gap:10px; }
+  .toggle{ padding:8px 0; }
+}
+/* tablette et ordinateur : un cran plus serré, sans toucher à la largeur des pages */
+@media (min-width:861px){
+  body:not(:has(.dm-shell)) .page{ padding-top:16px; }
+  .page-head{ margin-bottom:12px; }
+  .panel{ padding:18px; gap:14px; }
+  .mcard{ padding:16px; gap:12px; } .grid{ gap:12px; }
+  .pp{ gap:16px; } .pp-head{ gap:16px; } .pp-main{ gap:16px; } .pp-side{ padding:18px; gap:12px; }
+  .filters{ padding:14px; margin-bottom:14px; }
+  .chips.sort-row, .chips.board-tabs{ margin-bottom:12px; } .mates-strip{ margin-bottom:16px; }
+  .form{ gap:14px; } .shop-sec{ margin-top:20px; }
+}
 </style>
 <!-- -->
 <style id="coopo-statut-roles">
