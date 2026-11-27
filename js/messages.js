@@ -11,7 +11,7 @@ function lastMsg(id){ const ca=clearedAt(id), m=(S.chats[id]||[]).filter(x=>!ca|
 function dmSideInner(key){
   const mates=pinSort(matesList().sort((a,b)=>{ const la=lastMsg(a.id), lb=lastMsg(b.id); return (lb?lb.at:0)-(la?la.at:0); }));   // v15 — les mates épinglés en haut
   return `<h3><span>Messages privés</span>${canCall()&&AUTH_LIVE?`<button class="dm-calls" type="button" data-calls aria-label="Voir mes appels" title="Mes appels">${CALLS_SVG}</button>`:''}</h3>${mates.length?mates.map((p,i)=>{ const last=lastMsg(p.id), u=S.unread[p.id]||0;   // les plaques des 12 premières lignes sont animées (au-delà : au survol)
-      return `<a class="dm-row${key==='c:'+p.id?' on':''}${u?' unread':''}${plqOn(p,i<12)}" href="#/messages/${p.id}"${key==='c:'+p.id?' aria-current="page"':''}>${plq(p)}${avatar(p,36)}<div><b><span>${esc(p.name)}</span>${isOnline(p)?'<span class="online"></span>':''}${rowMarks('c',p.id)}</b><span class="muted">${last?esc((last.from==='me'?'Toi : ':'')+last.text):'Dis bonjour 👋'}</span></div>${u?`<span class="badge static">${u}</span>`:''}</a>`; }).join(''):'<p class="muted dm-none">Pas encore de mates.</p>'}`; }
+      return `<a class="dm-row${key==='c:'+p.id?' on':''}${u?' unread':''}${plqOn(p,i<12)}" href="#/messages/${p.id}"${key==='c:'+p.id?' aria-current="page"':''}>${plq(p)}${avatar(p,36)}<div><b><span>${esc(p.name)}</span>${isOnline(p)?'<span class="online"></span>':''}${rowMarks('c',p.id)}</b><span class="muted">${last?esc((last.from==='me'?'Toi : ':'')+last.text):esc(helloLine(p))}</span></div>${u?`<span class="badge static">${u}</span>`:''}</a>`; }).join(''):'<p class="muted dm-none">Pas encore de mates.</p>'}`; }
 // Les groupes dans la colonne de gauche du site (ordinateur) : un rond par groupe, puis « + »
 function railGroups(){ if(!S.auth||!S.me) return ''; const m=location.hash.match(/^#\/groupe\/([^/?]+)/), cur=m?decodeURIComponent(m[1]):'';
   const groups=GROUPS.filter(gIn).sort((a,b)=>tsMs(b.lastAt||b.at)-tsMs(a.lastAt||a.at));
@@ -49,6 +49,8 @@ window.addEventListener('resize',dmFit);
 const CHAT_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>';
 // v25 — petites marques après le nom dans les listes : épinglé, en sourdine
 const rowMarks = (kind,id) => ((kind==='c'?isPinned(id):gPinned(id))?PIN_SVG+'<span class="sr-only">épinglé</span>':'')+(rowMuted(kind,id)?MUTE_IC+'<span class="sr-only">en sourdine</span>':'');
+// v26 — une conversation sans message montre le jeu en commun (une raison d'écrire), sinon « Dis bonjour »
+function helloLine(p){ const mine=(S.me&&S.me.games)||[], both=(p.games||[]).filter(g=>mine.includes(g)); return both.length?`🎮 ${both[0]}${both.length>1?` +${both.length-1}`:''} en commun`:'Dis bonjour 👋'; }
 const shortAgo = t => ago(t).replace('il y a ','');
 // Une ligne de groupe façon liste de messages (téléphone : dans Messages, et sur la page des groupes)
 const gRowSn = g => { const u=gUnread(g);
@@ -65,7 +67,7 @@ function snList(mates){
   const nU=mates.filter(p=>S.unread[p.id]).length+groups.filter(gUnread).length;
   const rows=items.map(it=>{ if(it.g) return gRowSn(it.g);
     const p=it.p, last=lastMsg(p.id), u=S.unread[p.id]||0, f=flameState(p.id), on=isOnline(p), fl=f&&f.count>=FLAME_FROM;
-    const st=u?['new',u>1?`${u} nouveaux messages`:'Nouveau message']:!last?['','Dis bonjour 👋']:last.from==='me'?(seenOf(p.id)>=last.at?['seen','Vu']:['sent','Envoyé']):['','Reçu'];   // v15 — « Vu » quand le mate a lu
+    const st=u?['new',u>1?`${u} nouveaux messages`:'Nouveau message']:!last?['hello',esc(helloLine(p))]:last.from==='me'?(seenOf(p.id)>=last.at?['seen','Vu']:['sent','Envoyé']):['','Reçu'];   // v15 — « Vu » quand le mate a lu
     return `<a class="sn-row${u?' unread':''}${plqOn(p)}" href="#/messages/${p.id}" data-f="${u?'unread ':''}${on?'online ':''}${fl?'flame':''}" data-n="${esc(String(p.name||'').toLowerCase())}">${plq(p)}<span class="sn-av">${avatar(p,56)}${on?'<span class="online" title="En ligne"></span>':''}</span><div class="sn-mid"><b><span>${esc(p.name)}</span>${modBadge(p)}${rowMarks('c',p.id)}</b>
       <span class="sn-st ${st[0]}">${last||u?'<i></i>':''}<span class="t">${st[1]}</span><span class="x">${last?'· '+shortAgo(last.at):''}${fl?` · ${f.count} ${f.warn?'⏳':'🔥'}`:''}</span></span></div><span class="sn-end">${u?`<span class="badge static">${u}</span>`:CHAT_SVG}</span></a>`; }).join('');
   const chip=(k,l,n)=>`<button type="button" class="chip" data-snf="${k}" aria-pressed="${k===SN_F}">${l}${n?` <span class="cnt">${n}</span>`:''}</button>`;
@@ -145,7 +147,7 @@ function viewChat(id){ EDIT=null; chatMotif();
   let lastId=null;
   DB.listenChat(id,()=>{ if(!here()) return; const lm=(S.chats[id]||[]).slice(-1)[0]; if(lm&&lm.from!=='me'&&lm.id!==lastId) typingClear(DB.toUid(id)); lastId=lm?lm.id:null; renderChat(id); });   // son message est arrivé : il n'écrit plus
   // v15 — « Vu » et « écrit… »
-  document.getElementById('chatin').addEventListener('input',e=>{ if(e.target.value.trim()&&!EDIT) DB.typing('c',id,'w'); });
+  document.getElementById('chatin').addEventListener('input',e=>{ if(EDIT) return; DB.typing('c',id,e.target.value.trim()?'w':''); });   // v26 — texte effacé : « écrit… » s'arrête tout de suite
   DB.listenMeta('c',id,chg=>{ if(!here()) return; const s=META.seen[DB.toUid(id)]||0; if(s>seenOf(id)){ (S.seenBy=S.seenBy||{})[id]=s; save(); }
     if(chg) renderChat(id); else seenMark('c',id); typingRender(); });
 }
@@ -170,7 +172,7 @@ function typingRender(){ const el=document.getElementById('typing'); if(!el) ret
   if(el.dataset.t!==txt){ el.dataset.t=txt; el.hidden=!txt; el.innerHTML=txt?`<span class="ty-dots" aria-hidden="true"><i></i><i></i><i></i></span><span>${esc(txt)}…</span>`:''; } }
 // J'ai lu : on note l'heure du dernier message des autres (une écriture seulement quand il y a du nouveau, et jamais quand la page est cachée)
 function seenMark(kind,id){ const me=kind==='g'?myId():'me', msgs=kind==='g'?(GMSGS[id]||[]):(S.chats[id]||[]); let at=0; msgs.forEach(m=>{ if(m.from!==me&&m.at>at) at=m.at; }); if(at) DB.markSeen(kind,id,at); }
-document.addEventListener('visibilitychange',()=>{ if(document.hidden) return; const h=chatHere(); if(h) seenMark(h[0],h[1]);
+document.addEventListener('visibilitychange',()=>{ if(document.hidden){ typingSend(''); return; } const h=chatHere(); if(h) seenMark(h[0],h[1]);
   if(CALL&&CALL.mix) sndCtx(); });   // appel à plusieurs : au retour sur Coopô, le mélange des voix reprend s'il s'était mis en veille
 /* ---- v16 — Historique des appels ----
    1) Dans la conversation : à la fin d'un appel, celui qui a appelé laisse une ligne (un message avec call = { k: 'audio'|'video', s: résultat, d: durée en secondes }).

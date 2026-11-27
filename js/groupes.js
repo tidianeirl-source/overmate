@@ -181,7 +181,7 @@ function viewGroup(id){ EDIT=null; chatMotif();
   let lastId=null;
   DB.listenGroup(id,()=>{ if(location.hash==='#/groupe/'+id){ (S.gseen=S.gseen||{})[id]=Date.now(); const lm=(GMSGS[id]||[]).slice(-1)[0]; if(lm&&lm.from!==myId()&&lm.id!==lastId) typingClear(lm.from); lastId=lm?lm.id:null; renderGroupChat(id); } });
   // v15 — « Vu par… » et « écrit… »
-  document.getElementById('chatin').addEventListener('input',e=>{ if(e.target.value.trim()&&!EDIT) DB.typing('g',id,'w'); });
+  document.getElementById('chatin').addEventListener('input',e=>{ if(EDIT) return; DB.typing('g',id,e.target.value.trim()?'w':''); });
   DB.listenMeta('g',id,chg=>{ if(location.hash!=='#/groupe/'+id) return; if(chg) renderGroupChat(id); else seenMark('g',id); typingRender(); });
 }
 let GMSGS={};   // messages du groupe ouvert

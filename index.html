@@ -711,7 +711,7 @@ input.invalid{ border-color:var(--lo) !important; animation:shake .35s; }
 .sn-av .online{ position:absolute; right:0; bottom:0; width:14px; height:14px; border:2.5px solid var(--s1); box-sizing:border-box; }
 .sn-mid{ display:grid; gap:3px; min-width:0; } .sn-mid b{ display:flex; align-items:center; gap:6px; min-width:0; font-size:17px; line-height:1.2; } .sn-mid b > span:first-child{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
 .sn-st{ display:flex; align-items:center; gap:6px; min-width:0; font-size:13px; color:var(--mut,inherit); opacity:.9; white-space:nowrap; overflow:hidden; }
-.sn-st i{ flex:none; width:12px; height:12px; border-radius:3px; border:2px solid currentColor; box-sizing:border-box; } .sn-st .t{ flex:none; }
+.sn-st i{ flex:none; width:12px; height:12px; border-radius:3px; border:2px solid currentColor; box-sizing:border-box; } .sn-st .t{ flex:none; } .sn-st.hello .t{ flex:0 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; }   /* v26 — un long nom de jeu se termine par « … » */
 .sn-st.new{ color:var(--pk); opacity:1; font-weight:700; } .sn-st.new i{ background:currentColor; }
 .sn-st.sent i{ width:0; height:0; border:6px solid transparent; border-left:10px solid currentColor; border-right:0; border-radius:0; }
 .sn-st .x{ flex:0 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; opacity:.8; font-weight:500; color:var(--mut,inherit); }
@@ -2239,7 +2239,7 @@ html.lite .flame.warn, html.lite .flame-big{ animation:none; }
   .chat-page .chat-who{ flex:1 1 0 !important; max-width:none; min-width:0; padding:0; border:0; border-radius:0; background:none; color:var(--tx); text-align:left; } .chat-page .chat-who .muted{ color:inherit; opacity:.7; }
   .chat-page .chat-head, .chat-page .chat-head .back, .chat-page .chat-who:not(.plq-on), .chat-page .chat-who:not(.plq-on) b, .chat-page .chat-who:not(.plq-on) span:not(.online){ color:var(--tx) !important; text-shadow:none !important; }
   .chat-page .chat-calls{ gap:0; } .chat-page .call-btn{ background:none; border:0; box-shadow:none; border-radius:8px; color:var(--pk); } .chat-page .call-btn svg{ width:22px; height:22px; }
-  .chat-page .flame-hint{ flex:none; margin:0; padding:4px 12px; } .chat-page .flame-hint:empty{ display:none; }
+  .chat-page .flame-hint{ flex:none; margin:0; padding:4px 12px; background:var(--s1); border-color:transparent; color:var(--tx); } .chat-page .flame-hint:empty{ display:none; }   /* v26 — fond uni de la conversation : le texte prend la couleur du thème (il était blanc sur un voile, trop pâle en Lo-fi) */
   .chat-page .age-safe{ flex:none; margin:0; padding:6px 12px; border-width:0 0 1px; border-radius:0; font-size:12.5px; }
   @media (pointer:coarse){ .chat-page:has(#chatin:focus) .age-safe{ display:none; } }   /* clavier ouvert : on garde la place pour la conversation */
   .chat-page .chat-box{ flex:1 1 0; min-height:0; max-height:none; border:0; border-radius:0; padding:12px 10px; gap:6px; background:var(--s1); }
@@ -2997,24 +2997,24 @@ setTimeout(function(){try{if(SPLASH.armed)return;}catch(e){}if(!s)return;s.class
 <div id="wipe" aria-hidden="true"></div>
 
 <!-- v22 — Le code du site est dans js/ : ces fichiers sont chargés dans cet ordre et se partagent tout ce qu'ils déclarent.
-     ?v=59 : à changer à chaque mise en ligne, avec V dans sw.js, pour que la page et son code aillent toujours ensemble. -->
-<script src="js/base.js?v=59"></script>
-<script src="js/navigation.js?v=59"></script>
-<script src="js/pages.js?v=59"></script>
-<script src="js/themes.js?v=59"></script>
-<script src="js/boutique.js?v=59"></script>
-<script src="js/appareil.js?v=59"></script>
-<script src="js/apparence.js?v=59"></script>
-<script src="js/connexion.js?v=59"></script>
-<script src="js/mates.js?v=59"></script>
-<script src="js/messages.js?v=59"></script>
-<script src="js/appels.js?v=59"></script>
-<script src="js/medias.js?v=59"></script>
-<script src="js/sessions-flammes.js?v=59"></script>
-<script src="js/groupes.js?v=59"></script>
-<script src="js/communaute.js?v=59"></script>
-<script src="js/pages-infos.js?v=59"></script>
-<script src="js/firebase.js?v=59"></script>
-<script src="js/demarrage.js?v=59"></script>
+     ?v=60 : à changer à chaque mise en ligne, avec V dans sw.js, pour que la page et son code aillent toujours ensemble. -->
+<script src="js/base.js?v=60"></script>
+<script src="js/navigation.js?v=60"></script>
+<script src="js/pages.js?v=60"></script>
+<script src="js/themes.js?v=60"></script>
+<script src="js/boutique.js?v=60"></script>
+<script src="js/appareil.js?v=60"></script>
+<script src="js/apparence.js?v=60"></script>
+<script src="js/connexion.js?v=60"></script>
+<script src="js/mates.js?v=60"></script>
+<script src="js/messages.js?v=60"></script>
+<script src="js/appels.js?v=60"></script>
+<script src="js/medias.js?v=60"></script>
+<script src="js/sessions-flammes.js?v=60"></script>
+<script src="js/groupes.js?v=60"></script>
+<script src="js/communaute.js?v=60"></script>
+<script src="js/pages-infos.js?v=60"></script>
+<script src="js/firebase.js?v=60"></script>
+<script src="js/demarrage.js?v=60"></script>
 </body>
 </html>

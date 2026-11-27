@@ -347,17 +347,21 @@ const DB = {
   async savePins(){ if(!this.live||!this.uid()) return; try{ await this.db.collection('private').doc(this.uid()).update({pins:pins().slice(0,PIN_MAX)}); }catch(e){ console.error(e); } },
   // v15 — « Vu » et « écrit… » (voir plus haut). kind : 'c' conversation privée, 'g' groupe. cb(chg) : chg = un « Vu » a bougé.
   metaCol(kind,id){ return (kind==='g'?this.db.collection('groups').doc(id):this.db.collection('chats').doc(this.pairId(id))).collection('meta'); },
-  listenMeta(kind,id,cb){ this.stopMeta(); if(!this.live) return; const key=kind+':'+id, me=this.uid(); let first=true;
+  listenMeta(kind,id,cb){ this.stopMeta(); if(!this.live) return; const key=kind+':'+id, me=this.uid(); let first=true, synced=false;
     const M=META={key,kind,id,seen:{},typ:{},mine:0,ready:false};
     this._metaUnsub=this.metaCol(kind,id).onSnapshot(snap=>{ if(META!==M) return; const now=Date.now(); let chg=false;
+      // v26 — « écrit… » affiché à tort en entrant : la première réponse vient de la mémoire de l'appareil, la suivante du serveur. Tant que le serveur n'a pas répondu,
+      // un ancien « écrit… » resté dans la base (le mate a quitté sans envoyer) n'est pas une nouveauté. Et un signal de plus d'une minute n'est jamais affiché.
+      const init=first||!synced;
       snap.forEach(d=>{ const x=d.data()||{}, u=d.id, seen=+x.seen||0;
         if(u===me){ M.mine=Math.max(M.mine,seen); return; }
         if((M.seen[u]||0)!==seen){ M.seen[u]=seen; chg=true; }
         const t=x.t==='w'||x.t==='v'?x.t:'', tAt=+x.tAt||0, old=M.typ[u];
         if(!t){ if(old) delete M.typ[u]; M['_'+u]=tAt; }
-        else if(M['_'+u]!==tAt){ M['_'+u]=tAt; if(!first||Math.abs(now-tAt)<TYPING_MS) M.typ[u]={t,tAt,until:now+TYPING_MS}; } });
-      first=false; M.ready=true; cb(chg); },e=>console.error(e)); },
-  stopMeta(){ if(this._metaUnsub){ try{ this._metaUnsub(); }catch(e){} this._metaUnsub=null; } META=null; clearTimeout(TYP_T); },
+        else if(M['_'+u]!==tAt){ M['_'+u]=tAt; if(init?Math.abs(now-tAt)<TYPING_MS:Math.abs(now-tAt)<60000) M.typ[u]={t,tAt,until:now+TYPING_MS}; } });
+      first=false; if(!(snap.metadata&&snap.metadata.fromCache)) synced=true; M.ready=true; cb(chg); },e=>console.error(e)); },
+  stopMeta(){ if(META&&this._typ&&this._typ.key===META.key&&this._typ.t) this.typing(META.kind,META.id,'');   // v26 — je quitte la conversation : mon « écrit… » est effacé
+    if(this._metaUnsub){ try{ this._metaUnsub(); }catch(e){} this._metaUnsub=null; } META=null; clearTimeout(TYP_T); },
   markSeen(kind,id,at){ if(!this.live||!META||META.key!==kind+':'+id||!META.ready||!(at>META.mine)||document.hidden) return; META.mine=at;
     this.metaCol(kind,id).doc(this.uid()).set({seen:at},{merge:true}).catch(e=>console.error(e)); },
   typing(kind,id,t){ if(!this.live||!META||META.key!==kind+':'+id) return; const now=Date.now(), last=this._typ||{}, same=last.key===META.key;
