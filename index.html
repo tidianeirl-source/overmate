@@ -2960,11 +2960,12 @@ body:has(#nav-under.on) #ground{ visibility:hidden; } body:has(#nav-under.on) .f
 .chat-box > :first-child{ margin-top:auto; }
 /* — téléphone et petite tablette : la liste va d'un bord à l'autre, lignes moins hautes — */
 @media (max-width:999px){
-  .dm-list-page .sn-list, .g-home .sn-list{ margin-inline:calc(50% - 50vw); border-width:0; border-radius:0; background:none; }
+  .dm-list-page .sn-list, .g-home .sn-list{ margin-inline:calc(50% - 50vw); border-width:0; border-radius:0; }   /* thèmes illustrés : la liste garde son fond, pour rester lisible sur le décor */
+  html:is([data-skin="defaut"],[data-skin="sombre"]) :is(.dm-list-page,.g-home) .sn-list{ background:none; }
   .sn-row{ min-height:62px; padding:7px 14px; grid-template-columns:46px minmax(0,1fr) auto; gap:11px; }
   .sn-row .sn-av > :is(.av,img,.g-av){ width:46px !important; height:46px !important; }
   .sn-row .sn-av > .av{ font-size:16px !important; }
-  .sn-row .sn-av{ width:46px; height:46px; } .sn-av .online{ border-radius:50%; border-color:var(--bg); }   /* le point « en ligne » suit la photo plus petite, et reste rond */
+  .sn-row .sn-av{ width:46px; height:46px; } .sn-av .online{ border-radius:50%; } html:is([data-skin="defaut"],[data-skin="sombre"]) .sn-av .online{ border-color:var(--bg); }   /* le point « en ligne » suit la photo plus petite, et reste rond */
   .sn-mid{ gap:1px; } .sn-mid b{ font-size:16px; }
   .page-head.sn-top{ margin-bottom:6px; } .sn-chips{ margin-bottom:8px; }
   .sn-chips .chip{ min-height:36px; padding:0 12px; font-size:13.5px; }
@@ -2983,6 +2984,9 @@ body:has(#nav-under.on) #ground{ visibility:hidden; } body:has(#nav-under.on) .f
   .dm-shell .chat-page{ padding:0; gap:0; }
   .dm-shell .chat-head{ margin:0; padding:8px 14px; border-bottom:1px solid var(--hair); background:var(--s1); }
   .dm-shell .chat-head .chat-who{ padding:2px 10px 2px 2px; border:0; background:none; border-radius:10px; }
+  /* la barre du haut a maintenant un fond uni : le nom s'écrit dans la couleur du thème, sans halo (comme sur téléphone) */
+  html[data-skin] body .dm-shell .chat-head, html[data-skin] body .dm-shell .chat-who:not(.plq-on), html[data-skin] body .dm-shell .chat-who:not(.plq-on) :is(b,span:not(.online)){ color:var(--tx) !important; text-shadow:none !important; -webkit-text-stroke:0 !important; }
+  html[data-skin] body .dm-shell .chat-who:not(.plq-on) .muted{ color:var(--mu) !important; opacity:1 !important; }
   .dm-shell .chat-box{ border-radius:0; border:0; padding:12px 16px; }
   .dm-shell .chat-form{ margin:0; padding:10px 14px; border-top:1px solid var(--hair); background:var(--s1); border-radius:0; }
   .dm-shell :is(.age-safe,.flame-hint){ margin:0; border-radius:0; border-width:0 0 1px; }
