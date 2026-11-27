@@ -265,6 +265,11 @@ const PALETTE_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 /* ================= Dispo maintenant ================= */
 const DISPO_DUR=[['1',"1 heure"],['2',"2 heures"],['3',"3 heures"],['5',"Toute la soirée"]];
 const dispoActive = p => !!(p && p.dispo && p.dispo.until > Date.now());
+// v27 — statut « Joue à… », façon Discord : il suit « Je suis dispo » (le jeu choisi, tant que la dispo dure). Rien de nouveau n'est enregistré.
+const PLAY_SVG='<svg class="play-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8h10a4 4 0 0 1 4 4v1.5a3.5 3.5 0 0 1-6.3 2.1L14 15h-4l-.7.6A3.5 3.5 0 0 1 3 13.5V12a4 4 0 0 1 4-4z"/><path d="M7.5 11v3M6 12.5h3M16 12h.01M18 13.5h.01"/></svg>';
+const playGame = p => dispoActive(p) ? String(p.dispo.game||'') : '';
+const playLine = p => { const g=playGame(p); return g?`<span class="play-st" title="Dispo pour ${esc(g)} jusqu'à ${fmtUntil(p.dispo.until)}">${PLAY_SVG}<span>Joue à ${esc(g)}</span></span>`:''; };
+const playMark = p => { const g=playGame(p); return g?`<span class="play-mk" title="Joue à ${esc(g)}">${PLAY_SVG}<span class="sr-only">joue à ${esc(g)}</span></span>`:''; };
 const dispoList = () => visible().filter(dispoActive).sort((a,b)=>{ const sa=S.me&&S.me.games.includes(a.dispo.game)?1:0, sb=S.me&&S.me.games.includes(b.dispo.game)?1:0; if(sa!==sb) return sb-sa; return (S.me?compat(S.me,b).pct-compat(S.me,a).pct:0); });
 const fmtUntil = ts => new Date(ts).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
 function dispoModal(){

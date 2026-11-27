@@ -38,7 +38,7 @@ Claude Code lit ce fichier tout seul au début de chaque conversation. Il rempla
 1. Pars de `main` à jour (`git pull`), puis crée une branche.
 2. **Avant de changer quoi que ce soit**, lance les vérifications sur `main` : `node tests/tout.js avant`.
 3. Fais le changement, et seulement lui.
-4. **Change le numéro de version** aux deux endroits : `const V` dans `sw.js` et le `?v=` de chaque `<script src="js/…">` dans `index.html`. Il est à **60** : la prochaine mise en ligne sera 61. Sans ça, les joueurs gardent l'ancien code en cache. `tests/coherence.js` vérifie que les deux sont pareils.
+4. **Change le numéro de version** aux deux endroits : `const V` dans `sw.js` et le `?v=` de chaque `<script src="js/…">` dans `index.html`. Il est à **61** : la prochaine mise en ligne sera 62. Sans ça, les joueurs gardent l'ancien code en cache. `tests/coherence.js` vérifie que les deux sont pareils.
 5. Relance `node tests/tout.js apres`, puis `node tests/comparer.js avant apres`. Tout doit être « même », sauf ce que tu as voulu changer. Si une ancienne vérification n'a plus de sens, adapte-la et dis pourquoi dans la PR.
 6. Regarde le résultat pour de vrai, avec des captures : téléphone (360 px de large) et ordinateur (1280 px), dans les thèmes Coopô et Sombre.
 7. Ouvre la PR en français (ce qui change, comment c'est vérifié), fusionne-la, puis vérifie que GitHub Pages a bien publié et que le site en ligne sert la nouvelle version.
@@ -46,7 +46,7 @@ Claude Code lit ce fichier tout seul au début de chaque conversation. Il rempla
 
 ## Les vérifications (dossier `tests/`)
 
-- 44 vérifications automatiques, dans un navigateur sans fenêtre (Playwright). Elles utilisent un faux Firebase (`tests/fbmock.js`) : **aucune ne touche la vraie base**.
+- 45 vérifications automatiques, dans un navigateur sans fenêtre (Playwright). Elles utilisent un faux Firebase (`tests/fbmock.js`) : **aucune ne touche la vraie base**.
 - Il faut Node.js et Playwright : `npm install playwright` puis `npx playwright install chromium` (une seule fois).
 - Le mode d'emploi est dans `tests/README.md`.
 
@@ -58,7 +58,9 @@ Claude Code lit ce fichier tout seul au début de chaque conversation. Il rempla
 
 ## Où on en est (27 novembre 2026)
 
-- **Dernière mise en ligne : version 60** (27 novembre) : « écrit… » ne s'affiche plus à tort en entrant dans une conversation (ligne 74) ; une conversation sans message montre le jeu en commun ; ligne de la flamme lisible sur téléphone dans tous les thèmes.
+- **Dernière mise en ligne : version 61** (28 novembre), demandes d'Aki « tout est trop espacé » et « un onglet communauté comme Root » : toutes les pages plus serrées (quatre blocs de styles à la fin de `index.html` : `coopo-serre-msg`, `coopo-serre-pages`, `coopo-statut-roles`, `coopo-commu`) ; l'heure sur la ligne du message ; statut « Joue à… » (il suit « Je suis dispo ») ; rôles colorés dans les groupes ; onglet Communauté › Communautés (`viewCommus` dans `js/groupes.js`), qui montre les groupes publics en cartes. Rien de nouveau n'est enregistré dans Firebase.
+- **Pas faisable sans changer les règles Firebase ou le serveur de paiement** (lignes 79, 80, 81 du Excel) : salons dans les groupes, salon vocal ouvert, boosts et décorations animées des communautés. La place d'une décoration est prête dans les bannières (`.cm-deco[data-deco]`).
+- **Version 60** (27 novembre) : « écrit… » ne s'affiche plus à tort en entrant dans une conversation (ligne 74) ; une conversation sans message montre le jeu en commun ; ligne de la flamme lisible sur téléphone dans tous les thèmes.
 - **Tarifs** : Aki veut de nouveaux prix (tableau de Neko : thème 2 000 à 3 000 F, thème limité 5 000 F, plaque limitée 5 000 F, plaques classiques à discuter), ligne 75. Rien n'est changé : il faut ses réponses, et changer en même temps le catalogue du serveur de paiement (`coopo-paiement`), sinon le prix affiché et le prix encaissé ne sont plus les mêmes.
 - **Version 59**. Le texte de la flamme se lit dans le thème Coopô clair (ligne 67). L'étiquette « En commun » reste sur une ligne (ligne 56). Bandeau de prudence, avec un bouton Signaler, dans les conversations privées entre un adulte et un 13-17 ans (ligne 25). La page Messages garde le menu du haut entre 861 et 999 px de large. Menu d'une conversation ou d'un groupe dans la liste (appui long, clic droit), d'après une vidéo d'Aki, sans « Archiver » : épingler, marquer comme lu, sourdine, bloquer, signaler, supprimer (ligne 72). Sourdine, épingles de groupes et conversations supprimées sont gardées sur l'appareil (`S.rowp`), sans toucher aux règles Firebase ; « Supprimer » une conversation ne supprime aucun message dans la base.
 - **Logo** : planche de propositions https://claude.ai/artifact/G5tZa7pFHpHzcrkXD4vSop. Page « Nouvelles idées » : Le Check, La Manette, Le Lien, Pixel ; page « Premières idées » : Le Mate, La Flamme, La Bulle, Le Chat. On attend le choix d'Aki. Ensuite, le mettre partout : icônes de l'appli (`icons/`, encore lilas), `manifest.webmanifest`, onglet du navigateur, écran d'ouverture.

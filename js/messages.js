@@ -11,7 +11,7 @@ function lastMsg(id){ const ca=clearedAt(id), m=(S.chats[id]||[]).filter(x=>!ca|
 function dmSideInner(key){
   const mates=pinSort(matesList().sort((a,b)=>{ const la=lastMsg(a.id), lb=lastMsg(b.id); return (lb?lb.at:0)-(la?la.at:0); }));   // v15 — les mates épinglés en haut
   return `<h3><span>Messages privés</span>${canCall()&&AUTH_LIVE?`<button class="dm-calls" type="button" data-calls aria-label="Voir mes appels" title="Mes appels">${CALLS_SVG}</button>`:''}</h3>${mates.length?mates.map((p,i)=>{ const last=lastMsg(p.id), u=S.unread[p.id]||0;   // les plaques des 12 premières lignes sont animées (au-delà : au survol)
-      return `<a class="dm-row${key==='c:'+p.id?' on':''}${u?' unread':''}${plqOn(p,i<12)}" href="#/messages/${p.id}"${key==='c:'+p.id?' aria-current="page"':''}>${plq(p)}${avatar(p,36)}<div><b><span>${esc(p.name)}</span>${isOnline(p)?'<span class="online"></span>':''}${rowMarks('c',p.id)}</b><span class="muted">${last?esc((last.from==='me'?'Toi : ':'')+last.text):esc(helloLine(p))}</span></div>${u?`<span class="badge static">${u}</span>`:''}</a>`; }).join(''):'<p class="muted dm-none">Pas encore de mates.</p>'}`; }
+      return `<a class="dm-row${key==='c:'+p.id?' on':''}${u?' unread':''}${plqOn(p,i<12)}" href="#/messages/${p.id}"${key==='c:'+p.id?' aria-current="page"':''}>${plq(p)}${avatar(p,36)}<div><b><span>${esc(p.name)}</span>${isOnline(p)?'<span class="online"></span>':''}${last?playMark(p):''}${rowMarks('c',p.id)}</b><span class="muted">${last?esc((last.from==='me'?'Toi : ':'')+last.text):esc(helloLine(p))}</span></div>${u?`<span class="badge static">${u}</span>`:''}</a>`; }).join(''):'<p class="muted dm-none">Pas encore de mates.</p>'}`; }
 // Les groupes dans la colonne de gauche du site (ordinateur) : un rond par groupe, puis « + »
 function railGroups(){ if(!S.auth||!S.me) return ''; const m=location.hash.match(/^#\/groupe\/([^/?]+)/), cur=m?decodeURIComponent(m[1]):'';
   const groups=GROUPS.filter(gIn).sort((a,b)=>tsMs(b.lastAt||b.at)-tsMs(a.lastAt||a.at));
@@ -50,7 +50,7 @@ const CHAT_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strok
 // v25 — petites marques après le nom dans les listes : épinglé, en sourdine
 const rowMarks = (kind,id) => ((kind==='c'?isPinned(id):gPinned(id))?PIN_SVG+'<span class="sr-only">épinglé</span>':'')+(rowMuted(kind,id)?MUTE_IC+'<span class="sr-only">en sourdine</span>':'');
 // v26 — une conversation sans message montre le jeu en commun (une raison d'écrire), sinon « Dis bonjour »
-function helloLine(p){ const mine=(S.me&&S.me.games)||[], both=(p.games||[]).filter(g=>mine.includes(g)); return both.length?`🎮 ${both[0]}${both.length>1?` +${both.length-1}`:''} en commun`:'Dis bonjour 👋'; }
+function helloLine(p){ const pg=playGame(p); if(pg) return `🎮 Joue à ${pg}`; const mine=(S.me&&S.me.games)||[], both=(p.games||[]).filter(g=>mine.includes(g)); return both.length?`🎮 ${both[0]}${both.length>1?` +${both.length-1}`:''} en commun`:'Dis bonjour 👋'; }
 const shortAgo = t => ago(t).replace('il y a ','');
 // Une ligne de groupe façon liste de messages (téléphone : dans Messages, et sur la page des groupes)
 const gRowSn = g => { const u=gUnread(g);
@@ -68,7 +68,7 @@ function snList(mates){
   const rows=items.map(it=>{ if(it.g) return gRowSn(it.g);
     const p=it.p, last=lastMsg(p.id), u=S.unread[p.id]||0, f=flameState(p.id), on=isOnline(p), fl=f&&f.count>=FLAME_FROM;
     const st=u?['new',u>1?`${u} nouveaux messages`:'Nouveau message']:!last?['hello',esc(helloLine(p))]:last.from==='me'?(seenOf(p.id)>=last.at?['seen','Vu']:['sent','Envoyé']):['','Reçu'];   // v15 — « Vu » quand le mate a lu
-    return `<a class="sn-row${u?' unread':''}${plqOn(p)}" href="#/messages/${p.id}" data-f="${u?'unread ':''}${on?'online ':''}${fl?'flame':''}" data-n="${esc(String(p.name||'').toLowerCase())}">${plq(p)}<span class="sn-av">${avatar(p,56)}${on?'<span class="online" title="En ligne"></span>':''}</span><div class="sn-mid"><b><span>${esc(p.name)}</span>${modBadge(p)}${rowMarks('c',p.id)}</b>
+    return `<a class="sn-row${u?' unread':''}${plqOn(p)}" href="#/messages/${p.id}" data-f="${u?'unread ':''}${on?'online ':''}${fl?'flame':''}" data-n="${esc(String(p.name||'').toLowerCase())}">${plq(p)}<span class="sn-av">${avatar(p,56)}${on?'<span class="online" title="En ligne"></span>':''}</span><div class="sn-mid"><b><span>${esc(p.name)}</span>${modBadge(p)}${last?playMark(p):''}${rowMarks('c',p.id)}</b>
       <span class="sn-st ${st[0]}">${last||u?'<i></i>':''}<span class="t">${st[1]}</span><span class="x">${last?'· '+shortAgo(last.at):''}${fl?` · ${f.count} ${f.warn?'⏳':'🔥'}`:''}</span></span></div><span class="sn-end">${u?`<span class="badge static">${u}</span>`:CHAT_SVG}</span></a>`; }).join('');
   const chip=(k,l,n)=>`<button type="button" class="chip" data-snf="${k}" aria-pressed="${k===SN_F}">${l}${n?` <span class="cnt">${n}</span>`:''}</button>`;
   const more=`<a class="sn-row sn-more" id="sn-more" href="#/groupe"><span class="sn-av"><span class="sn-more-ico">${FIND_SVG}</span></span><div class="sn-mid"><b><span>Trouver un groupe</span></b><span class="sn-st"><span class="t">Rejoins un groupe public</span></span></div><span class="sn-end">${CHEV_SVG}</span></a>`;
@@ -114,7 +114,7 @@ function viewChat(id){ EDIT=null; chatMotif();
   const p=visible().find(x=>x.id===id);
   if(!p||!isMate(id)){ app.innerHTML=`<div class="wrap page"><div class="empty"><h3>Vous n'êtes pas encore mates</h3><p class="muted">Les messages s'ouvrent une fois la demande de mate acceptée.</p><a class="btn" href="#/messages">Retour aux messages</a></div></div>`; return; }
   S.unread[id]=0; { const seen=S.notifs.filter(n=>!n.read&&n.type==='message'&&n.from===id); seen.forEach(n=>n.read=true); DB.markRead(seen.map(n=>n.id)); } save(); renderNotifBadge();
-  app.innerHTML=`<div class="dm-shell">${dmSide('c:'+id)}<div class="wrap page chat-page"><div class="chat-head">${backLink('#/messages','Messages')}<a class="chat-who${plqOn(p,1)}" href="#/joueur/${p.id}">${plq(p)}${avatar(p,44)}<div><b>${esc(p.name)}${modBadge(p)}</b>${isOnline(p)?'<span class="online">En ligne</span>':'<span class="muted" style="font-size:12px">Hors ligne</span>'}</div></a>${callBtns(p)}</div>
+  app.innerHTML=`<div class="dm-shell">${dmSide('c:'+id)}<div class="wrap page chat-page"><div class="chat-head">${backLink('#/messages','Messages')}<a class="chat-who${plqOn(p,1)}" href="#/joueur/${p.id}">${plq(p)}${avatar(p,44)}<div><b>${esc(p.name)}${modBadge(p)}</b>${playLine(p)||(isOnline(p)?'<span class="online">En ligne</span>':'<span class="muted" style="font-size:12px">Hors ligne</span>')}</div></a>${callBtns(p)}</div>
     <p class="flame-hint" id="flame-hint"></p>
     ${crossAge(p)?`<p class="age-safe" role="note">${SHIELD_SVG}<span>Ne partage jamais ton adresse, ton école ni ton numéro. Quelque chose te gêne&nbsp;? <button class="linkbtn" type="button" data-age-report>Signaler</button></span></p>`:''}
     <div class="chat-box" id="chatbox"></div>${typingHTML()}${qrHTML()}

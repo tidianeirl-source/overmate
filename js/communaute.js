@@ -20,7 +20,7 @@ const myId = () => DB.live ? DB.uid() : 'me';
 const fmtDay = ts => new Date(ts).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})+' · '+new Date(ts).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
 function boardHead(tab,sub,action){
   const nA=annoncesAll().length, nT=tournoisAll().filter(t=>t.status==='open'&&t.date>Date.now()).length;
-  const T=[['annonces','Annonces',nA],['sessions','Sessions',0],['tournois','Tournois',nT]];   // les groupes ont quitté la Communauté : ils ont leur propre onglet
+  const T=[['communautes','Communautés',0],['annonces','Annonces',nA],['sessions','Sessions',0],['tournois','Tournois',nT]];   // v27 — « Communautés » en premier : découvrir les groupes publics, à la façon de Root
   return `<div class="page-head"><div><h2>Communauté</h2><p>${sub}</p></div>${action||''}</div>
     <div class="chips board-tabs" role="tablist">${T.map(([k,l,n])=>`<a class="chip" role="tab" href="#/groupes/${k}" aria-selected="${tab===k}" aria-pressed="${tab===k}">${l}${n?` <span class="cnt">${n}</span>`:''}</a>`).join('')}</div>
     ${discordOK()?`<div class="discord-row"><span>Envie de parler en vocal ? Le serveur Discord COOPO est ouvert.</span>${discordBtn('btn btn-sm')}</div>`:''}`;
@@ -31,7 +31,8 @@ function viewSquads(tab){
   DB.refreshBoards().then(ch=>{ if(ch&&location.hash.startsWith('#/groupes')) refreshAfterData(); });
   if(tab==='sessions') return viewGroupsTab();
   if(tab==='tournois') return viewTournois();
-  return viewAnnonces();
+  if(tab==='annonces') return viewAnnonces();
+  return viewCommus();   // v27 — l'onglet s'ouvre sur les communautés
 }
 
 /* ---- Annonces « Je cherche » ---- */
@@ -237,7 +238,7 @@ document.addEventListener('click',e=>{
 function boardsTeaser(){
   if(!S.me) return '';
   const t=tournoisAll().find(x=>x.status==='open'&&x.date>Date.now()&&tournoiOpenTo(x)), an=annoncesAll().filter(a=>!isMine(a)).slice(0,t?2:3);
-  const head=`<div class="dispo-head"><h3>Communauté</h3><a class="linkbtn" href="#/groupes">Tout voir</a></div>`;
+  const head=`<div class="dispo-head"><h3>Communauté</h3><a class="linkbtn" href="#/groupes/annonces">Tout voir</a></div>`;
   const go='<svg class="menu-go" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
   if(!an.length&&!t) return `<section class="home-sec reveal board-teaser">${head}<div class="list-card pad"><p class="muted">Tu cherches des joueurs pour une partie précise ? Publie une annonce, par exemple « Je cherche 2 joueurs ${esc(S.me.games[0]||'Free Fire')} ce soir ».</p><div><a class="btn btn-sm btn-ac" href="#/groupes/annonces">Publier une annonce</a></div></div></section>`;
   return `<section class="home-sec reveal board-teaser">${head}<div class="list-card">

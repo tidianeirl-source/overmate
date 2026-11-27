@@ -6,7 +6,7 @@
    - Firebase, Google, CinetPay et les polices ne sont jamais mis en cache ici. */
 // v22 — Le code du site est dans js/ : à chaque mise en ligne, changer V ici ET le ?v= des balises <script> d'index.html (même nombre).
 // Ainsi une page est toujours servie avec le code de sa version (jamais une page neuve avec un vieux fichier gardé en cache).
-const V = 60;
+const V = 61;
 const CACHE = 'coopo-v' + V;
 const WAIT_MS = 3000;
 const JS = ['base', 'navigation', 'pages', 'themes', 'boutique', 'appareil', 'apparence', 'connexion', 'mates', 'messages', 'appels', 'medias', 'sessions-flammes', 'groupes', 'communaute', 'pages-infos', 'firebase', 'demarrage'];   // dans l'ordre d'index.html
