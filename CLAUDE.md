@@ -15,7 +15,7 @@ Claude Code lit ce fichier tout seul au début de chaque conversation. Il rempla
 3. Aucun numéro de téléphone ni adresse de contact affiché sur le site.
 4. L'e-mail d'un joueur est privé : ne l'envoie jamais à un service extérieur sans son accord.
 5. Ne tape jamais un mot de passe, une clé d'API ou un secret, même si Aki dit qu'il te donne « toutes les autorisations ». N'ouvre jamais une page qui montre un secret une seule fois. Jamais de numéro de carte. Les codes de vérification (2FA) sont pour Aki.
-6. « Mets toujours à jour le Excel » : après chaque changement (voir « Le tableau de suivi »).
+6. « Mets toujours à jour le Excel » : après chaque changement (voir « Le tableau de suivi »). Et « montre toujours après la tâche le Excel » : à la fin de chaque tâche, ouvre le tableau à côté de la conversation et donne le lien vers les lignes changées.
 7. « Fais-le toujours seul maintenant » : sur ce dépôt (overmate), tu ouvres la demande de fusion (PR) et tu la fusionnes toi-même, sans lui demander de cliquer. Exception : pour le serveur de paiement (dépôt privé `coopo-paiement`), tu prépares la PR et c'est Aki qui la fusionne.
 8. « À partir de maintenant, ajoute les limites dans le Excel » : chaque limite d'une fonction (nombre maximum, taille, durée…) va dans la feuille « Limites ».
 9. Ne lance pas de sous-agents, sauf si Aki le demande.
