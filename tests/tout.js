@@ -17,7 +17,7 @@ const LISTE = [
   ['uni360', 'uni-check2', { TAG: 'uc360' }],
   ['uni1280', 'uni-check2', { W: '1280', TAG: 'uc1280' }],
   ['affi', 'aff-interact'], ['nav', 'nav-test'], ['anim', 'anim-test'], ['msgg', 'msg-groupes'], ['redraw', 'redraw-test'],
-  ['coherence', 'coherence'], ['smoke', 'smoke'], ['onbrail', 'onb-rail'], ['railg', 'rail-groupes'], ['menuliste', 'menu-liste'], ['ecrit', 'ecrit'], ['v27', 'v27'],
+  ['coherence', 'coherence'], ['smoke', 'smoke'], ['onbrail', 'onb-rail'], ['railg', 'rail-groupes'], ['menuliste', 'menu-liste'], ['ecrit', 'ecrit'], ['v27', 'v27'], ['salons', 'salons'],
 ];
 // Une ligne qui signale un problème (même règle que tests/comparer.js)
 const MAUVAISE = /✗|^⚠|ÉCHEC|TEST FAIL|problème\(s\)|Error|EXCEPTION|échec\(s\)/;

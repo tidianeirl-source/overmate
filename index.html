@@ -3109,6 +3109,18 @@ html:is([data-skin="defaut"],[data-skin="sombre"]) .cm-banner{ background:radial
 }
 @media (prefers-reduced-motion:reduce){ .cm-card{ transition:none; } }
 </style>
+<style id="coopo-salons">
+/* ==== v28 — Salons d'un groupe : la rangée de salons sous le nom du groupe ==== */
+.g-chans:empty{ display:none; }
+.g-chans{ flex:none; min-width:0; }
+.g-chans-in{ display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; padding:6px 10px; border-bottom:1px solid var(--hair); background:var(--s1); } .g-chans-in::-webkit-scrollbar{ display:none; }
+.g-chans .chip{ flex:none; min-height:36px; padding:0 12px; font-size:14px; white-space:nowrap; } .g-chan > span{ opacity:.6; margin-right:1px; }
+.g-chan-edit{ border-style:dashed !important; }
+@media (min-width:1000px){ .dm-shell .g-chans-in{ padding:6px 14px; } }
+.g-chan-list{ display:grid; gap:6px; margin-top:12px; } .g-chan-row, .g-chan-new{ display:flex; align-items:center; gap:8px; min-width:0; } .g-chan-new{ margin-top:8px; }
+.g-chan-hash{ flex:none; width:18px; text-align:center; font-weight:700; color:var(--mu); }
+.g-chan-row input, .g-chan-new input{ flex:1 1 auto; min-width:0; min-height:44px; } .g-chan-row b{ flex:1 1 auto; } .g-chan-note{ font-size:13px; margin:10px 0 0; }
+</style>
 </head>
 <body>
 <div id="splash" role="status" aria-live="polite">
@@ -3162,24 +3174,24 @@ setTimeout(function(){try{if(SPLASH.armed)return;}catch(e){}if(!s)return;s.class
 <div id="wipe" aria-hidden="true"></div>
 
 <!-- v22 — Le code du site est dans js/ : ces fichiers sont chargés dans cet ordre et se partagent tout ce qu'ils déclarent.
-     ?v=61 : à changer à chaque mise en ligne, avec V dans sw.js, pour que la page et son code aillent toujours ensemble. -->
-<script src="js/base.js?v=61"></script>
-<script src="js/navigation.js?v=61"></script>
-<script src="js/pages.js?v=61"></script>
-<script src="js/themes.js?v=61"></script>
-<script src="js/boutique.js?v=61"></script>
-<script src="js/appareil.js?v=61"></script>
-<script src="js/apparence.js?v=61"></script>
-<script src="js/connexion.js?v=61"></script>
-<script src="js/mates.js?v=61"></script>
-<script src="js/messages.js?v=61"></script>
-<script src="js/appels.js?v=61"></script>
-<script src="js/medias.js?v=61"></script>
-<script src="js/sessions-flammes.js?v=61"></script>
-<script src="js/groupes.js?v=61"></script>
-<script src="js/communaute.js?v=61"></script>
-<script src="js/pages-infos.js?v=61"></script>
-<script src="js/firebase.js?v=61"></script>
-<script src="js/demarrage.js?v=61"></script>
+     ?v=62 : à changer à chaque mise en ligne, avec V dans sw.js, pour que la page et son code aillent toujours ensemble. -->
+<script src="js/base.js?v=62"></script>
+<script src="js/navigation.js?v=62"></script>
+<script src="js/pages.js?v=62"></script>
+<script src="js/themes.js?v=62"></script>
+<script src="js/boutique.js?v=62"></script>
+<script src="js/appareil.js?v=62"></script>
+<script src="js/apparence.js?v=62"></script>
+<script src="js/connexion.js?v=62"></script>
+<script src="js/mates.js?v=62"></script>
+<script src="js/messages.js?v=62"></script>
+<script src="js/appels.js?v=62"></script>
+<script src="js/medias.js?v=62"></script>
+<script src="js/sessions-flammes.js?v=62"></script>
+<script src="js/groupes.js?v=62"></script>
+<script src="js/communaute.js?v=62"></script>
+<script src="js/pages-infos.js?v=62"></script>
+<script src="js/firebase.js?v=62"></script>
+<script src="js/demarrage.js?v=62"></script>
 </body>
 </html>
