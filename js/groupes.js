@@ -161,11 +161,13 @@ function viewGroup(id){ EDIT=null; chatMotif();
   (S.gseen=S.gseen||{})[id]=Date.now(); save(); renderNotifBadge();
   app.innerHTML=`<div class="dm-shell g-shell">${gSide('g:'+id)}<div class="wrap page chat-page"><div class="chat-head">${backLink('#/messages','Messages')}<button class="chat-who g-who" type="button" id="ginfo">${gAvatar(g,44)}<div><b>${esc(g.name)}</b><span class="muted" style="font-size:12px">${g.members.length} membre${g.members.length>1?'s':''} · infos</span></div></button>
       ${g.members.length<GROUP_MAX?`<div class="chat-calls"><button class="btn btn-ac g-add-btn" type="button" id="g-add" aria-label="Ajouter des mates" title="Ajouter des mates">${ADDMATE_SVG}<span>Ajouter des mates</span></button></div>`:''}</div>
+    <div class="g-chans" id="g-chans">${gChansHTML(g)}</div>
     <div class="chat-box" id="chatbox"><p class="muted" style="margin:auto">Chargement des messages…</p></div>${typingHTML()}${qrHTML()}
     ${composerHTML('Message au groupe…',!gHasMinor(g))}${cpanelHTML()}</div></div>`;
+  gChansWire(id);
   dmFit(); document.getElementById('ginfo').onclick=()=>groupInfo(id);
   document.getElementById('g-add')?.addEventListener('click',()=>groupInvite(id));
-  const sendG=(text,voice,photo,sticker)=>{ const rp=takeReply('g',id); return DB.queueSend(()=>DB.sendGroupMessage(id,text,voice,photo,sticker,rp)); };   // v11 — un message par seconde au plus, dans l'ordre ; v13 — avec la réponse en cours
+  const sendG=(text,voice,photo,sticker)=>{ const rp=takeReply('g',id); return DB.queueSend(()=>DB.sendGroupMessage(id,text,voice,photo,sticker,rp,gChan(gById(id)))); };   // v11 — un message par seconde au plus, dans l'ordre ; v13 — avec la réponse en cours
   const noMedia=()=>{ document.getElementById('photobtn')?.remove(); document.getElementById('cambtn')?.remove(); CP.stk=false; if(CP.open) cpRender(); cpSync(); qrUpdate(); };   // il y a un 13-17 ans dans le groupe
   photoWire(ph=>{ if(gHasMinor(gById(id))){ toast('Pas de photo dans un groupe où il y a des 13-17 ans.',3500); noMedia(); return; }
     const pid=newId(); PHOTOS[pid]=ph.data; return sendG(PHOTO_TEXT,null,{id:pid,w:ph.w,h:ph.h}); });
@@ -185,7 +187,44 @@ function viewGroup(id){ EDIT=null; chatMotif();
   DB.listenMeta('g',id,chg=>{ if(location.hash!=='#/groupe/'+id) return; if(chg) renderGroupChat(id); else seenMark('g',id); typingRender(); });
 }
 let GMSGS={};   // messages du groupe ouvert
-function renderGroupChat(id){ const box=document.getElementById('chatbox'), g=gById(id); if(!box||!g) return; setTimeout(photoWatch,0); setTimeout(stickerWatch,0); const me=myId(), msgs=(GMSGS[id]||[]).filter(m=>!S.blocked.includes(m.from)), was=bubbleSeen(box);
+/* ---- v28 — Salons dans un groupe, façon Discord (#général, #ranked…) ----
+   Le groupe garde ses salons dans channels = { c1:'ranked', c2:'tournois', … } : 8 salons au plus, créés par le créateur du groupe.
+   Un message porte ch = l'identifiant de son salon ; sans ch (tous les anciens messages), il est dans #général.
+   Si un salon est supprimé, ses messages ne sont pas effacés : ils reviennent dans #général (sa case reste, vide : channels.c1 = '').
+   Règles Firebase : v15 (le champ ch d'un message doit être un salon du groupe). */
+const CHAN_MAX=8, CHAN_IDS=['c1','c2','c3','c4','c5','c6','c7','c8'], GCH={};   // GCH[groupe] = le salon ouvert ('' = #général)
+const chanName = v => String(v==null?'':v).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,20);
+const gChans = g => { const c=g&&g.channels&&typeof g.channels==='object'&&!Array.isArray(g.channels)?g.channels:{}; return CHAN_IDS.filter(k=>typeof c[k]==='string'&&chanName(c[k])).map(k=>[k,chanName(c[k])]); };
+const gChan = g => { const cur=g?GCH[g.id]||'':''; return cur&&gChans(g).some(c=>c[0]===cur)?cur:''; };   // le salon ouvert, s'il existe toujours
+const gMsgChan = (g,m) => m.ch&&gChans(g).some(c=>c[0]===m.ch)?m.ch:'';   // un message d'un salon supprimé revient dans #général
+function gChansHTML(g){ const cs=gChans(g), cur=gChan(g), admin=g.owner===myId(); if(!cs.length&&!admin) return '';
+  const chip=(k,l)=>`<button type="button" class="chip g-chan" data-chan="${k}" aria-pressed="${cur===k}"><span aria-hidden="true">#</span>${esc(l)}</button>`;
+  return `<div class="g-chans-in" role="group" aria-label="Salons du groupe">${cs.length?chip('','général')+cs.map(c=>chip(c[0],c[1])).join(''):''}${admin?`<button type="button" class="chip g-chan-edit" id="g-chan-edit" aria-label="${cs.length?'Gérer les salons':'Créer des salons'}">${cs.length?'Gérer':'+ Créer des salons'}</button>`:''}</div>`; }
+function gChansWire(id){ const bar=document.getElementById('g-chans'); if(!bar) return;
+  bar.onclick=e=>{ const g=gById(id); if(!g) return; if(e.target.closest('#g-chan-edit')){ gChansDialog(id); return; }
+    const b=e.target.closest('[data-chan]'); if(!b) return; GCH[id]=b.dataset.chan; bar.innerHTML=gChansHTML(g); endReply&&endReply(); renderGroupChat(id); const box=document.getElementById('chatbox'); if(box) box.scrollTop=box.scrollHeight;
+    const i=document.getElementById('chatin'); if(i) i.placeholder=gChan(g)?`Message dans #${gChans(g).find(c=>c[0]===gChan(g))[1]}…`:'Message au groupe…'; }; }
+function gChansRefresh(id){ const bar=document.getElementById('g-chans'), g=gById(id); if(bar&&g&&location.hash==='#/groupe/'+id){ bar.innerHTML=gChansHTML(g); renderGroupChat(id); } }
+// Créer, renommer, supprimer des salons (créateur du groupe)
+function gChansDialog(id){ const g=gById(id); if(!g||g.owner!==myId()) return; const cs=gChans(g);
+  modal(`<h3>Salons du groupe</h3><p class="muted">Des salons pour ranger les discussions, comme sur Discord. #général existe toujours. ${CHAN_MAX} salons au plus.</p>
+    <div class="g-chan-list"><div class="g-chan-row"><span class="g-chan-hash">#</span><b>général</b><span class="muted">par défaut</span></div>
+      ${cs.map(c=>`<div class="g-chan-row"><span class="g-chan-hash">#</span><input type="text" data-chan-name="${c[0]}" value="${esc(c[1])}" maxlength="20" autocomplete="off" aria-label="Nom du salon ${esc(c[1])}"><button type="button" class="linkbtn" data-chan-del="${c[0]}">Supprimer</button></div>`).join('')}</div>
+    ${cs.length<CHAN_MAX?`<div class="g-chan-new"><span class="g-chan-hash">#</span><input type="text" id="g-chan-new" maxlength="20" placeholder="nouveau-salon (ex. ranked)" autocomplete="off" aria-label="Nom du nouveau salon"></div>`:''}
+    <p class="muted g-chan-note">Lettres, chiffres et tirets. Si tu supprimes un salon, ses messages ne sont pas effacés : ils reviennent dans #général.</p>
+    <div class="dlg-actions"><button class="btn btn-ghost" type="button" data-close>Annuler</button><button class="btn btn-ac" type="button" id="g-chan-ok">Enregistrer</button></div>`, d=>{
+    const gone=new Set();
+    d.querySelectorAll('[data-chan-del]').forEach(b=>b.onclick=()=>{ if(!b.dataset.sure){ b.dataset.sure=1; b.textContent='Confirmer ?'; return; } gone.add(b.dataset.chanDel); b.closest('.g-chan-row').remove(); });
+    d.querySelector('#g-chan-ok').onclick=async ev=>{ const out={}, seen=new Set(['general']), old=g.channels&&typeof g.channels==='object'?g.channels:{};
+      // un salon supprimé garde sa case, vide : elle n'est pas redonnée à un nouveau salon tant qu'il en reste de libres (sinon ses anciens messages y réapparaîtraient)
+      CHAN_IDS.forEach(k=>{ if(old[k]===''||gone.has(k)) out[k]=''; });
+      for(const i of d.querySelectorAll('[data-chan-name]')){ const k=i.dataset.chanName, n=chanName(i.value); if(gone.has(k)) continue; if(!n||seen.has(n)){ toast(n?`Deux salons ne peuvent pas s'appeler #${n}.`:'Un salon doit avoir un nom.',3000); i.focus(); return; } seen.add(n); out[k]=n; }
+      const nw=d.querySelector('#g-chan-new'), nn=nw?chanName(nw.value):'';
+      if(nw&&nw.value.trim()&&!nn){ toast('Utilise des lettres ou des chiffres pour le nom du salon.',3000); nw.focus(); return; }
+      if(nn){ if(seen.has(nn)){ toast(`Le salon #${nn} existe déjà.`,3000); nw.focus(); return; } const free=CHAN_IDS.find(k=>!(k in out))||CHAN_IDS.find(k=>out[k]===''&&!gone.has(k))||CHAN_IDS.find(k=>out[k]===''); if(!free){ toast(`${CHAN_MAX} salons au plus.`); return; } out[free]=nn; }
+      ev.currentTarget.disabled=true;
+      if(await DB.setGroupChannels(id,out)){ d.close(); toast('Salons enregistrés'); gChansRefresh(id); } else ev.currentTarget.disabled=false; }; }); }
+function renderGroupChat(id){ const box=document.getElementById('chatbox'), g=gById(id); if(!box||!g) return; setTimeout(photoWatch,0); setTimeout(stickerWatch,0); const me=myId(), cur=gChan(g), msgs=(GMSGS[id]||[]).filter(m=>!S.blocked.includes(m.from)&&gMsgChan(g,m)===cur), was=bubbleSeen(box);
   const keep=chatKeep(box,msgs);   // v14 — voir renderChat
   // v15 — « Vu par… » : sous mon dernier message, le nombre de membres qui l'ont lu
   let seenK=-1, seenTag=''; if(META&&META.key==='g:'+id){ for(let k=msgs.length-1;k>=0;k--){ if(msgs[k].from===me){ if(!msgs[k].del) seenK=k; break; } }

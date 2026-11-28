@@ -263,6 +263,7 @@ const DB = {
       catch(e){ console.error(e); toast(String(e&&e.code).includes('permission')?"Action refusée : tu n'as pas (ou plus) ce droit dans le groupe.":"Ça n'a pas marché. Vérifie ta connexion et réessaie."); return false; } }
     const g=gById(id); if(g&&local) local(g); return true; },
   updateGroup(id,data){ return this._gUpdate(id,()=>data,g=>Object.assign(g,data)); },
+  setGroupChannels(id,channels){ return this._gUpdate(id,()=>({channels}),g=>{ g.channels=channels; }); },   // v28 — les salons du groupe (son créateur seulement)
   joinGroup(id){ const me=myId(); return this._gUpdate(id,F=>({members:F.arrayUnion(me),invited:F.arrayRemove(me)}),g=>{ if(!g.members.includes(me)) g.members.push(me); g.invited=g.invited.filter(x=>x!==me); }); },
   async leaveGroup(id){ const me=myId(); this.stopGroup(); const ok=await this._gUpdate(id,F=>({members:F.arrayRemove(me),mods:F.arrayRemove(me)}),g=>{ g.members=g.members.filter(x=>x!==me); g.mods=g.mods.filter(x=>x!==me); }); if(ok){ const g=gById(id); if(g&&g.private) GROUPS=GROUPS.filter(x=>x.id!==id); } return ok; },
   async declineGroup(id){ const me=myId(); const ok=await this._gUpdate(id,F=>({invited:F.arrayRemove(me)}),g=>{ g.invited=g.invited.filter(x=>x!==me); }); if(ok){ const g=gById(id); if(g&&g.private) GROUPS=GROUPS.filter(x=>x.id!==id); } return ok; },
@@ -281,7 +282,7 @@ const DB = {
         try{ const q=await ref.collection('meta').limit(60).get(); if(!q.empty){ const b=this.db.batch(); q.forEach(x=>b.delete(x.ref)); await b.commit(); } }catch(e){ console.error(e); }   // v15 — les « Vu » et « écrit… »
         await ref.delete(); }catch(e){ console.error(e); toast("Le groupe n'a pas pu être supprimé."); return false; } }
     GROUPS=GROUPS.filter(g=>g.id!==id); delete GMSGS[id]; return true; },
-  async sendGroupMessage(id,text,voice,photo,sticker,reply){ const m={from:myId(),text,at:Date.now()}; if(voice) m.voice=voice; if(photo) m.photo=photo; if(sticker) m.sticker=sticker; if(reply) m.reply=reply;
+  async sendGroupMessage(id,text,voice,photo,sticker,reply,ch){ const m={from:myId(),text,at:Date.now()}; if(voice) m.voice=voice; if(photo) m.photo=photo; if(sticker) m.sticker=sticker; if(reply) m.reply=reply; if(ch) m.ch=ch;   // v28 — ch : le salon du message (rien = #général)
     if(!AUTH_LIVE){ (GMSGS[id]=GMSGS[id]||[]).push({...m,id:'l'+m.at}); renderGroupChat(id); return; }
     if(!this.live&&!(await this.ready())) return; const db=this.db, F=firebase.firestore.FieldValue, ref=db.collection('groups').doc(id);
     try{ const mk=()=>{ const b=db.batch(); b.set(ref.collection('messages').doc(),m); if(voice) b.set(ref.collection('voices').doc(voice.id),{from:m.from,data:VOICES[voice.id]||'',dur:voice.dur,at:m.at});
@@ -290,7 +291,7 @@ const DB = {
       try{ await mk().commit(); }
       catch(e){ if(!(m.voice&&m.voice.w&&String(e&&e.code).includes('permission'))) throw e; m.voice={id:m.voice.id,dur:m.voice.dur}; await mk().commit(); }   // ondes refusées (anciennes règles) : le vocal part sans elles
       const g=gById(id); if(g&&Date.now()-tsMs(g.lastAt)>5*60e3){ g.lastAt=Date.now(); ref.update({lastAt:F.serverTimestamp()}).catch(e=>console.error(e)); }   // « nouveaux messages » pour les autres membres, au plus une écriture toutes les 5 minutes
-    }catch(e){ console.error(e); toast(String(e&&e.code).includes('permission')?"Message refusé : attends une seconde, ou tu n'es plus membre de ce groupe.":"Le message n'est pas parti, réessaie."); } },
+    }catch(e){ console.error(e); toast(String(e&&e.code).includes('permission')?(ch?"Message refusé : attends une seconde. Si ça continue, ce salon n'existe plus : reviens dans #général.":"Message refusé : attends une seconde, ou tu n'es plus membre de ce groupe."):"Le message n'est pas parti, réessaie."); } },
   // v10 — stickers : mes stickers (liste gardée sur l'appareil, rafraîchie chaque semaine), un sticker par son identifiant, créer, supprimer
   stkIdxKey(){ return 'coopo_stkmine_'+this.uid(); },
   async myStickers(force){ if(!AUTH_LIVE) return Object.keys(STK).filter(k=>STK[k].mine).map(id=>({id,n:STK[id].n}));
@@ -382,7 +383,7 @@ const DB = {
     if(gm&&gm.photo) this.db.collection('groups').doc(id).collection('photos').doc(gm.photo.id).delete().catch(e=>console.error(e));   // la photo aussi
     this.db.collection('groups').doc(id).collection('messages').doc(mid).delete().catch(e=>{ console.error(e); toast("Le message n'a pas pu être supprimé."); }); },
   listenGroup(id,cb){ this.stopGroup(); if(!this.live){ cb(); return; }   // les 100 derniers messages, en temps réel
-    this._groupUnsub=this.db.collection('groups').doc(id).collection('messages').orderBy('at').limitToLast(100).onSnapshot(snap=>{ GMSGS[id]=[]; snap.forEach(x=>{ const m=x.data(); const o={id:x.id,from:m.from,text:m.text,at:m.at}; msgExtra(o,m); if(m.voice&&m.voice.id){ o.voice={id:String(m.voice.id),dur:+m.voice.dur||0}; if(VW_RE.test(String(m.voice.w||''))) o.voice.w=m.voice.w; } if(m.photo&&m.photo.id) o.photo={id:String(m.photo.id),w:+m.photo.w||4,h:+m.photo.h||3}; GMSGS[id].push(o); }); cb(); },
+    this._groupUnsub=this.db.collection('groups').doc(id).collection('messages').orderBy('at').limitToLast(100).onSnapshot(snap=>{ GMSGS[id]=[]; snap.forEach(x=>{ const m=x.data(); const o={id:x.id,from:m.from,text:m.text,at:m.at}; if(typeof m.ch==='string') o.ch=m.ch; msgExtra(o,m); if(m.voice&&m.voice.id){ o.voice={id:String(m.voice.id),dur:+m.voice.dur||0}; if(VW_RE.test(String(m.voice.w||''))) o.voice.w=m.voice.w; } if(m.photo&&m.photo.id) o.photo={id:String(m.photo.id),w:+m.photo.w||4,h:+m.photo.h||3}; GMSGS[id].push(o); }); cb(); },
       e=>{ console.error(e); this.stopGroup(); this.loadGroups(true).then(()=>{ if(location.hash==='#/groupe/'+id) route(); }); }); },   // plus le droit de lire (retiré du groupe, groupe supprimé) : on recharge la liste
   stopGroup(){ if(this._groupUnsub){ try{ this._groupUnsub(); }catch(e){} this._groupUnsub=null; } if(META&&META.kind==='g') this.stopMeta(); },
   async saveNotif(toId,n){ if(!this.live&&AUTH_LIVE) await this.ready(); if(!this.live) return; try{ await this.db.collection('notifications').doc(this.toUid(toId)).collection('items').add({...n,from:this.toUid(n.from),at:Date.now(),read:false}); }catch(e){ console.error(e); } },

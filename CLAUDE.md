@@ -38,7 +38,7 @@ Claude Code lit ce fichier tout seul au début de chaque conversation. Il rempla
 1. Pars de `main` à jour (`git pull`), puis crée une branche.
 2. **Avant de changer quoi que ce soit**, lance les vérifications sur `main` : `node tests/tout.js avant`.
 3. Fais le changement, et seulement lui.
-4. **Change le numéro de version** aux deux endroits : `const V` dans `sw.js` et le `?v=` de chaque `<script src="js/…">` dans `index.html`. Il est à **61** : la prochaine mise en ligne sera 62. Sans ça, les joueurs gardent l'ancien code en cache. `tests/coherence.js` vérifie que les deux sont pareils.
+4. **Change le numéro de version** aux deux endroits : `const V` dans `sw.js` et le `?v=` de chaque `<script src="js/…">` dans `index.html`. Il est à **62** : la prochaine mise en ligne sera 63. Sans ça, les joueurs gardent l'ancien code en cache. `tests/coherence.js` vérifie que les deux sont pareils.
 5. Relance `node tests/tout.js apres`, puis `node tests/comparer.js avant apres`. Tout doit être « même », sauf ce que tu as voulu changer. Si une ancienne vérification n'a plus de sens, adapte-la et dis pourquoi dans la PR.
 6. Regarde le résultat pour de vrai, avec des captures : téléphone (360 px de large) et ordinateur (1280 px), dans les thèmes Coopô et Sombre.
 7. Ouvre la PR en français (ce qui change, comment c'est vérifié), fusionne-la, puis vérifie que GitHub Pages a bien publié et que le site en ligne sert la nouvelle version.
@@ -46,7 +46,7 @@ Claude Code lit ce fichier tout seul au début de chaque conversation. Il rempla
 
 ## Les vérifications (dossier `tests/`)
 
-- 45 vérifications automatiques, dans un navigateur sans fenêtre (Playwright). Elles utilisent un faux Firebase (`tests/fbmock.js`) : **aucune ne touche la vraie base**.
+- 46 vérifications automatiques, dans un navigateur sans fenêtre (Playwright). Elles utilisent un faux Firebase (`tests/fbmock.js`) : **aucune ne touche la vraie base**.
 - Il faut Node.js et Playwright : `npm install playwright` puis `npx playwright install chromium` (une seule fois).
 - Le mode d'emploi est dans `tests/README.md`.
 
@@ -56,10 +56,11 @@ Claude Code lit ce fichier tout seul au début de chaque conversation. Il rempla
 - Feuilles : **Choses à faire** (une ligne par demande : titre, demande, avancement, taille, état, priorité), **Choses à retenir**, **Limites**, **Journal** (une ligne par jour, la plus récente en haut), **Dépenses**.
 - Si tu ne peux pas l'ouvrir d'ici, dis-le à Aki et donne-lui, à la fin, les lignes à ajouter.
 
-## Où on en est (27 novembre 2026)
+## Où on en est (28 novembre 2026)
 
-- **Dernière mise en ligne : version 61** (27 novembre), demandes d'Aki « tout est trop espacé » et « un onglet communauté comme Root » : toutes les pages plus serrées (quatre blocs de styles à la fin de `index.html` : `coopo-serre-msg`, `coopo-serre-pages`, `coopo-statut-roles`, `coopo-commu`) ; l'heure sur la ligne du message ; statut « Joue à… » (il suit « Je suis dispo ») ; rôles colorés dans les groupes ; onglet Communauté › Communautés (`viewCommus` dans `js/groupes.js`), qui montre les groupes publics en cartes. Rien de nouveau n'est enregistré dans Firebase.
-- **Pas faisable sans changer les règles Firebase ou le serveur de paiement** (lignes 79, 80, 81 du Excel) : salons dans les groupes, salon vocal ouvert, boosts et décorations animées des communautés. La place d'une décoration est prête dans les bannières (`.cm-deco[data-deco]`).
+- **Version 62 : salons dans les groupes** (ligne 79), façon Discord. Le groupe garde `channels = { c1:'ranked', … }` (8 cases, créateur seulement) et un message porte `ch` ; sans `ch`, il est dans #général. Un salon supprimé garde sa case vide et ses messages reviennent dans #général. Code : `gChans`, `gChansDialog` dans `js/groupes.js`. **Il faut les règles Firebase v15** (Aki les publie lui-même : Claude n'a pas accès à Firebase, Aki colle les règles dans la conversation et Claude lui rend les lignes à changer).
+- **Version 61** (27 novembre), demandes d'Aki « tout est trop espacé » et « un onglet communauté comme Root » : toutes les pages plus serrées (quatre blocs de styles à la fin de `index.html` : `coopo-serre-msg`, `coopo-serre-pages`, `coopo-statut-roles`, `coopo-commu`) ; l'heure sur la ligne du message ; statut « Joue à… » (il suit « Je suis dispo ») ; rôles colorés dans les groupes ; onglet Communauté › Communautés (`viewCommus` dans `js/groupes.js`), qui montre les groupes publics en cartes. Rien de nouveau n'est enregistré dans Firebase.
+- **Pas encore fait** (lignes 80, 81 du Excel) : salon vocal ouvert (règles Firebase et sans doute un service audio), boosts et décorations animées des communautés (serveur de paiement). La place d'une décoration est prête dans les bannières (`.cm-deco[data-deco]`).
 - **Version 60** (27 novembre) : « écrit… » ne s'affiche plus à tort en entrant dans une conversation (ligne 74) ; une conversation sans message montre le jeu en commun ; ligne de la flamme lisible sur téléphone dans tous les thèmes.
 - **Tarifs** : Aki veut de nouveaux prix (tableau de Neko : thème 2 000 à 3 000 F, thème limité 5 000 F, plaque limitée 5 000 F, plaques classiques à discuter), ligne 75. Rien n'est changé : il faut ses réponses, et changer en même temps le catalogue du serveur de paiement (`coopo-paiement`), sinon le prix affiché et le prix encaissé ne sont plus les mêmes.
 - **Version 59**. Le texte de la flamme se lit dans le thème Coopô clair (ligne 67). L'étiquette « En commun » reste sur une ligne (ligne 56). Bandeau de prudence, avec un bouton Signaler, dans les conversations privées entre un adulte et un 13-17 ans (ligne 25). La page Messages garde le menu du haut entre 861 et 999 px de large. Menu d'une conversation ou d'un groupe dans la liste (appui long, clic droit), d'après une vidéo d'Aki, sans « Archiver » : épingler, marquer comme lu, sourdine, bloquer, signaler, supprimer (ligne 72). Sourdine, épingles de groupes et conversations supprimées sont gardées sur l'appareil (`S.rowp`), sans toucher aux règles Firebase ; « Supprimer » une conversation ne supprime aucun message dans la base.
